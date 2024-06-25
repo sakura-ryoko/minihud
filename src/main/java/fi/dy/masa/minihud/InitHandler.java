@@ -34,6 +34,7 @@ public class InitHandler implements IInitializationHandler
         ServerHandler.getInstance().registerServerHandler(serverListener);
 
         TickHandler.getInstance().registerClientTickHandler(new ClientTickHandler());
+        TickHandler.getInstance().registerClientTickHandler(EntitiesDataStorage.getInstance());
 
         KeyCallbacks.init();
     }

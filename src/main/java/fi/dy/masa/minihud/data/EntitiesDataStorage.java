@@ -2,6 +2,7 @@ package fi.dy.masa.minihud.data;
 
 import com.google.gson.JsonObject;
 import com.mojang.datafixers.util.Either;
+import fi.dy.masa.malilib.interfaces.IClientTickHandler;
 import fi.dy.masa.malilib.network.ClientPlayHandler;
 import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
 import fi.dy.masa.minihud.MiniHUD;
@@ -27,7 +28,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class EntitiesDataStorage
+public class EntitiesDataStorage implements IClientTickHandler
 {
     private static final EntitiesDataStorage INSTANCE = new EntitiesDataStorage();
 
@@ -38,12 +39,16 @@ public class EntitiesDataStorage
 
     private final static ServuxEntitiesHandler<ServuxEntitiesPacket.Payload> HANDLER = ServuxEntitiesHandler.getInstance();
     private final static MinecraftClient mc = MinecraftClient.getInstance();
+    private int uptimeTicks = 0;
     private boolean servuxServer = false;
     private boolean hasInValidServux = false;
     private String servuxVersion;
 
+    private long resetRateLimiterTime = 0;
+    // To limit our request rate for the same object
     private Set<BlockPos> pendingBlockEntities = new HashSet<>();
     private Set<Integer> pendingEntities = new HashSet<>();
+    // To save vanilla query packet transaction
     private Map<Integer, Either<BlockPos, Integer>> transactionToBlockPosOrEntityId = new HashMap<>();
 
     @Nullable
@@ -245,12 +250,14 @@ public class EntitiesDataStorage
 
         if (handler != null)
         {
-            handler.getDataQueryHandler().queryBlockNbt(pos, nbtCompound ->
+            if (pendingBlockEntities.add(pos))
             {
-                handleBlockEntityData(pos, nbtCompound);
-            });
-            pendingBlockEntities.add(pos);
-            transactionToBlockPosOrEntityId.put(((IMixinDataQueryHandler) handler.getDataQueryHandler()).currentTransactionId(), Either.left(pos));
+                handler.getDataQueryHandler().queryBlockNbt(pos, nbtCompound ->
+                {
+                    handleBlockEntityData(pos, nbtCompound);
+                });
+                transactionToBlockPosOrEntityId.put(((IMixinDataQueryHandler) handler.getDataQueryHandler()).currentTransactionId(), Either.left(pos));
+            }
         }
     }
 
@@ -260,25 +267,31 @@ public class EntitiesDataStorage
 
         if (handler != null)
         {
-            handler.getDataQueryHandler().queryEntityNbt(entityId, nbtCompound ->
+            if (pendingEntities.add(entityId))
             {
-                handleEntityData(entityId, nbtCompound);
-            });
-            pendingEntities.add(entityId);
-            transactionToBlockPosOrEntityId.put(((IMixinDataQueryHandler) handler.getDataQueryHandler()).currentTransactionId(), Either.right(entityId));
+                handler.getDataQueryHandler().queryEntityNbt(entityId, nbtCompound ->
+                {
+                    handleEntityData(entityId, nbtCompound);
+                });
+                transactionToBlockPosOrEntityId.put(((IMixinDataQueryHandler) handler.getDataQueryHandler()).currentTransactionId(), Either.right(entityId));
+            }
         }
     }
 
     public void requestServuxBlockEntityData(BlockPos pos)
     {
-        pendingBlockEntities.add(pos);
-        HANDLER.encodeClientData(ServuxEntitiesPacket.BlockEntityRequest(pos));
+        if (pendingBlockEntities.add(pos))
+        {
+            HANDLER.encodeClientData(ServuxEntitiesPacket.BlockEntityRequest(pos));
+        }
     }
 
     public void requestServuxEntityData(int entityId)
     {
-        pendingEntities.add(entityId);
-        HANDLER.encodeClientData(ServuxEntitiesPacket.EntityRequest(entityId));
+        if (pendingEntities.add(entityId))
+        {
+            HANDLER.encodeClientData(ServuxEntitiesPacket.EntityRequest(entityId));
+        }
     }
 
     public JsonObject toJson()
@@ -298,6 +311,19 @@ public class EntitiesDataStorage
         {
             either.ifLeft(pos -> handleBlockEntityData(pos, nbt))
                     .ifRight(entityId -> handleEntityData(entityId, nbt));
+        }
+    }
+
+    @Override
+    public void onClientTick(MinecraftClient mc)
+    {
+        uptimeTicks++;
+        if (System.currentTimeMillis() - resetRateLimiterTime > 50)
+        {
+            // reset out rate limiter
+            pendingBlockEntities.clear();
+            pendingEntities.clear();
+            resetRateLimiterTime = System.currentTimeMillis();
         }
     }
 }
