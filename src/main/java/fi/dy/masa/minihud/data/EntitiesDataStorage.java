@@ -43,7 +43,7 @@ public class EntitiesDataStorage implements IClientTickHandler
     private String servuxVersion;
 
     private long serverTickTime = 0;
-    // To limit our request rate for the same object
+    // Requests to be executed
     private Set<BlockPos> pendingBlockEntitiesQueue = new LinkedHashSet<>();
     private Set<Integer> pendingEntitiesQueue = new LinkedHashSet<>();
     // To save vanilla query packet transaction
