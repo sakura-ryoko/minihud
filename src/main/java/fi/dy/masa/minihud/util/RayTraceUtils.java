@@ -168,7 +168,7 @@ public class RayTraceUtils
         {
             inv = ((IMixinPiglinEntity) entity).inventory();
         }
-        if (inv == null)
+        if (inv == null && entityLivingBase == null)
         {
             return null;
         }
