@@ -5,6 +5,7 @@
         "minVersion": "0.8",
         "client": [
                 "IMixinAbstractFurnaceBlockEntity",
+                "IMixinAbstractHorseEntity",
                 "IMixinBeaconBlockEntity",
                 "IMixinBiomeAccess",
                 "IMixinChunkDeltaUpdateS2CPacket",
@@ -34,12 +35,12 @@
                 "MixinNeighborUpdateDebugRenderer",
                 "MixinServerEntityManager",
                 "MixinServerWorld",
-                "MixinSubtitlesHud",
-                "IMixinAbstractHorseEntity"
+                "MixinSubtitlesHud"
         ],
         "injectors": {
                 "defaultRequire": 1
         },
         "mixins": [
+                "IMixinPiglinEntity"
         ]
 }

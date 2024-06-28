@@ -20,6 +20,7 @@ import fi.dy.masa.minihud.renderer.OverlayRenderer;
 import fi.dy.masa.minihud.util.DataStorage;
 import fi.dy.masa.minihud.util.IServerEntityManager;
 import fi.dy.masa.minihud.util.MiscUtils;
+import fi.dy.masa.minihud.util.RayTraceUtils;
 import net.minecraft.block.BeehiveBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ChestBlock;
@@ -146,7 +147,11 @@ public class RenderHandler implements IRenderer
 
         if (Configs.Generic.INVENTORY_PREVIEW.getKeybind().isKeybindHeld())
         {
-            fi.dy.masa.minihud.renderer.RenderUtils.renderInventoryOverlay(this.mc, context);
+            var inventory = RayTraceUtils.getTargetInventory(this.mc);
+            if (inventory != null)
+            {
+                fi.dy.masa.minihud.renderer.RenderUtils.renderInventoryOverlay(inventory, context);
+            }
         }
     }
 

@@ -1,14 +1,7 @@
 package fi.dy.masa.minihud.hotkeys;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.Entity;
-
 import fi.dy.masa.malilib.gui.GuiBase;
-import fi.dy.masa.malilib.hotkeys.IHotkeyCallback;
-import fi.dy.masa.malilib.hotkeys.IKeybind;
-import fi.dy.masa.malilib.hotkeys.KeyAction;
-import fi.dy.masa.malilib.hotkeys.KeyCallbackAdjustable;
-import fi.dy.masa.malilib.hotkeys.KeyCallbackToggleBooleanConfigWithMessage;
+import fi.dy.masa.malilib.hotkeys.*;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.RendererCallbacks;
 import fi.dy.masa.minihud.config.RendererToggle;
@@ -16,6 +9,7 @@ import fi.dy.masa.minihud.gui.GuiConfigs;
 import fi.dy.masa.minihud.gui.GuiConfigs.ConfigGuiTab;
 import fi.dy.masa.minihud.gui.GuiShapeEditor;
 import fi.dy.masa.minihud.gui.GuiShapeManager;
+import fi.dy.masa.minihud.gui.InventoryOverlayScreen;
 import fi.dy.masa.minihud.renderer.OverlayRendererBeaconRange;
 import fi.dy.masa.minihud.renderer.OverlayRendererLightLevel;
 import fi.dy.masa.minihud.renderer.OverlayRendererStructures;
@@ -23,6 +17,9 @@ import fi.dy.masa.minihud.renderer.shapes.ShapeBase;
 import fi.dy.masa.minihud.renderer.shapes.ShapeManager;
 import fi.dy.masa.minihud.util.DataStorage;
 import fi.dy.masa.minihud.util.DebugInfoUtils;
+import fi.dy.masa.minihud.util.RayTraceUtils;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.entity.Entity;
 
 public class KeyCallbacks
 {
@@ -34,6 +31,7 @@ public class KeyCallbacks
         Configs.Generic.MOVE_SHAPE_TO_PLAYER.getKeybind().setCallback(callback);
         Configs.Generic.OPEN_CONFIG_GUI.getKeybind().setCallback(callback);
         Configs.Generic.SHAPE_EDITOR.getKeybind().setCallback(callback);
+        Configs.Generic.INVENTORY_PREVIEW_TOGGLE_SCREEN.getKeybind().setCallback(callback);
 
         Configs.Colors.BEACON_RANGE_LVL1_OVERLAY_COLOR.setValueChangeCallback((config) -> updateBeaconOverlay());
         Configs.Colors.BEACON_RANGE_LVL2_OVERLAY_COLOR.setValueChangeCallback((config) -> updateBeaconOverlay());
@@ -114,6 +112,21 @@ public class KeyCallbacks
                 {
                     GuiConfigs.tab = ConfigGuiTab.SHAPES;
                     GuiBase.openGui(new GuiShapeManager());
+                }
+            }
+            else if (key == Configs.Generic.INVENTORY_PREVIEW_TOGGLE_SCREEN.getKeybind())
+            {
+                if (mc.currentScreen instanceof InventoryOverlayScreen)
+                {
+                    mc.setScreen(null);
+                }
+                else if (mc.currentScreen == null)
+                {
+                    RayTraceUtils.TargetInventory inventory = RayTraceUtils.getTargetInventory(mc);
+                    if (inventory != null)
+                    {
+                        mc.setScreen(new InventoryOverlayScreen(inventory));
+                    }
                 }
             }
 
