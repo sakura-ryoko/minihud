@@ -22,9 +22,11 @@ import fi.dy.masa.minihud.util.IServerEntityManager;
 import fi.dy.masa.minihud.util.MiscUtils;
 import net.minecraft.block.BeehiveBlock;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.ChestBlock;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.block.entity.BeehiveBlockEntity;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.enums.ChestType;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.network.PlayerListEntry;
@@ -1011,6 +1013,18 @@ public class RenderHandler implements IRenderer
             if (!(world instanceof ServerWorld))
             {
                 EntitiesDataStorage.getInstance().requestBlockEntity(world, posLooking);
+
+                BlockState state = world.getBlockState(posLooking);
+                if (state.getBlock() instanceof ChestBlock)
+                {
+                    ChestType type = state.get(ChestBlock.CHEST_TYPE);
+
+                    if (type != ChestType.SINGLE)
+                    {
+                        BlockPos posAdj = posLooking.offset(ChestBlock.getFacing(state));
+                        EntitiesDataStorage.getInstance().requestBlockEntity(world, posAdj);
+                    }
+                }
             }
             // The method in World now checks that the caller is from the same thread...
             return chunk != null ? chunk.getBlockEntity(posLooking) : null;
