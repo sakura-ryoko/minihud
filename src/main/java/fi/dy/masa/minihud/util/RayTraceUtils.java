@@ -6,10 +6,12 @@ import fi.dy.masa.malilib.util.WorldUtils;
 import fi.dy.masa.minihud.data.EntitiesDataStorage;
 import fi.dy.masa.minihud.event.RenderHandler;
 import fi.dy.masa.minihud.mixin.IMixinAbstractHorseEntity;
+import fi.dy.masa.minihud.mixin.IMixinPiglinEntity;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.mob.PiglinEntity;
 import net.minecraft.entity.passive.AbstractHorseEntity;
 import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -161,6 +163,10 @@ public class RayTraceUtils
         else if (entity instanceof AbstractHorseEntity)
         {
             inv = ((IMixinAbstractHorseEntity) entity).minihud_getHorseInventory();
+        }
+        else if (entity instanceof PiglinEntity)
+        {
+            inv = ((IMixinPiglinEntity) entity).inventory();
         }
         if (inv == null)
         {
