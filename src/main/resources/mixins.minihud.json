@@ -11,6 +11,7 @@
                 "IMixinDataQueryHandler",
                 "IMixinEntity",
                 "IMixinEntityNavigation",
+                "IMixinLeashable",
                 "IMixinMerchantEntity",
                 "IMixinPassiveEntity",
                 "IMixinServerWorld",
@@ -34,7 +35,7 @@
                 "MixinServerEntityManager",
                 "MixinServerWorld",
                 "MixinSubtitlesHud",
-                "IMixinLeashable"
+                "IMixinAbstractHorseEntity"
         ],
         "injectors": {
                 "defaultRequire": 1

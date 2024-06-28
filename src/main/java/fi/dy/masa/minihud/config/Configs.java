@@ -46,6 +46,7 @@ public class Configs implements IConfigHandler
         //public static final ConfigBoolean       FIX_VANILLA_DEBUG_RENDERERS         = new ConfigBoolean("enableVanillaDebugRendererFix", true, "If true, then the vanilla debug renderer OpenGL state is fixed.");
         public static final ConfigDouble        FONT_SCALE                          = new ConfigDouble("fontScale", 0.5, 0.01, 100.0, "Font scale factor for the info line HUD. Default: 0.5\n");
         public static final ConfigOptionList    HUD_ALIGNMENT                       = new ConfigOptionList("hudAlignment", HudAlignment.TOP_LEFT, "The alignment of the info line HUD");
+        public static final ConfigHotkey        INVENTORY_PREVIEW                   = new ConfigHotkey("inventoryPreview",                  "LEFT_ALT", KeybindSettings.PRESS_ALLOWEXTRA, "The key to activate the inventory preview feature");
         public static final ConfigBoolean       LIGHT_LEVEL_AUTO_HEIGHT             = new ConfigBoolean("lightLevelAutoHeight", false, "If enabled, then the Light Level overlay will be\nautomatically raised to render on top of the block's shape.\n§6Note: This will make the overlay also render\n§6on top of things like slabs, where mobs will not be able to spawn,\n§6unless you turn on the collision check option as well.");
         public static final ConfigBoolean       LIGHT_LEVEL_COLORED_NUMBERS         = new ConfigBoolean("lightLevelColoredNumbers", true, "Whether to use colored or white numbers\nfor the Light Level overlay numbers");
         public static final ConfigBoolean       LIGHT_LEVEL_COLLISION_CHECK         = new ConfigBoolean("lightLevelCollisionCheck", false, "If enabled, then the Light Level overlay is not rendered\nif there is any block with a collision box in the way.\n§6Note: This is not a proper check for spawnability!\n§6This would omit any block even partially sticking into the lower spawn block!\n§6For example open trapdoors or doors would prevent the overlay from showing.");
@@ -170,6 +171,7 @@ public class Configs implements IConfigHandler
                 TEXT_POS_Y,
                 TIME_DAY_DIVISOR,
                 TIME_TOTAL_DIVISOR,
+                INVENTORY_PREVIEW,
                 VILLAGER_CONVERSION_TICKS,
                 VILLAGER_OFFER_ENCHANTMENT_BOOKS,
                 VILLAGER_OFFER_HIGHEST_LEVEL_ONLY,
@@ -183,7 +185,8 @@ public class Configs implements IConfigHandler
                 OPEN_CONFIG_GUI,
                 REQUIRED_KEY,
                 SET_DISTANCE_REFERENCE_POINT,
-                SHAPE_EDITOR
+                SHAPE_EDITOR,
+                INVENTORY_PREVIEW
         );
     }
 

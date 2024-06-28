@@ -1,21 +1,36 @@
 package fi.dy.masa.minihud.renderer;
 
-import java.util.Collection;
+import fi.dy.masa.malilib.render.InventoryOverlay;
+import fi.dy.masa.malilib.util.*;
+import fi.dy.masa.minihud.config.Configs;
+import fi.dy.masa.minihud.event.RenderHandler;
+import fi.dy.masa.minihud.mixin.IMixinAbstractHorseEntity;
+import fi.dy.masa.minihud.renderer.shapes.SideQuad;
+import fi.dy.masa.minihud.util.RayTraceUtils;
+import fi.dy.masa.minihud.util.ShapeRenderType;
+import fi.dy.masa.minihud.util.shape.SphereUtils;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import net.minecraft.block.Block;
+import net.minecraft.block.CrafterBlock;
+import net.minecraft.block.ShulkerBoxBlock;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.passive.AbstractHorseEntity;
+import net.minecraft.entity.passive.VillagerEntity;
+import net.minecraft.inventory.Inventory;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
-import fi.dy.masa.malilib.util.Color4f;
-import fi.dy.masa.malilib.util.EntityUtils;
-import fi.dy.masa.malilib.util.LayerRange;
-import fi.dy.masa.malilib.util.PositionUtils;
-import fi.dy.masa.minihud.renderer.shapes.SideQuad;
-import fi.dy.masa.minihud.util.ShapeRenderType;
-import fi.dy.masa.minihud.util.shape.SphereUtils;
+import net.minecraft.world.World;
+
+import java.util.Collection;
 
 public class RenderUtils
 {
@@ -486,6 +501,126 @@ public class RenderUtils
             double remainder = value % interval;
 
             return remainder == 0.0 ? value : value + interval - remainder;
+        }
+    }
+
+    public static void renderInventoryOverlay(MinecraftClient mc, DrawContext drawContext)
+    {
+        World world = fi.dy.masa.malilib.util.WorldUtils.getBestWorld(mc);
+        Entity cameraEntity = EntityUtils.getCameraEntity();
+
+        if (mc.player == null)
+        {
+            return;
+        }
+
+        if (cameraEntity == mc.player && world instanceof ServerWorld)
+        {
+            // We need to get the player from the server world (if available, ie. in single player),
+            // so that the player itself won't be included in the ray trace
+            Entity serverPlayer = world.getPlayerByUuid(mc.player.getUuid());
+
+            if (serverPlayer != null)
+            {
+                cameraEntity = serverPlayer;
+            }
+        }
+
+        HitResult trace = RayTraceUtils.getRayTraceFromEntity(world, cameraEntity, false);
+
+        Inventory inv = null;
+        ShulkerBoxBlock shulkerBoxBlock = null;
+        CrafterBlock crafterBlock = null;
+        LivingEntity entityLivingBase = null;
+
+        if (trace.getType() == HitResult.Type.BLOCK)
+        {
+            BlockPos pos = ((BlockHitResult) trace).getBlockPos();
+            Block blockTmp = world.getBlockState(pos).getBlock();
+
+            if (blockTmp instanceof ShulkerBoxBlock)
+            {
+                shulkerBoxBlock = (ShulkerBoxBlock) blockTmp;
+            }
+
+            // NOOP, to request data from server
+            RenderHandler.getInstance().getTargetedBlockEntity(world, mc);
+
+            inv = fi.dy.masa.malilib.util.InventoryUtils.getInventory(world, pos);
+        }
+        else if (trace.getType() == HitResult.Type.ENTITY)
+        {
+            Entity entity = RenderHandler.getInstance().getTargetEntity(world, mc);
+
+            if (entity instanceof LivingEntity)
+            {
+                entityLivingBase = (LivingEntity) entity;
+            }
+
+            if (entity instanceof Inventory)
+            {
+                inv = (Inventory) entity;
+            }
+            else if (entity instanceof VillagerEntity)
+            {
+                inv = ((VillagerEntity) entity).getInventory();
+            }
+            else if (entity instanceof AbstractHorseEntity)
+            {
+                inv = ((IMixinAbstractHorseEntity) entity).minihud_getHorseInventory();
+            }
+        }
+
+        final int xCenter = GuiUtils.getScaledWindowWidth() / 2;
+        final int yCenter = GuiUtils.getScaledWindowHeight() / 2;
+        int x = xCenter - 52 / 2;
+        int y = yCenter - 92;
+
+        if (inv != null && inv.size() > 0)
+        {
+            final boolean isHorse = (entityLivingBase instanceof AbstractHorseEntity);
+            final int totalSlots = isHorse ? inv.size() - 2 : inv.size();
+            final int firstSlot = isHorse ? 2 : 0;
+
+            final InventoryOverlay.InventoryRenderType type = (entityLivingBase instanceof VillagerEntity) ? InventoryOverlay.InventoryRenderType.VILLAGER : InventoryOverlay.getInventoryType(inv);
+            final InventoryOverlay.InventoryProperties props = InventoryOverlay.getInventoryPropsTemp(type, totalSlots);
+            final int rows = (int) Math.ceil((double) totalSlots / props.slotsPerRow);
+            int xInv = xCenter - (props.width / 2);
+            int yInv = yCenter - props.height - 6;
+
+            if (rows > 6)
+            {
+                yInv -= (rows - 6) * 18;
+                y -= (rows - 6) * 18;
+            }
+
+            if (entityLivingBase != null)
+            {
+                x = xCenter - 55;
+                xInv = xCenter + 2;
+                yInv = Math.min(yInv, yCenter - 92);
+            }
+
+            fi.dy.masa.malilib.render.RenderUtils.setShulkerboxBackgroundTintColor(shulkerBoxBlock, Configs.Generic.SHULKER_DISPLAY_BACKGROUND_COLOR.getBooleanValue());
+
+            if (isHorse)
+            {
+                InventoryOverlay.renderInventoryBackground(type, xInv, yInv, 1, 2, mc);
+                InventoryOverlay.renderInventoryStacks(type, inv, xInv + props.slotOffsetX, yInv + props.slotOffsetY, 1, 0, 2, mc, drawContext);
+                xInv += 32 + 4;
+            }
+
+            if (totalSlots > 0)
+            {
+                InventoryOverlay.renderInventoryBackground(type, xInv, yInv, props.slotsPerRow, totalSlots, mc);
+                InventoryOverlay.renderInventoryStacks(type, inv, xInv + props.slotOffsetX, yInv + props.slotOffsetY, props.slotsPerRow, firstSlot, totalSlots, mc, drawContext);
+            }
+        }
+
+        if (entityLivingBase != null)
+        {
+            InventoryOverlay.renderEquipmentOverlayBackground(x, y, entityLivingBase, drawContext);
+            InventoryOverlay.renderEquipmentStacks(entityLivingBase, x, y, mc, drawContext);
         }
     }
 }

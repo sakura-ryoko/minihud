@@ -8,15 +8,14 @@ import fi.dy.masa.malilib.util.BlockUtils;
 import fi.dy.masa.malilib.util.InventoryUtils;
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.malilib.util.WorldUtils;
-import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.config.RendererToggle;
 import fi.dy.masa.minihud.data.EntitiesDataStorage;
 import fi.dy.masa.minihud.data.MobCapDataHandler;
+import fi.dy.masa.minihud.mixin.IMixinPassiveEntity;
 import fi.dy.masa.minihud.mixin.IMixinServerWorld;
 import fi.dy.masa.minihud.mixin.IMixinWorldRenderer;
-import fi.dy.masa.minihud.mixin.IMixinPassiveEntity;
 import fi.dy.masa.minihud.renderer.OverlayRenderer;
 import fi.dy.masa.minihud.util.DataStorage;
 import fi.dy.masa.minihud.util.IServerEntityManager;
@@ -141,6 +140,11 @@ public class RenderHandler implements IRenderer
             boolean useShadow = Configs.Generic.USE_FONT_SHADOW.getBooleanValue();
 
             RenderUtils.renderText(x, y, Configs.Generic.FONT_SCALE.getDoubleValue(), textColor, bgColor, alignment, useBackground, useShadow, this.lines, context);
+        }
+
+        if (Configs.Generic.INVENTORY_PREVIEW.getKeybind().isKeybindHeld())
+        {
+            fi.dy.masa.minihud.renderer.RenderUtils.renderInventoryOverlay(this.mc, context);
         }
     }
 
@@ -982,7 +986,7 @@ public class RenderHandler implements IRenderer
     }
 
     @Nullable
-    private Entity getTargetEntity(World world, MinecraftClient mc)
+    public Entity getTargetEntity(World world, MinecraftClient mc)
     {
         if (mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.ENTITY)
         {
@@ -997,7 +1001,7 @@ public class RenderHandler implements IRenderer
     }
 
     @Nullable
-    private BlockEntity getTargetedBlockEntity(World world, MinecraftClient mc)
+    public BlockEntity getTargetedBlockEntity(World world, MinecraftClient mc)
     {
         if (mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.BLOCK)
         {
