@@ -3,6 +3,7 @@ package fi.dy.masa.minihud.util;
 import fi.dy.masa.malilib.util.EntityUtils;
 import fi.dy.masa.malilib.util.InventoryUtils;
 import fi.dy.masa.malilib.util.WorldUtils;
+import fi.dy.masa.minihud.data.EntitiesDataStorage;
 import fi.dy.masa.minihud.event.RenderHandler;
 import fi.dy.masa.minihud.mixin.IMixinAbstractHorseEntity;
 import net.minecraft.block.entity.BlockEntity;
@@ -130,7 +131,8 @@ public class RayTraceUtils
         }
         else if (trace.getType() == HitResult.Type.ENTITY)
         {
-            Entity entity = RenderHandler.getInstance().getTargetEntity(world, mc);
+            Entity entity = ((EntityHitResult) trace).getEntity();
+            EntitiesDataStorage.getInstance().requestEntity(entity.getId());
             return getTargetInventoryFromEntity(entity);
         }
         return null;
