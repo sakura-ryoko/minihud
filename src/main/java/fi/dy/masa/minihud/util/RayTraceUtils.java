@@ -4,6 +4,7 @@ import fi.dy.masa.malilib.util.EntityUtils;
 import fi.dy.masa.malilib.util.InventoryUtils;
 import fi.dy.masa.malilib.util.WorldUtils;
 import fi.dy.masa.minihud.data.EntitiesDataStorage;
+import fi.dy.masa.minihud.event.RenderHandler;
 import fi.dy.masa.minihud.mixin.IMixinAbstractHorseEntity;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
@@ -116,7 +117,7 @@ public class RayTraceUtils
         if (trace.getType() == HitResult.Type.BLOCK)
         {
             BlockPos pos = ((BlockHitResult) trace).getBlockPos();
-            EntitiesDataStorage.getInstance().requestBlockEntity(world, pos);
+            RenderHandler.getInstance().requestBlockEntityAt(mc.world, pos);
 
             Inventory inv = InventoryUtils.getInventory(world, pos);
             if (inv == null)

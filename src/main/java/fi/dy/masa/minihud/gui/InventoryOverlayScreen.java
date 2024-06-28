@@ -6,6 +6,7 @@ import fi.dy.masa.malilib.util.GuiUtils;
 import fi.dy.masa.malilib.util.InventoryUtils;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.data.EntitiesDataStorage;
+import fi.dy.masa.minihud.event.RenderHandler;
 import fi.dy.masa.minihud.util.RayTraceUtils;
 import net.minecraft.block.ShulkerBoxBlock;
 import net.minecraft.client.MinecraftClient;
@@ -101,7 +102,7 @@ public class InventoryOverlayScreen extends Screen
                 // Refresh data
                 if (inventory.te() != null)
                 {
-                    EntitiesDataStorage.getInstance().requestBlockEntity(mc.world, inventory.te().getPos());
+                    RenderHandler.getInstance().requestBlockEntityAt(mc.world, inventory.te().getPos());
                     var inv = InventoryUtils.getInventory(mc.world, inventory.te().getPos());
                     inventory = new RayTraceUtils.TargetInventory(inv, mc.world.getBlockEntity(inventory.te().getPos()), null);
                 }

@@ -1015,27 +1015,32 @@ public class RenderHandler implements IRenderer
             BlockPos posLooking = ((BlockHitResult) mc.crosshairTarget).getBlockPos();
             WorldChunk chunk = this.getChunk(new ChunkPos(posLooking));
 
-            if (!(world instanceof ServerWorld))
-            {
-                EntitiesDataStorage.getInstance().requestBlockEntity(world, posLooking);
-
-                BlockState state = world.getBlockState(posLooking);
-                if (state.getBlock() instanceof ChestBlock)
-                {
-                    ChestType type = state.get(ChestBlock.CHEST_TYPE);
-
-                    if (type != ChestType.SINGLE)
-                    {
-                        BlockPos posAdj = posLooking.offset(ChestBlock.getFacing(state));
-                        EntitiesDataStorage.getInstance().requestBlockEntity(world, posAdj);
-                    }
-                }
-            }
+            requestBlockEntityAt(world, posLooking);
             // The method in World now checks that the caller is from the same thread...
             return chunk != null ? chunk.getBlockEntity(posLooking) : null;
         }
 
         return null;
+    }
+
+    public void requestBlockEntityAt(World world, BlockPos pos)
+    {
+        if (!(world instanceof ServerWorld))
+        {
+            EntitiesDataStorage.getInstance().requestBlockEntity(world, pos);
+
+            BlockState state = world.getBlockState(pos);
+            if (state.getBlock() instanceof ChestBlock)
+            {
+                ChestType type = state.get(ChestBlock.CHEST_TYPE);
+
+                if (type != ChestType.SINGLE)
+                {
+                    BlockPos posAdj = pos.offset(ChestBlock.getFacing(state));
+                    EntitiesDataStorage.getInstance().requestBlockEntity(world, posAdj);
+                }
+            }
+        }
     }
 
     @Nullable
