@@ -120,7 +120,7 @@ public class KeyCallbacks
                 {
                     mc.setScreen(null);
                 }
-                else if (mc.currentScreen == null)
+                else if (Configs.Generic.INVENTORY_PREVIEW.getKeybind().isKeybindHeld())
                 {
                     RayTraceUtils.TargetInventory inventory = RayTraceUtils.getTargetInventory(mc);
                     if (inventory != null)

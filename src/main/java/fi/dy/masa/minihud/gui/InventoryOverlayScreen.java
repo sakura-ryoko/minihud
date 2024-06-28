@@ -39,7 +39,7 @@ public class InventoryOverlayScreen extends Screen
             int x = xCenter - 52 / 2;
             int y = yCenter - 92;
 
-            if (inventory.inv() != null && inventory.inv().isEmpty() == false)
+            if (inventory.inv() != null && inventory.inv().size() > 0)
             {
                 final boolean isHorse = (inventory.entity() instanceof AbstractHorseEntity);
                 final int totalSlots = isHorse ? inventory.inv().size() - 2 : inventory.inv().size();
@@ -93,7 +93,7 @@ public class InventoryOverlayScreen extends Screen
             if (inventory.entity() != null)
             {
                 InventoryOverlay.renderEquipmentOverlayBackground(x, y, inventory.entity(), drawContext);
-                InventoryOverlay.renderEquipmentStacks(inventory.entity(), x, y, mc, drawContext);
+                InventoryOverlay.renderEquipmentStacks(inventory.entity(), x, y, mc, drawContext, mouseX, mouseY);
             }
 
             if (ticks % 4 == 0)
