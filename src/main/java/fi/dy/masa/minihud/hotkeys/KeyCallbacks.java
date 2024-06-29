@@ -128,6 +128,10 @@ public class KeyCallbacks
                         mc.setScreen(new InventoryOverlayScreen(inventory));
                     }
                 }
+                else
+                {
+                    return false;
+                }
             }
 
             return true;
