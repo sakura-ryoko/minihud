@@ -174,6 +174,7 @@ public class Configs implements IConfigHandler
                 TIME_DAY_DIVISOR,
                 TIME_TOTAL_DIVISOR,
                 INVENTORY_PREVIEW,
+                INVENTORY_PREVIEW_TOGGLE_SCREEN,
                 VILLAGER_CONVERSION_TICKS,
                 VILLAGER_OFFER_ENCHANTMENT_BOOKS,
                 VILLAGER_OFFER_HIGHEST_LEVEL_ONLY,
