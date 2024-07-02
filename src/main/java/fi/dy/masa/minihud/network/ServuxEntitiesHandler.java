@@ -1,15 +1,6 @@
 package fi.dy.masa.minihud.network;
 
 import io.netty.buffer.Unpooled;
-import fi.dy.masa.malilib.network.ClientPlayHandler;
-import fi.dy.masa.malilib.network.IClientPayloadData;
-import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
-import fi.dy.masa.malilib.network.PacketSplitter;
-import fi.dy.masa.minihud.MiniHUD;
-import fi.dy.masa.minihud.data.EntitiesDataStorage;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.nbt.NbtCompound;
@@ -18,6 +9,14 @@ import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.random.Random;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import fi.dy.masa.malilib.network.IClientPayloadData;
+import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
+import fi.dy.masa.malilib.network.PacketSplitter;
+import fi.dy.masa.minihud.MiniHUD;
+import fi.dy.masa.minihud.data.EntitiesDataStorage;
 
 @Environment(EnvType.CLIENT)
 public abstract class ServuxEntitiesHandler<T extends CustomPayload> implements IPluginClientPlayHandler<T>
@@ -135,8 +134,7 @@ public abstract class ServuxEntitiesHandler<T extends CustomPayload> implements 
     {
         if (payload.getId().id().equals(CHANNEL_ID))
         {
-            ((ClientPlayHandler<?>) ClientPlayHandler.getInstance()).decodeClientData(CHANNEL_ID, ((ServuxEntitiesPacket.Payload) payload).data());
-            // This allows the data to be "shared" among multiple mods
+            ServuxEntitiesHandler.INSTANCE.decodeClientData(CHANNEL_ID, ((ServuxEntitiesPacket.Payload) payload).data());
         }
     }
 

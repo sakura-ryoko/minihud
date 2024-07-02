@@ -1,5 +1,7 @@
 package fi.dy.masa.minihud.config;
 
+import java.io.File;
+import java.util.List;
 import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -18,9 +20,6 @@ import fi.dy.masa.minihud.util.BlockGridMode;
 import fi.dy.masa.minihud.util.LightLevelMarkerMode;
 import fi.dy.masa.minihud.util.LightLevelNumberMode;
 import fi.dy.masa.minihud.util.LightLevelRenderCondition;
-
-import java.io.File;
-import java.util.List;
 
 public class Configs implements IConfigHandler
 {
@@ -44,6 +43,8 @@ public class Configs implements IConfigHandler
         public static final ConfigBoolean       DEBUG_MESSAGES                      = new ConfigBoolean("debugMessages", false, "Enables some debug messages in the game console");
         //public static final ConfigBoolean       DEBUG_RENDERER_PATH_MAX_DIST        = new ConfigBoolean("debugRendererPathFindingEnablePointWidth", true, "If true, then the vanilla pathfinding debug renderer\nwill render the path point width boxes.");
         public static final ConfigBoolean       DONT_RESET_SEED_ON_DIMENSION_CHANGE = new ConfigBoolean("dontClearStoredSeedOnDimensionChange", true, "Don't clear the stored world seed when just changing dimensions.\nSome mods may use per-dimension seeds, so you may need to change\nthis in case the different dimensions on your server/mod pack\nhave different world seeds.");
+        public static final ConfigBoolean       ENTITY_DATA_SYNC                    = new ConfigBoolean("entityDataSync", true, "Use the Entity Data Sync protocol from Servux\nto obtain Entity Data from the server");
+        public static final ConfigBoolean       ENTITY_DATA_SYNC_BACKUP             = new ConfigBoolean("entityDataSyncBackup", true, "Use the Vanilla NBT Query method when Servux\nis not available.  This method requires Operator Privileges.");
         //public static final ConfigBoolean       FIX_VANILLA_DEBUG_RENDERERS         = new ConfigBoolean("enableVanillaDebugRendererFix", true, "If true, then the vanilla debug renderer OpenGL state is fixed.");
         public static final ConfigDouble        FONT_SCALE                          = new ConfigDouble("fontScale", 0.5, 0.01, 100.0, "Font scale factor for the info line HUD. Default: 0.5\n");
         public static final ConfigOptionList    HUD_ALIGNMENT                       = new ConfigOptionList("hudAlignment", HudAlignment.TOP_LEFT, "The alignment of the info line HUD");
@@ -111,6 +112,8 @@ public class Configs implements IConfigHandler
                 DEBUG_MESSAGES,
                 //DEBUG_RENDERER_PATH_MAX_DIST,
                 DONT_RESET_SEED_ON_DIMENSION_CHANGE,
+                ENTITY_DATA_SYNC,
+                ENTITY_DATA_SYNC_BACKUP,
                 //FIX_VANILLA_DEBUG_RENDERERS,
                 LIGHT_LEVEL_AUTO_HEIGHT,
                 LIGHT_LEVEL_COLLISION_CHECK,
