@@ -33,7 +33,7 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
     OVERLAY_SPAWN_CHUNK_OVERLAY_REAL    ("overlaySpawnChunkReal",       "", "Toggle the spawn chunks overlay renderer", "Spawn Chunks (real) overlay"),
     OVERLAY_SPAWN_CHUNK_OVERLAY_PLAYER  ("overlaySpawnChunkPlayer",     "", "Toggle the pseudo (player-following) spawn chunks overlay renderer", "Spawn Chunks (player-following, would-be) overlay"),
     OVERLAY_STRUCTURE_MAIN_TOGGLE       ("overlayStructureMainToggle",  "", "Main toggle for all structure bounding boxes", "Structure Bounding Boxes main"),
-    OVERLAY_VILLAGER_OFFERS             ("overlayVillagerOffers",       "", "Toggle the villager offers render.\nDisplays he enchantment books it sells.", "Villager offers overlay"),
+    OVERLAY_VILLAGER_INFO               ("overlayVillagerInfo",       "", "Toggle the villager offers render.\nDisplays he enchantment books it sells.", "Villager offers overlay"),
     SHAPE_RENDERER                      ("shapeRenderer",               "", "The main toggle for the shape renderer", "Shape Renderer"),
 
     DEBUG_CHUNK_BORDER                  ("debugChunkBorder",            "", "Toggles the vanilla Chunk Border debug renderer", "Chunk Border"),

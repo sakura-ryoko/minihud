@@ -29,19 +29,19 @@ import net.minecraft.world.World;
 
 import java.util.*;
 
-public class OverlayRendererVillagerOffers extends OverlayRendererBase
+public class OverlayRendererVillagerInfo extends OverlayRendererBase
 {
-    public static final OverlayRendererVillagerOffers INSTANCE = new OverlayRendererVillagerOffers();
+    public static final OverlayRendererVillagerInfo INSTANCE = new OverlayRendererVillagerInfo();
     @Override
     public String getName()
     {
-        return "Villager Offers Overlay";
+        return "Villager Info Overlay";
     }
 
     @Override
     public boolean shouldRender(MinecraftClient mc)
     {
-        return RendererToggle.OVERLAY_VILLAGER_OFFERS.getBooleanValue();
+        return RendererToggle.OVERLAY_VILLAGER_INFO.getBooleanValue();
     }
 
     @Override
@@ -195,20 +195,23 @@ public class OverlayRendererVillagerOffers extends OverlayRendererBase
 
     private void renderAtEntity(List<String> texts, Entity entity, Entity targetEntity)
     {
-        double hypot = MathHelper.hypot(entity.getX() - targetEntity.getX(), entity.getZ() - targetEntity.getZ());
+        float delta = MinecraftClient.getInstance().getRenderTickCounter().getTickDelta(true);
+        var cameraPos = entity.getLerpedPos(delta);
+        var targetPos = targetEntity.getLerpedPos(delta);
+        double hypot = MathHelper.hypot(cameraPos.getX() - targetPos.getX(), cameraPos.getZ() - targetPos.getZ());
         double distance = 0.8;
-        double x = targetEntity.getX() + (entity.getX() - targetEntity.getX()) / hypot * distance;
-        double z = targetEntity.getZ() + (entity.getZ() - targetEntity.getZ()) / hypot * distance;
-        double y = targetEntity.getY() + 1.5 + 0.1 * texts.size();
+        double x = targetPos.getX() + (cameraPos.getX() - targetPos.getX()) / hypot * distance;
+        double z = targetPos.getZ() + (cameraPos.getZ() - targetPos.getZ()) / hypot * distance;
+        double y = targetPos.getY() + 1.5 + 0.1 * texts.size();
 
         // Render the overlay at its job site, this is useful in trading halls
-        if (entity instanceof LivingEntity living)
+        if (targetEntity instanceof LivingEntity living)
         {
             Optional<GlobalPos> jobSite = living.getBrain().getOptionalMemory(MemoryModuleType.JOB_SITE);
             if (jobSite != null && jobSite.isPresent())
             {
                 BlockPos pos = jobSite.get().pos();
-                if (targetEntity.getPos().distanceTo(pos.toCenterPos()) < 1.7)
+                if (targetPos.distanceTo(pos.toCenterPos()) < 1.7)
                 {
                     x = pos.getX() + 0.5;
                     z = pos.getZ() + 0.5;
