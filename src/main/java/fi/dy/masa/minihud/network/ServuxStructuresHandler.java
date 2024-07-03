@@ -155,7 +155,7 @@ public abstract class ServuxStructuresHandler<T extends CustomPayload> implement
         {
             if (this.failures > MAX_FAILURES)
             {
-                MiniHUD.logger.warn("encodeStructuresPacket(): encountered [{}] sendPayload failures, cancelling any Servux join attempt(s)", MAX_FAILURES);
+                MiniHUD.printDebug("encodeStructuresPacket(): encountered [{}] sendPayload failures, cancelling any Servux join attempt(s)", MAX_FAILURES);
                 this.servuxRegistered = false;
                 ServuxStructuresHandler.INSTANCE.unregisterPlayReceiver();
                 DataStorage.getInstance().onPacketFailure();
