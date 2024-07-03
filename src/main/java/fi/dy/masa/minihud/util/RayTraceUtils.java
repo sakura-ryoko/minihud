@@ -92,7 +92,7 @@ public class RayTraceUtils
         return result;
     }
 
-    public static @Nullable TargetInventory getTargetInventory(MinecraftClient mc)
+    public static @Nullable RayTraceUtils.InventoryPreviewData getTargetInventory(MinecraftClient mc)
     {
         World world = WorldUtils.getBestWorld(mc);
         Entity cameraEntity = EntityUtils.getCameraEntity();
@@ -127,7 +127,7 @@ public class RayTraceUtils
                 return null;
             }
 
-            return new TargetInventory(inv, world.getBlockEntity(pos), null);
+            return new InventoryPreviewData(inv, world.getBlockEntity(pos), null);
         }
         else if (trace.getType() == HitResult.Type.ENTITY)
         {
@@ -138,7 +138,7 @@ public class RayTraceUtils
         return null;
     }
 
-    public static TargetInventory getTargetInventoryFromEntity(Entity entity)
+    public static InventoryPreviewData getTargetInventoryFromEntity(Entity entity)
     {
         Inventory inv = null;
         LivingEntity entityLivingBase = null;
@@ -172,10 +172,10 @@ public class RayTraceUtils
         {
             return null;
         }
-        return new TargetInventory(inv, null, entityLivingBase);
+        return new InventoryPreviewData(inv, null, entityLivingBase);
     }
 
-    public record TargetInventory(Inventory inv, @Nullable BlockEntity te, @Nullable LivingEntity entity)
+    public record InventoryPreviewData(Inventory inv, @Nullable BlockEntity te, @Nullable LivingEntity entity)
     {
     }
 }

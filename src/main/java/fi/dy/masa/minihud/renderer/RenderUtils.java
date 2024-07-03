@@ -490,7 +490,7 @@ public class RenderUtils
         }
     }
 
-    public static void renderInventoryOverlay(RayTraceUtils.TargetInventory inventory, DrawContext drawContext)
+    public static void renderInventoryOverlay(RayTraceUtils.InventoryPreviewData inventory, DrawContext drawContext)
     {
         var screen = new InventoryOverlayScreen(inventory);
         screen.init(MinecraftClient.getInstance(), 0, 0);
