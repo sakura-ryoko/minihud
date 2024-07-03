@@ -12,14 +12,22 @@ import net.minecraft.block.ShulkerBoxBlock;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.passive.AbstractHorseEntity;
 import net.minecraft.entity.passive.VillagerEntity;
+import net.minecraft.entity.passive.WolfEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.SimpleInventory;
+import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class InventoryOverlayScreen extends Screen
 {
     private int ticks;
+
     public InventoryOverlayScreen(RayTraceUtils.TargetInventory inventory)
     {
         super(Text.literal("Inventory Overlay"));
@@ -42,9 +50,26 @@ public class InventoryOverlayScreen extends Screen
 
             if (inventory.inv() != null && inventory.inv().size() > 0)
             {
-                final boolean isHorse = (inventory.entity() instanceof AbstractHorseEntity);
-                final int totalSlots = isHorse ? inventory.inv().size() - 2 : inventory.inv().size();
-                final int firstSlot = isHorse ? 2 : 0;
+                final int startSlot;
+                final int totalSlots;
+                List<ItemStack> armourItems = new ArrayList<>();
+                if (inventory.entity() instanceof AbstractHorseEntity) {
+                    armourItems.add(inventory.inv().getStack(0));
+                    armourItems.add(inventory.entity().getEquippedStack(EquipmentSlot.BODY));
+                    startSlot = 1;
+                    totalSlots = inventory.inv().size() - 1;
+                }
+                else if (inventory.entity() instanceof WolfEntity)
+                {
+                    armourItems.add(inventory.entity().getEquippedStack(EquipmentSlot.BODY));
+                    startSlot = 0;
+                    totalSlots = inventory.inv().size();
+                }
+                else
+                {
+                    startSlot = 0;
+                    totalSlots = inventory.inv().size();
+                }
 
                 final InventoryOverlay.InventoryRenderType type = (inventory.entity() instanceof VillagerEntity) ? InventoryOverlay.InventoryRenderType.VILLAGER : InventoryOverlay.getInventoryType(inventory.inv());
                 final InventoryOverlay.InventoryProperties props = InventoryOverlay.getInventoryPropsTemp(type, totalSlots);
@@ -70,17 +95,17 @@ public class InventoryOverlayScreen extends Screen
                     RenderUtils.setShulkerboxBackgroundTintColor(sbb, Configs.Generic.SHULKER_DISPLAY_BACKGROUND_COLOR.getBooleanValue());
                 }
 
-                if (isHorse)
+                if (!armourItems.isEmpty())
                 {
-                    InventoryOverlay.renderInventoryBackground(type, xInv, yInv, 1, 2, mc);
-                    InventoryOverlay.renderInventoryStacks(type, inventory.inv(), xInv + props.slotOffsetX, yInv + props.slotOffsetY, 1, 0, 2, mc, drawContext, mouseX, mouseY);
+                    InventoryOverlay.renderInventoryBackground(type, xInv, yInv, 1, armourItems.size(), mc);
+                    InventoryOverlay.renderInventoryStacks(type, new SimpleInventory(armourItems.toArray(new ItemStack[0])), xInv + props.slotOffsetX, yInv + props.slotOffsetY, 1, 0, armourItems.size(), mc, drawContext, mouseX, mouseY);
                     xInv += 32 + 4;
                 }
 
                 if (totalSlots > 0)
                 {
                     InventoryOverlay.renderInventoryBackground(type, xInv, yInv, props.slotsPerRow, totalSlots, mc);
-                    InventoryOverlay.renderInventoryStacks(type, inventory.inv(), xInv + props.slotOffsetX, yInv + props.slotOffsetY, props.slotsPerRow, firstSlot, totalSlots, mc, drawContext, mouseX, mouseY);
+                    InventoryOverlay.renderInventoryStacks(type, inventory.inv(), xInv + props.slotOffsetX, yInv + props.slotOffsetY, props.slotsPerRow, startSlot, totalSlots, mc, drawContext, mouseX, mouseY);
                 }
 
                 if (inventory.entity() instanceof PlayerEntity player)
