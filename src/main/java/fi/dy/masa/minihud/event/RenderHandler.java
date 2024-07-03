@@ -8,6 +8,7 @@ import fi.dy.masa.malilib.util.BlockUtils;
 import fi.dy.masa.malilib.util.InventoryUtils;
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.malilib.util.WorldUtils;
+import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.config.RendererToggle;
@@ -35,6 +36,7 @@ import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.Tameable;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.passive.*;
 import net.minecraft.item.FilledMapItem;
@@ -921,6 +923,14 @@ public class RenderHandler implements IRenderer
                 {
                     String entityLine = String.format("Entity: %s - HP: %.1f / %.1f", living.getName().getString(), living.getHealth(), living.getMaxHealth());
 
+                    if (living instanceof Tameable tamable)
+                    {
+                        LivingEntity owner = tamable.getOwner();
+                        if (owner != null)
+                        {
+                            entityLine = entityLine+" - Owner: "+owner.getName().getLiteralString();
+                        }
+                    }
                     if (living instanceof PassiveEntity passive)
                     {
                         if (passive.getBreedingAge() < 0)
