@@ -162,7 +162,15 @@ public class ServuxEntitiesPacket implements IClientPayloadData
         return this.packetType;
     }
 
-    public int getTransactionId() { return this.transactionId; }
+    public void setTransactionId(int id)
+    {
+        this.transactionId = id;
+    }
+
+    public int getTransactionId()
+    {
+        return this.transactionId;
+    }
 
     public int getEntityId() { return this.entityId; }
 

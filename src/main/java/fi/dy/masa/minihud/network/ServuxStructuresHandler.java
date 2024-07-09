@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.nbt.NbtSizeTracker;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.util.Identifier;
@@ -82,7 +83,7 @@ public abstract class ServuxStructuresHandler<T extends CustomPayload> implement
                 {
                     try
                     {
-                        NbtCompound nbt = fullPacket.readNbt();
+                        NbtCompound nbt = (NbtCompound) fullPacket.readNbt(NbtSizeTracker.ofUnlimitedBytes());
                         this.readingSessionKey = -1;
 
                         if (nbt != null)

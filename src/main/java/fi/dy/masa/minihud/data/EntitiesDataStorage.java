@@ -48,10 +48,10 @@ public class EntitiesDataStorage implements IClientTickHandler
 
     private long serverTickTime = 0;
     // Requests to be executed
-    private Set<BlockPos> pendingBlockEntitiesQueue = new LinkedHashSet<>();
-    private Set<Integer> pendingEntitiesQueue = new LinkedHashSet<>();
+    private final Set<BlockPos> pendingBlockEntitiesQueue = new LinkedHashSet<>();
+    private final Set<Integer> pendingEntitiesQueue = new LinkedHashSet<>();
     // To save vanilla query packet transaction
-    private Map<Integer, Either<BlockPos, Integer>> transactionToBlockPosOrEntityId = new HashMap<>();
+    private final Map<Integer, Either<BlockPos, Integer>> transactionToBlockPosOrEntityId = new HashMap<>();
 
     @Nullable
     public World getWorld()
@@ -66,23 +66,37 @@ public class EntitiesDataStorage implements IClientTickHandler
     @Override
     public void onClientTick(MinecraftClient mc)
     {
-        uptimeTicks++;
-        if (System.currentTimeMillis() - serverTickTime > 50)
+        this.uptimeTicks++;
+        if (System.currentTimeMillis() - this.serverTickTime > 50)
         {
             // In this block, we do something every server tick
 
             if (Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue() == false)
             {
-                serverTickTime = System.currentTimeMillis();
+                this.serverTickTime = System.currentTimeMillis();
+                if (DataStorage.getInstance().hasIntegratedServer() == false && this.hasServuxServer())
+                {
+                    this.servuxServer = false;
+                    HANDLER.unregisterPlayReceiver();
+                }
                 return;
+            }
+            else if (DataStorage.getInstance().hasIntegratedServer() == false &&
+                    this.hasServuxServer() == false &&
+                    this.hasInValidServux == false &&
+                    this.getWorld() != null)
+            {
+                // Make sure we're Play Registered, and request Metadata
+                HANDLER.registerPlayReceiver(ServuxEntitiesPacket.Payload.ID, HANDLER::receivePlayPayload);
+                this.requestMetadata();
             }
 
             // 5 queries / server tick
             for (int i = 0; i < Configs.Generic.SERVER_NBT_REQUEST_RATE.getIntegerValue(); i++)
             {
-                if (!pendingBlockEntitiesQueue.isEmpty())
+                if (!this.pendingBlockEntitiesQueue.isEmpty())
                 {
-                    var iter = pendingBlockEntitiesQueue.iterator();
+                    var iter = this.pendingBlockEntitiesQueue.iterator();
                     BlockPos pos = iter.next();
                     iter.remove();
                     if (this.hasServuxServer())
@@ -94,9 +108,9 @@ public class EntitiesDataStorage implements IClientTickHandler
                         requestQueryBlockEntity(pos);
                     }
                 }
-                if (!pendingEntitiesQueue.isEmpty())
+                if (!this.pendingEntitiesQueue.isEmpty())
                 {
-                    var iter = pendingEntitiesQueue.iterator();
+                    var iter = this.pendingEntitiesQueue.iterator();
                     int entityId = iter.next();
                     iter.remove();
                     if (this.hasServuxServer())
@@ -109,7 +123,7 @@ public class EntitiesDataStorage implements IClientTickHandler
                     }
                 }
             }
-            serverTickTime = System.currentTimeMillis();
+            this.serverTickTime = System.currentTimeMillis();
         }
     }
 
@@ -238,13 +252,13 @@ public class EntitiesDataStorage implements IClientTickHandler
     {
         if (world.getBlockState(pos).getBlock() instanceof BlockEntityProvider)
         {
-            pendingBlockEntitiesQueue.add(pos);
+            this.pendingBlockEntitiesQueue.add(pos);
         }
     }
 
     public void requestEntity(int entityId)
     {
-        pendingEntitiesQueue.add(entityId);
+        this.pendingEntitiesQueue.add(entityId);
     }
 
     private void requestQueryBlockEntity(BlockPos pos)
@@ -262,7 +276,7 @@ public class EntitiesDataStorage implements IClientTickHandler
             {
                 handleBlockEntityData(pos, nbtCompound, null);
             });
-            transactionToBlockPosOrEntityId.put(((IMixinDataQueryHandler) handler.getDataQueryHandler()).currentTransactionId(), Either.left(pos));
+            this.transactionToBlockPosOrEntityId.put(((IMixinDataQueryHandler) handler.getDataQueryHandler()).currentTransactionId(), Either.left(pos));
         }
     }
 
@@ -281,7 +295,7 @@ public class EntitiesDataStorage implements IClientTickHandler
             {
                 handleEntityData(entityId, nbtCompound);
             });
-            transactionToBlockPosOrEntityId.put(((IMixinDataQueryHandler) handler.getDataQueryHandler()).currentTransactionId(), Either.right(entityId));
+            this.transactionToBlockPosOrEntityId.put(((IMixinDataQueryHandler) handler.getDataQueryHandler()).currentTransactionId(), Either.right(entityId));
         }
     }
 
@@ -308,7 +322,7 @@ public class EntitiesDataStorage implements IClientTickHandler
     @Nullable
     public BlockEntity handleBlockEntityData(BlockPos pos, NbtCompound nbt, @Nullable Identifier type)
     {
-        pendingBlockEntitiesQueue.remove(pos);
+        this.pendingBlockEntitiesQueue.remove(pos);
         if (nbt == null || this.getWorld() == null) return null;
 
         BlockEntity blockEntity = this.getWorld().getBlockEntity(pos);
@@ -336,7 +350,7 @@ public class EntitiesDataStorage implements IClientTickHandler
     @Nullable
     public Entity handleEntityData(int entityId, NbtCompound nbt)
     {
-        pendingEntitiesQueue.remove(entityId);
+        this.pendingEntitiesQueue.remove(entityId);
         if (nbt == null || this.getWorld() == null) return null;
         Entity entity = this.getWorld().getEntityById(entityId);
         if (entity != null)
@@ -353,7 +367,7 @@ public class EntitiesDataStorage implements IClientTickHandler
 
     public void handleVanillaQueryNbt(int transactionId, NbtCompound nbt)
     {
-        Either<BlockPos, Integer> either = transactionToBlockPosOrEntityId.remove(transactionId);
+        Either<BlockPos, Integer> either = this.transactionToBlockPosOrEntityId.remove(transactionId);
         if (either != null)
         {
             either.ifLeft(pos -> handleBlockEntityData(pos, nbt, null))
