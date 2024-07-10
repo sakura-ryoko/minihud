@@ -16,6 +16,7 @@ import net.minecraft.world.World;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Predicate;
 
 public class EntityUtils
@@ -92,6 +93,8 @@ public class EntityUtils
 
         List<Integer> entityIds = mc.world.getEntitiesByClass(entityClass, box, predicate).stream().map(it -> it.getId()).toList();
         World world = WorldUtils.getBestWorld(mc);
-        return entityIds.stream().map(it -> (T) world.getEntityById(it)).toList();
+        return entityIds.stream().map(it -> (T) world.getEntityById(it))
+                .filter(Objects::nonNull)
+                .toList();
     }
 }
