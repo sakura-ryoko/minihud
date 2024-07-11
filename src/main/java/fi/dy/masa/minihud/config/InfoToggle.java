@@ -15,76 +15,86 @@ import fi.dy.masa.minihud.MiniHUD;
 
 public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
 {
-    BEE_COUNT               ("infoBeeCount",                false, 36, "", "Show the number of bees in the targeted Hive or Nest.\n§6Note: This only works in single player (without server-side support,\n§6which doesn't exist yet, but will be in the Servux mod at some point)."),
-    BIOME                   ("infoBiome",                   false, 19, "", "Show the name of the current biome"),
-    BIOME_REG_NAME          ("infoBiomeRegistryName",       false, 20, "", "Show the registry name of the current biome"),
-    BLOCK_BREAK_SPEED       ("infoBlockBreakSpeed",         false,  6, "", "Show the player's current block breaking speed\nover the last 100 ticks (5 seconds)"),
-    BLOCK_IN_CHUNK          ("infoBlockInChunk",            false, 28, "", "Show the player's current position within the Chunk"),
-    BLOCK_POS               ("infoBlockPosition",           false,  6, "", "Show the player's current block position"),
-    BLOCK_PROPS             ("infoBlockProperties",         false, 27, "", "Show the BlockState properties and values"),
-    CHUNK_POS               ("infoChunkPosition",           false,  7, "", "Show the Chunk the player is currently within"),
-    CHUNK_SECTIONS          ("infoChunkSections",           false, 14, "", "Show the currently rendered number of\nChunk sections (the C value from F3)"),
-    CHUNK_SECTIONS_FULL     ("infoChunkSectionsLine",       false, 15, "", "Show the entire line of the C value from the F3 screen"),
-    CHUNK_UPDATES           ("infoChunkUpdates",            false, 16, "", "Show the current number of chunk updates per second"),
-    COORDINATES             ("infoCoordinates",             true,   4, "", "Show the player's coordinates"),
-    COORDINATES_SCALED      ("infoCoordinatesScaled",       false,  4, "", "Show the player's coordinates scaled by the dimension's scale factor.\nOnly works in the overworld and the nether,\nand assumes the vanilla nether portal scaling factor."),
-    DIFFICULTY              ("infoDifficulty",              false, 18, "", "Show the local difficulty"),
-    DIMENSION               ("infoDimensionId",             false,  5, "", "Show the current dimension ID\n(might not be accurate in every case,\ndepending on the server (Sponge?)!)"),
-    DISTANCE                ("infoDistance",                false, 33, "", "Show the distance to the current reference point.\nSet the reference point with the setDistanceReferencePoint hotkey"),
-    ENTITIES                ("infoEntities",                false, 21, "", "Show the visible/loaded entity count"),
-    ENTITIES_CLIENT_WORLD   ("infoEntitiesClientWorld",     false, 22, "", "Show the entity count in the world list/map"),
-    ENTITY_REG_NAME         ("infoEntityRegistryName",      false, 24, "", "Show the registry name of the entity\nthe player is currently looking at"),
-    FACING                  ("infoFacing",                  true,   8, "", "Show the player's current facing"),
-    FURNACE_XP              ("infoFurnaceXp",               false, 30, "", "Show the amount of XP in the looked at Furnace.\n§6Note: This only works in single player (without server-side support,\n§6which doesn't exist yet, but will be in the Servux mod at some point)."),
-    FPS                     ("infoFPS",                     false,  0, "", "Show the current FPS"),
-    HONEY_LEVEL             ("infoHoneyLevel",              false, 37, "", "Show the honey level the targeted Hive or Nest.\nNote: This only works in single player (without server-side support,\n§6which doesn't exist yet, but will be in the Servux mod at some point)."),
-    HORSE_SPEED             ("infoHorseSpeed",              false, 36, "", "Show the speed (m/s) of the horse being ridden."),
-    HORSE_JUMP              ("infoHorseJump",               false, 37, "", "Show the jump height of the horse being ridden."),
-    LIGHT_LEVEL             ("infoLightLevel",              false, 10, "", "Show the current light level"),
-    LOOKING_AT_BLOCK        ("infoLookingAtBlock",          false, 25, "", "Show which block the player is currently looking at"),
-    LOOKING_AT_BLOCK_CHUNK  ("infoLookingAtBlockInChunk",   false, 26, "", "Show which block within its containing chunk\nthe player is currently looking at"),
-    LOOKING_AT_ENTITY       ("infoLookingAtEntity",         false, 23, "", "Show the entity name and health when looked at"),
-    MEMORY_USAGE            ("infoMemoryUsage",             false,  0, "", "Show the memory usage and allocation"),
-    MOB_CAPS                ("infoMobCaps",                 false, 10, "", "Show the mob caps\n\n§dNote: Currently only works on Carpet servers!\n§6The data is currently only parsed from the player list footer on Carpet servers,\n§6if you have subscribed to the data with '/log mobcaps'"),
-    LOADED_CHUNKS_COUNT     ("infoLoadedChunksCount",       false, 31, "", "Show the number of loaded chunks on the client"),
-    PARTICLE_COUNT          ("infoParticleCount",           false, 17, "", "Show the currently renderer particle count (P from F3)"),
-    PING                    ("infoPing",                    false, 36, "", "Show the current ping to the server"),
-    REGION_FILE             ("infoRegionFile",              false, 29, "", "Show the region file the player is currently within"),
-    ROTATION_PITCH          ("infoRotationPitch",           false, 12, "", "Show the player's pitch rotation"),
-    ROTATION_YAW            ("infoRotationYaw",             false, 11, "", "Show the player's yaw rotation"),
-    SERVER_TPS              ("infoServerTPS",               false,  9, "", "Show the server TPS and ms/tick (MSPT) values\nNote: This is only accurate when running a Carpet server\nand the TPSdisplay carpet rule is enabled.\nOtherwise it is estimated on the client side,\nbased on the world time update packet, and it can\nonly detect TPS values lower than 20 that way."),
-    SLIME_CHUNK             ("infoSlimeChunk",              false, 22, "", "Show whether the player is currently in a slime chunk.\nNOTE: This only works in single player without any user intervention!\nOn a server the player needs to either:\n  1) be admin/OP and run the /seed command manually EVERY TIME\n     they join or change dimensions, or\n  2) input the seed via chat, by sending a \"command\" like: minihud-seed 12345"),
-    SPEED                   ("infoSpeed",                   false, 13, "", "Show the player's current moving speed"),
-    SPEED_AXIS              ("infoSpeedAxis",               false, 13, "", "Show the player's current moving speed per axis"),
-    SPEED_HV                ("infoSpeedHV",                 false, 13, "", "Show the player's current moving speed both horizontally and vertically."),
-    SPRINTING               ("infoSprinting",               false, 40, "", "Show the \"Sprinting\" info line if the player is sprinting"),
-    TILE_ENTITIES           ("infoTileEntities",            false, 32, "", "Show the number of TileEntities in the client world"),
-    TIME_DAY_MODULO         ("infoTimeDayModulo",           false, 35, "", "Show a modulo of the current day time.\nSee Generic configs for the divisor."),
-    TIME_REAL               ("infoTimeIRL",                 true,   1, "", "Show the current real time formatted according to dateFormatReal"),
-    TIME_TOTAL_MODULO       ("infoTimeTotalModulo",         false, 34, "", "Show a modulo of the current total world time.\nSee Generic configs for the divisor."),
-    TIME_WORLD              ("infoTimeWorld",               false,  2, "", "Show the current world time in ticks"),
-    TIME_WORLD_FORMATTED    ("infoWorldTimeFormatted",      false,  3, "", "Show the current world time formatted to days, hours, minutes");
+    BEE_COUNT               ("infoBeeCount",                false, 36, "", "minihud.config.info_toggle.comment.infoBeeCount", "minihud.config.info_toggle.name.infoBeeCount"),
+    BIOME                   ("infoBiome",                   false, 19, "", "minihud.config.info_toggle.comment.infoBiome", "minihud.config.info_toggle.name.infoBiome"),
+    BIOME_REG_NAME          ("infoBiomeRegistryName",       false, 20, "", "minihud.config.info_toggle.comment.infoBiomeRegistryName", "minihud.config.info_toggle.name.infoBiomeRegistryName"),
+    BLOCK_BREAK_SPEED       ("infoBlockBreakSpeed",         false,  6, "", "minihud.config.info_toggle.comment.infoBlockBreakSpeed", "minihud.config.info_toggle.name.infoBlockBreakSpeed"),
+    BLOCK_IN_CHUNK          ("infoBlockInChunk",            false, 28, "", "minihud.config.info_toggle.comment.infoBlockInChunk", "minihud.config.info_toggle.name.infoBlockInChunk"),
+    BLOCK_POS               ("infoBlockPosition",           false,  6, "", "minihud.config.info_toggle.comment.infoBlockPosition", "minihud.config.info_toggle.name.infoBlockPosition"),
+    BLOCK_PROPS             ("infoBlockProperties",         false, 27, "", "minihud.config.info_toggle.comment.infoBlockProperties", "minihud.config.info_toggle.name.infoBlockProperties"),
+    CHUNK_POS               ("infoChunkPosition",           false,  7, "", "minihud.config.info_toggle.comment.infoChunkPosition", "minihud.config.info_toggle.name.infoChunkPosition"),
+    CHUNK_SECTIONS          ("infoChunkSections",           false, 14, "", "minihud.config.info_toggle.comment.infoChunkSections", "minihud.config.info_toggle.name.infoChunkSections"),
+    CHUNK_SECTIONS_FULL     ("infoChunkSectionsLine",       false, 15, "", "minihud.config.info_toggle.comment.infoChunkSectionsLine", "minihud.config.info_toggle.name.infoChunkSectionsLine"),
+    CHUNK_UPDATES           ("infoChunkUpdates",            false, 16, "", "minihud.config.info_toggle.comment.infoChunkUpdates", "minihud.config.info_toggle.name.infoChunkUpdates"),
+    COORDINATES             ("infoCoordinates",             true,   4, "", "minihud.config.info_toggle.comment.infoCoordinates", "minihud.config.info_toggle.name.infoCoordinates"),
+    COORDINATES_SCALED      ("infoCoordinatesScaled",       false,  4, "", "minihud.config.info_toggle.comment.infoCoordinatesScaled", "minihud.config.info_toggle.name.infoCoordinatesScaled"),
+    DIFFICULTY              ("infoDifficulty",              false, 18, "", "minihud.config.info_toggle.comment.infoDifficulty", "minihud.config.info_toggle.name.infoDifficulty"),
+    DIMENSION               ("infoDimensionId",             false,  5, "", "minihud.config.info_toggle.comment.infoDimensionId", "minihud.config.info_toggle.name.infoDimensionId"),
+    DISTANCE                ("infoDistance",                false, 33, "", "minihud.config.info_toggle.comment.infoDistance", "minihud.config.info_toggle.name.infoDistance"),
+    ENTITIES                ("infoEntities",                false, 21, "", "minihud.config.info_toggle.comment.infoEntities", "minihud.config.info_toggle.name.infoEntities"),
+    ENTITIES_CLIENT_WORLD   ("infoEntitiesClientWorld",     false, 22, "", "minihud.config.info_toggle.comment.infoEntitiesClientWorld", "minihud.config.info_toggle.name.infoEntitiesClientWorld"),
+    ENTITY_REG_NAME         ("infoEntityRegistryName",      false, 24, "", "minihud.config.info_toggle.comment.infoEntityRegistryName", "minihud.config.info_toggle.name.infoEntityRegistryName"),
+    FACING                  ("infoFacing",                  true,   8, "", "minihud.config.info_toggle.comment.infoFacing", "minihud.config.info_toggle.name.infoFacing"),
+    FURNACE_XP              ("infoFurnaceXp",               false, 30, "", "minihud.config.info_toggle.comment.infoFurnaceXp", "minihud.config.info_toggle.name.infoFurnaceXp"),
+    FPS                     ("infoFPS",                     false,  0, "", "minihud.config.info_toggle.comment.infoFPS", "minihud.config.info_toggle.name.infoFPS"),
+    HONEY_LEVEL             ("infoHoneyLevel",              false, 37, "", "minihud.config.info_toggle.comment.infoHoneyLevel", "minihud.config.info_toggle.name.infoHoneyLevel"),
+    HORSE_SPEED             ("infoHorseSpeed",              false, 36, "", "minihud.config.info_toggle.comment.infoHorseSpeed", "minihud.config.info_toggle.name.infoHorseSpeed"),
+    HORSE_JUMP              ("infoHorseJump",               false, 37, "", "minihud.config.info_toggle.comment.infoHorseJump", "minihud.config.info_toggle.name.infoHorseJump"),
+    LIGHT_LEVEL             ("infoLightLevel",              false, 10, "", "minihud.config.info_toggle.comment.infoLightLevel", "minihud.config.info_toggle.name.infoLightLevel"),
+    LOOKING_AT_BLOCK        ("infoLookingAtBlock",          false, 25, "", "minihud.config.info_toggle.comment.infoLookingAtBlock", "minihud.config.info_toggle.name.infoLookingAtBlock"),
+    LOOKING_AT_BLOCK_CHUNK  ("infoLookingAtBlockInChunk",   false, 26, "", "minihud.config.info_toggle.comment.infoLookingAtBlockInChunk", "minihud.config.info_toggle.name.infoLookingAtBlockInChunk"),
+    LOOKING_AT_ENTITY       ("infoLookingAtEntity",         false, 23, "", "minihud.config.info_toggle.comment.infoLookingAtEntity", "minihud.config.info_toggle.name.infoLookingAtEntity"),
+    MEMORY_USAGE            ("infoMemoryUsage",             false,  0, "", "minihud.config.info_toggle.comment.infoMemoryUsage", "minihud.config.info_toggle.name.infoMemoryUsage"),
+    MOB_CAPS                ("infoMobCaps",                 false, 10, "", "minihud.config.info_toggle.comment.infoMobCaps", "minihud.config.info_toggle.name.infoMobCaps"),
+    LOADED_CHUNKS_COUNT     ("infoLoadedChunksCount",       false, 31, "", "minihud.config.info_toggle.comment.infoLoadedChunksCount", "minihud.config.info_toggle.name.infoLoadedChunksCount"),
+    PARTICLE_COUNT          ("infoParticleCount",           false, 17, "", "minihud.config.info_toggle.comment.infoParticleCount", "minihud.config.info_toggle.name.infoParticleCount"),
+    PING                    ("infoPing",                    false, 36, "", "minihud.config.info_toggle.comment.infoPing", "minihud.config.info_toggle.name.infoPing"),
+    REGION_FILE             ("infoRegionFile",              false, 29, "", "minihud.config.info_toggle.comment.infoRegionFile", "minihud.config.info_toggle.name.infoRegionFile"),
+    ROTATION_PITCH          ("infoRotationPitch",           false, 12, "", "minihud.config.info_toggle.comment.infoRotationPitch", "minihud.config.info_toggle.name.infoRotationPitch"),
+    ROTATION_YAW            ("infoRotationYaw",             false, 11, "", "minihud.config.info_toggle.comment.infoRotationYaw", "minihud.config.info_toggle.name.infoRotationYaw"),
+    SERVER_TPS              ("infoServerTPS",               false,  9, "", "minihud.config.info_toggle.comment.infoServerTPS", "minihud.config.info_toggle.name.infoServerTPS"),
+    SLIME_CHUNK             ("infoSlimeChunk",              false, 22, "", "minihud.config.info_toggle.comment.infoSlimeChunk", "minihud.config.info_toggle.name.infoSlimeChunk"),
+    SPEED                   ("infoSpeed",                   false, 13, "", "minihud.config.info_toggle.comment.infoSpeed", "minihud.config.info_toggle.name.infoSpeed"),
+    SPEED_AXIS              ("infoSpeedAxis",               false, 13, "", "minihud.config.info_toggle.comment.infoSpeedAxis", "minihud.config.info_toggle.name.infoSpeedAxis"),
+    SPEED_HV                ("infoSpeedHV",                 false, 13, "", "minihud.config.info_toggle.comment.infoSpeedHV", "minihud.config.info_toggle.name.infoSpeedHV"),
+    SPRINTING               ("infoSprinting",               false, 40, "", "minihud.config.info_toggle.comment.infoSprinting", "minihud.config.info_toggle.name.infoSprinting"),
+    TILE_ENTITIES           ("infoTileEntities",            false, 32, "", "minihud.config.info_toggle.comment.infoTileEntities", "minihud.config.info_toggle.name.infoTileEntities"),
+    TIME_DAY_MODULO         ("infoTimeDayModulo",           false, 35, "", "minihud.config.info_toggle.comment.infoTimeDayModulo", "minihud.config.info_toggle.name.infoTimeDayModulo"),
+    TIME_REAL               ("infoTimeIRL",                 true,   1, "", "minihud.config.info_toggle.comment.infoTimeIRL", "minihud.config.info_toggle.name.infoTimeIRL"),
+    TIME_TOTAL_MODULO       ("infoTimeTotalModulo",         false, 34, "", "minihud.config.info_toggle.comment.infoTimeTotalModulo", "minihud.config.info_toggle.name.infoTimeTotalModulo"),
+    TIME_WORLD              ("infoTimeWorld",               false,  2, "", "minihud.config.info_toggle.comment.infoTimeWorld", "minihud.config.info_toggle.name.infoTimeWorld"),
+    TIME_WORLD_FORMATTED    ("infoWorldTimeFormatted",      false,  3, "", "minihud.config.info_toggle.comment.infoWorldTimeFormatted", "minihud.config.info_toggle.name.infoWorldTimeFormatted");
 
     public static final ImmutableList<InfoToggle> VALUES = ImmutableList.copyOf(values());
 
     private final String name;
-    private final String prettyName;
     private final String comment;
+    private final String prettyName;
+    private final String translatedName;
     private final IKeybind keybind;
     private final boolean defaultValueBoolean;
     private final int defaultLinePosition;
     private boolean valueBoolean;
     private int linePosition;
 
-    private InfoToggle(String name, boolean defaultValue, int linePosition, String defaultHotkey, String comment)
+    InfoToggle(String name, boolean defaultValue, int linePosition, String defaultHotkey, String comment)
     {
         this(name, defaultValue, linePosition, defaultHotkey, comment, KeybindSettings.DEFAULT);
     }
 
-    private InfoToggle(String name, boolean defaultValue, int linePosition, String defaultHotkey, String comment, KeybindSettings settings)
+    InfoToggle(String name, boolean defaultValue, int linePosition, String defaultHotkey, String comment, KeybindSettings settings)
+    {
+        this(name, defaultValue, linePosition, defaultHotkey, comment, settings, name);
+    }
+
+    InfoToggle(String name, boolean defaultValue, int linePosition, String defaultHotkey, String comment, String translatedName)
+    {
+        this(name, defaultValue, linePosition, defaultHotkey, comment, KeybindSettings.DEFAULT, translatedName);
+    }
+
+    InfoToggle(String name, boolean defaultValue, int linePosition, String defaultHotkey, String comment, KeybindSettings settings, String translatedName)
     {
         this.name = name;
-        this.prettyName = name;
         this.valueBoolean = defaultValue;
         this.defaultValueBoolean = defaultValue;
         this.keybind = KeybindMulti.fromStorageString(defaultHotkey, settings);
@@ -92,6 +102,8 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
         this.linePosition = linePosition;
         this.defaultLinePosition = linePosition;
         this.comment = comment;
+        this.prettyName = name;
+        this.translatedName = translatedName;
     }
 
     @Override
@@ -128,6 +140,20 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     public String getComment()
     {
         return StringUtils.getTranslatedOrFallback("config.comment." + this.getName().toLowerCase(), this.comment);
+    }
+
+    @Override
+    public String getConfigGuiDisplayName()
+    {
+        //MiniHUD.logger.warn("getConfigGuiDisplayName(): name [{}] // [{}] ? [{}] : [{}]", this.getName(), this.translatedName, this.getTranslatedName(), StringUtils.getTranslatedOrFallback(this.getTranslatedName(), this.getName()));
+
+        return StringUtils.getTranslatedOrFallback(this.getTranslatedName(), this.getName());
+    }
+
+    @Override
+    public String getTranslatedName()
+    {
+        return this.translatedName;
     }
 
     @Override
