@@ -229,7 +229,7 @@
     "minihud.config.colors.comment.textBackgroundColor": "Text background color",
     "minihud.config.colors.comment.textColor": "Info line text color",
 
-    "minihud.config.info_toggle.name.infoBeeCount": "[X] infoBeeCount",
+    "minihud.config.info_toggle.name.infoBeeCount": "[TEST] infoBeeCount",
     "minihud.config.info_toggle.name.infoBiome": "infoBiome",
     "minihud.config.info_toggle.name.infoBiomeRegistryName": "infoBiomeRegistryName",
     "minihud.config.info_toggle.name.infoBlockBreakSpeed": "infoBlockBreakSpeed",
@@ -329,7 +329,7 @@
     "minihud.config.info_toggle.comment.infoTimeWorld": "Show the current world time in ticks",
     "minihud.config.info_toggle.comment.infoWorldTimeFormatted": "Show the current world time formatted to days, hours, minutes",
 
-    "minihud.config.render_toggle.name.overlayBeaconRange": "§d[X] overlayBeaconRange§r",
+    "minihud.config.render_toggle.name.overlayBeaconRange": "[TEST] overlayBeaconRange",
     "minihud.config.render_toggle.name.overlayBiomeBorder": "overlayBiomeBorder",
     "minihud.config.render_toggle.name.overlayBlockGrid": "overlayBlockGrid",
     "minihud.config.render_toggle.name.overlayConduitRange": "overlayConduitRange",
@@ -376,6 +376,13 @@
     "minihud.config.render_toggle.comment.debugPathfindingEnabled": "Toggles the vanilla Pathfinding debug renderer",
     "minihud.config.render_toggle.comment.debugSolidFaceEnabled": "Toggles the vanilla Block Solid Faces debug renderer",
     "minihud.config.render_toggle.comment.debugWaterEnabled": "Toggles the vanilla Water debug renderer",
+
+    "minihud.config.structure_toggle.name.ancient_city": "[TEST] Ancient City",
+    "minihud.config.structure_toggle.full_box.name.ancient_city": "[TEST] Ancient City Main",
+    "minihud.config.structure_toggle.full_box.comment.ancient_city": "[TEST] Ancient City Main Color",
+    "minihud.config.structure_toggle.components.name.ancient_city": "[TEST] Ancient City Components",
+    "minihud.config.structure_toggle.components.comment.ancient_city": "[TEST] Ancient City Components Color",
+    "minihud.config.structure_toggle.comment.ancient_city": "[TEST] Toggle Ancient City structure bounding boxes rendering",
 
     "minihud.gui.button.config_gui.colors": "Colors",
     "minihud.gui.button.config_gui.generic": "Generic",

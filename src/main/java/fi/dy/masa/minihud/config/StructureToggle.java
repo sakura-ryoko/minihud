@@ -10,7 +10,7 @@ import fi.dy.masa.minihud.util.DataStorage;
 
 public enum StructureToggle
 {
-    OVERLAY_STRUCTURE_ANCIENT_CITY      ("Ancient City",    "", "#41D10AE6", "#41D506C9", "Toggle Ancient City structure bounding boxes rendering", "Ancient City"),
+    OVERLAY_STRUCTURE_ANCIENT_CITY      ("Ancient City",    "", "#41D10AE6", "#41D506C9", "minihud.config.structure_toggle.comment.ancient_city", "Ancient City", "ancient_city"),
     OVERLAY_STRUCTURE_BASTION_REMNANT   ("Bastion Remnant", "", "#302171F5", "#302171F5", "Toggle Bastion Remnant structure bounding boxes rendering", "Bastion Remnant"),
     OVERLAY_STRUCTURE_BURIED_TREASURE   ("Buried Treasure", "", "#302298E6", "#302298E6", "Toggle Buried Treasure structure bounding boxes rendering", "Buried Treasure"),
     OVERLAY_STRUCTURE_DESERT_PYRAMID    ("Desert Pyramid",  "", "#30FFFF00", "#30FFFF00", "Toggle Desert Pyramid structure bounding boxes rendering", "Desert Pyramid"),
@@ -42,12 +42,25 @@ public enum StructureToggle
     private final ConfigColor colorMain;
     private final ConfigColor colorComponents;
     private final IHotkey hotkey;
+    private final String translateNameBase = "minihud.config.structure_toggle";
 
     StructureToggle(String name, String defaultHotkey, String colorMain, String colorComponents, String comment, String prettyName)
     {
         this.toggleOption    = new ConfigBoolean(name, false, comment, prettyName);
         this.colorMain       = new ConfigColor(name +  " Main", colorMain, prettyName + " full box");
         this.colorComponents = new ConfigColor(name + " Components", colorComponents, prettyName + " components");
+        this.hotkey          = new ConfigHotkey("Toggle " + name, defaultHotkey, comment);
+
+        this.hotkey.getKeybind().setCallback((action, key) -> { this.toggleOption.toggleBooleanValue(); return true; });
+        this.toggleOption.setValueChangeCallback((config) -> DataStorage.getInstance().setStructuresNeedUpdating());
+
+    }
+
+    StructureToggle(String name, String defaultHotkey, String colorMain, String colorComponents, String comment, String prettyName, String translateSubName)
+    {
+        this.toggleOption    = new ConfigBoolean(name, false, comment, prettyName).translatedName(this.translateNameBase + ".name." + translateSubName);
+        this.colorMain       = new ConfigColor(name +  " Main", colorMain, this.translateNameBase + ".full_box.comment." + translateSubName, prettyName + " full box").translatedName(this.translateNameBase + ".full_box.name." + translateSubName);
+        this.colorComponents = new ConfigColor(name + " Components", colorComponents, this.translateNameBase + ".components.comment." + translateSubName,prettyName + " components").translatedName(this.translateNameBase + ".components.name." + translateSubName);
         this.hotkey          = new ConfigHotkey("Toggle " + name, defaultHotkey, comment);
 
         this.hotkey.getKeybind().setCallback((action, key) -> { this.toggleOption.toggleBooleanValue(); return true; });
