@@ -128,12 +128,6 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
     }
 
     @Override
-    public String getConfigGuiDisplayName()
-    {
-        return StringUtils.getTranslatedOrFallback(this.getTranslatedName(), this.getName());
-    }
-
-    @Override
     public String getTranslatedName()
     {
         return this.translatedName;

@@ -143,14 +143,6 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     }
 
     @Override
-    public String getConfigGuiDisplayName()
-    {
-        //MiniHUD.logger.warn("getConfigGuiDisplayName(): name [{}] // [{}] ? [{}] : [{}]", this.getName(), this.translatedName, this.getTranslatedName(), StringUtils.getTranslatedOrFallback(this.getTranslatedName(), this.getName()));
-
-        return StringUtils.getTranslatedOrFallback(this.getTranslatedName(), this.getName());
-    }
-
-    @Override
     public String getTranslatedName()
     {
         return this.translatedName;
