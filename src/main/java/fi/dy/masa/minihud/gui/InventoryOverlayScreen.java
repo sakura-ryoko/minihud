@@ -1,13 +1,7 @@
 package fi.dy.masa.minihud.gui;
 
-import fi.dy.masa.malilib.render.InventoryOverlay;
-import fi.dy.masa.malilib.render.RenderUtils;
-import fi.dy.masa.malilib.util.GuiUtils;
-import fi.dy.masa.malilib.util.InventoryUtils;
-import fi.dy.masa.minihud.config.Configs;
-import fi.dy.masa.minihud.data.EntitiesDataStorage;
-import fi.dy.masa.minihud.event.RenderHandler;
-import fi.dy.masa.minihud.util.RayTraceUtils;
+import java.util.ArrayList;
+import java.util.List;
 import net.minecraft.block.ShulkerBoxBlock;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
@@ -20,9 +14,14 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
-
-import java.util.ArrayList;
-import java.util.List;
+import fi.dy.masa.malilib.render.InventoryOverlay;
+import fi.dy.masa.malilib.render.RenderUtils;
+import fi.dy.masa.malilib.util.GuiUtils;
+import fi.dy.masa.malilib.util.InventoryUtils;
+import fi.dy.masa.minihud.config.Configs;
+import fi.dy.masa.minihud.data.EntitiesDataStorage;
+import fi.dy.masa.minihud.event.RenderHandler;
+import fi.dy.masa.minihud.util.RayTraceUtils;
 
 public class InventoryOverlayScreen extends Screen
 {
@@ -129,5 +128,11 @@ public class InventoryOverlayScreen extends Screen
                 }
             }
         }
+    }
+
+    @Override
+    public boolean shouldPause()
+    {
+        return false;
     }
 }

@@ -1,13 +1,6 @@
 package fi.dy.masa.minihud.renderer;
 
-import fi.dy.masa.malilib.gui.GuiBase;
-import fi.dy.masa.malilib.render.RenderUtils;
-import fi.dy.masa.malilib.util.WorldUtils;
-import fi.dy.masa.minihud.config.Configs;
-import fi.dy.masa.minihud.config.RendererToggle;
-import fi.dy.masa.minihud.data.EntitiesDataStorage;
-import fi.dy.masa.minihud.mixin.IMixinMerchantEntity;
-import fi.dy.masa.minihud.mixin.IMixinZombieVillagerEntity;
+import java.util.*;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.component.DataComponentTypes;
@@ -26,8 +19,15 @@ import net.minecraft.village.TradeOffer;
 import net.minecraft.village.TradeOfferList;
 import net.minecraft.village.VillagerProfession;
 import net.minecraft.world.World;
-
-import java.util.*;
+import fi.dy.masa.malilib.gui.GuiBase;
+import fi.dy.masa.malilib.render.RenderUtils;
+import fi.dy.masa.malilib.util.WorldUtils;
+import fi.dy.masa.minihud.config.Configs;
+import fi.dy.masa.minihud.config.RendererToggle;
+import fi.dy.masa.minihud.data.EntitiesDataStorage;
+import fi.dy.masa.minihud.mixin.IMixinMerchantEntity;
+import fi.dy.masa.minihud.mixin.IMixinZombieVillagerEntity;
+import fi.dy.masa.minihud.util.EntityUtils;
 
 public class OverlayRendererVillagerInfo extends OverlayRendererBase
 {
@@ -59,7 +59,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase
 
         if (Configs.Generic.VILLAGER_OFFER_ENCHANTMENT_BOOKS.getBooleanValue())
         {
-            List<VillagerEntity> librarians = world.getEntitiesByClass(VillagerEntity.class, box, villager -> villager.getVillagerData().getProfession() == VillagerProfession.LIBRARIAN);
+            List<VillagerEntity> librarians = EntityUtils.getEntitiesByClass(mc, VillagerEntity.class, box, villager -> villager.getVillagerData().getProfession() == VillagerProfession.LIBRARIAN);
 
             Map<Object2IntMap.Entry<RegistryEntry<Enchantment>>, Integer> lowestPrices = new HashMap<>();
             // Prepare
@@ -175,7 +175,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase
 
         if (Configs.Generic.VILLAGER_CONVERSION_TICKS.getBooleanValue())
         {
-            List<ZombieVillagerEntity> zombieVillagers = world.getEntitiesByClass(ZombieVillagerEntity.class, box, e -> true);
+            List<ZombieVillagerEntity> zombieVillagers = EntityUtils.getEntitiesByClass(mc, ZombieVillagerEntity.class, box, e -> true);
 
             for (ZombieVillagerEntity villager : zombieVillagers)
             {

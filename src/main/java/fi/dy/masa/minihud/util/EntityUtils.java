@@ -1,5 +1,6 @@
 package fi.dy.masa.minihud.util;
 
+import fi.dy.masa.malilib.util.WorldUtils;
 import fi.dy.masa.minihud.mixin.IMixinEntity;
 import fi.dy.masa.minihud.mixin.IMixinWorld;
 import net.minecraft.client.MinecraftClient;
@@ -10,6 +11,13 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.text.Text;
+import net.minecraft.util.math.Box;
+import net.minecraft.world.World;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.function.Predicate;
 
 public class EntityUtils
 {
@@ -18,7 +26,8 @@ public class EntityUtils
     {
         entity.fallDistance = nbt.getFloat("FallDistance");
         entity.setFireTicks(nbt.getShort("Fire"));
-        if (nbt.contains("Air")) {
+        if (nbt.contains("Air"))
+        {
             entity.setAir(nbt.getShort("Air"));
         }
 
@@ -39,12 +48,14 @@ public class EntityUtils
         entity.setNoGravity(nbt.getBoolean("NoGravity"));
         entity.setGlowing(nbt.getBoolean("Glowing"));
         entity.setFrozenTicks(nbt.getInt("TicksFrozen"));
-        if (nbt.contains("Tags", NbtElement.LIST_TYPE)) {
+        if (nbt.contains("Tags", NbtElement.LIST_TYPE))
+        {
             entity.getCommandTags().clear();
             NbtList nbtList4 = nbt.getList("Tags", NbtElement.STRING_TYPE);
             int max = Math.min(nbtList4.size(), 1024);
 
-            for(int i = 0; i < max; ++i) {
+            for(int i = 0; i < max; ++i)
+            {
                 entity.getCommandTags().add(nbtList4.getString(i));
             }
         }
@@ -74,5 +85,19 @@ public class EntityUtils
                     .ifRight(pos ->
                             leashable.attachLeash(LeashKnotEntity.getOrCreate(mc.world, pos), false));
         }
+    }
+
+    public static <T extends Entity> List<T> getEntitiesByClass(MinecraftClient mc, Class<T> entityClass, Box box, Predicate<? super T> predicate)
+    {
+        if (mc.world == null)
+        {
+            return Collections.emptyList();
+        }
+
+        List<Integer> entityIds = mc.world.getEntitiesByClass(entityClass, box, predicate).stream().map(it -> it.getId()).toList();
+        World world = WorldUtils.getBestWorld(mc);
+        return entityIds.stream().map(it -> (T) world.getEntityById(it))
+                .filter(Objects::nonNull)
+                .toList();
     }
 }
