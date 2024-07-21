@@ -816,7 +816,7 @@ public class RenderHandler implements IRenderer
             if (this.getTargetEntity(world, mc) instanceof PandaEntity panda)
             {
                 this.addLine("Main gene: " + panda.getMainGene().asString() + (panda.getMainGene().isRecessive() ? " (recessive)" : " (dominant)"));
-                this.addLine("Hidden gene: " + panda.getHiddenGene().asString() + (panda.getMainGene().isRecessive() ? " (recessive)" : " (dominant)"));
+                this.addLine("Hidden gene: " + panda.getHiddenGene().asString() + (panda.getHiddenGene().isRecessive() ? " (recessive)" : " (dominant)"));
             }
         }
         else if (type == InfoToggle.PARTICLE_COUNT)
