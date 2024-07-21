@@ -427,9 +427,10 @@ public class RenderHandler implements IRenderer
         }
         else if (type == InfoToggle.WEATHER)
         {
-            if (world.getLevelProperties().isThundering())
+            World bestWorld = WorldUtils.getBestWorld(mc);
+            if (bestWorld.getLevelProperties().isThundering())
             {
-                if (world.getLevelProperties() instanceof LevelProperties lp)
+                if (bestWorld.getLevelProperties() instanceof LevelProperties lp)
                 {
                     this.addLine("Weather: Thundering, " + lp.getThunderTime() + " ticks left");
                 }
@@ -438,9 +439,9 @@ public class RenderHandler implements IRenderer
                     this.addLine("Weather: Thundering");
                 }
             }
-            else if (world.getLevelProperties().isRaining())
+            else if (bestWorld.getLevelProperties().isRaining())
             {
-                if (world.getLevelProperties() instanceof LevelProperties lp)
+                if (bestWorld.getLevelProperties() instanceof LevelProperties lp)
                 {
                     this.addLine("Weather: Raining, " + lp.getRainTime() + " ticks left");
                 }
