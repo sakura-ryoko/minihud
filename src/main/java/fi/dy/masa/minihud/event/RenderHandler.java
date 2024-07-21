@@ -61,6 +61,7 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.WorldChunk;
 import net.minecraft.world.chunk.light.LightingProvider;
+import net.minecraft.world.level.LevelProperties;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.joml.Matrix4f;
 
@@ -422,6 +423,35 @@ public class RenderHandler implements IRenderer
             if (EntitiesDataStorage.getInstance().hasServuxServer())
             {
                 this.addLine("Servux: %s // Protocol v%d".formatted(EntitiesDataStorage.getInstance().getServuxVersion(), ServuxEntitiesPacket.PROTOCOL_VERSION));
+            }
+        }
+        else if (type == InfoToggle.WEATHER)
+        {
+            if (world.getLevelProperties().isThundering())
+            {
+                if (world.getLevelProperties() instanceof LevelProperties lp)
+                {
+                    this.addLine("Weather: Thundering, " + lp.getThunderTime() + " ticks left");
+                }
+                else
+                {
+                    this.addLine("Weather: Thundering");
+                }
+            }
+            else if (world.getLevelProperties().isRaining())
+            {
+                if (world.getLevelProperties() instanceof LevelProperties lp)
+                {
+                    this.addLine("Weather: Raining, " + lp.getRainTime() + " ticks left");
+                }
+                else
+                {
+                    this.addLine("Weather: Raining");
+                }
+            }
+            else
+            {
+                this.addLine("Weather: Clear");
             }
         }
         else if (type == InfoToggle.MOB_CAPS)
