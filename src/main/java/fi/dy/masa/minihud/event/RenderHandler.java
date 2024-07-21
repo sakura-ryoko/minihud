@@ -16,6 +16,7 @@ import fi.dy.masa.minihud.data.MobCapDataHandler;
 import fi.dy.masa.minihud.mixin.IMixinPassiveEntity;
 import fi.dy.masa.minihud.mixin.IMixinServerWorld;
 import fi.dy.masa.minihud.mixin.IMixinWorldRenderer;
+import fi.dy.masa.minihud.network.ServuxEntitiesPacket;
 import fi.dy.masa.minihud.renderer.OverlayRenderer;
 import fi.dy.masa.minihud.util.DataStorage;
 import fi.dy.masa.minihud.util.IServerEntityManager;
@@ -414,6 +415,13 @@ public class RenderHandler implements IRenderer
             else
             {
                 this.addLine("Server TPS: <no valid data>");
+            }
+        }
+        else if (type == InfoToggle.SERVUX)
+        {
+            if (EntitiesDataStorage.getInstance().hasServuxServer())
+            {
+                this.addLine("Servux: %s // Protocol v%d".formatted(EntitiesDataStorage.getInstance().getServuxVersion(), ServuxEntitiesPacket.PROTOCOL_VERSION));
             }
         }
         else if (type == InfoToggle.MOB_CAPS)

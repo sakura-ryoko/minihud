@@ -54,6 +54,7 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     ROTATION_PITCH          ("infoRotationPitch",           false, 12, "", "minihud.config.info_toggle.comment.infoRotationPitch", "minihud.config.info_toggle.name.infoRotationPitch"),
     ROTATION_YAW            ("infoRotationYaw",             false, 11, "", "minihud.config.info_toggle.comment.infoRotationYaw", "minihud.config.info_toggle.name.infoRotationYaw"),
     SERVER_TPS              ("infoServerTPS",               false,  9, "", "minihud.config.info_toggle.comment.infoServerTPS", "minihud.config.info_toggle.name.infoServerTPS"),
+    SERVUX                  ("infoServux",                  false, 10, "", "minihud.config.info_toggle.comment.infoServux", "minihud.config.info_toggle.name.infoServux"),
     SLIME_CHUNK             ("infoSlimeChunk",              false, 22, "", "minihud.config.info_toggle.comment.infoSlimeChunk", "minihud.config.info_toggle.name.infoSlimeChunk"),
     SPEED                   ("infoSpeed",                   false, 13, "", "minihud.config.info_toggle.comment.infoSpeed", "minihud.config.info_toggle.name.infoSpeed"),
     SPEED_AXIS              ("infoSpeedAxis",               false, 13, "", "minihud.config.info_toggle.comment.infoSpeedAxis", "minihud.config.info_toggle.name.infoSpeedAxis"),
