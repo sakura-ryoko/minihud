@@ -8,7 +8,6 @@ import fi.dy.masa.malilib.util.BlockUtils;
 import fi.dy.masa.malilib.util.InventoryUtils;
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.malilib.util.WorldUtils;
-import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.config.RendererToggle;
@@ -802,6 +801,14 @@ public class RenderHandler implements IRenderer
             else
             {
                 this.addLine(chunksClient);
+            }
+        }
+        else if (type == InfoToggle.PANDA_GENE)
+        {
+            if (this.getTargetEntity(world, mc) instanceof PandaEntity panda)
+            {
+                this.addLine("Main gene: " + panda.getMainGene().asString());
+                this.addLine("Hidden gene: " + panda.getHiddenGene().asString());
             }
         }
         else if (type == InfoToggle.PARTICLE_COUNT)

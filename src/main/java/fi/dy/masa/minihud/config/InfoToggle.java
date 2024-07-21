@@ -47,6 +47,7 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     MEMORY_USAGE            ("infoMemoryUsage",             false,  0, "", "minihud.config.info_toggle.comment.infoMemoryUsage", "minihud.config.info_toggle.name.infoMemoryUsage"),
     MOB_CAPS                ("infoMobCaps",                 false, 10, "", "minihud.config.info_toggle.comment.infoMobCaps", "minihud.config.info_toggle.name.infoMobCaps"),
     LOADED_CHUNKS_COUNT     ("infoLoadedChunksCount",       false, 31, "", "minihud.config.info_toggle.comment.infoLoadedChunksCount", "minihud.config.info_toggle.name.infoLoadedChunksCount"),
+    PANDA_GENE              ("infoPandaGene",               false, 37, "", "minihud.config.info_toggle.comment.infoPandaGene", "minihud.config.info_toggle.name.infoPandaGene"),
     PARTICLE_COUNT          ("infoParticleCount",           false, 17, "", "minihud.config.info_toggle.comment.infoParticleCount", "minihud.config.info_toggle.name.infoParticleCount"),
     PING                    ("infoPing",                    false, 36, "", "minihud.config.info_toggle.comment.infoPing", "minihud.config.info_toggle.name.infoPing"),
     REGION_FILE             ("infoRegionFile",              false, 29, "", "minihud.config.info_toggle.comment.infoRegionFile", "minihud.config.info_toggle.name.infoRegionFile"),
