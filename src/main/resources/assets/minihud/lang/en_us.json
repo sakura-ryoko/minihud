@@ -278,6 +278,8 @@
     "minihud.config.info_toggle.name.infoTimeTotalModulo": "infoTimeTotalModulo",
     "minihud.config.info_toggle.name.infoTimeWorld": "infoTimeWorld",
     "minihud.config.info_toggle.name.infoWorldTimeFormatted": "infoWorldTimeFormatted",
+    "minihud.config.info_toggle.name.infoPandaGene": "infoPandaGene",
+    "minihud.config.info_toggle.name.infoServux": "infoServux",
 
     "minihud.config.info_toggle.comment.infoBeeCount": "Show the number of bees in the targeted Hive or Nest.\n§6Note: This only works in single player (without server-side support,\n§6which doesn't exist yet, but will be in the Servux mod at some point).",
     "minihud.config.info_toggle.comment.infoBiome": "Show the name of the current biome",
@@ -328,6 +330,8 @@
     "minihud.config.info_toggle.comment.infoTimeTotalModulo": "Show a modulo of the current total world time.\nSee Generic configs for the divisor.",
     "minihud.config.info_toggle.comment.infoTimeWorld": "Show the current world time in ticks",
     "minihud.config.info_toggle.comment.infoWorldTimeFormatted": "Show the current world time formatted to days, hours, minutes",
+    "minihud.config.info_toggle.comment.infoPandaGene": "Show the gene of the panda being looked at",
+    "minihud.config.info_toggle.comment.infoServux": "Show Servux version and entity data sync protocol version",
 
     "minihud.config.render_toggle.name.overlayBeaconRange": "overlayBeaconRange",
     "minihud.config.render_toggle.name.overlayBiomeBorder": "overlayBiomeBorder",
