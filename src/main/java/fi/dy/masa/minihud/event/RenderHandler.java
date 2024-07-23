@@ -441,6 +441,7 @@ public class RenderHandler implements IRenderer
             {
                 if (bestWorld.getLevelProperties() instanceof LevelProperties lp)
                 {
+                    // 50 = 1000 (ms/s) / 20 (ticks/s)
                     this.addLine("Weather: Thundering, "+ DurationFormatUtils.formatDurationWords(lp.getThunderTime() * 50L, true, true) +" remaining");
                 }
                 else
