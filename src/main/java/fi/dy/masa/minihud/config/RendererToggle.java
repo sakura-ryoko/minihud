@@ -20,32 +20,33 @@ import javax.annotation.Nullable;
 
 public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfigBoolean>
 {
-    OVERLAY_BEACON_RANGE                ("overlayBeaconRange",          "", "minihud.config.render_toggle.comment.overlayBeaconRange", "Beacon Range overlay", "minihud.config.render_toggle.name.overlayBeaconRange"),
-    OVERLAY_BIOME_BORDER                ("overlayBiomeBorder",          "", "minihud.config.render_toggle.comment.overlayBiomeBorder", "Biome Border overlay", "minihud.config.render_toggle.name.overlayBiomeBorder"),
-    OVERLAY_BLOCK_GRID                  ("overlayBlockGrid",            "", "minihud.config.render_toggle.comment.overlayBlockGrid", "Block Grid overlay", "minihud.config.render_toggle.name.overlayBlockGrid"),
-    OVERLAY_CONDUIT_RANGE               ("overlayConduitRange",         "", "minihud.config.render_toggle.comment.overlayConduitRange", "Conduit Range overlay", "minihud.config.render_toggle.name.overlayConduitRange"),
-    OVERLAY_LIGHT_LEVEL                 ("overlayLightLevel",           "", "minihud.config.render_toggle.comment.overlayLightLevel", "Light Level overlay", "minihud.config.render_toggle.name.overlayLightLevel"),
-    OVERLAY_RANDOM_TICKS_FIXED          ("overlayRandomTicksFixed",     "", "minihud.config.render_toggle.comment.overlayRandomTicksFixed", "Random Ticked Chunks (fixed) overlay", "minihud.config.render_toggle.name.overlayRandomTicksFixed"),
-    OVERLAY_RANDOM_TICKS_PLAYER         ("overlayRandomTicksPlayer",    "", "minihud.config.render_toggle.comment.overlayRandomTicksPlayer", "Random Ticked Chunks (player-following) overlay", "minihud.config.render_toggle.name.overlayRandomTicksPlayer"),
-    OVERLAY_REGION_FILE                 ("overlayRegionFile",           "", "minihud.config.render_toggle.comment.overlayRegionFile", "Region File Border overlay", "minihud.config.render_toggle.name.overlayRegionFile"),
-    OVERLAY_SLIME_CHUNKS_OVERLAY        ("overlaySlimeChunks",          "", KeybindSettings.INGAME_BOTH, "minihud.config.render_toggle.comment.overlaySlimeChunks", "Slime Chunks overlay", "minihud.config.render_toggle.name.overlaySlimeChunks"),
-    OVERLAY_SPAWNABLE_COLUMN_HEIGHTS    ("overlaySpawnableColumnHeights","", "minihud.config.render_toggle.comment.overlaySpawnableColumnHeights", "Spawnable column heights overlay", "minihud.config.render_toggle.name.overlaySpawnableColumnHeights"),
-    OVERLAY_SPAWN_CHUNK_OVERLAY_REAL    ("overlaySpawnChunkReal",       "", "minihud.config.render_toggle.comment.overlaySpawnChunkReal", "Spawn Chunks (real) overlay", "minihud.config.render_toggle.name.overlaySpawnChunkReal"),
-    OVERLAY_SPAWN_CHUNK_OVERLAY_PLAYER  ("overlaySpawnChunkPlayer",     "", "minihud.config.render_toggle.comment.overlaySpawnChunkPlayer", "Spawn Chunks (player-following, would-be) overlay", "minihud.config.render_toggle.name.overlaySpawnChunkPlayer"),
-    OVERLAY_STRUCTURE_MAIN_TOGGLE       ("overlayStructureMainToggle",  "", "minihud.config.render_toggle.comment.overlayStructureMainToggle", "Structure Bounding Boxes main", "minihud.config.render_toggle.name.overlayStructureMainToggle"),
-    OVERLAY_VILLAGER_INFO               ("overlayVillagerInfo",         "", "minihud.config.render_toggle.comment.overlayVillagerInfo", "Villager offers overlay", "minihud.config.render_toggle.name.overlayVillagerInfo"),
-    SHAPE_RENDERER                      ("shapeRenderer",               "", "minihud.config.render_toggle.comment.shapeRenderer", "Shape Renderer", "minihud.config.render_toggle.name.shapeRenderer"),
+    OVERLAY_BEACON_RANGE                ("overlayBeaconRange",          ""),
+    OVERLAY_BIOME_BORDER                ("overlayBiomeBorder",          ""),
+    OVERLAY_BLOCK_GRID                  ("overlayBlockGrid",            ""),
+    OVERLAY_CONDUIT_RANGE               ("overlayConduitRange",         ""),
+    OVERLAY_LIGHT_LEVEL                 ("overlayLightLevel",           ""),
+    OVERLAY_RANDOM_TICKS_FIXED          ("overlayRandomTicksFixed",     ""),
+    OVERLAY_RANDOM_TICKS_PLAYER         ("overlayRandomTicksPlayer",    ""),
+    OVERLAY_REGION_FILE                 ("overlayRegionFile",           ""),
+    OVERLAY_SLIME_CHUNKS_OVERLAY        ("overlaySlimeChunks",          "", KeybindSettings.INGAME_BOTH),
+    OVERLAY_SPAWNABLE_COLUMN_HEIGHTS    ("overlaySpawnableColumnHeights",""),
+    OVERLAY_SPAWN_CHUNK_OVERLAY_REAL    ("overlaySpawnChunkReal",       ""),
+    OVERLAY_SPAWN_CHUNK_OVERLAY_PLAYER  ("overlaySpawnChunkPlayer",     ""),
+    OVERLAY_STRUCTURE_MAIN_TOGGLE       ("overlayStructureMainToggle",  ""),
+    OVERLAY_VILLAGER_INFO               ("overlayVillagerInfo",         ""),
+    SHAPE_RENDERER                      ("shapeRenderer",               ""),
 
-    DEBUG_CHUNK_BORDER                  ("debugChunkBorder",            "", "minihud.config.render_toggle.comment.debugChunkBorder", "Chunk Border", "minihud.config.render_toggle.name.debugChunkBorder"),
-    DEBUG_CHUNK_INFO                    ("debugChunkInfo",              "", "minihud.config.render_toggle.comment.debugChunkInfo", "Chunk Info", "minihud.config.render_toggle.name.debugChunkInfo"),
-    DEBUG_CHUNK_OCCLUSION               ("debugChunkOcclusion",         "", "minihud.config.render_toggle.comment.debugChunkOcclusion", "Chunk Occlusion", "minihud.config.render_toggle.name.debugChunkOcclusion"),
-    DEBUG_COLLISION_BOXES               ("debugCollisionBoxEnabled",    "", "minihud.config.render_toggle.comment.debugCollisionBoxEnabled", "Block Collision Boxes", "minihud.config.render_toggle.name.debugCollisionBoxEnabled"),
-    DEBUG_NEIGHBOR_UPDATES              ("debugNeighborsUpdateEnabled", "", "minihud.config.render_toggle.comment.debugNeighborsUpdateEnabled", "Block Neighbor Updates", "minihud.config.render_toggle.name.debugNeighborsUpdateEnabled"),
-    //DEBUG_PATH_FINDING                  ("debugPathfindingEnabled",     "", "minihud.config.render_toggle.comment.debugPathfindingEnabled", "Pathfinding", "minihud.config.render_toggle.name.debugPathfindingEnabled"),
-    DEBUG_SOLID_FACES                   ("debugSolidFaceEnabled",       "", "minihud.config.render_toggle.comment.debugSolidFaceEnabled", "Block Solid Faces", "minihud.config.render_toggle.name.debugSolidFaceEnabled"),
-    DEBUG_WATER                         ("debugWaterEnabled",           "", "minihud.config.render_toggle.comment.debugWaterEnabled", "Water", "minihud.config.render_toggle.name.debugWaterEnabled");
+    DEBUG_CHUNK_BORDER                  ("debugChunkBorder",            ""),
+    DEBUG_CHUNK_INFO                    ("debugChunkInfo",              ""),
+    DEBUG_CHUNK_OCCLUSION               ("debugChunkOcclusion",         ""),
+    DEBUG_COLLISION_BOXES               ("debugCollisionBoxEnabled",    ""),
+    DEBUG_NEIGHBOR_UPDATES              ("debugNeighborsUpdateEnabled", ""),
+    //DEBUG_PATH_FINDING                  ("debugPathfindingEnabled",     ""),
+    DEBUG_SOLID_FACES                   ("debugSolidFaceEnabled",       ""),
+    DEBUG_WATER                         ("debugWaterEnabled",           "");
 
     public static final ImmutableList<RendererToggle> VALUES = ImmutableList.copyOf(values());
+    private static final String translateNameBase = "minihud.config.render_toggle";
 
     private final String name;
     private final String comment;
@@ -56,6 +57,11 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
     private boolean valueBoolean;
     @Nullable private IValueChangeCallback<IConfigBoolean> callback;
 
+    RendererToggle(String name, String defaultHotkey)
+    {
+        this(name, defaultHotkey, KeybindSettings.DEFAULT, buildTranslateName(name, "comment"), buildTranslateName(name, "prettyName"), buildTranslateName(name, "name"));
+    }
+
     RendererToggle(String name, String defaultHotkey, String comment, String prettyName)
     {
         this(name, defaultHotkey, KeybindSettings.DEFAULT, comment, prettyName, name);
@@ -64,6 +70,11 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
     RendererToggle(String name, String defaultHotkey, String comment, String prettyName, String translatedName)
     {
         this(name, defaultHotkey, KeybindSettings.DEFAULT, comment, prettyName, translatedName);
+    }
+
+    RendererToggle(String name, String defaultHotkey, KeybindSettings settings)
+    {
+        this(name, defaultHotkey, settings, buildTranslateName(name, "comment"), buildTranslateName(name, "prettyName"), buildTranslateName(name, "name"));
     }
 
     RendererToggle(String name, String defaultHotkey, KeybindSettings settings, String comment, String prettyName)
@@ -233,5 +244,10 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
     public JsonElement getAsJsonElement()
     {
         return new JsonPrimitive(this.valueBoolean);
+    }
+
+    private static String buildTranslateName(String name, String type)
+    {
+        return translateNameBase + "." + type + "." + name;
     }
 }
