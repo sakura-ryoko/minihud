@@ -8,7 +8,6 @@ import fi.dy.masa.malilib.util.BlockUtils;
 import fi.dy.masa.malilib.util.InventoryUtils;
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.malilib.util.WorldUtils;
-import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.config.RendererToggle;
@@ -34,7 +33,6 @@ import net.minecraft.block.enums.ChestType;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.network.PlayerListEntry;
-import net.minecraft.client.resource.language.I18n;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -53,7 +51,6 @@ import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.server.world.OptionalChunk;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
@@ -431,8 +428,9 @@ public class RenderHandler implements IRenderer
             {
                 this.addLine("Servux: %s // Protocol v%d // pB: %02d, pE: %02d".formatted(
                         EntitiesDataStorage.getInstance().getServuxVersion(),
-                        ServuxEntitiesPacket.PROTOCOL_VERSION, EntitiesDataStorage.getInstance().getPendingBLockEntitiesCount(),
-                        ServuxEntitiesPacket.PROTOCOL_VERSION, EntitiesDataStorage.getInstance().getPendingEntitiesCount()
+                        ServuxEntitiesPacket.PROTOCOL_VERSION,
+                        EntitiesDataStorage.getInstance().getPendingBLockEntitiesCount(),
+                        EntitiesDataStorage.getInstance().getPendingEntitiesCount()
                 ));
             }
         }
