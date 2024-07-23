@@ -441,7 +441,7 @@ public class RenderHandler implements IRenderer
             {
                 if (bestWorld.getLevelProperties() instanceof LevelProperties lp)
                 {
-                    this.addLine("Weather: Thundering, "+ DurationFormatUtils.formatDurationWords((lp.getThunderTime() / 20) * 1000, true, true) +" remaining");
+                    this.addLine("Weather: Thundering, "+ DurationFormatUtils.formatDurationWords(lp.getThunderTime() * 50L, true, true) +" remaining");
                 }
                 else
                 {
@@ -452,7 +452,7 @@ public class RenderHandler implements IRenderer
             {
                 if (bestWorld.getLevelProperties() instanceof LevelProperties lp)
                 {
-                    this.addLine("Weather: Raining, "+ DurationFormatUtils.formatDurationWords((lp.getRainTime() / 20) * 1000, true, true) +" remaining");
+                    this.addLine("Weather: Raining, "+ DurationFormatUtils.formatDurationWords(lp.getRainTime() * 50L, true, true) +" remaining");
                 }
                 else
                 {
