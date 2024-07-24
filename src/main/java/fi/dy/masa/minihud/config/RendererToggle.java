@@ -207,6 +207,11 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
         this.valueBoolean = this.defaultValueBoolean;
     }
 
+    private static String buildTranslateName(String name, String type)
+    {
+        return translateNameBase + "." + type + "." + name;
+    }
+
     @Override
     public void setValueFromString(String value)
     {
@@ -244,10 +249,5 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
     public JsonElement getAsJsonElement()
     {
         return new JsonPrimitive(this.valueBoolean);
-    }
-
-    private static String buildTranslateName(String name, String type)
-    {
-        return translateNameBase + "." + type + "." + name;
     }
 }
