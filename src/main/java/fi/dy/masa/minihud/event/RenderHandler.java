@@ -455,16 +455,25 @@ public class RenderHandler implements IRenderer
         {
             World bestWorld = WorldUtils.getBestWorld(mc);
             String weatherType = "clear";
+            int weatherTime = -1;
             if (bestWorld.getLevelProperties().isThundering())
             {
                 weatherType = "thundering";
+                if (bestWorld.getLevelProperties() instanceof LevelProperties lp)
+                {
+                    weatherTime = lp.getThunderTime();
+                }
             }
             else if (bestWorld.getLevelProperties().isRaining())
             {
                 weatherType = "raining";
+                if (bestWorld.getLevelProperties() instanceof LevelProperties lp)
+                {
+                    weatherTime = lp.getRainTime();
+                }
             }
 
-            if (!weatherType.equals("clear") || !(bestWorld.getLevelProperties() instanceof LevelProperties lp))
+            if (weatherType.equals("clear") || weatherTime == -1)
             {
                 this.addLineI18n("minihud.info_line.weather", StringUtils.translate("minihud.info_line.weather." + weatherType), "");
             }
@@ -473,7 +482,7 @@ public class RenderHandler implements IRenderer
                 // 50 = 1000 (ms/s) / 20 (ticks/s)
                 this.addLineI18n("minihud.info_line.weather",
                         StringUtils.translate("minihud.info_line.weather." + weatherType),
-                        ", " + DurationFormatUtils.formatDurationWords((lp.getRainTime() / 20) * 1000L, true, true) + StringUtils.translate("minihud.info_line.remaining")
+                        ", " + DurationFormatUtils.formatDurationWords(weatherTime * 50L, true, true) + " " + StringUtils.translate("minihud.info_line.remaining")
                 );
             }
         }
