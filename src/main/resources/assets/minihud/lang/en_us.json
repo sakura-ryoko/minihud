@@ -865,7 +865,7 @@
     "minihud.info_line.entities_client_world.server": "Entities - Client: %d - Server: %d",
     "minihud.info_line.slime_chunk": "Slime chunk: %s",
     "minihud.info_line.slime_chunk.yes": "§aYES§r",
-    "minihud.info_line.slime_chunk.no": "§cYES§r",
+    "minihud.info_line.slime_chunk.no": "§cNO§r",
     "minihud.info_line.slime_chunk.no_seed": "<world seed not known>",
     "minihud.info_line.looking_at_entity": "Entity: %s",
     "minihud.info_line.looking_at_entity.livingentity": "Entity: %s - HP: %.1f / %.1f",
