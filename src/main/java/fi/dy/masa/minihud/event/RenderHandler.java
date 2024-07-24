@@ -8,6 +8,7 @@ import fi.dy.masa.malilib.util.BlockUtils;
 import fi.dy.masa.malilib.util.InventoryUtils;
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.malilib.util.WorldUtils;
+import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.config.RendererToggle;
@@ -33,6 +34,7 @@ import net.minecraft.block.enums.ChestType;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.network.PlayerListEntry;
+import net.minecraft.client.resource.language.I18n;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -53,6 +55,7 @@ import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.server.world.OptionalChunk;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
@@ -325,7 +328,7 @@ public class RenderHandler implements IRenderer
             long memFree = Runtime.getRuntime().freeMemory();
             long memUsed = memTotal - memFree;
 
-            this.addLineI18n("minihud.info_line.memory_usage",
+            this.addLine(String.format("Mem: % 2d%% %03d/%03dMB | Allocated: % 2d%% %03dMB",
                     memUsed * 100L / memMax,
                     MiscUtils.bytesToMb(memUsed),
                     MiscUtils.bytesToMb(memMax),
@@ -445,8 +448,9 @@ public class RenderHandler implements IRenderer
             {
                 this.addLineI18n("minihud.info_line.servux",
                         EntitiesDataStorage.getInstance().getServuxVersion(),
-                        ServuxEntitiesPacket.PROTOCOL_VERSION, EntitiesDataStorage.getInstance().getPendingBLockEntitiesCount(),
-                        ServuxEntitiesPacket.PROTOCOL_VERSION, EntitiesDataStorage.getInstance().getPendingEntitiesCount()
+                        ServuxEntitiesPacket.PROTOCOL_VERSION,
+                        EntitiesDataStorage.getInstance().getPendingBLockEntitiesCount(),
+                        EntitiesDataStorage.getInstance().getPendingEntitiesCount()
                 );
             }
         }
@@ -454,24 +458,34 @@ public class RenderHandler implements IRenderer
         {
             World bestWorld = WorldUtils.getBestWorld(mc);
             String weatherType = "clear";
+            int weatherTime = -1;
             if (bestWorld.getLevelProperties().isThundering())
             {
                 weatherType = "thundering";
+                if (bestWorld.getLevelProperties() instanceof LevelProperties lp)
+                {
+                    weatherTime = lp.getThunderTime();
+                }
             }
             else if (bestWorld.getLevelProperties().isRaining())
             {
                 weatherType = "raining";
+                if (bestWorld.getLevelProperties() instanceof LevelProperties lp)
+                {
+                    weatherTime = lp.getRainTime();
+                }
             }
 
-            if (!weatherType.equals("clear") || !(bestWorld.getLevelProperties() instanceof LevelProperties lp))
+            if (weatherType.equals("clear") || weatherTime == -1)
             {
                 this.addLineI18n("minihud.info_line.weather", StringUtils.translate("minihud.info_line.weather." + weatherType), "");
             }
             else
             {
+                // 50 = 1000 (ms/s) / 20 (ticks/s)
                 this.addLineI18n("minihud.info_line.weather",
                         StringUtils.translate("minihud.info_line.weather." + weatherType),
-                        ", " + DurationFormatUtils.formatDurationWords((lp.getRainTime() / 20) * 1000L, true, true) + StringUtils.translate("minihud.info_line.remaining")
+                        ", " + DurationFormatUtils.formatDurationWords(weatherTime * 50L, true, true) + " " + StringUtils.translate("minihud.info_line.remaining")
                 );
             }
         }

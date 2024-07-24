@@ -117,7 +117,7 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
     @Override
     public String getPrettyName()
     {
-        return this.prettyName;
+        return StringUtils.getTranslatedOrFallback(this.prettyName, this.name);
     }
 
     @Override

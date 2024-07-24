@@ -8,8 +8,6 @@ targetCompatibility = JavaVersion.VERSION_21
 repositories {
 	maven {	url 'https://masa.dy.fi/maven' }
 	maven {	url 'https://maven.terraformersmc.com/releases/' }
-	// maven { url 'https://maven.quiltmc.org/repository/release/' }
-	maven { url 'https://jitpack.io' }
 }
 
 dependencies {
@@ -18,13 +16,11 @@ dependencies {
 	modImplementation "net.fabricmc:fabric-loader:${project.fabric_loader_version}"
 	implementation "com.google.code.findbugs:jsr305:3.0.2"
 
-	//modImplementation "fi.dy.masa.malilib:malilib-fabric-${project.minecraft_version_out}:${project.malilib_version}"
-	modImplementation "com.github.sakura-ryoko:malilib:${project.malilib_id}"
+	modImplementation "fi.dy.masa.malilib:malilib-fabric-${project.minecraft_version_out}:${project.malilib_version}"
+	//modImplementation "com.github.sakura-ryoko:malilib:${project.malilib_id}"
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	//modCompile "net.fabricmc.fabric-api:fabric-api:" + project.fabric_version
-	//modImplementation "fabric-networking-api-v1:${project.fabric_api_version}"
-	//modImplementation "fabric-resource-loader-v0:${project.fabric_api_version}"
 
 	modCompileOnly "com.terraformersmc:modmenu:${project.mod_menu_version}"
 }
