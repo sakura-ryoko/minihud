@@ -328,7 +328,7 @@ public class RenderHandler implements IRenderer
             long memFree = Runtime.getRuntime().freeMemory();
             long memUsed = memTotal - memFree;
 
-            this.addLine(String.format("Mem: % 2d%% %03d/%03dMB | Allocated: % 2d%% %03dMB",
+            this.addLineI18n("minihud.info_line.memory_usage",
                     memUsed * 100L / memMax,
                     MiscUtils.bytesToMb(memUsed),
                     MiscUtils.bytesToMb(memMax),
