@@ -10,7 +10,7 @@ import fi.dy.masa.minihud.util.DataStorage;
 
 public enum StructureToggle
 {
-    OVERLAY_STRUCTURE_ANCIENT_CITY      ("Ancient City",    "", "#41D10AE6", "#41D506C9", "ancient_city"),
+    OVERLAY_STRUCTURE_ANCIENT_CITY      ("Ancient City",    "", "#30D10AE6", "#30D506C9", "ancient_city"),
     OVERLAY_STRUCTURE_BASTION_REMNANT   ("Bastion Remnant", "", "#302171F5", "#302171F5", "bastion_remnant"),
     OVERLAY_STRUCTURE_BURIED_TREASURE   ("Buried Treasure", "", "#302298E6", "#302298E6", "buried_treasure"),
     OVERLAY_STRUCTURE_DESERT_PYRAMID    ("Desert Pyramid",  "", "#30FFFF00", "#30FFFF00", "desert_pyramid"),
@@ -27,7 +27,7 @@ public enum StructureToggle
     OVERLAY_STRUCTURE_RUINED_PORTAL     ("Ruined Portal",   "", "#309F03D3", "#309F03D3", "ruined_portal"),
     OVERLAY_STRUCTURE_SHIPWRECK         ("Shipwreck",       "", "#30EB1995", "#30EB1995", "shipwreck"),
     OVERLAY_STRUCTURE_STRONGHOLD        ("Stronghold",      "", "#30009999", "#30009999", "stronghold"),
-    OVERLAY_STRUCTURE_TRIAL_CHAMBERS    ("Trial Chambers",  "", "#3599664E", "#35CC8868", "trial_chambers"),
+    OVERLAY_STRUCTURE_TRIAL_CHAMBERS    ("Trial Chambers",  "", "#3099664E", "#30CC8868", "trial_chambers"),
     OVERLAY_STRUCTURE_VILLAGE           ("Village",         "", "#3054CB4E", "#3054CB4E", "village"),
     OVERLAY_STRUCTURE_WITCH_HUT         ("Witch Hut",       "", "#30BE1DFC", "#300099FF", "swamp_hut"),
     OVERLAY_STRUCTURE_TRAIL_RUINS       ("Trail Ruins",     "", "#307F5AFF", "#307F5AFF", "trail_ruins"),
@@ -53,7 +53,6 @@ public enum StructureToggle
 
         this.hotkey.getKeybind().setCallback((action, key) -> { this.toggleOption.toggleBooleanValue(); return true; });
         this.toggleOption.setValueChangeCallback((config) -> DataStorage.getInstance().setStructuresNeedUpdating());
-
     }
 
     StructureToggle(String name, String defaultHotkey, String colorMain, String colorComponents, String translateSubName)

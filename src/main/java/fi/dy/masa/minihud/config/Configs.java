@@ -90,6 +90,10 @@ public class Configs implements IConfigHandler
         public static final ConfigInteger       SLIME_CHUNK_OVERLAY_RADIUS          = new ConfigInteger("slimeChunkOverlayRadius", -1, -1, 40, "minihud.config.generic.comment.slimeChunkOverlayRadius").translatedName("minihud.config.generic.name.slimeChunkOverlayRadius");
         public static final ConfigBoolean       SORT_LINES_BY_LENGTH                = new ConfigBoolean("sortLinesByLength", false, "minihud.config.generic.comment.sortLinesByLength").translatedName("minihud.config.generic.name.sortLinesByLength");
         public static final ConfigBoolean       SORT_LINES_REVERSED                 = new ConfigBoolean("sortLinesReversed", false, "minihud.config.generic.comment.sortLinesReversed").translatedName("minihud.config.generic.name.sortLinesReversed");
+        public static final ConfigBoolean       SPAWN_PLAYER_OUTER_OVERLAY_ENABLED  = new ConfigBoolean("spawnPlayerOuterOverlayEnabled", false, "minihud.config.generic.comment.spawnPlayerOuterOverlayEnabled").translatedName("minihud.config.generic.name.spawnPlayerOuterOverlayEnabled");
+        public static final ConfigBoolean       SPAWN_PLAYER_REDSTONE_OVERLAY_ENABLED= new ConfigBoolean("spawnPlayerRedstoneOverlayEnabled", false, "minihud.config.generic.comment.spawnPlayerRedstoneOverlayEnabled").translatedName("minihud.config.generic.name.spawnPlayerRedstoneOverlayEnabled");
+        public static final ConfigBoolean       SPAWN_REAL_OUTER_OVERLAY_ENABLED    = new ConfigBoolean("spawnRealOuterOverlayEnabled", false, "minihud.config.generic.comment.spawnRealOuterOverlayEnabled").translatedName("minihud.config.generic.name.spawnRealOuterOverlayEnabled");
+        public static final ConfigBoolean       SPAWN_REAL_REDSTONE_OVERLAY_ENABLED = new ConfigBoolean("spawnRealRedstoneOverlayEnabled", false, "minihud.config.generic.comment.spawnRealRedstoneOverlayEnabled").translatedName("minihud.config.generic.name.spawnRealRedstoneOverlayEnabled");
         public static final ConfigInteger       SPAWNABLE_COLUMNS_OVERLAY_RADIUS    = new ConfigInteger("spawnableColumnHeightsOverlayRadius", 40, 0, 128, "minihud.config.generic.comment.spawnableColumnHeightsOverlayRadius").translatedName("minihud.config.generic.name.spawnableColumnHeightsOverlayRadius");
         public static final ConfigBoolean       STRUCTURES_RENDER_THROUGH           = new ConfigBoolean("structuresRenderThrough", false, "minihud.config.generic.comment.structuresRenderThrough").translatedName("minihud.config.generic.name.structuresRenderThrough");
         public static final ConfigInteger       TEXT_POS_X                          = new ConfigInteger("textPosX", 4, 0, 8192, "minihud.config.generic.comment.textPosX").translatedName("minihud.config.generic.name.textPosX");
@@ -133,6 +137,10 @@ public class Configs implements IConfigHandler
                 SLIME_CHUNK_TOP_TO_PLAYER,
                 SORT_LINES_BY_LENGTH,
                 SORT_LINES_REVERSED,
+                SPAWN_PLAYER_OUTER_OVERLAY_ENABLED,
+                SPAWN_PLAYER_REDSTONE_OVERLAY_ENABLED,
+                SPAWN_REAL_OUTER_OVERLAY_ENABLED,
+                SPAWN_REAL_REDSTONE_OVERLAY_ENABLED,
                 STRUCTURES_RENDER_THROUGH,
                 USE_CUSTOMIZED_COORDINATES,
                 USE_FONT_SHADOW,
@@ -230,9 +238,11 @@ public class Configs implements IConfigHandler
         public static final ConfigColor SHAPE_SPHERE_BLOCKY                     = new ConfigColor("shapeSphereBlocky",                  "#6030B0B0", "minihud.config.colors.comment.shapeSphereBlocky").translatedName("minihud.config.colors.name.shapeSphereBlocky");
         public static final ConfigColor SLIME_CHUNKS_OVERLAY_COLOR              = new ConfigColor("slimeChunksOverlayColor",            "#3020F020", "minihud.config.colors.comment.slimeChunksOverlayColor").translatedName("minihud.config.colors.name.slimeChunksOverlayColor");
         public static final ConfigColor SPAWN_PLAYER_ENTITY_OVERLAY_COLOR       = new ConfigColor("spawnPlayerEntityOverlayColor",      "#302050D0", "minihud.config.colors.comment.spawnPlayerEntityOverlayColor").translatedName("minihud.config.colors.name.spawnPlayerEntityOverlayColor");
+        public static final ConfigColor SPAWN_PLAYER_REDSTONE_OVERLAY_COLOR     = new ConfigColor("spawnPlayerRedstoneOverlayColor",    "#30F8D641", "minihud.config.colors.comment.spawnPlayerRedstoneOverlayColor").translatedName("minihud.config.colors.name.spawnPlayerRedstoneOverlayColor");
         public static final ConfigColor SPAWN_PLAYER_LAZY_OVERLAY_COLOR         = new ConfigColor("spawnPlayerLazyOverlayColor",        "#30D030D0", "minihud.config.colors.comment.spawnPlayerLazyOverlayColor").translatedName("minihud.config.colors.name.spawnPlayerLazyOverlayColor");
         public static final ConfigColor SPAWN_PLAYER_OUTER_OVERLAY_COLOR        = new ConfigColor("spawnPlayerOuterOverlayColor",       "#306900D2", "minihud.config.colors.comment.spawnPlayerOuterOverlayColor").translatedName("minihud.config.colors.name.spawnPlayerOuterOverlayColor");
         public static final ConfigColor SPAWN_REAL_ENTITY_OVERLAY_COLOR         = new ConfigColor("spawnRealEntityOverlayColor",        "#3030FF20", "minihud.config.colors.comment.spawnRealEntityOverlayColor").translatedName("minihud.config.colors.name.spawnRealEntityOverlayColor");
+        public static final ConfigColor SPAWN_REAL_REDSTONE_OVERLAY_COLOR       = new ConfigColor("spawnRealRedstoneOverlayColor",      "#30F8D641", "minihud.config.colors.comment.spawnRealRedstoneOverlayColor").translatedName("minihud.config.colors.name.spawnRealRedstoneOverlayColor");
         public static final ConfigColor SPAWN_REAL_LAZY_OVERLAY_COLOR           = new ConfigColor("spawnRealLazyOverlayColor",          "#30FF3020", "minihud.config.colors.comment.spawnRealLazyOverlayColor").translatedName("minihud.config.colors.name.spawnRealLazyOverlayColor");
         public static final ConfigColor SPAWN_REAL_OUTER_OVERLAY_COLOR          = new ConfigColor("spawnRealOuterOverlayColor",         "#309D581A", "minihud.config.colors.comment.spawnRealOuterOverlayColor").translatedName("minihud.config.colors.name.spawnRealOuterOverlayColor");
         public static final ConfigColor SPAWNABLE_COLUMNS_OVERLAY_COLOR         = new ConfigColor("spawnableColumnHeightsOverlayColor", "#A0FF00FF", "minihud.config.colors.comment.spawnableColumnHeightsOverlayColor").translatedName("minihud.config.colors.name.spawnableColumnHeightsOverlayColor");
@@ -269,9 +279,11 @@ public class Configs implements IConfigHandler
                 SHAPE_SPHERE_BLOCKY,
                 SLIME_CHUNKS_OVERLAY_COLOR,
                 SPAWN_PLAYER_ENTITY_OVERLAY_COLOR,
+                SPAWN_PLAYER_REDSTONE_OVERLAY_COLOR,
                 SPAWN_PLAYER_LAZY_OVERLAY_COLOR,
                 SPAWN_PLAYER_OUTER_OVERLAY_COLOR,
                 SPAWN_REAL_ENTITY_OVERLAY_COLOR,
+                SPAWN_REAL_REDSTONE_OVERLAY_COLOR,
                 SPAWN_REAL_LAZY_OVERLAY_COLOR,
                 SPAWN_REAL_OUTER_OVERLAY_COLOR,
                 SPAWNABLE_COLUMNS_OVERLAY_COLOR,
