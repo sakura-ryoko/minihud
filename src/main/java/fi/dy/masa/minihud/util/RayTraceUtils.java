@@ -18,7 +18,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
@@ -102,18 +101,6 @@ public class RayTraceUtils
         if (mc.player == null || world == null)
         {
             return null;
-        }
-
-        if (cameraEntity == mc.player && bestWorld instanceof ServerWorld)
-        {
-            // We need to get the player from the server world (if available, ie. in single player),
-            // so that the player itself won't be included in the ray trace
-            Entity serverPlayer = bestWorld.getPlayerByUuid(mc.player.getUuid());
-
-            if (serverPlayer != null)
-            {
-                cameraEntity = serverPlayer;
-            }
         }
 
         HitResult trace = getRayTraceFromEntity(world, cameraEntity, false);
