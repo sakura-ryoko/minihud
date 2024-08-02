@@ -2,6 +2,7 @@ package fi.dy.masa.minihud.network;
 
 import fi.dy.masa.malilib.network.IClientPayloadData;
 import fi.dy.masa.minihud.MiniHUD;
+import fi.dy.masa.minihud.util.DataStorage;
 import io.netty.buffer.Unpooled;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
@@ -145,7 +146,8 @@ public class ServuxStructuresPacket implements IClientPayloadData
                 try
                 {
                     return new ServuxStructuresPacket(type, new PacketByteBuf(input.readBytes(input.readableBytes())));
-                } catch (Exception e)
+                }
+                catch (Exception e)
                 {
                     MiniHUD.logger.error("ServuxStructuresPacket#fromPacket: error reading Buffer from packet: [{}]", e.getLocalizedMessage());
                 }
@@ -156,7 +158,8 @@ public class ServuxStructuresPacket implements IClientPayloadData
                 try
                 {
                     return new ServuxStructuresPacket(type, input.readNbt());
-                } catch (Exception e)
+                }
+                catch (Exception e)
                 {
                     MiniHUD.logger.error("ServuxStructuresPacket#fromPacket: error reading NBT from packet: [{}]", e.getLocalizedMessage());
                 }
@@ -167,6 +170,7 @@ public class ServuxStructuresPacket implements IClientPayloadData
         catch (Exception e)
         {
             MiniHUD.logger.error("ServuxStructuresPacket#fromPacket: error reading packet", e);
+            DataStorage.getInstance().onPacketFailure();
             return null;
         }
         finally
@@ -174,6 +178,7 @@ public class ServuxStructuresPacket implements IClientPayloadData
             if (input.isReadable())
             {
                 MiniHUD.logger.error("ServuxStructuresPacket#fromPacket: input buffer is not empty, skipping remaining bytes. are you using the correct version?");
+                DataStorage.getInstance().onPacketFailure();
                 input.skipBytes(input.readableBytes());
             }
         }
