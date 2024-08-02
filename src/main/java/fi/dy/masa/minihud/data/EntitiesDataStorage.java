@@ -75,8 +75,7 @@ public class EntitiesDataStorage implements IClientTickHandler
             if (Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue() == false)
             {
                 this.serverTickTime = System.currentTimeMillis();
-                if (DataStorage.getInstance().hasIntegratedServer() == false && this.hasServuxServer() &&
-                    DataStorage.getInstance().shouldBlockNetwork() == false)
+                if (DataStorage.getInstance().hasIntegratedServer() == false && this.hasServuxServer())
                 {
                     this.servuxServer = false;
                     HANDLER.unregisterPlayReceiver();
@@ -86,8 +85,7 @@ public class EntitiesDataStorage implements IClientTickHandler
             else if (DataStorage.getInstance().hasIntegratedServer() == false &&
                     this.hasServuxServer() == false &&
                     this.hasInValidServux == false &&
-                    this.getWorld() != null &&
-                    DataStorage.getInstance().shouldBlockNetwork() == false)
+                    this.getWorld() != null)
             {
                 // Make sure we're Play Registered, and request Metadata
                 HANDLER.registerPlayReceiver(ServuxEntitiesPacket.Payload.ID, HANDLER::receivePlayPayload);
@@ -155,11 +153,8 @@ public class EntitiesDataStorage implements IClientTickHandler
         if (isLogout)
         {
             MiniHUD.printDebug("EntitiesDataStorage#reset() - log-out");
-            if (DataStorage.getInstance().shouldBlockNetwork() == false)
-            {
-                HANDLER.reset(this.getNetworkChannel());
-                HANDLER.resetFailures(this.getNetworkChannel());
-            }
+            HANDLER.reset(this.getNetworkChannel());
+            HANDLER.resetFailures(this.getNetworkChannel());
             this.servuxServer = false;
             this.hasInValidServux = false;
         }
@@ -211,17 +206,13 @@ public class EntitiesDataStorage implements IClientTickHandler
 
     public void onGameInit()
     {
-        if (DataStorage.getInstance().shouldBlockNetwork() == false)
-        {
-            ClientPlayHandler.getInstance().registerClientPlayHandler(HANDLER);
-            HANDLER.registerPlayPayload(ServuxEntitiesPacket.Payload.ID, ServuxEntitiesPacket.Payload.CODEC, IPluginClientPlayHandler.BOTH_CLIENT);
-        }
+        ClientPlayHandler.getInstance().registerClientPlayHandler(HANDLER);
+        HANDLER.registerPlayPayload(ServuxEntitiesPacket.Payload.ID, ServuxEntitiesPacket.Payload.CODEC, IPluginClientPlayHandler.BOTH_CLIENT);
     }
 
     public void onWorldPre()
     {
-        if (DataStorage.getInstance().hasIntegratedServer() == false &&
-            DataStorage.getInstance().shouldBlockNetwork() == false)
+        if (DataStorage.getInstance().hasIntegratedServer() == false)
         {
             HANDLER.registerPlayReceiver(ServuxEntitiesPacket.Payload.ID, HANDLER::receivePlayPayload);
         }
@@ -235,7 +226,6 @@ public class EntitiesDataStorage implements IClientTickHandler
     public void requestMetadata()
     {
         if (DataStorage.getInstance().hasIntegratedServer() == false &&
-            DataStorage.getInstance().shouldBlockNetwork() == false &&
             Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue())
         {
             NbtCompound nbt = new NbtCompound();
@@ -327,8 +317,7 @@ public class EntitiesDataStorage implements IClientTickHandler
 
     private void requestServuxBlockEntityData(BlockPos pos)
     {
-        if (Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue() == false ||
-            DataStorage.getInstance().shouldBlockNetwork())
+        if (Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue() == false)
         {
             return;
         }
@@ -338,8 +327,7 @@ public class EntitiesDataStorage implements IClientTickHandler
 
     private void requestServuxEntityData(int entityId)
     {
-        if (Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue() == false ||
-            DataStorage.getInstance().shouldBlockNetwork())
+        if (Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue() == false)
         {
             return;
         }

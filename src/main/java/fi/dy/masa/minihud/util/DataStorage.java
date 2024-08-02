@@ -13,7 +13,6 @@ import com.google.common.collect.Queues;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NbtCompound;
@@ -68,7 +67,6 @@ public class DataStorage
     private boolean servuxServer = false;
     private boolean hasInValidServux = false;
     private boolean hasIntegratedServer = false;
-    private boolean shouldBlockNetwork = false;
     private int spawnChunkRadius = -1;
     private boolean spawnChunkRadiusValid = false;
     private int simulationDistance = -1;
@@ -113,26 +111,8 @@ public class DataStorage
 
     public void onGameInit()
     {
-        // Check for black-listed mods; Do not use networking with these installed; because with these, it will just break.
-        FabricLoader.getInstance().getAllMods().stream().forEach(modContainer ->
-        {
-            String check = modContainer.getMetadata().getId();
-
-            if (check.equalsIgnoreCase("viafabric") ||
-                check.equalsIgnoreCase("viafabricplus") ||
-                check.equalsIgnoreCase("viaforge") ||
-                check.equalsIgnoreCase("viaversion") ||
-                check.equalsIgnoreCase("viabackwards"))
-            {
-                this.shouldBlockNetwork = true;
-                MiniHUD.logger.error("MiniHUD's network API is not compatible with \"{}\" installed.  If you wish to use the Network Features of MiniHUD, use the correctly matched version [{}] of the mod; and uninstall \"{}\"", check, Reference.MC_VERSION, check);
-            }
-        });
-        if (this.shouldBlockNetwork == false)
-        {
-            ClientPlayHandler.getInstance().registerClientPlayHandler(HANDLER);
-            HANDLER.registerPlayPayload(ServuxStructuresPacket.Payload.ID, ServuxStructuresPacket.Payload.CODEC, IPluginClientPlayHandler.BOTH_CLIENT);
-        }
+        ClientPlayHandler.getInstance().registerClientPlayHandler(HANDLER);
+        HANDLER.registerPlayPayload(ServuxStructuresPacket.Payload.ID, ServuxStructuresPacket.Payload.CODEC, IPluginClientPlayHandler.BOTH_CLIENT);
     }
 
     public Identifier getNetworkChannel() { return ServuxStructuresHandler.CHANNEL_ID; }
@@ -162,11 +142,8 @@ public class DataStorage
                 MiniHUD.logger.warn("Interrupted whilst waiting for worker thread to die", e);
             }
             */
-            if (this.shouldBlockNetwork == false)
-            {
-                HANDLER.reset(this.getNetworkChannel());
-                HANDLER.resetFailures(this.getNetworkChannel());
-            }
+            HANDLER.reset(this.getNetworkChannel());
+            HANDLER.resetFailures(this.getNetworkChannel());
 
             this.servuxServer = false;
             this.hasInValidServux = false;
@@ -257,8 +234,7 @@ public class DataStorage
 
     public void onWorldPre()
     {
-        if (this.hasIntegratedServer == false &&
-            this.shouldBlockNetwork == false)
+        if (this.hasIntegratedServer == false)
         {
             HANDLER.registerPlayReceiver(ServuxStructuresPacket.Payload.ID, HANDLER::receivePlayPayload);
         }
@@ -270,12 +246,6 @@ public class DataStorage
         OverlayRendererBeaconRange.INSTANCE.setNeedsUpdate();
         OverlayRendererConduitRange.INSTANCE.setNeedsUpdate();
         OverlayRendererSpawnChunks.setNeedsUpdate();
-
-        if (this.shouldBlockNetwork)
-        {
-            MiniHUD.logger.warn("StructureChannel has been blocked, because ViaFabric/ViaVersion has been detected.");
-            return;
-        }
 
         if (this.hasIntegratedServer == false)
         {
@@ -324,11 +294,6 @@ public class DataStorage
 
     public void requestSpawnMetadata()
     {
-        if (this.shouldBlockNetwork)
-        {
-            return;
-        }
-
         if (this.hasIntegratedServer == false && this.hasServuxServer())
         {
             NbtCompound nbt = new NbtCompound();
@@ -542,11 +507,6 @@ public class DataStorage
     public double getServerMSPT()
     {
         return this.serverMSPT;
-    }
-
-    public boolean shouldBlockNetwork()
-    {
-        return this.shouldBlockNetwork;
     }
 
     public boolean structureRendererNeedsUpdate()
@@ -933,10 +893,6 @@ public class DataStorage
 
     public void registerStructureChannel()
     {
-        if (this.shouldBlockNetwork)
-        {
-            return;
-        }
         this.shouldRegisterStructureChannel = true;
 
         if (this.servuxServer == false && this.hasIntegratedServer == false && this.hasInValidServux == false)
@@ -1009,11 +965,6 @@ public class DataStorage
 
     public void unregisterStructureChannel()
     {
-        if (this.shouldBlockNetwork)
-        {
-            return;
-        }
-
         if (this.servuxServer || RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue() == false)
         {
             this.servuxServer = false;
