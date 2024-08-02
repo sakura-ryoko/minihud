@@ -166,7 +166,7 @@ public class ServuxStructuresPacket implements IClientPayloadData
         }
         catch (Exception e)
         {
-            MiniHUD.logger.error("ServuxStructuresPacket#fromPacket: error reading packet: [{}]", e.getLocalizedMessage());
+            MiniHUD.logger.error("ServuxStructuresPacket#fromPacket: error reading packet", e);
             return null;
         }
         finally
