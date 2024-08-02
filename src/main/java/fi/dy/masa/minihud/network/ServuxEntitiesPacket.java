@@ -1,15 +1,16 @@
 package fi.dy.masa.minihud.network;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import fi.dy.masa.malilib.network.IClientPayloadData;
+import fi.dy.masa.minihud.MiniHUD;
 import io.netty.buffer.Unpooled;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.util.math.BlockPos;
-import fi.dy.masa.malilib.network.IClientPayloadData;
-import fi.dy.masa.minihud.MiniHUD;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public class ServuxEntitiesPacket implements IClientPayloadData
 {

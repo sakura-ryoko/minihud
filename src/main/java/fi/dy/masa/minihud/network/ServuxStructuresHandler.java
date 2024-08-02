@@ -64,7 +64,7 @@ public abstract class ServuxStructuresHandler<T extends CustomPayload> implement
 
     public void decodeStructuresPacket(Identifier channel, ServuxStructuresPacket packet)
     {
-        if (!channel.equals(CHANNEL_ID))
+        if (!channel.equals(CHANNEL_ID) || packet == null)
         {
             return;
         }
