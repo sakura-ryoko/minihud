@@ -308,7 +308,8 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
 
     private void addBoxSideToggleCheckbox(int x, int y, Direction side, ShapeBox shape)
     {
-        WidgetCheckBox cb = new WidgetCheckBox(x, y, MaLiLibIcons.MINUS, MaLiLibIcons.PLUS, this.capitalize(side.getName()), "Render the " + side.getName() + " side of the box");
+        String sideName = StringUtils.translate("minihud.gui.name.box.box_side." + side.getName());
+        WidgetCheckBox cb = new WidgetCheckBox(x, y, MaLiLibIcons.MINUS, MaLiLibIcons.PLUS, this.capitalize(sideName), StringUtils.translate("minihud.gui.hover.shape.box.box_side", sideName));
         cb.setChecked(shape.isSideEnabled(side));
         cb.setListener((w) -> this.toggleSideEnabled(side, shape));
         this.addWidget(cb);
@@ -323,10 +324,10 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
 
     public void createBoxInputs(int x1, int y1, int x2, int y2, int textFieldWidth, ShapeBox shape)
     {
-        this.addLabel(x1, y1, -1, 14, 0xFFFFFFFF, "Corner 1");
+        this.addLabel(x1, y1, -1, 14, 0xFFFFFFFF, StringUtils.translate("minihud.gui.label.shape.box.corner_1"));
         y1 += 12;
 
-        this.addLabel(x2, y2, -1, 14, 0xFFFFFFFF, "Corner 2");
+        this.addLabel(x2, y2, -1, 14, 0xFFFFFFFF, StringUtils.translate("minihud.gui.label.shape.box.corner_2"));
         y2 += 12;
 
         GuiUtils.createVec3dInputsVertical(x1, y1, textFieldWidth, shape.getCorner1(), new Vec3dEditor(shape::getCorner1, shape::setCorner1, this), true, this);

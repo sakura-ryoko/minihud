@@ -672,6 +672,7 @@
     "minihud.gui.label.radius_colon": "Radius:",
 
     "minihud.gui.hover.shape.block_snap": "§7Block snap: §b%s",
+    "minihud.gui.hover.shape.box.box_side": "§7Render the %s side of the box",
     "minihud.gui.hover.shape.center_value": "§7Center: x: §9%s§7, y: §9%s§7, z: §9%s",
     "minihud.gui.hover.shape.circle.main_axis_value": "§7Axis: §b%s",
     "minihud.gui.hover.shape.effective_center_value": "§7Effective center: x: §9%s§7, y: §9%s§7, z: §9%s",
@@ -681,6 +682,8 @@
     "minihud.gui.hover.shape.type_value": "§7Type: §b%s",
 
     "minihud.gui.label.shape.block_snap": "Block snap: %s",
+    "minihud.gui.label.shape.box.corner_1": "Corner 1",
+    "minihud.gui.label.shape.box.corner_2": "Corner 2",
     "minihud.gui.label.shape.box.grid_enabled": "Grid Enabled: %s",
     "minihud.gui.label.shape.box.max_corner": "§7Max: x: §9%s§7, y: §9%s§7, z: §9%s",
     "minihud.gui.label.shape.box.maximum_coord": "Max",
@@ -693,6 +696,13 @@
     "minihud.gui.label.shape.line.start": "§7Pos 1: x: §9%s§7, y: §9%s§7, z: §9%s",
     "minihud.gui.label.shape.line.end": "§7Pos 2: x: §9%s§7, y: §9%s§7, z: §9%s",
     "minihud.gui.label.shape.render_type_colon": "Render Type:",
+
+    "minihud.gui.name.box.box_side.down": "down",
+    "minihud.gui.name.box.box_side.up": "up",
+    "minihud.gui.name.box.box_side.north": "north",
+    "minihud.gui.name.box.box_side.south": "south",
+    "minihud.gui.name.box.box_side.west": "west",
+    "minihud.gui.name.box.box_side.east": "east",
 
     "minihud.gui.title.configs": "MiniHUD Configs - %s",
     "minihud.gui.title.shape_editor": "Shape Editor (%s)",
