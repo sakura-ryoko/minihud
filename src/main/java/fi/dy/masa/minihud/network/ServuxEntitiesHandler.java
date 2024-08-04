@@ -68,7 +68,7 @@ public abstract class ServuxEntitiesHandler<T extends CustomPayload> implements 
     {
         ServuxEntitiesPacket packet = (ServuxEntitiesPacket) data;
 
-        if (!channel.equals(CHANNEL_ID))
+        if (!channel.equals(CHANNEL_ID) || packet == null)
         {
             return;
         }

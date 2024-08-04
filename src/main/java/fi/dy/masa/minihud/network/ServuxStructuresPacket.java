@@ -1,14 +1,16 @@
 package fi.dy.masa.minihud.network;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import fi.dy.masa.malilib.network.IClientPayloadData;
+import fi.dy.masa.minihud.MiniHUD;
+import fi.dy.masa.minihud.util.DataStorage;
 import io.netty.buffer.Unpooled;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.packet.CustomPayload;
-import fi.dy.masa.malilib.network.IClientPayloadData;
-import fi.dy.masa.minihud.MiniHUD;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public class ServuxStructuresPacket implements IClientPayloadData
 {
@@ -128,40 +130,58 @@ public class ServuxStructuresPacket implements IClientPayloadData
     @Nullable
     public static ServuxStructuresPacket fromPacket(PacketByteBuf input)
     {
-        int i = input.readVarInt();
-        Type type = getType(i);
+        try
+        {
+            int i = input.readVarInt();
+            Type type = getType(i);
 
-        if (type == null)
-        {
-            // Invalid Type
-            MiniHUD.logger.warn("ServuxStructuresPacket#fromPacket: invalid packet type received");
-        }
-        else if (type.equals(Type.PACKET_S2C_STRUCTURE_DATA))
-        {
-            // Read Packet Buffer
-            try
+            if (type == null)
             {
-                return new ServuxStructuresPacket(type, new PacketByteBuf(input.readBytes(input.readableBytes())));
+                // Invalid Type
+                MiniHUD.logger.warn("ServuxStructuresPacket#fromPacket: invalid packet type received");
             }
-            catch (Exception e)
+            else if (type.equals(Type.PACKET_S2C_STRUCTURE_DATA))
             {
-                MiniHUD.logger.error("ServuxStructuresPacket#fromPacket: error reading Buffer from packet: [{}]", e.getLocalizedMessage());
+                // Read Packet Buffer
+                try
+                {
+                    return new ServuxStructuresPacket(type, new PacketByteBuf(input.readBytes(input.readableBytes())));
+                }
+                catch (Exception e)
+                {
+                    MiniHUD.logger.error("ServuxStructuresPacket#fromPacket: error reading Buffer from packet: [{}]", e.getLocalizedMessage());
+                }
             }
-        }
-        else
-        {
-            // Read Nbt
-            try
+            else
             {
-                return new ServuxStructuresPacket(type, input.readNbt());
+                // Read Nbt
+                try
+                {
+                    return new ServuxStructuresPacket(type, input.readNbt());
+                }
+                catch (Exception e)
+                {
+                    MiniHUD.logger.error("ServuxStructuresPacket#fromPacket: error reading NBT from packet: [{}]", e.getLocalizedMessage());
+                }
             }
-            catch (Exception e)
-            {
-                MiniHUD.logger.error("ServuxStructuresPacket#fromPacket: error reading NBT from packet: [{}]", e.getLocalizedMessage());
-            }
-        }
 
-        return null;
+            return null;
+        }
+        catch (Exception e)
+        {
+            MiniHUD.logger.error("ServuxStructuresPacket#fromPacket: error reading packet", e);
+            DataStorage.getInstance().onPacketFailure();
+            return null;
+        }
+        finally
+        {
+            if (input.isReadable())
+            {
+                MiniHUD.logger.error("ServuxStructuresPacket#fromPacket: input buffer is not empty, skipping remaining bytes. are you using the correct version?");
+                DataStorage.getInstance().onPacketFailure();
+                input.skipBytes(input.readableBytes());
+            }
+        }
     }
 
     @Override

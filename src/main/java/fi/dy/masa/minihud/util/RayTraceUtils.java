@@ -18,7 +18,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
@@ -94,7 +93,8 @@ public class RayTraceUtils
 
     public static @Nullable RayTraceUtils.InventoryPreviewData getTargetInventory(MinecraftClient mc)
     {
-        World world = WorldUtils.getBestWorld(mc);
+        World world = mc.world;
+        World bestWorld = WorldUtils.getBestWorld(mc);
         Entity cameraEntity = EntityUtils.getCameraEntity();
 
         if (mc.player == null || world == null)
@@ -102,38 +102,28 @@ public class RayTraceUtils
             return null;
         }
 
-        if (cameraEntity == mc.player && world instanceof ServerWorld)
-        {
-            // We need to get the player from the server world (if available, ie. in single player),
-            // so that the player itself won't be included in the ray trace
-            Entity serverPlayer = world.getPlayerByUuid(mc.player.getUuid());
-
-            if (serverPlayer != null)
-            {
-                cameraEntity = serverPlayer;
-            }
-        }
-
         HitResult trace = getRayTraceFromEntity(world, cameraEntity, false);
 
         if (trace.getType() == HitResult.Type.BLOCK)
         {
             BlockPos pos = ((BlockHitResult) trace).getBlockPos();
-            RenderHandler.getInstance().requestBlockEntityAt(mc.world, pos);
+            RenderHandler.getInstance().requestBlockEntityAt(world, pos);
 
-            Inventory inv = InventoryUtils.getInventory(world, pos);
+            assert bestWorld != null;
+            Inventory inv = InventoryUtils.getInventory(bestWorld, pos);
             if (inv == null)
             {
                 return null;
             }
 
-            return new InventoryPreviewData(inv, world.getBlockEntity(pos), null);
+            return new InventoryPreviewData(inv, bestWorld.getBlockEntity(pos), null);
         }
         else if (trace.getType() == HitResult.Type.ENTITY)
         {
+            assert bestWorld != null;
             Entity entity = ((EntityHitResult) trace).getEntity();
             EntitiesDataStorage.getInstance().requestEntity(entity.getId());
-            return getTargetInventoryFromEntity(entity);
+            return getTargetInventoryFromEntity(bestWorld.getEntityById(entity.getId()));
         }
         return null;
     }
