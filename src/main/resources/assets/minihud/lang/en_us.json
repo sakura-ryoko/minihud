@@ -390,7 +390,7 @@
     "minihud.config.render_toggle.comment.overlaySpawnChunkReal": "Toggle the spawn chunks overlay renderer\n§aGreen - Entity Processing\n§eYellow - Redstone Processing (Default: off)\n§cRed - Mob Caps only (aka lazy/border chunk)\n§6Brown - Outer limits for chunk loading,\n§6for things like World gen and rendering (Default: off)",
     "minihud.config.render_toggle.comment.overlaySpawnChunkPlayer": "Toggle the pseudo (player-following) spawn chunks overlay renderer,\nbased on the simulation distance\n§9Blue - Entity Processing\n§eYellow - Redstone Processing (Default: off)\n§dMagenta - Mob Caps only (aka lazy/border chunk)\n§5Purple - Outer limits for chunk loading,\n§5for things like World gen and rendering (Default: off)",
     "minihud.config.render_toggle.comment.overlayStructureMainToggle": "Main toggle for all structure bounding boxes",
-    "minihud.config.render_toggle.comment.overlayVillagerInfo": "Toggle the villager offers render.\nDisplays he enchantment books it sells.",
+    "minihud.config.render_toggle.comment.overlayVillagerInfo": "Toggle the villager offers render.\nDisplays the enchantment books it sells.",
     "minihud.config.render_toggle.comment.shapeRenderer": "The main toggle for the shape renderer",
     "minihud.config.render_toggle.comment.debugChunkBorder": "Toggles the vanilla Chunk Border debug renderer",
     "minihud.config.render_toggle.comment.debugChunkInfo": "Toggles the vanilla Chunk Info debug renderer",
