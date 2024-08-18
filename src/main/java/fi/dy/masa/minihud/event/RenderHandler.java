@@ -8,7 +8,6 @@ import fi.dy.masa.malilib.util.BlockUtils;
 import fi.dy.masa.malilib.util.InventoryUtils;
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.malilib.util.WorldUtils;
-import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.config.RendererToggle;
@@ -34,7 +33,6 @@ import net.minecraft.block.enums.ChestType;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.network.PlayerListEntry;
-import net.minecraft.client.resource.language.I18n;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -55,7 +53,6 @@ import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.server.world.OptionalChunk;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
@@ -754,7 +751,7 @@ public class RenderHandler implements IRenderer
 
             if (InfoToggle.HORSE_SPEED.getBooleanValue())
             {
-                float speed = horse.getMovementSpeed() > 0 ? horse.getMovementSpeed() : (float) horse.getAttributeValue(EntityAttributes.GENERIC_MOVEMENT_SPEED);
+                float speed = horse.getMovementSpeed() > 0 ? horse.getMovementSpeed() : (float) horse.getAttributeValue(EntityAttributes.MOVEMENT_SPEED);
                 speed *= 42.1629629629629f;
                 this.addLineI18n("minihud.info_line.horse_speed", AnimalType, speed);
                 this.addedTypes.add(InfoToggle.HORSE_SPEED);
@@ -762,7 +759,7 @@ public class RenderHandler implements IRenderer
 
             if (InfoToggle.HORSE_JUMP.getBooleanValue())
             {
-                double jump = horse.getAttributeValue(EntityAttributes.GENERIC_JUMP_STRENGTH);
+                double jump = horse.getAttributeValue(EntityAttributes.JUMP_STRENGTH);
                 double calculatedJumpHeight =
                         -0.1817584952d * jump * jump * jump +
                                 3.689713992d * jump * jump +
@@ -943,7 +940,7 @@ public class RenderHandler implements IRenderer
                 if (serverWorld instanceof ServerWorld)
                 {
                     IServerEntityManager manager = (IServerEntityManager) ((IMixinServerWorld) serverWorld).minihud_getEntityManager();
-                    int indexSize = manager.getIndexSize();
+                    int indexSize = manager.minihud$getIndexSize();
                     this.addLineI18n("minihud.info_line.entities_client_world.server", countClient, indexSize);
                     return;
                 }

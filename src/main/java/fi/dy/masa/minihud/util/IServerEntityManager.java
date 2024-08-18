@@ -2,7 +2,7 @@ package fi.dy.masa.minihud.util;
 
 public interface IServerEntityManager
 {
-    int getUuidSize();
+    int minihud$getUuidSize();
 
-    int getIndexSize();
+    int minihud$getIndexSize();
 }

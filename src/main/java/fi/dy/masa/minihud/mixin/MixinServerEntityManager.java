@@ -16,13 +16,13 @@ public abstract class MixinServerEntityManager implements IServerEntityManager
     @Shadow @Final private EntityIndex<?> index;
 
     @Override
-    public int getUuidSize()
+    public int minihud$getUuidSize()
     {
         return this.entityUuids.size();
     }
 
     @Override
-    public int getIndexSize()
+    public int minihud$getIndexSize()
     {
         return this.index.size();
     }
