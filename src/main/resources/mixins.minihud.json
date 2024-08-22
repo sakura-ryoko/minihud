@@ -12,7 +12,6 @@
                 "IMixinDataQueryHandler",
                 "IMixinEntity",
                 "IMixinEntityNavigation",
-                "IMixinLeashable",
                 "IMixinMerchantEntity",
                 "IMixinPassiveEntity",
                 "IMixinPiglinEntity",

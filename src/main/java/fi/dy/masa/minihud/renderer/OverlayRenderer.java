@@ -106,7 +106,8 @@ public class OverlayRenderer
         BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
         BuiltBuffer builtBuffer;
 
-        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+        // FIXME
+        //RenderSystem.setShader(GameRenderer::getPositionColorProgram);
         //RenderSystem.applyModelViewMatrix();
 
         fi.dy.masa.malilib.render.RenderUtils.drawBoxAllSidesBatchedQuads(minX, minY, minZ, maxX, maxY, maxZ, Color4f.fromColor(color, 0.3f), buffer);

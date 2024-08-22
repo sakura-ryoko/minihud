@@ -2,11 +2,12 @@ package fi.dy.masa.minihud.renderer;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.FluidBlock;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.entity.Entity;
@@ -25,6 +26,7 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkSection;
 import net.minecraft.world.chunk.WorldChunk;
 import net.minecraft.world.chunk.light.LightingProvider;
+
 import fi.dy.masa.malilib.config.IConfigDouble;
 import fi.dy.masa.malilib.config.options.ConfigColor;
 import fi.dy.masa.malilib.gui.Message;
@@ -155,8 +157,11 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
     @Override
     public void allocateGlResources()
     {
-        this.allocateBuffer(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR, GameRenderer::getPositionTexColorProgram);
-        this.allocateBuffer(VertexFormat.DrawMode.DEBUG_LINES, VertexFormats.POSITION_COLOR, GameRenderer::getPositionColorProgram);
+        // FIXME
+        //this.allocateBuffer(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR, GameRenderer::getPositionTexColorProgram);
+        //this.allocateBuffer(VertexFormat.DrawMode.DEBUG_LINES, VertexFormats.POSITION_COLOR, GameRenderer::getPositionColorProgram);
+        this.allocateBuffer(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR, RenderSystem.getShader());
+        this.allocateBuffer(VertexFormat.DrawMode.DEBUG_LINES, VertexFormats.POSITION_COLOR, RenderSystem.getShader());
     }
 
     private void renderLightLevels(Vec3d cameraPos, MinecraftClient mc)
