@@ -7,13 +7,15 @@ import com.google.gson.JsonObject;
 import org.joml.Matrix4f;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.gl.ShaderProgram;
+import net.minecraft.class_10156;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+
+import fi.dy.masa.malilib.render.shader.ShaderPrograms;
 
 public abstract class OverlayRendererBase implements IOverlayRenderer
 {
@@ -103,9 +105,8 @@ public abstract class OverlayRendererBase implements IOverlayRenderer
      */
     protected RenderObjectBase allocateBuffer(VertexFormat.DrawMode glMode)
     {
-        // FIXME
         //return this.allocateBuffer(glMode, VertexFormats.POSITION_COLOR, GameRenderer::getPositionColorProgram);
-        return this.allocateBuffer(glMode, VertexFormats.POSITION_COLOR, RenderSystem.getShader());
+        return this.allocateBuffer(glMode, VertexFormats.POSITION_COLOR, ShaderPrograms.POSITION_COLOR);
     }
 
     /**
@@ -113,8 +114,7 @@ public abstract class OverlayRendererBase implements IOverlayRenderer
      * @param glMode
      * @return
      */
-    //protected RenderObjectBase allocateBuffer(VertexFormat.DrawMode glMode, VertexFormat format, Supplier<ShaderProgram> shader)
-    protected RenderObjectBase allocateBuffer(VertexFormat.DrawMode glMode, VertexFormat format, ShaderProgram shader)
+    protected RenderObjectBase allocateBuffer(VertexFormat.DrawMode glMode, VertexFormat format, class_10156 shader)
     {
         RenderObjectBase obj = new RenderObjectVbo(glMode, format, shader);
         this.renderObjects.add(obj);

@@ -2,18 +2,16 @@ package fi.dy.masa.minihud.renderer;
 
 import org.joml.Matrix4f;
 
-import net.minecraft.client.gl.ShaderProgram;
+import net.minecraft.class_10156;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.VertexFormat;
 
 public abstract class RenderObjectBase
 {
     protected final VertexFormat.DrawMode glMode;
-    //protected final Supplier<ShaderProgram> shader;
-    protected final ShaderProgram shader;
+    protected final class_10156 shader;
 
-    //public RenderObjectBase(VertexFormat.DrawMode glMode, Supplier<ShaderProgram> shader)
-    public RenderObjectBase(VertexFormat.DrawMode glMode, ShaderProgram shader)
+    public RenderObjectBase(VertexFormat.DrawMode glMode, class_10156 shader)
     {
         this.glMode = glMode;
         this.shader = shader;
@@ -24,8 +22,7 @@ public abstract class RenderObjectBase
         return this.glMode;
     }
 
-    //public Supplier<ShaderProgram> getShader()
-    public ShaderProgram getShader()
+    public class_10156 getShader()
     {
         return this.shader;
     }

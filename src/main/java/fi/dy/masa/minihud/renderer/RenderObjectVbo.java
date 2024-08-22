@@ -3,6 +3,7 @@ package fi.dy.masa.minihud.renderer;
 import org.joml.Matrix4f;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.class_10156;
 import net.minecraft.client.gl.ShaderProgram;
 import net.minecraft.client.gl.VertexBuffer;
 import net.minecraft.client.render.BufferBuilder;
@@ -17,8 +18,7 @@ public class RenderObjectVbo extends RenderObjectBase
     protected final boolean hasTexture;
     protected boolean hasData;
 
-    //public RenderObjectVbo(VertexFormat.DrawMode glMode, VertexFormat format, Supplier<ShaderProgram> shader)
-    public RenderObjectVbo(VertexFormat.DrawMode glMode, VertexFormat format, ShaderProgram shader)
+    public RenderObjectVbo(VertexFormat.DrawMode glMode, VertexFormat format, class_10156 shader)
     {
         super(glMode, shader);
 
@@ -66,10 +66,9 @@ public class RenderObjectVbo extends RenderObjectBase
     {
         if (this.hasData)
         {
-            // FIXME
-            RenderSystem.setShader(this.getShader());
+            ShaderProgram program = RenderSystem.setShader(this.getShader());
             this.vertexBuffer.bind();
-            this.vertexBuffer.draw(matrix4f, projMatrix, this.getShader());
+            this.vertexBuffer.draw(matrix4f, projMatrix, program);
             VertexBuffer.unbind();
         }
     }
