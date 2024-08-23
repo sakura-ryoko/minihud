@@ -431,7 +431,7 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
         final int maxCZ = (maxZ >> 4);
         LightingProvider lightingProvider = world.getChunkManager().getLightingProvider();
         BlockPos.Mutable mutablePos = new BlockPos.Mutable();
-        final int worldTopHeight = world.getTopY();
+        final int worldTopHeight = world.getTopYInclusive() + 1;
         final boolean collisionCheck = Configs.Generic.LIGHT_LEVEL_COLLISION_CHECK.getBooleanValue();
         final boolean underWater = Configs.Generic.LIGHT_LEVEL_UNDER_WATER.getBooleanValue();
         final boolean autoHeight = Configs.Generic.LIGHT_LEVEL_AUTO_HEIGHT.getBooleanValue();

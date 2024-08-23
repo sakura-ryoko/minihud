@@ -159,7 +159,7 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
         int chunkY = MathHelper.floor(cameraEntity.getY()) >> 4;
         int chunkZ = MathHelper.floor(cameraEntity.getZ()) >> 4;
         int minCY = Math.max(world.getBottomY() >> 4, chunkY - viewDistanceVertical);
-        int maxCY = Math.min((world.getTopY() - 1) >> 4, chunkY + viewDistanceVertical);
+        int maxCY = Math.min((world.getTopYInclusive()) >> 4, chunkY + viewDistanceVertical);
         List<SubChunkPos> chunks = new ArrayList<>();
 
         for (int cz = chunkZ - viewDistance; cz <= chunkZ + viewDistance; ++cz)

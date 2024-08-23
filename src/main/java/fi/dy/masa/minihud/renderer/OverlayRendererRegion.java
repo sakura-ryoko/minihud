@@ -62,7 +62,7 @@ public class OverlayRendererRegion extends OverlayRendererBase
 
         World world = entity.getEntityWorld();
         int minY = world != null ? world.getBottomY() : -64;
-        int maxY = world != null ? world.getTopY() : 320;
+        int maxY = world != null ? world.getTopYInclusive() + 1 : 320;
         int rx = MathHelper.floor(entity.getX()) & ~0x1FF;
         int rz = MathHelper.floor(entity.getZ()) & ~0x1FF;
         BlockPos pos1 = new BlockPos(rx,       minY, rz      );

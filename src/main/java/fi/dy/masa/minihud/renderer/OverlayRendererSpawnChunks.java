@@ -196,7 +196,7 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
         int cz = (worldSpawn.getZ() >> 4);
 
         int minY = world != null ? world.getBottomY() : -64;
-        int maxY = world != null ? world.getTopY() : 320;
+        int maxY = world != null ? world.getTopYInclusive() + 1 : 320;
         BlockPos pos1 = new BlockPos( (cx - chunkRange) << 4      , minY,  (cz - chunkRange) << 4);
         BlockPos pos2 = new BlockPos(((cx + chunkRange) << 4) + 15, maxY, ((cz + chunkRange) << 4) + 15);
 

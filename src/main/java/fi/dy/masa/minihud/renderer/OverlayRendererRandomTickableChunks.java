@@ -180,7 +180,7 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
         }
 
         int minY = world != null ? world.getBottomY() : -64;
-        int maxY = world != null ? world.getTopY() : 320;
+        int maxY = world != null ? world.getTopYInclusive() + 1 : 320;
 
         RenderUtils.renderWallWithLines(minX, minY, minZ, maxX, maxY, maxZ, 16, 16, true, cameraPos, color, BUFFER_1, BUFFER_2);
     }
