@@ -8,14 +8,13 @@ import org.joml.Matrix4f;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gl.ShaderProgramKey;
+import net.minecraft.client.gl.ShaderProgramKeys;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
-
-import fi.dy.masa.malilib.render.shader.ShaderPrograms;
 
 public abstract class OverlayRendererBase implements IOverlayRenderer
 {
@@ -106,7 +105,7 @@ public abstract class OverlayRendererBase implements IOverlayRenderer
     protected RenderObjectBase allocateBuffer(VertexFormat.DrawMode glMode)
     {
         //return this.allocateBuffer(glMode, VertexFormats.POSITION_COLOR, GameRenderer::getPositionColorProgram);
-        return this.allocateBuffer(glMode, VertexFormats.POSITION_COLOR, ShaderPrograms.POSITION_COLOR);
+        return this.allocateBuffer(glMode, VertexFormats.POSITION_COLOR, ShaderProgramKeys.POSITION_COLOR);
     }
 
     /**
