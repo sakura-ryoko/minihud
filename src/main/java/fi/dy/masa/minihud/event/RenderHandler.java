@@ -164,6 +164,7 @@ public class RenderHandler implements IRenderer
             boolean useShadow = Configs.Generic.USE_FONT_SHADOW.getBooleanValue();
 
             RenderUtils.renderText(x, y, Configs.Generic.FONT_SCALE.getDoubleValue(), textColor, bgColor, alignment, useBackground, useShadow, this.lines, context);
+            RenderUtils.forceDraw(context);
         }
 
         if (Configs.Generic.INVENTORY_PREVIEW_ENABLED.getBooleanValue() &&
