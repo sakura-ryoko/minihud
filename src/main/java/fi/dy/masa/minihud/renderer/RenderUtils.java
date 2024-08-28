@@ -172,7 +172,6 @@ public class RenderUtils
         }
     }
 
-
     /**
      * Assumes a BufferBuilder in GL_QUADS mode has been initialized
      */

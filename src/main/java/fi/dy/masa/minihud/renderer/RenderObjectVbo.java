@@ -77,5 +77,6 @@ public class RenderObjectVbo extends RenderObjectBase
     public void deleteGlResources()
     {
         this.vertexBuffer.close();
+        this.hasData = false;
     }
 }
