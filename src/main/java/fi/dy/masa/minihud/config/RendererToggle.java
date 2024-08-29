@@ -38,11 +38,15 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
 
     DEBUG_CHUNK_BORDER                  ("debugChunkBorder",            ""),
     DEBUG_CHUNK_INFO                    ("debugChunkInfo",              ""),
+    DEBUG_CHUNK_LOADING                 ("debugChunkLoading",           ""),
     DEBUG_CHUNK_OCCLUSION               ("debugChunkOcclusion",         ""),
     DEBUG_COLLISION_BOXES               ("debugCollisionBoxEnabled",    ""),
     DEBUG_NEIGHBOR_UPDATES              ("debugNeighborsUpdateEnabled", ""),
+    DEBUG_OCTREEE                       ("debugOctreeEnabled",          ""),
     //DEBUG_PATH_FINDING                  ("debugPathfindingEnabled",     ""),
+    DEBUG_REDSTONE_UPDATE_ORDER         ("debugRedstoneUpdateOrder",    ""),
     DEBUG_SOLID_FACES                   ("debugSolidFaceEnabled",       ""),
+    DEBUG_SUPPORTING_BLOCK              ("debugSupportingBlock",        ""),
     DEBUG_WATER                         ("debugWaterEnabled",           "");
 
     public static final ImmutableList<RendererToggle> VALUES = ImmutableList.copyOf(values());

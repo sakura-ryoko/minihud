@@ -895,7 +895,7 @@ public class RenderHandler implements IRenderer
             if (clientChunk.isEmpty() == false)
             {
                 Biome biome = mc.world.getBiome(pos).value();
-                Identifier id = mc.world.getRegistryManager().get(RegistryKeys.BIOME).getId(biome);
+                Identifier id = mc.world.getRegistryManager().getOrThrow(RegistryKeys.BIOME).getId(biome);
                 this.addLineI18n("minihud.info_line.biome", StringUtils.translate("biome." + id.toString().replace(":", ".")));
             }
         }
@@ -906,7 +906,7 @@ public class RenderHandler implements IRenderer
             if (clientChunk.isEmpty() == false)
             {
                 Biome biome = mc.world.getBiome(pos).value();
-                Identifier rl = mc.world.getRegistryManager().get(RegistryKeys.BIOME).getId(biome);
+                Identifier rl = mc.world.getRegistryManager().getOrThrow(RegistryKeys.BIOME).getId(biome);
                 String name = rl != null ? rl.toString() : "?";
                 this.addLineI18n("minihud.info_line.biome_reg_name", name);
             }

@@ -75,9 +75,11 @@ public class KeyCallbacks
 
         RendererToggle.DEBUG_CHUNK_BORDER.setValueChangeCallback(DebugInfoUtils::toggleDebugRenderer);
         RendererToggle.DEBUG_CHUNK_INFO.setValueChangeCallback(DebugInfoUtils::toggleDebugRenderer);
+        RendererToggle.DEBUG_CHUNK_LOADING.setValueChangeCallback(DebugInfoUtils::toggleDebugRenderer);
         RendererToggle.DEBUG_CHUNK_OCCLUSION.setValueChangeCallback(DebugInfoUtils::toggleDebugRenderer);
         RendererToggle.DEBUG_NEIGHBOR_UPDATES.setValueChangeCallback(DebugInfoUtils::toggleDebugRenderer);
         //RendererToggle.DEBUG_PATH_FINDING.setValueChangeCallback(DebugInfoUtils::toggleDebugRenderer);
+        RendererToggle.DEBUG_OCTREEE.setValueChangeCallback(DebugInfoUtils::toggleDebugRenderer);
     }
 
     private static void updateBeaconOverlay()

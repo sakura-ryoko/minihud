@@ -1117,7 +1117,7 @@ public class DataStorage
                 {
                     Structure structure = entry.getKey();
                     StructureStart start = entry.getValue();
-                    Identifier id = world.getRegistryManager().get(RegistryKeys.STRUCTURE).getId(structure);
+                    Identifier id = world.getRegistryManager().getOrThrow(RegistryKeys.STRUCTURE).getId(structure);
                     StructureType type = StructureType.fromStructureId(id != null ? id.toString() : "?");
 
                     if (type.isEnabled() &&

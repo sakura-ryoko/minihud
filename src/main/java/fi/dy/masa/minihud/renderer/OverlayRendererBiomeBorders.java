@@ -551,7 +551,7 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
         }
         else
         {
-            final Registry<Biome> registry = world.getRegistryManager().get(RegistryKeys.BIOME);
+            final Registry<Biome> registry = world.getRegistryManager().getOrThrow(RegistryKeys.BIOME);
             int count = 0;
             int maxId = 0;
 

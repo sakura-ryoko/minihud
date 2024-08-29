@@ -8,6 +8,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import io.netty.buffer.Unpooled;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.render.Frustum;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.debug.DebugRenderer;
 import net.minecraft.client.render.debug.NeighborUpdateDebugRenderer;
@@ -19,6 +20,8 @@ import net.minecraft.entity.ai.pathing.Path;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.packet.s2c.common.CustomPayloadS2CPacket;
+import net.minecraft.network.packet.s2c.custom.DebugPathCustomPayload;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -29,7 +32,11 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import fi.dy.masa.malilib.config.IConfigBoolean;
+import fi.dy.masa.minihud.MiniHUD;
+import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.RendererToggle;
+import fi.dy.masa.minihud.mixin.IMixinDebugRenderer;
+import fi.dy.masa.minihud.mixin.IMixinEntityNavigation;
 
 public class DebugInfoUtils
 {
@@ -167,16 +174,40 @@ public class DebugInfoUtils
          */
         else if (config == RendererToggle.DEBUG_CHUNK_BORDER)
         {
-            boolean enabled = MinecraftClient.getInstance().debugRenderer.toggleShowChunkBorder();
+            boolean enabled = ((IMixinDebugRenderer) MinecraftClient.getInstance().debugRenderer).minihud_getShowChunkBorder();
+
+            if (enabled != RendererToggle.DEBUG_CHUNK_BORDER.getBooleanValue())
+            {
+                enabled = MinecraftClient.getInstance().debugRenderer.toggleShowChunkBorder();
+            }
+
             debugWarn(enabled ? "debug.chunk_boundaries.on" : "debug.chunk_boundaries.off");
         }
-        else if (config == RendererToggle.DEBUG_CHUNK_INFO)
+        else if (config == RendererToggle.DEBUG_CHUNK_INFO || config == RendererToggle.DEBUG_CHUNK_LOADING)
         {
             MinecraftClient.getInstance().debugChunkInfo = config.getBooleanValue();
         }
         else if (config == RendererToggle.DEBUG_CHUNK_OCCLUSION)
         {
             MinecraftClient.getInstance().debugChunkOcclusion = config.getBooleanValue();
+        }
+        else if (config == RendererToggle.DEBUG_OCTREEE)
+        {
+            boolean enabled = ((IMixinDebugRenderer) MinecraftClient.getInstance().debugRenderer).minihud_getShowOctree();
+
+            if (enabled != RendererToggle.DEBUG_OCTREEE.getBooleanValue())
+            {
+                enabled = MinecraftClient.getInstance().debugRenderer.toggleShowOctree();
+            }
+
+            if (enabled)
+            {
+                MiniHUD.logger.warn("Toggled Vanilla 'Octree' Debug Renderer ON.");
+            }
+            else
+            {
+                MiniHUD.logger.warn("Toggled Vanilla 'Octree' Debug Renderer OFF.");
+            }
         }
     }
 
@@ -188,20 +219,24 @@ public class DebugInfoUtils
                 .append(Text.translatable(key, args)));
     }
 
-    public static void renderVanillaDebug(MatrixStack matrixStack, VertexConsumerProvider.Immediate vtx,
-            double cameraX, double cameraY, double cameraZ)
+    public static void renderVanillaDebug(MatrixStack matrixStack, Frustum frustum,
+                                          VertexConsumerProvider.Immediate vtx,
+                                          double cameraX, double cameraY, double cameraZ)
     {
         DebugRenderer renderer = MinecraftClient.getInstance().debugRenderer;
 
         if (RendererToggle.DEBUG_COLLISION_BOXES.getBooleanValue())
         {
             renderer.collisionDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
+            vtx.draw();
         }
 
         if (RendererToggle.DEBUG_NEIGHBOR_UPDATES.getBooleanValue())
         {
             renderer.neighborUpdateDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
+            vtx.draw();
         }
+
         // FIXME This causes a custom_payload crash
         /*
         if (RendererToggle.DEBUG_PATH_FINDING.getBooleanValue())
@@ -214,11 +249,51 @@ public class DebugInfoUtils
         {
             RenderSystem.enableDepthTest();
             renderer.blockOutlineDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
+            vtx.draw();
         }
 
         if (RendererToggle.DEBUG_WATER.getBooleanValue())
         {
             renderer.waterDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
+            vtx.draw();
+        }
+
+        if (RendererToggle.DEBUG_REDSTONE_UPDATE_ORDER.getBooleanValue())
+        {
+            renderer.redstoneUpdateOrderDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
+            vtx.draw();
+        }
+
+        if (RendererToggle.DEBUG_CHUNK_LOADING.getBooleanValue())
+        {
+            renderer.chunkLoadingDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
+            vtx.draw();
+        }
+
+        if (RendererToggle.DEBUG_SUPPORTING_BLOCK.getBooleanValue())
+        {
+            renderer.supportingBlockDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
+            vtx.draw();
+        }
+    }
+
+    /**
+     * Fixes Desync between MiniHUD config and the actual toggles in game.
+     * @param toggle
+     */
+    public static void onToggleVanillaDebugChunkBorder(boolean toggle)
+    {
+        if (toggle != RendererToggle.DEBUG_CHUNK_BORDER.getBooleanValue())
+        {
+            RendererToggle.DEBUG_CHUNK_BORDER.setBooleanValue(toggle);
+        }
+    }
+
+    public static void onToggleVanillaDebugOctree(boolean toggle)
+    {
+        if (toggle != RendererToggle.DEBUG_OCTREEE.getBooleanValue())
+        {
+            RendererToggle.DEBUG_OCTREEE.setBooleanValue(toggle);
         }
     }
 }
