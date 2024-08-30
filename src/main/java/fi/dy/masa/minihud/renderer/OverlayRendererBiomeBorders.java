@@ -10,23 +10,22 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3i;
+import net.minecraft.util.math.*;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.source.BiomeAccess;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.WorldChunk;
+
 import fi.dy.masa.malilib.util.Color4f;
 import fi.dy.masa.malilib.util.SubChunkPos;
 import fi.dy.masa.minihud.MiniHUD;
@@ -696,11 +695,11 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
     {
         try
         {
-            Optional<Biome> optional = registry.getOrEmpty(Identifier.tryParse(biomeId));
+            Optional<RegistryEntry.Reference<Biome>> optional = registry.getEntry(Identifier.tryParse(biomeId));
 
             if (optional.isPresent())
             {
-                int id = this.biomeMapping.getInt(optional.get());
+                int id = this.biomeMapping.getInt(optional.get().value());
 
                 if (id >= 0)
                 {

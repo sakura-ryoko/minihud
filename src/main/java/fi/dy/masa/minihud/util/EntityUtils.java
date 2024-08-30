@@ -87,6 +87,7 @@ public class EntityUtils
         }
     }
 
+    @SuppressWarnings("unchecked")
     public static <T extends Entity> List<T> getEntitiesByClass(MinecraftClient mc, Class<T> entityClass, Box box, Predicate<? super T> predicate)
     {
         if (mc.world == null)
