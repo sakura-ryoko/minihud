@@ -21,6 +21,7 @@ import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.s2c.common.CustomPayloadS2CPacket;
+import net.minecraft.network.packet.s2c.custom.DebugBrainCustomPayload;
 import net.minecraft.network.packet.s2c.custom.DebugPathCustomPayload;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -30,6 +31,8 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.TypeFilter;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 
 import fi.dy.masa.malilib.config.IConfigBoolean;
 import fi.dy.masa.minihud.MiniHUD;
@@ -44,6 +47,12 @@ public class DebugInfoUtils
     private static boolean pathfindingEnabled = false;
     private static int tickCounter;
     private static final Map<Entity, Path> OLD_PATHS = new MapMaker().weakKeys().weakValues().makeMap();
+
+    public static void registerPayloads()
+    {
+        PayloadTypeRegistry.playC2S().register(DebugBrainCustomPayload.ID, DebugBrainCustomPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(DebugBrainCustomPayload.ID, DebugBrainCustomPayload.CODEC);
+    }
 
     public static void sendPacketDebugPath(MinecraftServer server, int entityId, Path path, float maxDistance)
     {
@@ -230,51 +239,116 @@ public class DebugInfoUtils
             renderer.collisionDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
             vtx.draw();
         }
-
         if (RendererToggle.DEBUG_NEIGHBOR_UPDATES.getBooleanValue())
         {
             renderer.neighborUpdateDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
             vtx.draw();
         }
-
-        // FIXME This causes a custom_payload crash
-        /*
-        if (RendererToggle.DEBUG_PATH_FINDING.getBooleanValue())
-        {
-            renderer.pathfindingDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
-        }
-         */
-
         if (RendererToggle.DEBUG_SOLID_FACES.getBooleanValue())
         {
             RenderSystem.enableDepthTest();
             renderer.blockOutlineDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
             vtx.draw();
         }
-
         if (RendererToggle.DEBUG_WATER.getBooleanValue())
         {
             renderer.waterDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
             vtx.draw();
         }
-
-        if (RendererToggle.DEBUG_REDSTONE_UPDATE_ORDER.getBooleanValue())
-        {
-            renderer.redstoneUpdateOrderDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
-            vtx.draw();
-        }
-
         if (RendererToggle.DEBUG_CHUNK_LOADING.getBooleanValue())
         {
             renderer.chunkLoadingDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
             vtx.draw();
         }
-
+        if (RendererToggle.DEBUG_CHUNK_DEBUG.getBooleanValue())
+        {
+            renderer.chunkDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
+            vtx.draw();
+        }
         if (RendererToggle.DEBUG_SUPPORTING_BLOCK.getBooleanValue())
         {
             renderer.supportingBlockDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
             vtx.draw();
         }
+        if (RendererToggle.DEBUG_HEIGHTMAP.getBooleanValue())
+        {
+            renderer.heightmapDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
+            vtx.draw();
+        }
+        if (RendererToggle.DEBUG_WORLDGEN.getBooleanValue())
+        {
+            renderer.worldGenAttemptDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
+            vtx.draw();
+        }
+        if (RendererToggle.DEBUG_STRUCTURES.getBooleanValue())
+        {
+            renderer.structureDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
+            vtx.draw();
+        }
+        if (RendererToggle.DEBUG_VILLAGE_SECTIONS.getBooleanValue())
+        {
+            renderer.villageSectionsDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
+            vtx.draw();
+        }
+        if (RendererToggle.DEBUG_BREEZE_JUMP.getBooleanValue())
+        {
+            renderer.breezeDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
+            vtx.draw();
+        }
+        if (RendererToggle.DEBUG_RAID_CENTER.getBooleanValue())
+        {
+            renderer.raidCenterDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
+            vtx.draw();
+        }
+        if (RendererToggle.DEBUG_GOAL_SELECTOR.getBooleanValue())
+        {
+            renderer.goalSelectorDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
+            vtx.draw();
+        }
+        if (RendererToggle.DEBUG_SKYLIGHT.getBooleanValue())
+        {
+            renderer.skyLightDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
+            vtx.draw();
+        }
+        if (RendererToggle.DEBUG_GAME_EVENT.getBooleanValue())
+        {
+            renderer.gameEventDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
+            vtx.draw();
+        }
+        if (RendererToggle.DEBUG_LIGHT.getBooleanValue())
+        {
+            renderer.lightDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
+            vtx.draw();
+        }
+
+        // FIXME These cause a custom_payload crash
+        /*
+        if (RendererToggle.DEBUG_PATH_FINDING.getBooleanValue())
+        {
+            renderer.pathfindingDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
+            vtx.draw();
+        }
+        if (RendererToggle.DEBUG_REDSTONE_UPDATE_ORDER.getBooleanValue())
+        {
+            renderer.redstoneUpdateOrderDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
+            vtx.draw();
+        }
+        if (RendererToggle.DEBUG_VILLAGE.getBooleanValue())
+        {
+            renderer.villageDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
+            vtx.draw();
+        }
+        if (RendererToggle.DEBUG_BEEDATA.getBooleanValue())
+        {
+            renderer.beeDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
+            vtx.draw();
+        }
+        if (RendererToggle.DEBUG_GAME_TEST.getBooleanValue())
+        {
+            renderer.gameTestDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
+            vtx.draw();
+        }
+         */
     }
 
     /**

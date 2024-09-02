@@ -37,18 +37,32 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
     OVERLAY_VILLAGER_INFO               ("overlayVillagerInfo",         ""),
     SHAPE_RENDERER                      ("shapeRenderer",               ""),
 
+    //DEBUG_BEEDATA                       ("debugBeeDataEnabled",         ""),
+    DEBUG_BREEZE_JUMP                   ("debugBreezeJumpEnabled",      ""),
     DEBUG_CHUNK_BORDER                  ("debugChunkBorder",            ""),
+    DEBUG_CHUNK_DEBUG                   ("debugChunkDebug",             ""),
     DEBUG_CHUNK_INFO                    ("debugChunkInfo",              ""),
     DEBUG_CHUNK_LOADING                 ("debugChunkLoading",           ""),
     DEBUG_CHUNK_OCCLUSION               ("debugChunkOcclusion",         ""),
     DEBUG_COLLISION_BOXES               ("debugCollisionBoxEnabled",    ""),
+    DEBUG_HEIGHTMAP                     ("debugHeightmapEnabled",       ""),
+    DEBUG_LIGHT                         ("debugLightEnabled",           ""),
     DEBUG_NEIGHBOR_UPDATES              ("debugNeighborsUpdateEnabled", ""),
+    //DEBUG_GAME_TEST                     ("debugGameTestEnabled",        ""),
+    DEBUG_GAME_EVENT                    ("debugGameEventsEnabled",      ""),
+    DEBUG_GOAL_SELECTOR                 ("debugGoalSelectorEnabled",    ""),
     DEBUG_OCTREEE                       ("debugOctreeEnabled",          ""),
     //DEBUG_PATH_FINDING                  ("debugPathfindingEnabled",     ""),
-    DEBUG_REDSTONE_UPDATE_ORDER         ("debugRedstoneUpdateOrder",    ""),
+    DEBUG_RAID_CENTER                   ("debugRaidCenterEnabled",      ""),
+    //DEBUG_REDSTONE_UPDATE_ORDER         ("debugRedstoneUpdateOrder",    ""),
+    DEBUG_SKYLIGHT                      ("debugSkylightEnabled",        ""),
     DEBUG_SOLID_FACES                   ("debugSolidFaceEnabled",       ""),
+    DEBUG_STRUCTURES                    ("debugStructuresEnabled",      ""),
     DEBUG_SUPPORTING_BLOCK              ("debugSupportingBlock",        ""),
-    DEBUG_WATER                         ("debugWaterEnabled",           "");
+    DEBUG_WATER                         ("debugWaterEnabled",           ""),
+    //DEBUG_VILLAGE                       ("debugVillageEnabled",         ""),
+    DEBUG_VILLAGE_SECTIONS              ("debugVillageSectionsEnabled", ""),
+    DEBUG_WORLDGEN                      ("debugWorldGenEnabled",        "");
 
     public static final ImmutableList<RendererToggle> VALUES = ImmutableList.copyOf(values());
     private static final String RENDER_KEY = Reference.MOD_ID+".config.render_toggle";

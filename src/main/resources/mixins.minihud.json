@@ -24,6 +24,7 @@
     "MixinBlockOutlineDebugRenderer",
     "MixinChatScreen",
     "MixinChunkTicketManager",
+    "MixinClientCommonNetworkHandler",
     "MixinClientPlayerInteractionManager",
     "MixinClientPlayNetworkHandler",
     "MixinConduitBlockEntity",
@@ -41,5 +42,8 @@
   ],
   "injectors": {
     "defaultRequire": 1
-  }
+  },
+  "mixins": [
+    "MixinResourcePackSendS2CPacket"
+  ]
 }
