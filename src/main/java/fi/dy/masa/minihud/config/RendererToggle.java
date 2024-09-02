@@ -15,6 +15,7 @@ import fi.dy.masa.malilib.interfaces.IValueChangeCallback;
 import fi.dy.masa.malilib.util.InfoUtils;
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.minihud.MiniHUD;
+import fi.dy.masa.minihud.Reference;
 
 import javax.annotation.Nullable;
 
@@ -50,7 +51,7 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
     DEBUG_WATER                         ("debugWaterEnabled",           "");
 
     public static final ImmutableList<RendererToggle> VALUES = ImmutableList.copyOf(values());
-    private static final String translateNameBase = "minihud.config.render_toggle";
+    private static final String RENDER_KEY = Reference.MOD_ID+".config.render_toggle";
 
     private final String name;
     private final String comment;
@@ -66,6 +67,11 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
         this(name, defaultHotkey, KeybindSettings.DEFAULT, buildTranslateName(name, "comment"), buildTranslateName(name, "prettyName"), buildTranslateName(name, "name"));
     }
 
+    RendererToggle(String name, String defaultHotkey, String comment)
+    {
+        this(name, defaultHotkey, KeybindSettings.DEFAULT, comment, StringUtils.splitCamelCase(name), name);
+    }
+
     RendererToggle(String name, String defaultHotkey, String comment, String prettyName)
     {
         this(name, defaultHotkey, KeybindSettings.DEFAULT, comment, prettyName, name);
@@ -79,6 +85,11 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
     RendererToggle(String name, String defaultHotkey, KeybindSettings settings)
     {
         this(name, defaultHotkey, settings, buildTranslateName(name, "comment"), buildTranslateName(name, "prettyName"), buildTranslateName(name, "name"));
+    }
+
+    RendererToggle(String name, String defaultHotkey, KeybindSettings settings, String comment)
+    {
+        this(name, defaultHotkey, settings, comment, StringUtils.splitCamelCase(name), name);
     }
 
     RendererToggle(String name, String defaultHotkey, KeybindSettings settings, String comment, String prettyName)
@@ -213,7 +224,7 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
 
     private static String buildTranslateName(String name, String type)
     {
-        return translateNameBase + "." + type + "." + name;
+        return RENDER_KEY + "." + type + "." + name;
     }
 
     @Override

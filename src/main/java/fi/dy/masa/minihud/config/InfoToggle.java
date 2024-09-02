@@ -90,7 +90,7 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     ;
 
     public static final ImmutableList<InfoToggle> VALUES = ImmutableList.copyOf(values());
-    private static final String translateNameBase = Reference.MOD_ID+".config.info_toggle";
+    private static final String INFO_KEY = Reference.MOD_ID+".config.info_toggle";
 
     private final String name;
     private final String comment;
@@ -219,7 +219,7 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
 
     private static String buildTranslateName(String name, String type)
     {
-        return translateNameBase + "." + type + "." + name;
+        return INFO_KEY + "." + type + "." + name;
     }
 
     @Override
