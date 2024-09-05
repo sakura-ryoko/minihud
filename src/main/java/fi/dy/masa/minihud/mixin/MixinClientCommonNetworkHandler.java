@@ -1,19 +1,7 @@
 package fi.dy.masa.minihud.mixin;
 
 import net.minecraft.client.network.ClientCommonNetworkHandler;
-import net.minecraft.network.NetworkThreadUtils;
-import net.minecraft.network.listener.ClientCommonPacketListener;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.network.packet.s2c.common.CustomPayloadS2CPacket;
-import net.minecraft.network.packet.s2c.custom.DebugBrainCustomPayload;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-import fi.dy.masa.minihud.MiniHUD;
 
 @Mixin(value = ClientCommonNetworkHandler.class, priority = 999)
 public abstract class MixinClientCommonNetworkHandler

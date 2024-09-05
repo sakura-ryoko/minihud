@@ -47,6 +47,7 @@ import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.RendererToggle;
 import fi.dy.masa.minihud.data.MobCapDataHandler;
+import fi.dy.masa.minihud.mixin.IMixinMinecraftServer;
 import fi.dy.masa.minihud.network.ServuxStructuresHandler;
 import fi.dy.masa.minihud.network.ServuxStructuresPacket;
 import fi.dy.masa.minihud.renderer.*;
@@ -1005,7 +1006,8 @@ public class DataStorage
             MinecraftServer server = this.mc.getServer();
             final int maxChunkRange = this.mc.options.getClampedViewDistance();
 
-            server.send(new ServerTask(server.getTicks(), () ->
+            //server.executeTask(new ServerTask(server.getTicks(), () ->
+            ((IMixinMinecraftServer) server).minihud_send(new ServerTask(server.getTicks(), () ->
             {
                 synchronized (this.structures)
                 {
