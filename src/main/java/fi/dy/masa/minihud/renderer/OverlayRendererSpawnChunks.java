@@ -195,12 +195,38 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
         int cx = (worldSpawn.getX() >> 4);
         int cz = (worldSpawn.getZ() >> 4);
 
-        int minY = world != null ? world.getBottomY() : -64;
+        int minY = this.getMinY(world);
         int maxY = world != null ? world.getTopYInclusive() + 1 : 320;
         BlockPos pos1 = new BlockPos( (cx - chunkRange) << 4      , minY,  (cz - chunkRange) << 4);
         BlockPos pos2 = new BlockPos(((cx + chunkRange) << 4) + 15, maxY, ((cz + chunkRange) << 4) + 15);
 
         return Pair.of(pos1, pos2);
+    }
+
+    private int getMinY(World world)
+    {
+        MinecraftClient mc = MinecraftClient.getInstance();
+        int minY;
+
+        // For whatever reason, in Fabulous! Graphics, the Y level gets rendered through to -64,
+        //  so let's make use of the player's current Y position, and seaLevel.
+        if (MinecraftClient.isFabulousGraphicsOrBetter() && world != null && mc.player != null)
+        {
+            if (mc.player.getBlockPos().getY() >= world.getSeaLevel())
+            {
+                minY = world.getSeaLevel() - 2;
+            }
+            else
+            {
+                minY = world.getBottomY();
+            }
+        }
+        else
+        {
+            minY = world != null ? world.getBottomY() : -64;
+        }
+
+        return minY;
     }
 
     protected int getSpawnChunkRadius(@Nullable MinecraftServer server)
