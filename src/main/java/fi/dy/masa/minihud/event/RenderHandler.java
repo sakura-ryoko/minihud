@@ -33,6 +33,9 @@ import net.minecraft.block.enums.ChestType;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.network.PlayerListEntry;
+import net.minecraft.client.render.Camera;
+import net.minecraft.client.render.Fog;
+import net.minecraft.client.render.Frustum;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -203,6 +206,17 @@ public class RenderHandler implements IRenderer
     }
 
     @Override
+    public void onRenderWorldPreWeather(Matrix4f posMatrix, Matrix4f projMatrix, Frustum frustum, Camera camera, Fog fog)
+    {
+        if (Configs.Generic.MAIN_RENDERING_TOGGLE.getBooleanValue() &&
+                this.mc.world != null && this.mc.player != null && this.mc.options.hudHidden == false)
+        {
+            OverlayRenderer.renderOverlays(posMatrix, projMatrix, this.mc);
+        }
+    }
+
+    /*
+    @Override
     public void onRenderWorldLast(Matrix4f matrix4f, Matrix4f projMatrix)
     {
         if (Configs.Generic.MAIN_RENDERING_TOGGLE.getBooleanValue() &&
@@ -211,6 +225,7 @@ public class RenderHandler implements IRenderer
             OverlayRenderer.renderOverlays(matrix4f, projMatrix, this.mc);
         }
     }
+     */
 
     public int getSubtitleOffset()
     {
