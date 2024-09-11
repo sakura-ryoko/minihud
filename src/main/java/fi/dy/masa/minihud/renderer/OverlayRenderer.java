@@ -11,6 +11,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.profiler.Profiler;
 
 import fi.dy.masa.malilib.util.Color4f;
 import fi.dy.masa.malilib.util.EntityUtils;
@@ -27,7 +28,7 @@ public class OverlayRenderer
         loginTime = System.currentTimeMillis();
     }
 
-    public static void renderOverlays(Matrix4f matrix4f, Matrix4f projMatrix, MinecraftClient mc)
+    public static void renderOverlays(Matrix4f matrix4f, Matrix4f projMatrix, MinecraftClient mc, Frustum frustum, Camera camera, Fog fog, Profiler profiler)
     {
         Entity entity = EntityUtils.getCameraEntity();
 
@@ -53,12 +54,12 @@ public class OverlayRenderer
 
         if (RendererToggle.OVERLAY_BEACON_RANGE.getBooleanValue())
         {
-            mc.getProfiler().push(() -> "BeaconRangeHeldItem");
+            profiler.push(() -> "BeaconRangeHeldItem");
             renderBeaconBoxForPlayerIfHoldingItem(entity, mc);
-            mc.getProfiler().pop();
+            profiler.pop();
         }
 
-        RenderContainer.INSTANCE.render(entity, matrix4f, projMatrix, mc);
+        RenderContainer.INSTANCE.render(entity, matrix4f, projMatrix, mc, camera, profiler);
     }
 
 
