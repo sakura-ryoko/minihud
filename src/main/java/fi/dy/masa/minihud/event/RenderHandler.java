@@ -843,7 +843,7 @@ public class RenderHandler implements IRenderer
         }
         else if (type == InfoToggle.CHUNK_SECTIONS)
         {
-            this.addLineI18n("minihud.info_line.chunk_sections", ((IMixinWorldRenderer) mc.worldRenderer).getRenderedChunksInvoker());
+            this.addLineI18n("minihud.info_line.chunk_sections", ((IMixinWorldRenderer) mc.worldRenderer).minihud_getRenderedChunksInvoker());
         }
         else if (type == InfoToggle.CHUNK_SECTIONS_FULL)
         {
@@ -1062,7 +1062,7 @@ public class RenderHandler implements IRenderer
                 Entity lookedEntity = this.getTargetEntity(world, mc);
                 if (lookedEntity instanceof ZombieVillagerEntity zombie)
                 {
-                    int conversionTimer = ((IMixinZombieVillagerEntity) zombie).conversionTimer();
+                    int conversionTimer = ((IMixinZombieVillagerEntity) zombie).minihud_conversionTimer();
                     if (conversionTimer > 0)
                     {
                         this.addLineI18n("minihud.info_line.zombie_conversion", DurationFormatUtils.formatDurationWords((conversionTimer / 20) * 1000L, true, true));

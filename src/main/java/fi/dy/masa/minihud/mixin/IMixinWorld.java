@@ -10,5 +10,5 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 public interface IMixinWorld
 {
     @Invoker("getEntityLookup")
-    EntityLookup<Entity> getEntityLookup();
+    EntityLookup<Entity> minihud_getEntityLookup();
 }

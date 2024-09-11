@@ -156,7 +156,7 @@ public class RayTraceUtils
         }
         else if (entity instanceof PiglinEntity)
         {
-            inv = ((IMixinPiglinEntity) entity).inventory();
+            inv = ((IMixinPiglinEntity) entity).minihud_inventory();
         }
         if (inv == null && entityLivingBase == null)
         {

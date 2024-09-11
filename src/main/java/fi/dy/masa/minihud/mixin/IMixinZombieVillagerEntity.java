@@ -8,5 +8,5 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 public interface IMixinZombieVillagerEntity
 {
     @Accessor("conversionTimer")
-    int conversionTimer();
+    int minihud_conversionTimer();
 }

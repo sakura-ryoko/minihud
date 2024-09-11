@@ -8,5 +8,5 @@ import net.minecraft.client.render.WorldRenderer;
 public interface IMixinWorldRenderer
 {
     @Invoker("getCompletedChunkCount")
-    int getRenderedChunksInvoker();
+    int minihud_getRenderedChunksInvoker();
 }

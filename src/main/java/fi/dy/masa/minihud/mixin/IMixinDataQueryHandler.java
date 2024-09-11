@@ -8,5 +8,5 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 public interface IMixinDataQueryHandler
 {
     @Accessor("expectedTransactionId")
-    int currentTransactionId();
+    int minihud_currentTransactionId();
 }

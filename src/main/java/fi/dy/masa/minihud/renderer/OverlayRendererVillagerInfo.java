@@ -184,7 +184,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase
                     EntitiesDataStorage.getInstance().requestEntity(villager.getId());
                 }
 
-                int conversionTimer = ((IMixinZombieVillagerEntity) villager).conversionTimer();
+                int conversionTimer = ((IMixinZombieVillagerEntity) villager).minihud_conversionTimer();
                 if (conversionTimer > 0)
                 {
                     renderAtEntity(List.of(String.valueOf(conversionTimer)), entity, villager);
