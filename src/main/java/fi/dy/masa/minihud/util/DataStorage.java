@@ -931,6 +931,10 @@ public class DataStorage
             this.setServuxVersion(data.getString("servux"));
             this.setWorldSpawn(new BlockPos(data.getInt("spawnPosX"), data.getInt("spawnPosY"), data.getInt("spawnPosZ")));
             this.setSpawnChunkRadius(data.getInt("spawnChunkRadius"), true);
+            if (data.contains("worldSeed", Constants.NBT.TAG_LONG))
+            {
+                this.setWorldSeed(data.getLong("worldSeed"));
+            }
             this.setIsServuxServer();
 
             if (RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue())
@@ -956,6 +960,10 @@ public class DataStorage
             this.setServuxVersion(data.getString("servux"));
             this.setWorldSpawn(new BlockPos(data.getInt("spawnPosX"), data.getInt("spawnPosY"), data.getInt("spawnPosZ")));
             this.setSpawnChunkRadius(data.getInt("spawnChunkRadius"), true);
+            if (data.contains("worldSeed", Constants.NBT.TAG_LONG))
+            {
+                this.setWorldSeed(data.getLong("worldSeed"));
+            }
 
             if (this.hasInValidServux)
             {

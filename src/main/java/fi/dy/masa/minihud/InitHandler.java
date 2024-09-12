@@ -25,7 +25,6 @@ public class InitHandler implements IInitializationHandler
         RenderEventHandler.getInstance().registerGameOverlayRenderer(renderer);
         RenderEventHandler.getInstance().registerTooltipLastRenderer(renderer);
         RenderEventHandler.getInstance().registerWorldPreWeatherRenderer(renderer);
-        //RenderEventHandler.getInstance().registerWorldLastRenderer(renderer);
 
         WorldLoadListener listener = new WorldLoadListener();
         WorldLoadHandler.getInstance().registerWorldLoadPreHandler(listener);

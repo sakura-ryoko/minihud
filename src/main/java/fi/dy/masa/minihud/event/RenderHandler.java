@@ -217,18 +217,6 @@ public class RenderHandler implements IRenderer
         }
     }
 
-    /*
-    @Override
-    public void onRenderWorldLast(Matrix4f matrix4f, Matrix4f projMatrix)
-    {
-        if (Configs.Generic.MAIN_RENDERING_TOGGLE.getBooleanValue() &&
-            this.mc.world != null && this.mc.player != null && this.mc.options.hudHidden == false)
-        {
-            OverlayRenderer.renderOverlays(matrix4f, projMatrix, this.mc);
-        }
-    }
-     */
-
     public int getSubtitleOffset()
     {
         if (Configs.Generic.OFFSET_SUBTITLE_HUD.getBooleanValue() &&

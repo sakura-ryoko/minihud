@@ -352,7 +352,7 @@
     "minihud.config.info_toggle.comment.infoTimeTotalModulo": "Show a modulo of the current total world time.\nSee Generic configs for the divisor.",
     "minihud.config.info_toggle.comment.infoTimeWorld": "Show the current world time in ticks",
     "minihud.config.info_toggle.comment.infoWorldTimeFormatted": "Show the current world time formatted to days, hours, minutes",
-    "minihud.config.info_toggle.comment.infoWeather": "Show the current weather",
+    "minihud.config.info_toggle.comment.infoWeather": "Show the current weather, and time remaining\nThis has limitations when used on Servers",
     "minihud.config.info_toggle.comment.infoZombieConversion": "Show the Time that a Zombie Villager has until Conversion",
 
     "minihud.config.render_toggle.name.overlayBeaconRange": "overlayBeaconRange",
