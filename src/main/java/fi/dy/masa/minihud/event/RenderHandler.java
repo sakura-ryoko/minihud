@@ -154,14 +154,9 @@ public class RenderHandler implements IRenderer
             long currentTime = System.nanoTime();
 
             // Only update the text once per game tick
-            if (currentTime - this.infoUpdateTime >= 50)
+            if (currentTime - this.infoUpdateTime >= 50000000L)
             {
                 this.updateLines();
-                this.infoUpdateTime = currentTime;
-            }
-            // If the time is somehow skewed (Like if someone changed the system time); simply reset infoUpdateTime before updating the info Lines;
-            else if (this.infoUpdateTime > currentTime)
-            {
                 this.infoUpdateTime = currentTime;
             }
 
