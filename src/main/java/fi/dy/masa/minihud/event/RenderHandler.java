@@ -151,12 +151,17 @@ public class RenderHandler implements IRenderer
             Configs.Generic.REQUIRED_KEY.getKeybind().isKeybindHeld())
         {
 
-            long currentTime = System.currentTimeMillis();
+            long currentTime = System.nanoTime();
 
             // Only update the text once per game tick
             if (currentTime - this.infoUpdateTime >= 50)
             {
                 this.updateLines();
+                this.infoUpdateTime = currentTime;
+            }
+            // If the time is somehow skewed (Like if someone changed the system time); simply reset infoUpdateTime before updating the info Lines;
+            else if (this.infoUpdateTime > currentTime)
+            {
                 this.infoUpdateTime = currentTime;
             }
 
