@@ -105,6 +105,7 @@ public class Configs implements IConfigHandler
         public static final ConfigBoolean       USE_TEXT_BACKGROUND                 = new ConfigBoolean("useTextBackground", true, "minihud.config.generic.comment.useTextBackground").translatedName("minihud.config.generic.name.useTextBackground");
         public static final ConfigBoolean       VILLAGER_CONVERSION_TICKS           = new ConfigBoolean("villagerConversionTicks", true, "minihud.config.generic.comment.villagerConversionTicks").translatedName("minihud.config.generic.name.villagerConversionTicks");
         public static final ConfigBoolean       VILLAGER_OFFER_ENCHANTMENT_BOOKS    = new ConfigBoolean("villagerOfferEnchantmentBooks", true, "minihud.config.generic.comment.villagerOfferEnchantmentBooks").translatedName("minihud.config.generic.name.villagerOfferEnchantmentBooks");
+        public static final ConfigBoolean       VILLAGER_OFFER_PRICE_RANGE          = new ConfigBoolean("villagerOfferPriceRange", true, "minihud.config.generic.comment.villagerOfferPriceRange").translatedName("minihud.config.generic.name.villagerOfferPriceRange");
         public static final ConfigBoolean       VILLAGER_OFFER_HIGHEST_LEVEL_ONLY   = new ConfigBoolean("villagerOfferHighestLevelOnly", false, "minihud.config.generic.comment.villagerOfferHighestLevelOnly").translatedName("minihud.config.generic.name.villagerOfferHighestLevelOnly");
         public static final ConfigBoolean       VILLAGER_OFFER_LOWEST_PRICE_NEARBY  = new ConfigBoolean("villagerOfferLowestPriceNearby" , false, "minihud.config.generic.comment.villagerOfferLowestPriceNearby").translatedName("minihud.config.generic.name.villagerOfferLowestPriceNearby");
         public static final ConfigDouble        VILLAGER_OFFER_PRICE_THRESHOLD      = new ConfigDouble("villagerOfferPriceThreshold", 1, 0, 1, "minihud.config.generic.comment.villagerOfferPriceThreshold").translatedName("minihud.config.generic.name.villagerOfferPriceThreshold");
@@ -190,6 +191,7 @@ public class Configs implements IConfigHandler
                 INVENTORY_PREVIEW_TOGGLE_SCREEN,
                 VILLAGER_CONVERSION_TICKS,
                 VILLAGER_OFFER_ENCHANTMENT_BOOKS,
+                VILLAGER_OFFER_PRICE_RANGE,
                 VILLAGER_OFFER_HIGHEST_LEVEL_ONLY,
                 VILLAGER_OFFER_LOWEST_PRICE_NEARBY,
                 VILLAGER_OFFER_PRICE_THRESHOLD
