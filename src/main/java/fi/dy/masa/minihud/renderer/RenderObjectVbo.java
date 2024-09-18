@@ -1,5 +1,6 @@
 package fi.dy.masa.minihud.renderer;
 
+import net.minecraft.client.gl.Usage;
 import org.joml.Matrix4f;
 
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -22,7 +23,7 @@ public class RenderObjectVbo extends RenderObjectBase
     {
         super(glMode, shader);
 
-        this.vertexBuffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
+        this.vertexBuffer = new VertexBuffer(Usage.STATIC_WRITE);
         this.format = format;
 
         boolean hasTexture = false;
