@@ -171,9 +171,11 @@ public class DataStorage
 
     public void clearBlockBreakCounter()
     {
-        if (GameWrap.getClientWorld() != null)
+        World world = GameWrap.getClientWorld();
+
+        if (world != null)
         {
-            int worldTick = (int) (GameWrap.getCurrentWorldTick() & 0x7FFFFFFFL);
+            int worldTick = (int) (WorldWrap.getTotalTick(world) & 0x7FFFFFFFL);
             int index = worldTick % this.blockBreakCounter.length;
             this.blockBreakCounter[index] = 0;
         }
@@ -181,9 +183,11 @@ public class DataStorage
 
     public void onPlayerBlockBreak()
     {
-        if (GameWrap.getClientWorld() != null)
+        World world = GameWrap.getClientWorld();
+
+        if (world != null)
         {
-            int worldTick = (int) (GameWrap.getCurrentWorldTick() & 0x7FFFFFFFL);
+            int worldTick = (int) (WorldWrap.getTotalTick(world) & 0x7FFFFFFFL);
             int index = worldTick % this.blockBreakCounter.length;
             ++this.blockBreakCounter[index];
         }

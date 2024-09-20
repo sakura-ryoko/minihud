@@ -6,11 +6,13 @@ import java.util.regex.Pattern;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.text.ITextComponent;
+import net.minecraft.world.World;
 
 import malilib.render.text.TextRendererUtils;
 import malilib.util.MathUtils;
 import malilib.util.StringUtils;
 import malilib.util.game.wrap.GameWrap;
+import malilib.util.game.wrap.WorldWrap;
 
 public class TpsDataManager
 {
@@ -99,12 +101,13 @@ public class TpsDataManager
     public void updateIntegratedServerTps()
     {
         MinecraftServer server = GameWrap.getIntegratedServer();
+        World world = WorldWrap.getBestWorld();
 
-        if (server != null && GameWrap.getClientWorld() != null)
+        if (server != null && world != null)
         {
             double mspt = MathUtils.average(server.tickTimeArray) / 1000000.0;
             double tps = mspt <= 50.0 ? 20.0 : (1000.0 / mspt);
-            this.localData.setValues(tps, mspt, GameWrap.getCurrentWorldTick());
+            this.localData.setValues(tps, mspt, WorldWrap.getTotalTick(world));
         }
     }
 

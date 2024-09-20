@@ -143,7 +143,7 @@ public class MobCapDataHandler
                 WorldServer world = server.getWorld(dim);
                 int spawnableChunks = MiscUtils.getSpawnableChunksCount(world);
                 int divisor = 17 * 17;
-                long worldTime = world.getTotalWorldTime();
+                long worldTime = WorldWrap.getTotalTick(world);
                 MobCapData.Cap[] data = MobCapData.createCapArray();
 
                 for (EntityCategory category : ENTITY_CATEGORIES)
@@ -167,12 +167,14 @@ public class MobCapDataHandler
 
     public void parsePlayerListFooterMobCapData(ITextComponent textComponent)
     {
-        if (GameWrap.getClientWorld() == null)
+        World world = GameWrap.getClientWorld();
+
+        if (world == null)
         {
             return;
         }
 
-        long worldTick = this.getWorldTick();
+        long worldTick = WorldWrap.getTotalTick(world);
 
         if (this.shouldParsePlayerListData(worldTick) &&
             textComponent.getFormattedText().isEmpty() == false)

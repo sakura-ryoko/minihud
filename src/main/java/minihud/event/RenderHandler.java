@@ -17,6 +17,7 @@ import net.minecraft.client.renderer.chunk.RenderChunk;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemMap;
 import net.minecraft.item.ItemStack;
@@ -276,12 +277,14 @@ public class RenderHandler implements PostGameOverlayRenderer, PostItemTooltipRe
 
     public void onClientTick(Minecraft mc)
     {
+        World world = GameWrap.getClientWorld();
+        EntityPlayer player = GameWrap.getClientPlayer();
         boolean wasEnabled = this.enabled;
 
         this.enabled = Configs.Generic.INFO_LINES_RENDERING_TOGGLE.getBooleanValue() &&
                        mc.gameSettings.showDebugInfo == false &&
-                       mc.player != null && mc.world != null && GameWrap.isHideGui() == false &&
-                       (Configs.Generic.REQUIRE_SNEAK.getBooleanValue() == false || mc.player.isSneaking()) &&
+                       player != null && world != null && GameWrap.isHideGui() == false &&
+                       (Configs.Generic.REQUIRE_SNEAK.getBooleanValue() == false || player.isSneaking()) &&
                         Configs.Hotkeys.REQUIRED_KEY.getKeyBind().isKeyBindHeld();
 
         // Update the string list renderer to remove MiniHUD's info lines when the HUD is disabled
@@ -290,9 +293,9 @@ public class RenderHandler implements PostGameOverlayRenderer, PostItemTooltipRe
             this.stringListRenderer.notifyStringListChanged();
         }
 
-        if (mc.world != null)
+        if (world != null)
         {
-            long worldTick = mc.world.getTotalWorldTime();
+            long worldTick = WorldWrap.getTotalTick(world);
 
             if ((worldTick % 20) == 0)
             {
@@ -417,15 +420,15 @@ public class RenderHandler implements PostGameOverlayRenderer, PostItemTooltipRe
         }
         else if (type == InfoLineToggle.TIME_WORLD)
         {
-            long current = world.getWorldTime();
-            long total = world.getTotalWorldTime();
+            long current = WorldWrap.getDayTick(world);
+            long total = WorldWrap.getTotalTick(world);
             this.addLine(String.format("World time: %5d - total: %d", current, total));
         }
         else if (type == InfoLineToggle.TIME_WORLD_FORMATTED)
         {
             try
             {
-                long timeDay = world.getWorldTime();
+                long timeDay = WorldWrap.getDayTick(world);
                 long day = (int) (timeDay / 24000);
                 // 1 tick = 3.6 seconds in MC (0.2777... seconds IRL)
                 int dayTicks = (int) (timeDay % 24000);
@@ -450,13 +453,13 @@ public class RenderHandler implements PostGameOverlayRenderer, PostItemTooltipRe
         else if (type == InfoLineToggle.TIME_DAY_MODULO)
         {
             int mod = Configs.Generic.TIME_DAY_DIVISOR.getIntegerValue();
-            long current = world.getWorldTime() % mod;
+            long current = WorldWrap.getDayTick(world) % mod;
             this.addLine(String.format("Day time %% %d: %5d", mod, current));
         }
         else if (type == InfoLineToggle.TIME_TOTAL_MODULO)
         {
             int mod = Configs.Generic.TIME_TOTAL_DIVISOR.getIntegerValue();
-            long current = world.getTotalWorldTime() % mod;
+            long current = WorldWrap.getTotalTick(world) % mod;
             this.addLine(String.format("Total time %% %d: %5d", mod, current));
         }
         else if (type == InfoLineToggle.SERVER_TPS)
