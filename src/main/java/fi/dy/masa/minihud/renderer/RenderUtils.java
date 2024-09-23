@@ -1,14 +1,18 @@
 package fi.dy.masa.minihud.renderer;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.block.Block;
+import net.minecraft.block.CrafterBlock;
 import net.minecraft.block.ShulkerBoxBlock;
+import net.minecraft.block.entity.CrafterBlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gl.ShaderProgramKeys;
@@ -550,19 +554,24 @@ public class RenderUtils
 
         HitResult trace = RayTraceUtils.getRayTraceFromEntity(world, cameraEntity, false);
 
+        BlockPos pos = null;
         Inventory inv = null;
         ShulkerBoxBlock shulkerBoxBlock = null;
-        //CrafterBlock crafterBlock = null;
+        CrafterBlock crafterBlock = null;
         LivingEntity entityLivingBase = null;
 
         if (trace.getType() == HitResult.Type.BLOCK)
         {
-            BlockPos pos = ((BlockHitResult) trace).getBlockPos();
+            pos = ((BlockHitResult) trace).getBlockPos();
             Block blockTmp = world.getBlockState(pos).getBlock();
 
             if (blockTmp instanceof ShulkerBoxBlock)
             {
                 shulkerBoxBlock = (ShulkerBoxBlock) blockTmp;
+            }
+            else if (blockTmp instanceof CrafterBlock)
+            {
+                crafterBlock = (CrafterBlock) blockTmp;
             }
 
             inv = fi.dy.masa.minihud.util.InventoryUtils.getInventory(world, pos);
@@ -611,6 +620,7 @@ public class RenderUtils
             final fi.dy.masa.malilib.render.InventoryOverlay.InventoryRenderType type = (entityLivingBase instanceof VillagerEntity) ? fi.dy.masa.malilib.render.InventoryOverlay.InventoryRenderType.VILLAGER : fi.dy.masa.malilib.render.InventoryOverlay.getInventoryType(inv);
             final fi.dy.masa.malilib.render.InventoryOverlay.InventoryProperties props = fi.dy.masa.malilib.render.InventoryOverlay.getInventoryPropsTemp(type, totalSlots);
             final int rows = (int) Math.ceil((double) totalSlots / props.slotsPerRow);
+            Set<Integer> lockedSlots = new HashSet<>();
             int xInv = xCenter - (props.width / 2);
             int yInv = yCenter - props.height - 6;
 
@@ -625,6 +635,15 @@ public class RenderUtils
                 x = xCenter - 55;
                 xInv = xCenter + 2;
                 yInv = Math.min(yInv, yCenter - 92);
+            }
+
+            if (crafterBlock != null && pos != null)
+            {
+                CrafterBlockEntity cbe = (CrafterBlockEntity) world.getWorldChunk(pos).getBlockEntity(pos);
+                if (cbe != null)
+                {
+                    lockedSlots = BlockUtils.getDisabledSlots(cbe);
+                }
             }
 
             fi.dy.masa.malilib.render.RenderUtils.setShulkerboxBackgroundTintColor(shulkerBoxBlock, Configs.Generic.SHULKER_DISPLAY_BACKGROUND_COLOR.getBooleanValue());
@@ -643,7 +662,7 @@ public class RenderUtils
             if (totalSlots > 0)
             {
                 fi.dy.masa.malilib.render.InventoryOverlay.renderInventoryBackground(type, xInv, yInv, props.slotsPerRow, totalSlots, mc);
-                fi.dy.masa.malilib.render.InventoryOverlay.renderInventoryStacks(type, inv, xInv + props.slotOffsetX, yInv + props.slotOffsetY, props.slotsPerRow, firstSlot, totalSlots, mc, drawContext);
+                fi.dy.masa.malilib.render.InventoryOverlay.renderInventoryStacks(type, inv, xInv + props.slotOffsetX, yInv + props.slotOffsetY, props.slotsPerRow, firstSlot, totalSlots, lockedSlots, mc, drawContext);
             }
         }
 

@@ -18,10 +18,12 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
@@ -57,7 +59,7 @@ public class RayTraceUtils
             result = BlockHitResult.createMissed(Vec3d.ZERO, Direction.UP, BlockPos.ORIGIN);
         }
 
-        net.minecraft.util.math.Box bb = entityIn.getBoundingBox().expand(rangedLookRot.x, rangedLookRot.y, rangedLookRot.z).expand(1d, 1d, 1d);
+        Box bb = entityIn.getBoundingBox().expand(rangedLookRot.x, rangedLookRot.y, rangedLookRot.z).expand(1d, 1d, 1d);
         List<Entity> list = worldIn.getOtherEntities(entityIn, bb);
 
         double closest = result.getType() == HitResult.Type.BLOCK ? eyesVec.distanceTo(result.getPos()) : Double.MAX_VALUE;
@@ -107,16 +109,25 @@ public class RayTraceUtils
         if (trace.getType() == HitResult.Type.BLOCK)
         {
             BlockPos pos = ((BlockHitResult) trace).getBlockPos();
-            RenderHandler.getInstance().requestBlockEntityAt(world, pos);
+            BlockEntity be = null;
 
-            assert bestWorld != null;
-            Inventory inv = InventoryUtils.getInventory(bestWorld, pos);
+            if (bestWorld instanceof ServerWorld)
+            {
+                be = bestWorld.getWorldChunk(pos).getBlockEntity(pos);
+            }
+            else
+            {
+                RenderHandler.getInstance().requestBlockEntityAt(world, pos);
+            }
+
+            Inventory inv = InventoryUtils.getInventory(bestWorld != null ? bestWorld : world, pos);
+
             if (inv == null)
             {
                 return null;
             }
 
-            return new InventoryPreviewData(inv, bestWorld.getBlockEntity(pos), null);
+            return new InventoryPreviewData(inv, be != null ? be : bestWorld != null ? bestWorld.getBlockEntity(pos) : world.getBlockEntity(pos), null);
         }
         else if (trace.getType() == HitResult.Type.ENTITY)
         {

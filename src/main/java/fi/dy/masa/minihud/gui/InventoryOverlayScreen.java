@@ -1,8 +1,12 @@
 package fi.dy.masa.minihud.gui;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
 import net.minecraft.block.ShulkerBoxBlock;
+import net.minecraft.block.entity.CrafterBlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
@@ -16,6 +20,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 import fi.dy.masa.malilib.render.InventoryOverlay;
 import fi.dy.masa.malilib.render.RenderUtils;
+import fi.dy.masa.malilib.util.BlockUtils;
 import fi.dy.masa.malilib.util.GuiUtils;
 import fi.dy.masa.malilib.util.InventoryUtils;
 import fi.dy.masa.minihud.config.Configs;
@@ -65,6 +70,7 @@ public class InventoryOverlayScreen extends Screen
             final InventoryOverlay.InventoryRenderType type = (previewData.entity() instanceof VillagerEntity) ? InventoryOverlay.InventoryRenderType.VILLAGER : InventoryOverlay.getInventoryType(previewData.inv());
             final InventoryOverlay.InventoryProperties props = InventoryOverlay.getInventoryPropsTemp(type, totalSlots);
             final int rows = (int) Math.ceil((double) totalSlots / props.slotsPerRow);
+            Set<Integer> lockedSlots = new HashSet<>();
             int xInv = xCenter - (props.width / 2);
             int yInv = yCenter - props.height - 6;
 
@@ -79,6 +85,10 @@ public class InventoryOverlayScreen extends Screen
                 x = xCenter - 55;
                 xInv = xCenter + 2;
                 yInv = Math.min(yInv, yCenter - 92);
+            }
+            if (previewData.te() instanceof CrafterBlockEntity cbe)
+            {
+                lockedSlots = BlockUtils.getDisabledSlots(cbe);
             }
 
             if (!armourItems.isEmpty())
@@ -96,7 +106,7 @@ public class InventoryOverlayScreen extends Screen
             if (totalSlots > 0 && previewData.inv() != null)
             {
                 InventoryOverlay.renderInventoryBackground(type, xInv, yInv, props.slotsPerRow, totalSlots, mc);
-                InventoryOverlay.renderInventoryStacks(type, previewData.inv(), xInv + props.slotOffsetX, yInv + props.slotOffsetY, props.slotsPerRow, startSlot, totalSlots, mc, drawContext, mouseX, mouseY);
+                InventoryOverlay.renderInventoryStacks(type, previewData.inv(), xInv + props.slotOffsetX, yInv + props.slotOffsetY, props.slotsPerRow, startSlot, totalSlots, lockedSlots, mc, drawContext, mouseX, mouseY);
             }
 
             if (previewData.entity() instanceof PlayerEntity player)

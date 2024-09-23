@@ -178,10 +178,11 @@ public class RenderHandler implements IRenderer
             var inventory = RayTraceUtils.getTargetInventory(this.mc);
             if (inventory != null)
             {
-                // OG method
-                //fi.dy.masa.minihud.renderer.RenderUtils.renderInventoryOverlay(this.mc, context);
                 fi.dy.masa.minihud.renderer.RenderUtils.renderInventoryOverlay(inventory, drawContext);
             }
+
+            // OG method
+            //fi.dy.masa.minihud.renderer.RenderUtils.renderInventoryOverlay(this.mc, drawContext);
         }
     }
 
@@ -194,7 +195,7 @@ public class RenderHandler implements IRenderer
             if (Configs.Generic.MAP_PREVIEW.getBooleanValue() &&
                (Configs.Generic.MAP_PREVIEW_REQUIRE_SHIFT.getBooleanValue() == false || GuiBase.isShiftDown()))
             {
-                fi.dy.masa.malilib.render.RenderUtils.renderMapPreview(stack, x, y, Configs.Generic.MAP_PREVIEW_SIZE.getIntegerValue(), false);
+                fi.dy.masa.malilib.render.RenderUtils.renderMapPreview(stack, x, y, Configs.Generic.MAP_PREVIEW_SIZE.getIntegerValue(), false, drawContext);
             }
         }
         else if (stack.getComponents().contains(DataComponentTypes.CONTAINER) && InventoryUtils.shulkerBoxHasItems(stack))
