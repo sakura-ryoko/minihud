@@ -20,9 +20,7 @@ import net.minecraft.entity.ai.pathing.Path;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.packet.s2c.common.CustomPayloadS2CPacket;
 import net.minecraft.network.packet.s2c.custom.DebugBrainCustomPayload;
-import net.minecraft.network.packet.s2c.custom.DebugPathCustomPayload;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -36,10 +34,8 @@ import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 
 import fi.dy.masa.malilib.config.IConfigBoolean;
 import fi.dy.masa.minihud.MiniHUD;
-import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.RendererToggle;
-import fi.dy.masa.minihud.mixin.IMixinDebugRenderer;
-import fi.dy.masa.minihud.mixin.IMixinEntityNavigation;
+import fi.dy.masa.minihud.mixin.debug.IMixinDebugRenderer;
 
 public class DebugInfoUtils
 {

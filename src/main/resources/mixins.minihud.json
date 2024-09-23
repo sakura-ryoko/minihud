@@ -10,7 +10,6 @@
     "IMixinBiomeAccess",
     "IMixinChunkDeltaUpdateS2CPacket",
     "IMixinDataQueryHandler",
-    "IMixinDebugRenderer",
     "IMixinEntity",
     "IMixinEntityNavigation",
     "IMixinMerchantEntity",
@@ -22,27 +21,31 @@
     "IMixinWorldRenderer",
     "IMixinZombieVillagerEntity",
     "MixinBeaconBlockEntity",
-    "MixinBlockOutlineDebugRenderer",
     "MixinChatScreen",
     "MixinChunkTicketManager",
     "MixinClientCommonNetworkHandler",
     "MixinClientPlayerInteractionManager",
     "MixinClientPlayNetworkHandler",
     "MixinConduitBlockEntity",
-    "MixinDebugInfoSender",
-    "MixinDebugRenderer",
-    "MixinHeightmapDebugRenderer",
     "MixinItemStack",
     "MixinLanguage",
     "MixinMinecraftClient",
     "MixinMinecraftServer",
-    "MixinNeighborUpdateDebugRenderer",
     "MixinResourcePackSendS2CPacket",
     "MixinServerEntityManager",
     "MixinServerWorld",
-    "MixinSubtitlesHud"
+    "MixinSubtitlesHud",
+    "debug.IMixinDebugRenderer",
+    "debug.MixinBlockOutlineDebugRenderer",
+    "debug.MixinDebugInfoSender",
+    "debug.MixinDebugRenderer",
+    "debug.MixinHeightmapDebugRenderer",
+    "debug.MixinNeighborUpdateDebugRenderer"
   ],
   "injectors": {
     "defaultRequire": 1
-  }
+  },
+  "mixins": [
+    "debug.MixinSharedConstants"
+  ]
 }

@@ -1,4 +1,4 @@
-package fi.dy.masa.minihud.mixin;
+package fi.dy.masa.minihud.mixin.debug;
 
 import net.minecraft.client.render.debug.HeightmapDebugRenderer;
 import org.spongepowered.asm.mixin.Mixin;
