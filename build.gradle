@@ -29,7 +29,7 @@ dependencies {
 	//modImplementation "fi.dy.masa.malilib:malilib-fabric-${project.minecraft_version_out}:${project.malilib_version}"
 	modImplementation "com.github.sakura-ryoko:malilib:${project.malilib_id}"
 
-	modImplementation "com.eightsidedsquare:devtools:1.0.0"
+	//modImplementation "com.eightsidedsquare:devtools:1.0.0"
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	//modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
