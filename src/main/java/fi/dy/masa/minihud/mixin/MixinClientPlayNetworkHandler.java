@@ -49,7 +49,7 @@ public abstract class MixinClientPlayNetworkHandler
     @Inject(method = "onWorldTimeUpdate", at = @At("RETURN"))
     private void onTimeUpdate(net.minecraft.network.packet.s2c.play.WorldTimeUpdateS2CPacket packetIn, CallbackInfo ci)
     {
-        DataStorage.getInstance().onServerTimeUpdate(packetIn.getTime());
+        DataStorage.getInstance().onServerTimeUpdate(packetIn.time());
     }
 
     @Inject(method = "onPlayerSpawnPosition", at = @At("RETURN"))
