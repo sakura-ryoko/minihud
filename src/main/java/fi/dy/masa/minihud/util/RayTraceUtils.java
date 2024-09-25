@@ -1,12 +1,14 @@
 package fi.dy.masa.minihud.util;
 
-import fi.dy.masa.malilib.util.EntityUtils;
-import fi.dy.masa.malilib.util.InventoryUtils;
-import fi.dy.masa.malilib.util.WorldUtils;
-import fi.dy.masa.minihud.data.EntitiesDataStorage;
-import fi.dy.masa.minihud.event.RenderHandler;
-import fi.dy.masa.minihud.mixin.IMixinAbstractHorseEntity;
-import fi.dy.masa.minihud.mixin.IMixinPiglinEntity;
+import java.util.List;
+import java.util.Optional;
+import javax.annotation.Nonnull;
+import org.jetbrains.annotations.Nullable;
+
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockEntityProvider;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.LecternBlock;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
@@ -18,6 +20,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
@@ -28,11 +31,15 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
-import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nonnull;
-import java.util.List;
-import java.util.Optional;
+import fi.dy.masa.malilib.render.InventoryOverlay;
+import fi.dy.masa.malilib.util.EntityUtils;
+import fi.dy.masa.malilib.util.InventoryUtils;
+import fi.dy.masa.malilib.util.WorldUtils;
+import fi.dy.masa.minihud.data.EntitiesDataStorage;
+import fi.dy.masa.minihud.event.RenderHandler;
+import fi.dy.masa.minihud.mixin.IMixinAbstractHorseEntity;
+import fi.dy.masa.minihud.mixin.IMixinPiglinEntity;
 
 public class RayTraceUtils
 {
@@ -66,9 +73,8 @@ public class RayTraceUtils
         Optional<Vec3d> entityTrace = Optional.empty();
         Entity targetEntity = null;
 
-        for (int i = 0; i < list.size(); i++)
+        for (Entity entity : list)
         {
-            Entity entity = list.get(i);
             bb = entity.getBoundingBox();
             Optional<Vec3d> traceTmp = bb.raycast(lookVec, eyesVec);
 
@@ -93,10 +99,10 @@ public class RayTraceUtils
         return result;
     }
 
-    public static @Nullable RayTraceUtils.InventoryPreviewData getTargetInventory(MinecraftClient mc)
+    //public static @Nullable RayTraceUtils.InventoryPreviewData getTargetInventory(MinecraftClient mc)
+    public static @Nullable InventoryOverlay.Context getTargetInventory(MinecraftClient mc, boolean newScreen)
     {
-        World world = mc.world;
-        World bestWorld = WorldUtils.getBestWorld(mc);
+        World world = WorldUtils.getBestWorld(mc);
         Entity cameraEntity = EntityUtils.getCameraEntity();
 
         if (mc.player == null || world == null)
@@ -104,42 +110,97 @@ public class RayTraceUtils
             return null;
         }
 
+        if (cameraEntity == mc.player && world instanceof ServerWorld)
+        {
+            // We need to get the player from the server world (if available, ie. in single player),
+            // so that the player itself won't be included in the ray trace
+            Entity serverPlayer = world.getPlayerByUuid(mc.player.getUuid());
+
+            if (serverPlayer != null)
+            {
+                cameraEntity = serverPlayer;
+            }
+        }
+
         HitResult trace = getRayTraceFromEntity(world, cameraEntity, false);
+        NbtCompound nbt = new NbtCompound();
+        Inventory inv;
 
         if (trace.getType() == HitResult.Type.BLOCK)
         {
             BlockPos pos = ((BlockHitResult) trace).getBlockPos();
+            BlockState state = world.getBlockState(pos);
+            Block blockTmp = state.getBlock();
             BlockEntity be = null;
 
-            if (bestWorld instanceof ServerWorld)
-            {
-                be = bestWorld.getWorldChunk(pos).getBlockEntity(pos);
-            }
-            else
-            {
-                RenderHandler.getInstance().requestBlockEntityAt(world, pos);
-            }
-
-            Inventory inv = InventoryUtils.getInventory(bestWorld != null ? bestWorld : world, pos);
-
-            if (inv == null)
+            // Keep screen from getting 'stuck' if trying to use toggle on a lectern
+            if (blockTmp instanceof LecternBlock && !newScreen)
             {
                 return null;
             }
 
-            return new InventoryPreviewData(inv, be != null ? be : bestWorld != null ? bestWorld.getBlockEntity(pos) : world.getBlockEntity(pos), null);
+            inv = InventoryUtils.getInventory(world, pos);
+
+            if (blockTmp instanceof BlockEntityProvider)
+            {
+                if (world instanceof ServerWorld)
+                {
+                    be = world.getWorldChunk(pos).getBlockEntity(pos);
+                }
+                else
+                {
+                    RenderHandler.getInstance().requestBlockEntityAt(world, pos);
+                    nbt = EntitiesDataStorage.getInstance().requestBlockEntity(world, pos);
+                    inv = EntitiesDataStorage.getInstance().getBlockInventory(world, pos);
+                    //be = EntitiesDataStorage.getInstance().getCachedBlockEntity(world, pos);
+                }
+
+                if (be != null)
+                {
+                    nbt = be.createNbtWithIdentifyingData(world.getRegistryManager());
+                }
+                if (!nbt.isEmpty())
+                {
+                    Inventory inv2 = InventoryUtils.getNbtInventory(nbt, inv != null ? inv.size() : -1, world.getRegistryManager());
+
+                    if (inv == null)
+                    {
+                        inv = inv2;
+                    }
+                }
+            }
+
+            if (inv == null && !newScreen)
+            {
+                return null;
+            }
+
+            //return new InventoryPreviewData(inv, be != null ? be : bestWorld != null ? bestWorld.getBlockEntity(pos) : world.getBlockEntity(pos), null);
+            return new InventoryOverlay.Context(inv != null ? InventoryOverlay.getBestInventoryType(inv, nbt) : InventoryOverlay.getInventoryType(nbt), inv,
+                                                be != null ? be : world.getBlockEntity(pos), null, nbt);
         }
         else if (trace.getType() == HitResult.Type.ENTITY)
         {
-            assert bestWorld != null;
             Entity entity = ((EntityHitResult) trace).getEntity();
-            EntitiesDataStorage.getInstance().requestEntity(entity.getId());
-            return getTargetInventoryFromEntity(bestWorld.getEntityById(entity.getId()));
+
+            if (world instanceof ServerWorld)
+            {
+                entity.saveSelfNbt(nbt);
+            }
+            else
+            {
+                nbt = EntitiesDataStorage.getInstance().requestEntity(entity.getId());
+            }
+
+            return getTargetInventoryFromEntity(world.getEntityById(entity.getId()), nbt);
         }
+
         return null;
     }
 
-    public static InventoryPreviewData getTargetInventoryFromEntity(Entity entity)
+    // InventoryOverlay.Context
+    //public static InventoryPreviewData getTargetInventoryFromEntity(Entity entity)
+    public static @Nullable InventoryOverlay.Context getTargetInventoryFromEntity(Entity entity, NbtCompound nbt)
     {
         Inventory inv = null;
         LivingEntity entityLivingBase = null;
@@ -169,14 +230,29 @@ public class RayTraceUtils
         {
             inv = ((IMixinPiglinEntity) entity).minihud_inventory();
         }
+        if (!nbt.isEmpty())
+        {
+            Inventory inv2 = InventoryUtils.getNbtInventory(nbt, inv != null ? inv.size() : -1, entity.getRegistryManager());
+
+            if (inv == null)
+            {
+                inv = inv2;
+            }
+        }
+
         if (inv == null && entityLivingBase == null)
         {
             return null;
         }
-        return new InventoryPreviewData(inv, null, entityLivingBase);
+
+        //return new InventoryPreviewData(inv, null, entityLivingBase);
+        return new InventoryOverlay.Context(inv != null ? InventoryOverlay.getBestInventoryType(inv, nbt) : InventoryOverlay.getInventoryType(nbt),
+                                            inv, null, entityLivingBase, nbt);
     }
 
+    /*
     public record InventoryPreviewData(Inventory inv, @Nullable BlockEntity te, @Nullable LivingEntity entity)
     {
     }
+     */
 }

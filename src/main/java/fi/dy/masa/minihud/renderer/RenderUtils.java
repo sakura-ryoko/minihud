@@ -522,7 +522,8 @@ public class RenderUtils
         }
     }
 
-    public static void renderInventoryOverlay(RayTraceUtils.InventoryPreviewData inventory, DrawContext drawContext)
+    //public static void renderInventoryOverlay(RayTraceUtils.InventoryPreviewData inventory, DrawContext drawContext)
+    public static void renderInventoryOverlay(InventoryOverlay.Context inventory, DrawContext drawContext)
     {
         var screen = new InventoryOverlayScreen(inventory);
         screen.init(MinecraftClient.getInstance(), 0, 0);
@@ -532,7 +533,7 @@ public class RenderUtils
     // OG Method (Works)
     public static void renderInventoryOverlay(MinecraftClient mc, DrawContext drawContext)
     {
-        World world = fi.dy.masa.malilib.util.WorldUtils.getBestWorld(mc);
+        World world = WorldUtils.getBestWorld(mc);
         Entity cameraEntity = EntityUtils.getCameraEntity();
 
         if (mc.player == null)
