@@ -8,6 +8,7 @@ import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.annotation.Nullable;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Queues;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -22,6 +23,7 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerTask;
+import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.structure.StructureStart;
 import net.minecraft.text.MutableText;
@@ -91,7 +93,7 @@ public class DataStorage
     private final int[] blockBreakCounter = new int[100];
     private final ArrayListMultimap<StructureType, StructureData> structures = ArrayListMultimap.create();
     private final MinecraftClient mc = MinecraftClient.getInstance();
-
+    private IntegratedServer integratedServer;
     private DynamicRegistryManager registryManager = DynamicRegistryManager.EMPTY;
     private BlockPos worldSpawn = BlockPos.ORIGIN;
     private final PriorityBlockingQueue<ChunkTask> taskQueue = Queues.newPriorityBlockingQueue();
@@ -155,7 +157,7 @@ public class DataStorage
             this.carpetServer = false;
             this.worldSpawnValid = false;
             this.spawnChunkRadiusValid = false;
-            this.setHasIntegratedServer(false);
+            this.setHasIntegratedServer(false, null);
         }
         else
         {
@@ -228,9 +230,35 @@ public class DataStorage
 
     public boolean hasIntegratedServer() { return this.hasIntegratedServer; }
 
-    public void setHasIntegratedServer(boolean toggle)
+    public void setHasIntegratedServer(boolean toggle, @Nullable IntegratedServer server)
     {
         this.hasIntegratedServer = toggle;
+        this.integratedServer = server;
+    }
+
+    public IntegratedServer getIntegratedServer()
+    {
+        return this.integratedServer;
+    }
+
+    public MinecraftClient getMc()
+    {
+        if (this.mc != null)
+        {
+            return this.mc;
+        }
+
+        return MinecraftClient.getInstance();
+    }
+
+    public boolean isSinglePlayer()
+    {
+        if (this.mc != null)
+        {
+            return this.mc.isInSingleplayer();
+        }
+
+        return false;
     }
 
     public void onWorldPre()

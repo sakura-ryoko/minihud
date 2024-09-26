@@ -12,6 +12,7 @@ import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.config.RendererToggle;
 import fi.dy.masa.minihud.data.EntitiesDataStorage;
+import fi.dy.masa.minihud.data.InfoLinesHandler;
 import fi.dy.masa.minihud.data.MobCapDataHandler;
 import fi.dy.masa.minihud.mixin.IMixinPassiveEntity;
 import fi.dy.masa.minihud.mixin.IMixinServerWorld;
@@ -19,10 +20,8 @@ import fi.dy.masa.minihud.mixin.IMixinWorldRenderer;
 import fi.dy.masa.minihud.mixin.IMixinZombieVillagerEntity;
 import fi.dy.masa.minihud.network.ServuxEntitiesPacket;
 import fi.dy.masa.minihud.renderer.OverlayRenderer;
-import fi.dy.masa.minihud.util.DataStorage;
-import fi.dy.masa.minihud.util.IServerEntityManager;
-import fi.dy.masa.minihud.util.MiscUtils;
-import fi.dy.masa.minihud.util.RayTraceUtils;
+import fi.dy.masa.minihud.util.*;
+
 import net.minecraft.block.BeehiveBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ChestBlock;
@@ -83,7 +82,6 @@ import org.joml.Matrix4f;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -299,12 +297,12 @@ public class RenderHandler implements IRenderer
         }
     }
 
-    private void addLine(String text)
+    public void addLine(String text)
     {
         this.lineWrappers.add(new StringHolder(text));
     }
 
-    private void addLineI18n(String translatedName, Object... args)
+    public void addLineI18n(String translatedName, Object... args)
     {
         this.addLine(StringUtils.translate(translatedName, args));
     }
@@ -328,175 +326,43 @@ public class RenderHandler implements IRenderer
 
         if (type == InfoToggle.FPS)
         {
-            this.addLineI18n("minihud.info_line.fps", MinecraftClient.getInstance().getCurrentFps());
+            InfoLinesHandler.getInstance().addFPS();
         }
         else if (type == InfoToggle.MEMORY_USAGE)
         {
-            long memMax = Runtime.getRuntime().maxMemory();
-            long memTotal = Runtime.getRuntime().totalMemory();
-            long memFree = Runtime.getRuntime().freeMemory();
-            long memUsed = memTotal - memFree;
-
-            this.addLineI18n("minihud.info_line.memory_usage",
-                    memUsed * 100L / memMax,
-                    MiscUtils.bytesToMb(memUsed),
-                    MiscUtils.bytesToMb(memMax),
-                    memTotal * 100L / memMax,
-                    MiscUtils.bytesToMb(memTotal));
+            InfoLinesHandler.getInstance().addMemoryUsage();
         }
         else if (type == InfoToggle.TIME_REAL)
         {
-            try
-            {
-                SimpleDateFormat sdf = new SimpleDateFormat(Configs.Generic.DATE_FORMAT_REAL.getStringValue());
-                this.date.setTime(System.currentTimeMillis());
-                this.addLine(sdf.format(this.date));
-            }
-            catch (Exception e)
-            {
-                this.addLineI18n("minihud.info_line.time.exception");
-            }
+            InfoLinesHandler.getInstance().addRealTime();
         }
         else if (type == InfoToggle.TIME_WORLD)
         {
-            long current = world.getTimeOfDay();
-            long total = world.getTime();
-            this.addLineI18n("minihud.info_line.time_world", current, total);
+            InfoLinesHandler.getInstance().addWorldTime(world);
         }
         else if (type == InfoToggle.TIME_WORLD_FORMATTED)
         {
-            try
-            {
-                long timeDay = world.getTimeOfDay();
-                long day = (int) (timeDay / 24000);
-                // 1 tick = 3.6 seconds in MC (0.2777... seconds IRL)
-                int dayTicks = (int) (timeDay % 24000);
-                int hour = (int) ((dayTicks / 1000) + 6) % 24;
-                int min = (int) (dayTicks / 16.666666) % 60;
-                int sec = (int) (dayTicks / 0.277777) % 60;
-                // Moonphase has 8 different states in MC
-                int moonNumber = (int) day % 8;
-                String moon;
-                if (moonNumber > 7)
-                {
-                    moon = StringUtils.translate("minihud.info_line.invalid_value");
-                }
-                else
-                {
-                    moon = StringUtils.translate("minihud.info_line.time_world_formatted.moon_" + moonNumber);
-                }
-
-                String str = Configs.Generic.DATE_FORMAT_MINECRAFT.getStringValue();
-                str = str.replace("{DAY}",  String.format("%d", day));
-                str = str.replace("{DAY_1}",String.format("%d", day + 1));
-                str = str.replace("{HOUR}", String.format("%02d", hour));
-                str = str.replace("{MIN}",  String.format("%02d", min));
-                str = str.replace("{SEC}",  String.format("%02d", sec));
-                str = str.replace("{MOON}",  String.format("%s", moon));
-
-                this.addLine(str);
-            }
-            catch (Exception e)
-            {
-                this.addLineI18n("minihud.info_line.time.exception");
-            }
+            InfoLinesHandler.getInstance().addWorldTimeFormatted(world);
         }
         else if (type == InfoToggle.TIME_DAY_MODULO)
         {
-            int mod = Configs.Generic.TIME_DAY_DIVISOR.getIntegerValue();
-            long current = world.getTimeOfDay() % mod;
-            this.addLineI18n("minihud.info_line.time_day_modulo", mod, current);
+            InfoLinesHandler.getInstance().addDayTimeModulo(world);
         }
         else if (type == InfoToggle.TIME_TOTAL_MODULO)
         {
-            int mod = Configs.Generic.TIME_TOTAL_DIVISOR.getIntegerValue();
-            long current = world.getTime() % mod;
-            this.addLineI18n("minihud.info_line.time_total_modulo", mod, current);
+            InfoLinesHandler.getInstance().addTotalTimeModulo(world);
         }
         else if (type == InfoToggle.SERVER_TPS)
         {
-            if (mc.isIntegratedServerRunning() && (mc.getServer().getTicks() % 10) == 0)
-            {
-                this.data.updateIntegratedServerTPS();
-            }
-
-            if (this.data.hasTPSData())
-            {
-                double tps = this.data.getServerTPS();
-                double mspt = this.data.getServerMSPT();
-                String rst = GuiBase.TXT_RST;
-                String preTps = tps >= 20.0D ? GuiBase.TXT_GREEN : GuiBase.TXT_RED;
-                String preMspt;
-
-                // Carpet server and integrated server have actual meaningful MSPT data available
-                if (this.data.hasCarpetServer() || mc.isInSingleplayer())
-                {
-                    if      (mspt <= 40) { preMspt = GuiBase.TXT_GREEN; }
-                    else if (mspt <= 45) { preMspt = GuiBase.TXT_YELLOW; }
-                    else if (mspt <= 50) { preMspt = GuiBase.TXT_GOLD; }
-                    else                 { preMspt = GuiBase.TXT_RED; }
-
-                    this.addLineI18n("minihud.info_line.server_tps", preTps, tps, rst, preMspt, mspt, rst);
-                }
-                else
-                {
-                    if (mspt <= 51) { preMspt = GuiBase.TXT_GREEN; }
-                    else            { preMspt = GuiBase.TXT_RED; }
-
-                    this.addLineI18n("minihud.info_line.server_tps.est", preTps, tps, rst, preMspt, mspt, rst);
-                }
-            }
-            else
-            {
-                this.addLineI18n("minihud.info_line.server_tps.invalid");
-            }
+            InfoLinesHandler.getInstance().addServerTPS();
         }
         else if (type == InfoToggle.SERVUX)
         {
-            if (EntitiesDataStorage.getInstance().hasServuxServer())
-            {
-                this.addLineI18n("minihud.info_line.servux",
-                        EntitiesDataStorage.getInstance().getServuxVersion(),
-                        ServuxEntitiesPacket.PROTOCOL_VERSION,
-                        EntitiesDataStorage.getInstance().getPendingBLockEntitiesCount(),
-                        EntitiesDataStorage.getInstance().getPendingEntitiesCount()
-                );
-            }
+            InfoLinesHandler.getInstance().addServux();
         }
         else if (type == InfoToggle.WEATHER)
         {
-            World bestWorld = WorldUtils.getBestWorld(mc);
-            String weatherType = "clear";
-            int weatherTime = -1;
-            if (bestWorld.getLevelProperties().isThundering())
-            {
-                weatherType = "thundering";
-                if (bestWorld.getLevelProperties() instanceof LevelProperties lp)
-                {
-                    weatherTime = lp.getThunderTime();
-                }
-            }
-            else if (bestWorld.getLevelProperties().isRaining())
-            {
-                weatherType = "raining";
-                if (bestWorld.getLevelProperties() instanceof LevelProperties lp)
-                {
-                    weatherTime = lp.getRainTime();
-                }
-            }
-
-            if (weatherType.equals("clear") || weatherTime == -1)
-            {
-                this.addLineI18n("minihud.info_line.weather", StringUtils.translate("minihud.info_line.weather." + weatherType), "");
-            }
-            else
-            {
-                // 50 = 1000 (ms/s) / 20 (ticks/s)
-                this.addLineI18n("minihud.info_line.weather",
-                        StringUtils.translate("minihud.info_line.weather." + weatherType),
-                        ", " + DurationFormatUtils.formatDurationWords(weatherTime * 50L, true, true) + " " + StringUtils.translate("minihud.info_line.remaining")
-                );
-            }
+            InfoLinesHandler.getInstance().addWeather();
         }
         else if (type == InfoToggle.MOB_CAPS)
         {
