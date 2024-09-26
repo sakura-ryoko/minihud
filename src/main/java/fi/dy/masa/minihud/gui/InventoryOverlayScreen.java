@@ -23,7 +23,9 @@ import net.minecraft.world.World;
 
 import fi.dy.masa.malilib.render.InventoryOverlay;
 import fi.dy.masa.malilib.render.RenderUtils;
-import fi.dy.masa.malilib.util.*;
+import fi.dy.masa.malilib.util.BlockUtils;
+import fi.dy.masa.malilib.util.GuiUtils;
+import fi.dy.masa.malilib.util.WorldUtils;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.data.EntitiesDataStorage;
 import fi.dy.masa.minihud.event.RenderHandler;
@@ -85,6 +87,12 @@ public class InventoryOverlayScreen extends Screen
                 y -= (rows - 6) * 18;
             }
 
+            /*
+            MiniHUD.logger.warn("render():0: type [{}], previewData.type [{}], previewData.inv [{}], previewData.be [{}], previewData.ent [{}], previewData.nbt [{}]", type.toString(), previewData.type().toString(),
+                                 previewData.inv() != null, previewData.be() != null, previewData.entity() != null, previewData.nbt() != null ? previewData.nbt().getString("id") : null);
+            MiniHUD.logger.error("0: -> inv.type [{}] // nbt.type [{}]", previewData.inv() != null ? InventoryOverlay.getInventoryType(previewData.inv()) : null, previewData.nbt() != null ? InventoryOverlay.getInventoryType(previewData.nbt()) : null);
+             */
+
             if (previewData.entity() != null)
             {
                 x = xCenter - 55;
@@ -95,6 +103,10 @@ public class InventoryOverlayScreen extends Screen
             if (previewData.be() instanceof CrafterBlockEntity cbe)
             {
                 lockedSlots = BlockUtils.getDisabledSlots(cbe);
+            }
+            else if (previewData.nbt() != null && previewData.nbt().contains("disabled_slots"))
+            {
+                lockedSlots = BlockUtils.getDisabledSlotsFromNbt(previewData.nbt());
             }
 
             if (!armourItems.isEmpty())
@@ -133,29 +145,102 @@ public class InventoryOverlayScreen extends Screen
             {
                 // Refresh data
                 /*
-                if (previewData.te() != null)
+                MiniHUD.logger.warn("render():1: type [{}], previewData.type [{}], previewData.inv [{}], previewData.be [{}], previewData.ent [{}], previewData.nbt [{}]",
+                                    type.toString(), previewData.type().toString(),
+                                    previewData.inv() != null ? previewData.inv().size() : "",
+                                    previewData.be() != null, previewData.entity() != null,
+                                    previewData.nbt() != null ? previewData.nbt().getString("id") : null);
+                MiniHUD.logger.error("1: -> inv.type [{}] // nbt.type [{}]", previewData.inv() != null ? InventoryOverlay.getInventoryType(previewData.inv()) : null, previewData.nbt() != null ? InventoryOverlay.getInventoryType(previewData.nbt()) : null);
+
+                if (previewData.nbt() != null && previewData.nbt().contains("disabled_slots"))
                 {
-                    RenderHandler.getInstance().requestBlockEntityAt(world, previewData.te().getPos());
-                    var inv = InventoryUtils.getInventory(world, previewData.te().getPos());
-                    previewData = new RayTraceUtils.InventoryPreviewData(inv, world.getBlockEntity(previewData.te().getPos()), null);
+                    MiniHUD.logger.warn("1: -> disabled_slots [{}]", previewData.nbt().get("disabled_slots"));
+                }
                  */
+
                 if (previewData.be() != null)
                 {
                     RenderHandler.getInstance().requestBlockEntityAt(world, previewData.be().getPos());
-                    var inv = InventoryUtils.getInventory(world, previewData.be().getPos());
-                    previewData = new InventoryOverlay.Context(InventoryOverlay.getInventoryType(inv), inv, world.getBlockEntity(previewData.be().getPos()), null, previewData.nbt());
+                    previewData = RayTraceUtils.getTargetInventoryFromBlock(previewData.be().getWorld(), previewData.be().getPos(), previewData.be(), previewData.nbt());
                 }
                 else if (previewData.entity() != null)
                 {
                     EntitiesDataStorage.getInstance().requestEntity(previewData.entity().getId());
                     previewData = RayTraceUtils.getTargetInventoryFromEntity(previewData.entity(), previewData.nbt());
                 }
+
+                /*
+                if (previewData.te() != null)
+                {
+                    RenderHandler.getInstance().requestBlockEntityAt(world, previewData.te().getPos());
+                    var inv = InventoryUtils.getInventory(world, previewData.te().getPos());
+                    previewData = new RayTraceUtils.InventoryPreviewData(inv, world.getBlockEntity(previewData.te().getPos()), null);
+                 */
+                /*
+                if (previewData.be() != null)
+                {
+                    Inventory lastInv = previewData.inv();
+                    BlockEntity lastBe = previewData.be();
+                    NbtCompound lastNbt = previewData.nbt();
+                    Inventory inv;
+                    BlockEntity be = world.getBlockEntity(previewData.be().getPos());
+                    NbtCompound nbt = new NbtCompound();
+
+                    if (be != null)
+                    {
+
+                    }
+
+                    MiniHUD.logger.warn("render():1: type [{}], previewData.type [{}], previewData.inv [{}], previewData.be [{}], previewData.ent [{}], previewData.nbt [{}]", type.toString(), previewData.type().toString(),
+                                        previewData.inv() != null, previewData.be() != null, previewData.entity() != null, previewData.nbt() != null ? previewData.nbt().getString("id") : null);
+                    MiniHUD.logger.error("1: -> inv.type [{}] // nbt.type [{}]", previewData.inv() != null ? InventoryOverlay.getInventoryType(previewData.inv()) : null, previewData.nbt() != null ? InventoryOverlay.getInventoryType(previewData.nbt()) : null);
+
+                    if (previewData.nbt() != null && previewData.nbt().contains("disabled_slots"))
+                    {
+                        MiniHUD.logger.warn("1: -> disabled_slots [{}]", previewData.nbt().get("disabled_slots"));
+                    }
+
+                    nbt = RenderHandler.getInstance().requestBlockEntityAt(world, previewData.be().getPos());
+                    inv = InventoryUtils.getInventory(world, previewData.be().getPos());
+
+                    if (inv == null)
+                    {
+                        inv = InventoryUtils.getNbtInventory(previewData.nbt(), previewData.inv() != null ? previewData.inv().size() : -1, world.getRegistryManager());
+                    }
+                    //world.getBlockEntity(previewData.be().getPos())
+                    previewData = new InventoryOverlay.Context(InventoryOverlay.getBestInventoryType(inv, previewData.nbt(), previewData), inv, world.getBlockEntity(previewData.be().getPos()), null, previewData.nbt());
+                }
+                else if (previewData.entity() != null)
+                {
+                    MiniHUD.logger.warn("render():2: type [{}], previewData.type [{}], previewData.inv [{}], previewData.be [{}], previewData.ent [{}], previewData.nbt [{}]", type.toString(), previewData.type().toString(),
+                                        previewData.inv() != null, previewData.be() != null, previewData.entity() != null, previewData.nbt() != null ? previewData.nbt().getString("id") : null);
+                    MiniHUD.logger.error("2: -> inv.type [{}] // nbt.type [{}]", previewData.inv() != null ? InventoryOverlay.getInventoryType(previewData.inv()) : null, previewData.nbt() != null ? InventoryOverlay.getInventoryType(previewData.nbt()) : null);
+
+                    if (previewData.nbt() != null && previewData.nbt().contains("disabled_slots"))
+                    {
+                        MiniHUD.logger.warn("2: -> disabled_slots [{}]", previewData.nbt().get("disabled_slots"));
+                    }
+                    EntitiesDataStorage.getInstance().requestEntity(previewData.entity().getId());
+                    previewData = RayTraceUtils.getTargetInventoryFromEntity(previewData.entity(), previewData.nbt());
+                }
                 else if (previewData.nbt() != null)
                 {
+                    MiniHUD.logger.warn("render():3: type [{}], previewData.type [{}], previewData.inv [{}], previewData.be [{}], previewData.ent [{}], previewData.nbt [{}]", type.toString(), previewData.type().toString(),
+                                        previewData.inv() != null, previewData.be() != null, previewData.entity() != null, previewData.nbt() != null ? previewData.nbt().getString("id") : null);
+                    MiniHUD.logger.error("3: -> inv.type [{}] // nbt.type [{}]", previewData.inv() != null ? InventoryOverlay.getInventoryType(previewData.inv()) : null, previewData.nbt() != null ? InventoryOverlay.getInventoryType(previewData.nbt()) : null);
+
                     NbtCompound nbt = previewData.nbt().copy();
-                    var inv = InventoryUtils.getNbtInventory(nbt);
-                    previewData = new InventoryOverlay.Context(InventoryOverlay.getInventoryType(nbt), inv, null, null, nbt);
+
+                    if (nbt.contains("disabled_slots"))
+                    {
+                        MiniHUD.logger.warn("3: -> disabled_slots [{}]", nbt.get("disabled_slots"));
+                    }
+                    var inv = InventoryUtils.getNbtInventory(nbt, previewData.inv() != null ? previewData.inv().size() : -1, world.getRegistryManager());
+                    previewData = new InventoryOverlay.Context(InventoryOverlay.getBestInventoryType(inv != null ? inv : previewData.inv(), nbt, previewData),
+                                                               inv != null ? inv : previewData.inv(), previewData.be() != null ? previewData.be() : null,
+                                                               previewData.entity() != null ? previewData.entity() : null, nbt);
                 }
+                 */
             }
         }
     }

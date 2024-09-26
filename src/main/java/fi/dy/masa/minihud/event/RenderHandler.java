@@ -32,7 +32,6 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.enums.ChestType;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.LayeredDrawer;
 import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.Fog;
@@ -51,6 +50,7 @@ import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.item.FilledMapItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.integrated.IntegratedServer;
@@ -76,6 +76,8 @@ import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.WorldChunk;
 import net.minecraft.world.chunk.light.LightingProvider;
 import net.minecraft.world.level.LevelProperties;
+
+import com.llamalad7.mixinextras.lib.apache.commons.tuple.Pair;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.joml.Matrix4f;
 
@@ -1126,7 +1128,19 @@ public class RenderHandler implements IRenderer
             {
                 EntitiesDataStorage.getInstance().requestEntity(lookedEntity.getId());
             }
+
             return lookedEntity;
+        }
+        return null;
+    }
+
+    @Nullable
+    public NbtCompound getTargetEntityNbt(World world, MinecraftClient mc)
+    {
+        if (mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.ENTITY)
+        {
+            Entity lookedEntity = ((EntityHitResult) mc.crosshairTarget).getEntity();
+            return EntitiesDataStorage.getInstance().requestEntity(lookedEntity.getId()).getRight();
         }
         return null;
     }
@@ -1147,13 +1161,28 @@ public class RenderHandler implements IRenderer
         return null;
     }
 
-    public void requestBlockEntityAt(World world, BlockPos pos)
+    @Nullable
+    public NbtCompound getTargetedBlockEntityNbt(World world, MinecraftClient mc)
+    {
+        if (mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.BLOCK)
+        {
+            BlockPos posLooking = ((BlockHitResult) mc.crosshairTarget).getBlockPos();
+
+            return requestBlockEntityAt(world, posLooking).getRight();
+        }
+
+        return null;
+    }
+
+    @Nullable
+    public Pair<BlockEntity, NbtCompound> requestBlockEntityAt(World world, BlockPos pos)
     {
         if (!(world instanceof ServerWorld))
         {
-            EntitiesDataStorage.getInstance().requestBlockEntity(world, pos);
+            Pair<BlockEntity, NbtCompound> pair = EntitiesDataStorage.getInstance().requestBlockEntity(world, pos);
 
             BlockState state = world.getBlockState(pos);
+
             if (state.getBlock() instanceof ChestBlock)
             {
                 ChestType type = state.get(ChestBlock.CHEST_TYPE);
@@ -1161,10 +1190,14 @@ public class RenderHandler implements IRenderer
                 if (type != ChestType.SINGLE)
                 {
                     BlockPos posAdj = pos.offset(ChestBlock.getFacing(state));
-                    EntitiesDataStorage.getInstance().requestBlockEntity(world, posAdj);
+                    return EntitiesDataStorage.getInstance().requestBlockEntity(world, posAdj);
                 }
             }
+
+            return pair;
         }
+
+        return null;
     }
 
     @Nullable

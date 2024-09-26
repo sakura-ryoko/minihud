@@ -3,6 +3,7 @@ package fi.dy.masa.minihud.util;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nonnull;
+import com.llamalad7.mixinextras.lib.apache.commons.tuple.Pair;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.block.Block;
@@ -36,6 +37,7 @@ import fi.dy.masa.malilib.render.InventoryOverlay;
 import fi.dy.masa.malilib.util.EntityUtils;
 import fi.dy.masa.malilib.util.InventoryUtils;
 import fi.dy.masa.malilib.util.WorldUtils;
+import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.data.EntitiesDataStorage;
 import fi.dy.masa.minihud.event.RenderHandler;
 import fi.dy.masa.minihud.mixin.IMixinAbstractHorseEntity;
@@ -124,7 +126,6 @@ public class RayTraceUtils
 
         HitResult trace = getRayTraceFromEntity(world, cameraEntity, false);
         NbtCompound nbt = new NbtCompound();
-        Inventory inv;
 
         if (trace.getType() == HitResult.Type.BLOCK)
         {
@@ -139,45 +140,41 @@ public class RayTraceUtils
                 return null;
             }
 
-            inv = InventoryUtils.getInventory(world, pos);
+            //MiniHUD.logger.warn("getTarget():1: pos [{}], state [{}]", pos.toShortString(), state.toString());
 
             if (blockTmp instanceof BlockEntityProvider)
             {
                 if (world instanceof ServerWorld)
                 {
                     be = world.getWorldChunk(pos).getBlockEntity(pos);
+
+                    if (be != null)
+                    {
+                        nbt = be.createNbtWithIdentifyingData(world.getRegistryManager());
+                    }
                 }
                 else
                 {
-                    RenderHandler.getInstance().requestBlockEntityAt(world, pos);
-                    nbt = EntitiesDataStorage.getInstance().requestBlockEntity(world, pos);
-                    inv = EntitiesDataStorage.getInstance().getBlockInventory(world, pos);
-                    //be = EntitiesDataStorage.getInstance().getCachedBlockEntity(world, pos);
-                }
+                    Pair<BlockEntity, NbtCompound> pair = RenderHandler.getInstance().requestBlockEntityAt(world, pos);
 
-                if (be != null)
-                {
-                    nbt = be.createNbtWithIdentifyingData(world.getRegistryManager());
-                }
-                if (!nbt.isEmpty())
-                {
-                    Inventory inv2 = InventoryUtils.getNbtInventory(nbt, inv != null ? inv.size() : -1, world.getRegistryManager());
-
-                    if (inv == null)
+                    if (pair != null)
                     {
-                        inv = inv2;
+                        nbt = pair.getRight();
+
+                        if (Configs.Generic.ENTITY_DATA_LOAD_NBT.getBooleanValue())
+                        {
+                            be = pair.getLeft();
+                        }
                     }
                 }
-            }
 
-            if (inv == null && !newScreen)
-            {
-                return null;
+                //MiniHUD.logger.warn("getTarget():2: pos [{}], be [{}], nbt [{}]", pos.toShortString(), be != null, nbt != null);
+
+                return getTargetInventoryFromBlock(world, pos, be, nbt);
             }
 
             //return new InventoryPreviewData(inv, be != null ? be : bestWorld != null ? bestWorld.getBlockEntity(pos) : world.getBlockEntity(pos), null);
-            return new InventoryOverlay.Context(inv != null ? InventoryOverlay.getBestInventoryType(inv, nbt) : InventoryOverlay.getInventoryType(nbt), inv,
-                                                be != null ? be : world.getBlockEntity(pos), null, nbt);
+            return null;
         }
         else if (trace.getType() == HitResult.Type.ENTITY)
         {
@@ -189,13 +186,75 @@ public class RayTraceUtils
             }
             else
             {
-                nbt = EntitiesDataStorage.getInstance().requestEntity(entity.getId());
+                Pair<Entity, NbtCompound> pair = EntitiesDataStorage.getInstance().requestEntity(entity.getId());
+
+                if (pair != null)
+                {
+                    nbt = pair.getRight();
+
+                    if (Configs.Generic.ENTITY_DATA_LOAD_NBT.getBooleanValue())
+                    {
+                        entity = pair.getLeft();
+                    }
+                }
             }
 
             return getTargetInventoryFromEntity(world.getEntityById(entity.getId()), nbt);
         }
 
         return null;
+    }
+
+    public static @Nullable InventoryOverlay.Context getTargetInventoryFromBlock(World world, BlockPos pos, @Nullable BlockEntity be, NbtCompound nbt)
+    {
+        Inventory inv;
+
+        if (be != null)
+        {
+            if (nbt.isEmpty())
+            {
+                nbt = be.createNbtWithIdentifyingData(world.getRegistryManager());
+            }
+            inv = InventoryUtils.getInventory(world, pos);
+        }
+        else
+        {
+            if (nbt.isEmpty())
+            {
+                Pair<BlockEntity, NbtCompound> pair = RenderHandler.getInstance().requestBlockEntityAt(world, pos);
+
+                if (pair != null)
+                {
+                    nbt = pair.getRight();
+
+                    if (Configs.Generic.ENTITY_DATA_LOAD_NBT.getBooleanValue())
+                    {
+                        be = pair.getLeft();
+                    }
+                }
+            }
+
+            inv = EntitiesDataStorage.getInstance().getBlockInventory(world, pos, false);
+        }
+
+        if (nbt != null && !nbt.isEmpty())
+        {
+            Inventory inv2 = InventoryUtils.getNbtInventory(nbt, inv != null ? inv.size() : -1, world.getRegistryManager());
+
+            if (inv == null)
+            {
+                inv = inv2;
+            }
+        }
+
+        //MiniHUD.logger.warn("getTarget():3: pos [{}], inv [{}], be [{}], nbt [{}]", pos.toShortString(), inv != null, be != null, nbt != null ? nbt.getString("id") : new NbtCompound());
+
+        if (inv == null || nbt == null)
+        {
+            return null;
+        }
+
+        return new InventoryOverlay.Context(InventoryOverlay.getBestInventoryType(inv, nbt), inv, be != null ? be : world.getBlockEntity(pos), null, nbt);
     }
 
     // InventoryOverlay.Context
