@@ -424,7 +424,9 @@ public class EntitiesDataStorage implements IClientTickHandler
                 {
                     NbtCompound nbt = be.createNbtWithIdentifyingData(world.getRegistryManager());
                     Pair<BlockEntity, NbtCompound> pair = Pair.of(be, nbt);
+
                     this.blockEntityCache.put(pos, Pair.of(System.currentTimeMillis(), pair));
+
                     return pair;
                 }
             }

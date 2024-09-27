@@ -5,29 +5,29 @@ import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.interfaces.IRenderer;
 import fi.dy.masa.malilib.render.RenderUtils;
 import fi.dy.masa.malilib.util.BlockUtils;
+import fi.dy.masa.malilib.util.EntityUtils;
 import fi.dy.masa.malilib.util.InventoryUtils;
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.malilib.util.WorldUtils;
+import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.config.RendererToggle;
 import fi.dy.masa.minihud.data.EntitiesDataStorage;
-import fi.dy.masa.minihud.data.InfoLinesHandler;
 import fi.dy.masa.minihud.data.MobCapDataHandler;
-import fi.dy.masa.minihud.mixin.IMixinPassiveEntity;
-import fi.dy.masa.minihud.mixin.IMixinServerWorld;
-import fi.dy.masa.minihud.mixin.IMixinWorldRenderer;
-import fi.dy.masa.minihud.mixin.IMixinZombieVillagerEntity;
+import fi.dy.masa.minihud.mixin.*;
 import fi.dy.masa.minihud.network.ServuxEntitiesPacket;
 import fi.dy.masa.minihud.renderer.OverlayRenderer;
 import fi.dy.masa.minihud.util.*;
 
 import net.minecraft.block.BeehiveBlock;
+import net.minecraft.block.BlockEntityProvider;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ChestBlock;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.block.entity.BeehiveBlockEntity;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.block.enums.ChestType;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
@@ -40,8 +40,12 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.Tameable;
+import net.minecraft.entity.attribute.AttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.mob.SkeletonEntity;
+import net.minecraft.entity.mob.ZombieEntity;
 import net.minecraft.entity.mob.ZombieVillagerEntity;
 import net.minecraft.entity.passive.AbstractHorseEntity;
 import net.minecraft.entity.passive.PandaEntity;
@@ -52,11 +56,13 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.server.world.OptionalChunk;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Util;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
@@ -82,16 +88,8 @@ import org.joml.Matrix4f;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 public class RenderHandler implements IRenderer
@@ -145,9 +143,9 @@ public class RenderHandler implements IRenderer
             return;
         }
 
-        if (this.mc.getDebugHud().shouldShowDebugHud() == false &&
-            this.mc.player != null && this.mc.options.hudHidden == false &&
-            (Configs.Generic.REQUIRE_SNEAK.getBooleanValue() == false || this.mc.player.isSneaking()) &&
+        if (mc.getDebugHud().shouldShowDebugHud() == false &&
+            mc.player != null && mc.options.hudHidden == false &&
+            (Configs.Generic.REQUIRE_SNEAK.getBooleanValue() == false || mc.player.isSneaking()) &&
             Configs.Generic.REQUIRED_KEY.getKeybind().isKeybindHeld())
         {
 
@@ -175,7 +173,7 @@ public class RenderHandler implements IRenderer
         if (Configs.Generic.INVENTORY_PREVIEW_ENABLED.getBooleanValue() &&
             Configs.Generic.INVENTORY_PREVIEW.getKeybind().isKeybindHeld())
         {
-            var inventory = RayTraceUtils.getTargetInventory(this.mc, true);
+            var inventory = RayTraceUtils.getTargetInventory(mc, true);
 
             if (inventory != null)
             {
@@ -183,7 +181,7 @@ public class RenderHandler implements IRenderer
             }
 
             // OG method (Works with Crafters also)
-            //fi.dy.masa.minihud.renderer.RenderUtils.renderInventoryOverlay(this.mc, drawContext);
+            //fi.dy.masa.minihud.renderer.RenderUtils.renderInventoryOverlay(mc, drawContext);
         }
     }
 
@@ -196,7 +194,7 @@ public class RenderHandler implements IRenderer
             if (Configs.Generic.MAP_PREVIEW.getBooleanValue() &&
                (Configs.Generic.MAP_PREVIEW_REQUIRE_SHIFT.getBooleanValue() == false || GuiBase.isShiftDown()))
             {
-                fi.dy.masa.malilib.render.RenderUtils.renderMapPreview(stack, x, y, Configs.Generic.MAP_PREVIEW_SIZE.getIntegerValue(), false, drawContext);
+                RenderUtils.renderMapPreview(stack, x, y, Configs.Generic.MAP_PREVIEW_SIZE.getIntegerValue(), false, drawContext);
             }
         }
         else if (stack.getComponents().contains(DataComponentTypes.CONTAINER) && InventoryUtils.shulkerBoxHasItems(stack))
@@ -204,7 +202,7 @@ public class RenderHandler implements IRenderer
             if (Configs.Generic.SHULKER_BOX_PREVIEW.getBooleanValue() &&
                (Configs.Generic.SHULKER_DISPLAY_REQUIRE_SHIFT.getBooleanValue() == false || GuiBase.isShiftDown()))
             {
-                fi.dy.masa.malilib.render.RenderUtils.renderShulkerBoxPreview(stack, x, y, Configs.Generic.SHULKER_DISPLAY_BACKGROUND_COLOR.getBooleanValue(), drawContext);
+                RenderUtils.renderShulkerBoxPreview(stack, x, y, Configs.Generic.SHULKER_DISPLAY_BACKGROUND_COLOR.getBooleanValue(), drawContext);
             }
         }
     }
@@ -213,7 +211,7 @@ public class RenderHandler implements IRenderer
     public void onRenderWorldPreWeather(Matrix4f posMatrix, Matrix4f projMatrix, Frustum frustum, Camera camera, Fog fog, Profiler profiler)
     {
         if (Configs.Generic.MAIN_RENDERING_TOGGLE.getBooleanValue() &&
-                this.mc.world != null && this.mc.player != null && this.mc.options.hudHidden == false)
+            this.mc.world != null && this.mc.player != null && this.mc.options.hudHidden == false)
         {
             OverlayRenderer.renderOverlays(posMatrix, projMatrix, this.mc, frustum, camera, fog, profiler);
         }
@@ -326,43 +324,181 @@ public class RenderHandler implements IRenderer
 
         if (type == InfoToggle.FPS)
         {
-            InfoLinesHandler.getInstance().addFPS();
+            this.addLineI18n("minihud.info_line.fps", mc.getCurrentFps());
         }
         else if (type == InfoToggle.MEMORY_USAGE)
         {
-            InfoLinesHandler.getInstance().addMemoryUsage();
+            long memMax = Runtime.getRuntime().maxMemory();
+            long memTotal = Runtime.getRuntime().totalMemory();
+            long memFree = Runtime.getRuntime().freeMemory();
+            long memUsed = memTotal - memFree;
+
+            this.addLineI18n("minihud.info_line.memory_usage",
+                             memUsed * 100L / memMax,
+                             MiscUtils.bytesToMb(memUsed),
+                             MiscUtils.bytesToMb(memMax),
+                             memTotal * 100L / memMax,
+                             MiscUtils.bytesToMb(memTotal));
         }
         else if (type == InfoToggle.TIME_REAL)
         {
-            InfoLinesHandler.getInstance().addRealTime();
+            try
+            {
+                SimpleDateFormat sdf = new SimpleDateFormat(Configs.Generic.DATE_FORMAT_REAL.getStringValue());
+                this.date.setTime(System.currentTimeMillis());
+                this.addLine(sdf.format(this.date));
+            }
+            catch (Exception e)
+            {
+                this.addLineI18n("minihud.info_line.time.exception");
+            }
         }
         else if (type == InfoToggle.TIME_WORLD)
         {
-            InfoLinesHandler.getInstance().addWorldTime(world);
+            long current = world.getTimeOfDay();
+            long total = world.getTime();
+            this.addLineI18n("minihud.info_line.time_world", current, total);
         }
         else if (type == InfoToggle.TIME_WORLD_FORMATTED)
         {
-            InfoLinesHandler.getInstance().addWorldTimeFormatted(world);
+            try
+            {
+                long timeDay = world.getTimeOfDay();
+                long day = (int) (timeDay / 24000);
+                // 1 tick = 3.6 seconds in MC (0.2777... seconds IRL)
+                int dayTicks = (int) (timeDay % 24000);
+                int hour = (int) ((dayTicks / 1000) + 6) % 24;
+                int min = (int) (dayTicks / 16.666666) % 60;
+                int sec = (int) (dayTicks / 0.277777) % 60;
+                // Moonphase has 8 different states in MC
+                int moonNumber = (int) day % 8;
+                String moon;
+                if (moonNumber > 7)
+                {
+                    moon = StringUtils.translate("minihud.info_line.invalid_value");
+                }
+                else
+                {
+                    moon = StringUtils.translate("minihud.info_line.time_world_formatted.moon_" + moonNumber);
+                }
+
+                String str = Configs.Generic.DATE_FORMAT_MINECRAFT.getStringValue();
+                str = str.replace("{DAY}",  String.format("%d", day));
+                str = str.replace("{DAY_1}",String.format("%d", day + 1));
+                str = str.replace("{HOUR}", String.format("%02d", hour));
+                str = str.replace("{MIN}",  String.format("%02d", min));
+                str = str.replace("{SEC}",  String.format("%02d", sec));
+                str = str.replace("{MOON}",  String.format("%s", moon));
+
+                this.addLine(str);
+            }
+            catch (Exception e)
+            {
+                this.addLineI18n("minihud.info_line.time.exception");
+            }
         }
         else if (type == InfoToggle.TIME_DAY_MODULO)
         {
-            InfoLinesHandler.getInstance().addDayTimeModulo(world);
+            int mod = Configs.Generic.TIME_DAY_DIVISOR.getIntegerValue();
+            long current = world.getTimeOfDay() % mod;
+            this.addLineI18n("minihud.info_line.time_day_modulo", mod, current);
         }
         else if (type == InfoToggle.TIME_TOTAL_MODULO)
         {
-            InfoLinesHandler.getInstance().addTotalTimeModulo(world);
+            int mod = Configs.Generic.TIME_TOTAL_DIVISOR.getIntegerValue();
+            long current = world.getTime() % mod;
+            this.addLineI18n("minihud.info_line.time_total_modulo", mod, current);
         }
         else if (type == InfoToggle.SERVER_TPS)
         {
-            InfoLinesHandler.getInstance().addServerTPS();
+            if (this.data.hasIntegratedServer() && (this.data.getIntegratedServer().getTicks() % 10) == 0)
+            {
+                this.data.updateIntegratedServerTPS();
+            }
+
+            if (this.data.hasTPSData())
+            {
+                double tps = this.data.getServerTPS();
+                double mspt = this.data.getServerMSPT();
+                String rst = GuiBase.TXT_RST;
+                String preTps = tps >= 20.0D ? GuiBase.TXT_GREEN : GuiBase.TXT_RED;
+                String preMspt;
+
+                // Carpet server and integrated server have actual meaningful MSPT data available
+                if (this.data.hasCarpetServer() || this.data.isSinglePlayer())
+                {
+                    if      (mspt <= 40) { preMspt = GuiBase.TXT_GREEN; }
+                    else if (mspt <= 45) { preMspt = GuiBase.TXT_YELLOW; }
+                    else if (mspt <= 50) { preMspt = GuiBase.TXT_GOLD; }
+                    else                 { preMspt = GuiBase.TXT_RED; }
+
+                    this.addLineI18n("minihud.info_line.server_tps", preTps, tps, rst, preMspt, mspt, rst);
+                }
+                else
+                {
+                    if (mspt <= 51) { preMspt = GuiBase.TXT_GREEN; }
+                    else            { preMspt = GuiBase.TXT_RED; }
+
+                    this.addLineI18n("minihud.info_line.server_tps.est", preTps, tps, rst, preMspt, mspt, rst);
+                }
+            }
+            else
+            {
+                this.addLineI18n("minihud.info_line.server_tps.invalid");
+            }
         }
         else if (type == InfoToggle.SERVUX)
         {
-            InfoLinesHandler.getInstance().addServux();
+            if (EntitiesDataStorage.getInstance().hasServuxServer())
+            {
+                this.addLineI18n("minihud.info_line.servux",
+                                 EntitiesDataStorage.getInstance().getServuxVersion(),
+                                 ServuxEntitiesPacket.PROTOCOL_VERSION,
+                                 EntitiesDataStorage.getInstance().getPendingBLockEntitiesCount(),
+                                 EntitiesDataStorage.getInstance().getPendingEntitiesCount()
+                );
+            }
         }
         else if (type == InfoToggle.WEATHER)
         {
-            InfoLinesHandler.getInstance().addWeather();
+            World bestWorld = WorldUtils.getBestWorld(mc);
+            String weatherType = "clear";
+            int weatherTime = -1;
+
+            if (bestWorld == null)
+            {
+                return;
+            }
+            if (bestWorld.getLevelProperties().isThundering())
+            {
+                weatherType = "thundering";
+                if (bestWorld.getLevelProperties() instanceof LevelProperties lp)
+                {
+                    weatherTime = lp.getThunderTime();
+                }
+            }
+            else if (bestWorld.getLevelProperties().isRaining())
+            {
+                weatherType = "raining";
+                if (bestWorld.getLevelProperties() instanceof LevelProperties lp)
+                {
+                    weatherTime = lp.getRainTime();
+                }
+            }
+
+            if (weatherType.equals("clear") || weatherTime == -1)
+            {
+                this.addLineI18n("minihud.info_line.weather", StringUtils.translate("minihud.info_line.weather." + weatherType), "");
+            }
+            else
+            {
+                // 50 = 1000 (ms/s) / 20 (ticks/s)
+                this.addLineI18n("minihud.info_line.weather",
+                                 StringUtils.translate("minihud.info_line.weather." + weatherType),
+                                 ", " + DurationFormatUtils.formatDurationWords(weatherTime * 50L, true, true)
+                                         + " " + StringUtils.translate("minihud.info_line.remaining")
+                );
+            }
         }
         else if (type == InfoToggle.MOB_CAPS)
         {
@@ -552,6 +688,7 @@ public class RenderHandler implements IRenderer
             Direction facing = entity.getHorizontalFacing();
             String facingName = StringUtils.translate("minihud.info_line.facing." + facing.getName() + ".name");
             String str;
+
             if (facingName.contains("minihud.info_line.facing." + facing.getName() + ".name"))
             {
                 facingName = facing.name();
@@ -578,9 +715,19 @@ public class RenderHandler implements IRenderer
         else if (type == InfoToggle.BEE_COUNT)
         {
             World bestWorld = WorldUtils.getBestWorld(mc);
-            BlockEntity be = this.getTargetedBlockEntity(bestWorld, mc);
+            Pair<BlockEntity, NbtCompound> pair = this.getTargetedBlockEntity(bestWorld, mc);
 
-            if (be instanceof BeehiveBlockEntity)
+            if (pair == null)
+            {
+                return;
+            }
+            if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue() &&
+                BlockUtils.getBlockEntityTypeFromNbt(pair.getRight()).equals(BlockEntityType.BEEHIVE))
+            {
+                Pair<List<BeehiveBlockEntity.BeeData>, BlockPos> bees = BlockUtils.getBeesDataFromNbt(pair.getRight());
+                this.addLineI18n("minihud.info_line.bee_count", bees.getLeft().size());
+            }
+            else if (pair.getLeft() instanceof BeehiveBlockEntity be)
             {
                 this.addLineI18n("minihud.info_line.bee_count", ((BeehiveBlockEntity) be).getBeeCount());
             }
@@ -588,11 +735,26 @@ public class RenderHandler implements IRenderer
         else if (type == InfoToggle.FURNACE_XP)
         {
             World bestWorld = WorldUtils.getBestWorld(mc);
-            BlockEntity be = this.getTargetedBlockEntity(bestWorld, mc);
+            Pair<BlockEntity, NbtCompound> pair = this.getTargetedBlockEntity(bestWorld, mc);
 
-            if (be instanceof AbstractFurnaceBlockEntity furnace)
+            if (pair == null)
             {
-                this.addLineI18n("minihud.info_line.furnace_xp", MiscUtils.getFurnaceXpAmount(furnace));
+                return;
+            }
+            if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue())
+            {
+                BlockEntityType<?> beType = BlockUtils.getBlockEntityTypeFromNbt(pair.getRight());
+
+                if (beType.equals(BlockEntityType.FURNACE) ||
+                    beType.equals(BlockEntityType.BLAST_FURNACE) ||
+                    beType.equals(BlockEntityType.SMOKER))
+                {
+                    this.addLineI18n("minihud.info_line.furnace_xp", MiscUtils.getFurnaceXpAmount(bestWorld, pair.getRight()));
+                }
+            }
+            else if (pair.getLeft() instanceof AbstractFurnaceBlockEntity furnace)
+            {
+                this.addLineI18n("minihud.info_line.furnace_xp", MiscUtils.getFurnaceXpAmount(bestWorld, furnace));
             }
         }
         else if (type == InfoToggle.HONEY_LEVEL)
@@ -614,8 +776,17 @@ public class RenderHandler implements IRenderer
             }
 
             World bestWorld = WorldUtils.getBestWorld(mc);
-            Entity targeted = this.getTargetEntity(bestWorld, this.mc);
-            Entity vehicle = targeted == null ? this.mc.player.getVehicle() : targeted;
+            Pair<Entity, NbtCompound> pair = this.getTargetEntity(bestWorld, mc);
+            Entity vehicle;
+
+            if (pair == null)
+            {
+                vehicle = mc.player.getVehicle();
+            }
+            else
+            {
+                vehicle = pair.getLeft() == null ? mc.player.getVehicle() : pair.getLeft();
+            }
 
             if (vehicle instanceof AbstractHorseEntity == false)
             {
@@ -624,18 +795,41 @@ public class RenderHandler implements IRenderer
 
             AbstractHorseEntity horse = (AbstractHorseEntity) vehicle;
             String AnimalType = horse.getType().getName().getString();
+            float speed = 0f;
+            double jump = 0d;
 
+            if (pair != null && Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue())
+            {
+                NbtCompound nbt = pair.getRight();
+                EntityType<?> entityType = EntityUtils.getEntityTypeFromNbt(nbt);
+
+                if (entityType.equals(EntityType.CAMEL) ||
+                    entityType.equals(EntityType.DONKEY) ||
+                    entityType.equals(EntityType.HORSE) ||
+                    entityType.equals(EntityType.LLAMA) ||
+                    entityType.equals(EntityType.MULE) ||
+                    entityType.equals(EntityType.SKELETON_HORSE) ||
+                    entityType.equals(EntityType.TRADER_LLAMA) ||
+                    entityType.equals(EntityType.ZOMBIE_HORSE))
+                {
+                    Pair<Float, Float> horsePair = EntityUtils.getSpeedAndJumpStrengthFromNbt(nbt);
+                    speed = horse.getMovementSpeed() > 0 ? horse.getMovementSpeed() : (float) horsePair.getLeft();
+                    jump = horsePair.getRight();
+                }
+            }
+            else
+            {
+                speed = horse.getMovementSpeed() > 0 ? horse.getMovementSpeed() : (float) horse.getAttributeValue(EntityAttributes.MOVEMENT_SPEED);
+                jump = horse.getAttributeValue(EntityAttributes.JUMP_STRENGTH);
+            }
             if (InfoToggle.HORSE_SPEED.getBooleanValue())
             {
-                float speed = horse.getMovementSpeed() > 0 ? horse.getMovementSpeed() : (float) horse.getAttributeValue(EntityAttributes.MOVEMENT_SPEED);
                 speed *= 42.1629629629629f;
                 this.addLineI18n("minihud.info_line.horse_speed", AnimalType, speed);
                 this.addedTypes.add(InfoToggle.HORSE_SPEED);
             }
-
             if (InfoToggle.HORSE_JUMP.getBooleanValue())
             {
-                double jump = horse.getAttributeValue(EntityAttributes.JUMP_STRENGTH);
                 double calculatedJumpHeight =
                         -0.1817584952d * jump * jump * jump +
                                 3.689713992d * jump * jump +
@@ -731,7 +925,35 @@ public class RenderHandler implements IRenderer
         }
         else if (type == InfoToggle.PANDA_GENE)
         {
-            if (this.getTargetEntity(world, mc) instanceof PandaEntity panda)
+            Pair<Entity, NbtCompound> pair = this.getTargetEntity(world, mc);
+
+            if (pair == null)
+            {
+                return;
+            }
+            if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue())
+            {
+                NbtCompound nbt = pair.getRight();
+                EntityType<?> entityType = EntityUtils.getEntityTypeFromNbt(nbt);
+
+                if (entityType.equals(EntityType.PANDA))
+                {
+                    Pair<PandaEntity.Gene, PandaEntity.Gene> genes = EntityUtils.getPandaGenesFromNbt(nbt);
+
+                    if (genes.getLeft() != null && genes.getRight() != null)
+                    {
+                        this.addLineI18n("minihud.info_line.panda_gene.main_gene",
+                                         StringUtils.translate("minihud.info_line.panda_gene.gene." + genes.getLeft().asString()),
+                                         genes.getLeft().isRecessive() ? StringUtils.translate("minihud.info_line.panda_gene.recessive_gene") : StringUtils.translate("minihud.info_line.panda_gene.dominant_gene")
+                        );
+                        this.addLineI18n("minihud.info_line.panda_gene.hidden_gene",
+                                         StringUtils.translate("minihud.info_line.panda_gene.gene." + genes.getRight().asString()),
+                                         genes.getRight().isRecessive() ? StringUtils.translate("minihud.info_line.panda_gene.recessive_gene") : StringUtils.translate("minihud.info_line.panda_gene.dominant_gene")
+                        );
+                    }
+                }
+            }
+            else if (pair.getLeft() instanceof PandaEntity panda)
             {
                 this.addLineI18n("minihud.info_line.panda_gene.main_gene",
                         StringUtils.translate("minihud.info_line.panda_gene.gene." + panda.getMainGene().asString()),
@@ -857,8 +1079,49 @@ public class RenderHandler implements IRenderer
         {
             if (mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.ENTITY)
             {
-                Entity lookedEntity = this.getTargetEntity(world, mc);
-                if (lookedEntity instanceof LivingEntity living)
+                Pair<Entity, NbtCompound> pair = this.getTargetEntity(world, mc);
+
+                if (pair == null)
+                {
+                    return;
+                }
+                if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue() &&
+                    pair.getLeft() instanceof LivingEntity living)
+                {
+                    NbtCompound nbt = pair.getRight();
+                    Pair<Float, Float> healthPair = EntityUtils.getHealthFromNbt(nbt);
+                    Pair<UUID, ItemStack> ownerPair = EntityUtils.getOwnerAndSaddle(nbt, world.getRegistryManager());
+                    Pair<Integer, Integer> agePair = EntityUtils.getAgeFromNbt(nbt);
+
+                    float health = healthPair.getLeft();
+                    float maxHealth = healthPair.getRight();
+
+                    // Update the Health, as it might not be timely otherwise.
+                    if (living.getHealth() != health)
+                    {
+                        health = living.getHealth();
+                    }
+
+                    String entityLine = StringUtils.translate("minihud.info_line.looking_at_entity.livingentity", pair.getLeft().getName().getString(), health, maxHealth);
+
+                    if (ownerPair.getLeft() != Util.NIL_UUID)
+                    {
+                        LivingEntity owner = world.getPlayerByUuid(ownerPair.getLeft());
+
+                        if (owner != null)
+                        {
+                            entityLine = entityLine + " - " + StringUtils.translate("minihud.info_line.looking_at_entity.owner") + ": " + owner.getName().getLiteralString();
+                        }
+                    }
+                    if (agePair.getLeft() < 0)
+                    {
+                        int untilGrown = agePair.getLeft() * (-1);
+                        entityLine = entityLine+ " [" + StringUtils.getDurationString(untilGrown * 50) + " " + StringUtils.translate("minihud.info_line.remaining") + "]";
+                    }
+
+                    this.addLine(entityLine);
+                }
+                else if (pair.getLeft() instanceof LivingEntity living)
                 {
                     String entityLine = StringUtils.translate("minihud.info_line.looking_at_entity.livingentity", living.getName().getString(), living.getHealth(), living.getMaxHealth());
 
@@ -875,7 +1138,7 @@ public class RenderHandler implements IRenderer
                         if (passive.getBreedingAge() < 0)
                         {
                             int untilGrown = ((IMixinPassiveEntity) passive).getRealBreedingAge() * (-1);
-                            entityLine = entityLine+ " [" + DurationFormatUtils.formatDurationWords(untilGrown * 50, true, true) + " " + StringUtils.translate("minihud.info_line.remaining") + "]";
+                            entityLine = entityLine+ " [" + StringUtils.getDurationString(untilGrown * 50) + " " + StringUtils.translate("minihud.info_line.remaining") + "]";
                         }
                     }
 
@@ -883,7 +1146,7 @@ public class RenderHandler implements IRenderer
                 }
                 else
                 {
-                    this.addLineI18n("minihud.info_line.looking_at_entity", lookedEntity.getName().getString());
+                    this.addLineI18n("minihud.info_line.looking_at_entity", pair.getLeft().getName().getString());
                 }
             }
         }
@@ -891,8 +1154,40 @@ public class RenderHandler implements IRenderer
         {
             if (mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.ENTITY)
             {
-                Entity lookedEntity = this.getTargetEntity(world, mc);
-                if (lookedEntity instanceof LivingEntity living)
+                Pair<Entity, NbtCompound> pair = this.getTargetEntity(world, mc);
+
+                if (pair == null)
+                {
+                    return;
+                }
+                if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue() &&
+                    pair.getLeft() instanceof LivingEntity)
+                {
+                    NbtCompound nbt = pair.getRight();
+                    Map<RegistryEntry<StatusEffect>, StatusEffectInstance> effects = EntityUtils.getActiveStatusEffectsFromNbt(nbt);
+
+                    if (effects == null || effects.isEmpty())
+                    {
+                        return;
+                    }
+
+                    for (RegistryEntry<StatusEffect> effectType : effects.keySet())
+                    {
+                        StatusEffectInstance effect = effects.get(effectType);
+
+                        if (effect.isInfinite() || effect.getDuration() > 0)
+                        {
+                            this.addLineI18n("minihud.info_line.looking_at_effects",
+                                             effectType.value().getName().getString(),
+                                             effect.getAmplifier() > 0 ? StringUtils.translate("minihud.info_line.looking_at_effects.amplifier", effect.getAmplifier() + 1) : "",
+                                             effect.isInfinite() ? StringUtils.translate("minihud.info_line.looking_at_effects.infinite") :
+                                             StringUtils.getDurationString((effect.getDuration() / 20) * 1000L),
+                                             StringUtils.translate("minihud.info_line.remaining")
+                            );
+                        }
+                    }
+                }
+                else if (pair.getLeft() instanceof LivingEntity living)
                 {
                     Collection<StatusEffectInstance> effects = living.getStatusEffects();
                     Iterator<StatusEffectInstance> iter = effects.iterator();
@@ -907,7 +1202,7 @@ public class RenderHandler implements IRenderer
                                     effect.getEffectType().value().getName().getString(),
                                     effect.getAmplifier() > 0 ? StringUtils.translate("minihud.info_line.looking_at_effects.amplifier", effect.getAmplifier() + 1) : "",
                                     effect.isInfinite() ? StringUtils.translate("minihud.info_line.looking_at_effects.infinite") :
-                                            DurationFormatUtils.formatDurationWords((effect.getDuration() / 20) * 1000L, true, true),
+                                    StringUtils.getDurationString((effect.getDuration() / 20) * 1000L),
                                     StringUtils.translate("minihud.info_line.remaining")
                             );
                         }
@@ -919,14 +1214,56 @@ public class RenderHandler implements IRenderer
         {
             if (mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.ENTITY)
             {
-                Entity lookedEntity = this.getTargetEntity(world, mc);
-                if (lookedEntity instanceof ZombieVillagerEntity zombie)
+                Pair<Entity, NbtCompound> pair = this.getTargetEntity(world, mc);
+
+                if (pair == null)
                 {
-                    int conversionTimer = ((IMixinZombieVillagerEntity) zombie).minihud_conversionTimer();
-                    if (conversionTimer > 0)
+                    return;
+                }
+
+                String zombieType = pair.getLeft().getType().getName().getString();
+                int conversionTimer = -1;
+
+                if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue())
+                {
+                    NbtCompound nbt = pair.getRight();
+                    EntityType<?> entityType = EntityUtils.getEntityTypeFromNbt(nbt);
+
+                    //MiniHUD.logger.error("ZombieDoctor: type [{}], raw nbt [{}]", entityType.getName().getString(), nbt.toString());
+
+                    if (entityType.equals(EntityType.ZOMBIE_VILLAGER))
                     {
-                        this.addLineI18n("minihud.info_line.zombie_conversion", DurationFormatUtils.formatDurationWords((conversionTimer / 20) * 1000L, true, true));
+                        Pair<Integer, UUID> zombieDoctor = EntityUtils.getZombieConversionTimerFromNbt(nbt);
+                        conversionTimer = zombieDoctor.getLeft();
                     }
+                    else if (entityType.equals(EntityType.ZOMBIE))
+                    {
+                        Pair<Integer, Integer> zombieDoctor = EntityUtils.getDrownedConversionTimerFromNbt(nbt);
+                        conversionTimer = zombieDoctor.getLeft();
+                    }
+                    else if (entityType.equals(EntityType.SKELETON))
+                    {
+                        conversionTimer = EntityUtils.getStrayConversionTimeFromNbt(nbt);
+                    }
+                }
+                else
+                {
+                    if (pair.getLeft() instanceof ZombieVillagerEntity zombie)
+                    {
+                        conversionTimer = ((IMixinZombieVillagerEntity) zombie).minihud_conversionTimer();
+                    }
+                    else if (pair.getLeft() instanceof ZombieEntity zombert)
+                    {
+                        conversionTimer = ((IMixinZombieEntity) zombert).minihud_ticksUntilWaterConversion();
+                    }
+                    else if (pair.getLeft() instanceof SkeletonEntity skeleton)
+                    {
+                        conversionTimer = ((IMixinSkeletonEntity) skeleton).minihud_conversionTime();
+                    }
+                }
+                if (conversionTimer > 0)
+                {
+                    this.addLineI18n("minihud.info_line.zombie_conversion", zombieType, StringUtils.getDurationString((conversionTimer / 20) * 1000L));
                 }
             }
         }
@@ -934,8 +1271,12 @@ public class RenderHandler implements IRenderer
         {
             if (mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.ENTITY)
             {
-                Entity lookedEntity = this.getTargetEntity(world, mc);
-                Identifier regName = EntityType.getId(lookedEntity.getType());
+                Pair<Entity, NbtCompound> pair = this.getTargetEntity(world, mc);
+                if (pair == null)
+                {
+                    return;
+                }
+                Identifier regName = EntityType.getId(pair.getLeft().getType());
 
                 if (regName != null)
                 {
@@ -985,32 +1326,33 @@ public class RenderHandler implements IRenderer
     }
 
     @Nullable
-    public Entity getTargetEntity(World world, MinecraftClient mc)
+    public Pair<Entity, NbtCompound> getTargetEntity(World world, MinecraftClient mc)
     {
         if (mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.ENTITY)
         {
             Entity lookedEntity = ((EntityHitResult) mc.crosshairTarget).getEntity();
-            if (!(world instanceof ServerWorld))
+            World bestWorld = WorldUtils.getBestWorld(mc);
+            Pair<Entity, NbtCompound> pair;
+
+            if (bestWorld instanceof ServerWorld serverWorld)
             {
-                EntitiesDataStorage.getInstance().requestEntity(lookedEntity.getId());
+                Entity serverEntity = serverWorld.getEntityById(lookedEntity.getId());
+                NbtCompound nbt = new NbtCompound();
+                serverEntity.saveSelfNbt(nbt);
+                pair = Pair.of(serverEntity, nbt);
+            }
+            else
+            {
+                pair = EntitiesDataStorage.getInstance().requestEntity(lookedEntity.getId());
             }
 
-            return lookedEntity;
+            return pair;
         }
+
         return null;
     }
 
-    @Nullable
-    public NbtCompound getTargetEntityNbt(World world, MinecraftClient mc)
-    {
-        if (mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.ENTITY)
-        {
-            Entity lookedEntity = ((EntityHitResult) mc.crosshairTarget).getEntity();
-            return EntitiesDataStorage.getInstance().requestEntity(lookedEntity.getId()).getRight();
-        }
-        return null;
-    }
-
+    /*
     @Nullable
     public BlockEntity getTargetedBlockEntity(World world, MinecraftClient mc)
     {
@@ -1026,15 +1368,33 @@ public class RenderHandler implements IRenderer
 
         return null;
     }
+     */
 
     @Nullable
-    public NbtCompound getTargetedBlockEntityNbt(World world, MinecraftClient mc)
+    public Pair<BlockEntity, NbtCompound> getTargetedBlockEntity(World world, MinecraftClient mc)
     {
         if (mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.BLOCK)
         {
             BlockPos posLooking = ((BlockHitResult) mc.crosshairTarget).getBlockPos();
+            World bestWorld = WorldUtils.getBestWorld(mc);
+            BlockState state = bestWorld.getBlockState(posLooking);
+            Pair<BlockEntity, NbtCompound> pair = null;
 
-            return requestBlockEntityAt(world, posLooking).getRight();
+            if (state.getBlock() instanceof BlockEntityProvider)
+            {
+                if (bestWorld instanceof ServerWorld)
+                {
+                    NbtCompound nbt = new NbtCompound();
+                    BlockEntity be = bestWorld.getWorldChunk(posLooking).getBlockEntity(posLooking);
+                    pair = Pair.of(be, be != null ? be.createNbtWithIdentifyingData(bestWorld.getRegistryManager()) : nbt);
+                }
+                else
+                {
+                    pair = EntitiesDataStorage.getInstance().requestBlockEntity(world, posLooking);
+                }
+
+                return pair;
+            }
         }
 
         return null;
@@ -1055,8 +1415,7 @@ public class RenderHandler implements IRenderer
 
                 if (type != ChestType.SINGLE)
                 {
-                    BlockPos posAdj = pos.offset(ChestBlock.getFacing(state));
-                    return EntitiesDataStorage.getInstance().requestBlockEntity(world, posAdj);
+                    return EntitiesDataStorage.getInstance().requestBlockEntity(world, pos.offset(ChestBlock.getFacing(state)));
                 }
             }
 
@@ -1126,7 +1485,7 @@ public class RenderHandler implements IRenderer
 
     private CompletableFuture<OptionalChunk<Chunk>> setupChunkFuture(ChunkPos chunkPos)
     {
-        IntegratedServer server = this.mc.getServer();
+        IntegratedServer server = this.getDataStorage().getIntegratedServer();
         CompletableFuture<OptionalChunk<Chunk>> future = null;
 
         if (server != null)

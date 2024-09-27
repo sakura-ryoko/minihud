@@ -17,8 +17,10 @@
     "IMixinPassiveEntity",
     "IMixinPiglinEntity",
     "IMixinServerWorld",
+    "IMixinSkeletonEntity",
     "IMixinWorld",
     "IMixinWorldRenderer",
+    "IMixinZombieEntity",
     "IMixinZombieVillagerEntity",
     "MixinBeaconBlockEntity",
     "MixinChatScreen",
@@ -40,12 +42,10 @@
     "debug.MixinDebugInfoSender",
     "debug.MixinDebugRenderer",
     "debug.MixinHeightmapDebugRenderer",
-    "debug.MixinNeighborUpdateDebugRenderer"
+    "debug.MixinNeighborUpdateDebugRenderer",
+    "debug.MixinSharedConstants"
   ],
   "injectors": {
     "defaultRequire": 1
-  },
-  "mixins": [
-    "debug.MixinSharedConstants"
-  ]
+  }
 }

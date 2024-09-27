@@ -23,6 +23,7 @@
     "minihud.config.generic.name.enableVanillaDebugRendererFix": "enableVanillaDebugRendererFix",
     "minihud.config.generic.name.fontScale": "fontScale",
     "minihud.config.generic.name.hudAlignment": "hudAlignment",
+    "minihud.config.generic.name.infoLinesUsesNbt": "infoLinesUsesNbt",
     "minihud.config.generic.name.inventoryPreview": "inventoryPreview",
     "minihud.config.generic.name.inventoryPreviewEnabled": "inventoryPreviewEnabled",
     "minihud.config.generic.name.inventoryPreviewToggleScreen": "inventoryPreviewToggleScreen",
@@ -106,6 +107,7 @@
     "minihud.config.generic.comment.enableVanillaDebugRendererFix": "If true, then the vanilla debug renderer OpenGL state is fixed.",
     "minihud.config.generic.comment.fontScale": "Font scale factor for the info line HUD. Default: 0.5",
     "minihud.config.generic.comment.hudAlignment": "The alignment of the info line HUD",
+    "minihud.config.generic.comment.infoLinesUsesNbt": "Force the Info Lines data to strictly use the Raw NBT data.\nThis setting helps ensure compatibility with\nother mods by relying ONLY on obtained NBT tags.",
     "minihud.config.generic.comment.inventoryPreview": "The key to activate the inventory preview feature",
     "minihud.config.generic.comment.inventoryPreviewEnabled": "Enable/Disable the Inventory Preview Feature\nMade so you can individually enable / disable this feature",
     "minihud.config.generic.comment.inventoryPreviewToggleScreen": "Open a screen for inventory preview\nYou can use your mouse to see tooltips",
@@ -357,7 +359,7 @@
     "minihud.config.info_toggle.comment.infoTimeWorld": "Show the current world time in ticks",
     "minihud.config.info_toggle.comment.infoWorldTimeFormatted": "Show the current world time formatted to days, hours, minutes",
     "minihud.config.info_toggle.comment.infoWeather": "Show the current weather, and time remaining\nThis has limitations when used on Servers",
-    "minihud.config.info_toggle.comment.infoZombieConversion": "Show the Time that a Zombie Villager has until Conversion",
+    "minihud.config.info_toggle.comment.infoZombieConversion": "Show the Time that a Zombie Villager,\nZombie (Drowned), or Skeleton (Husk) has\nuntil Conversion",
 
     "minihud.config.render_toggle.name.overlayBeaconRange": "overlayBeaconRange",
     "minihud.config.render_toggle.name.overlayBiomeBorder": "overlayBiomeBorder",
@@ -911,7 +913,7 @@
     "minihud.info_line.looking_at_effects": "Status Effect: %s / %s%s %s",
     "minihud.info_line.looking_at_effects.amplifier": "x%d / ",
     "minihud.info_line.looking_at_effects.infinite": "INF",
-    "minihud.info_line.zombie_conversion": "Zombie Villager Cures in: %s",
+    "minihud.info_line.zombie_conversion": "%s conversion in: %s",
     "minihud.info_line.entity_reg_name": "Entity reg name: %s",
     "minihud.info_line.looking_at_block": "Looking at block: %d, %d, %d",
     "minihud.info_line.looking_at_block_chunk": "Block: %d, %d, %d in Sub-Chunk: %d, %d, %d"
