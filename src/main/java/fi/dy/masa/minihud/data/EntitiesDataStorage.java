@@ -7,7 +7,9 @@ import com.mojang.datafixers.util.Either;
 import fi.dy.masa.malilib.interfaces.IClientTickHandler;
 import fi.dy.masa.malilib.network.ClientPlayHandler;
 import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
+import fi.dy.masa.malilib.util.Constants;
 import fi.dy.masa.malilib.util.InventoryUtils;
+import fi.dy.masa.malilib.util.NbtKeys;
 import fi.dy.masa.malilib.util.WorldUtils;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.Reference;
@@ -32,6 +34,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.mob.PiglinEntity;
 import net.minecraft.entity.passive.AbstractHorseEntity;
 import net.minecraft.entity.passive.VillagerEntity;
@@ -225,15 +228,10 @@ public class EntitiesDataStorage implements IClientTickHandler
 
                 if (nowTime - pair.getLeft() > blockTimeout || pair.getLeft() - nowTime > 0)
                 {
-                    System.out.printf("SYNC: be at pos [%s] has timed out\n", pos.toShortString());
+                    MiniHUD.printDebug("entityCache: be at pos [{}] has timed out", pos.toShortString());
                     this.blockEntityCache.remove(pos);
                     count++;
                 }
-            }
-            if (count >= total && total > 0)
-            {
-                System.out.printf("SYNC: be cache cleared\n");
-                this.blockEntityCache.clear();
             }
         }
         total = this.entityCache.size();
@@ -247,15 +245,10 @@ public class EntitiesDataStorage implements IClientTickHandler
 
                 if (nowTime - pair.getLeft() > entityTimeout || pair.getLeft() - nowTime > 0)
                 {
-                    System.out.printf("SYNC: enity Id [%d] has timed out\n", entityId);
+                    MiniHUD.printDebug("entityCache: enity Id [{}] has timed out", entityId);
                     this.entityCache.remove(entityId);
                     count++;
                 }
-            }
-            if (count >= total && total > 0)
-            {
-                System.out.printf("SYNC: entity cache cleared\n");
-                this.entityCache.clear();
             }
         }
     }
@@ -653,6 +646,15 @@ public class EntitiesDataStorage implements IClientTickHandler
 
         if (blockEntity != null && (type == null || type.equals(BlockEntityType.getId(blockEntity.getType()))))
         {
+            if (nbt.contains(NbtKeys.ID, Constants.NBT.TAG_STRING) == false)
+            {
+                Identifier id = BlockEntityType.getId(blockEntity.getType());
+
+                if (id != null)
+                {
+                    nbt.putString(NbtKeys.ID, id.toString());
+                }
+            }
             if (this.blockEntityCache.containsKey(pos))
             {
                 this.blockEntityCache.replace(pos, Pair.of(System.currentTimeMillis(), Pair.of(blockEntity, nbt)));
@@ -678,6 +680,15 @@ public class EntitiesDataStorage implements IClientTickHandler
 
                 if (blockEntity2 != null)
                 {
+                    if (nbt.contains(NbtKeys.ID, Constants.NBT.TAG_STRING) == false)
+                    {
+                        Identifier id = BlockEntityType.getId(beType);
+
+                        if (id != null)
+                        {
+                            nbt.putString(NbtKeys.ID, id.toString());
+                        }
+                    }
                     if (this.blockEntityCache.containsKey(pos))
                     {
                         this.blockEntityCache.replace(pos, Pair.of(System.currentTimeMillis(), Pair.of(blockEntity2, nbt)));
@@ -710,6 +721,15 @@ public class EntitiesDataStorage implements IClientTickHandler
 
         if (entity != null)
         {
+            if (nbt.contains(NbtKeys.ID, Constants.NBT.TAG_STRING) == false)
+            {
+                Identifier id = EntityType.getId(entity.getType());
+
+                if (id != null)
+                {
+                    nbt.putString(NbtKeys.ID, id.toString());
+                }
+            }
             if (this.entityCache.containsKey(entityId))
             {
                 this.entityCache.replace(entityId, Pair.of(System.currentTimeMillis(), Pair.of(entity, nbt)));
