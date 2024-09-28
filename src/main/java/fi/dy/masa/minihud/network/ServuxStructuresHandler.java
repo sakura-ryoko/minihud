@@ -112,6 +112,7 @@ public abstract class ServuxStructuresHandler<T extends CustomPayload> implement
                 }
             }
             case PACKET_S2C_SPAWN_METADATA -> DataStorage.getInstance().receiveSpawnMetadata(packet.getCompound());
+            case PACKET_S2C_WEATHER_DATA -> DataStorage.getInstance().receiveWeatherData(packet.getCompound());
             default -> MiniHUD.logger.warn("decodeStructuresPacket(): received unhandled packetType {} of size {} bytes.", packet.getPacketType(), packet.getTotalSize());
         }
     }

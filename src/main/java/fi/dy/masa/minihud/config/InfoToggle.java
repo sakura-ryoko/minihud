@@ -87,6 +87,7 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     HORSE_SPEED             ("infoHorseSpeed",              false, ""),
     HORSE_JUMP              ("infoHorseJump",               false, ""),
     PANDA_GENE              ("infoPandaGene",               false, ""),
+    SHEEP_COLOR             ("infoSheepColor",              false, ""),
     ;
 
     public static final ImmutableList<InfoToggle> VALUES = ImmutableList.copyOf(values());

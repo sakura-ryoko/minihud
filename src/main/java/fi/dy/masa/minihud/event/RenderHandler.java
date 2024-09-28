@@ -4,11 +4,9 @@ import fi.dy.masa.malilib.config.HudAlignment;
 import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.interfaces.IRenderer;
 import fi.dy.masa.malilib.render.RenderUtils;
-import fi.dy.masa.malilib.util.BlockUtils;
+import fi.dy.masa.malilib.util.*;
 import fi.dy.masa.malilib.util.EntityUtils;
 import fi.dy.masa.malilib.util.InventoryUtils;
-import fi.dy.masa.malilib.util.StringUtils;
-import fi.dy.masa.malilib.util.WorldUtils;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.InfoToggle;
@@ -50,6 +48,7 @@ import net.minecraft.entity.mob.ZombieVillagerEntity;
 import net.minecraft.entity.passive.AbstractHorseEntity;
 import net.minecraft.entity.passive.PandaEntity;
 import net.minecraft.entity.passive.PassiveEntity;
+import net.minecraft.entity.passive.SheepEntity;
 import net.minecraft.item.FilledMapItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -61,6 +60,8 @@ import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.server.world.OptionalChunk;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.DyeColor;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.util.hit.BlockHitResult;
@@ -83,7 +84,6 @@ import net.minecraft.world.chunk.light.LightingProvider;
 import net.minecraft.world.level.LevelProperties;
 
 import com.llamalad7.mixinextras.lib.apache.commons.tuple.Pair;
-import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.joml.Matrix4f;
 
 import javax.annotation.Nonnull;
@@ -106,6 +106,8 @@ public class RenderHandler implements IRenderer
 
     private final List<StringHolder> lineWrappers = new ArrayList<>();
     private final List<String> lines = new ArrayList<>();
+    private Pair<BlockEntity, NbtCompound> lastBlockEntity = null;
+    private Pair<Entity,      NbtCompound> lastEntity = null;
 
     public RenderHandler()
     {
@@ -469,6 +471,22 @@ public class RenderHandler implements IRenderer
             {
                 return;
             }
+            if (this.data.isWeatherThunder())
+            {
+                weatherType = "thundering";
+                weatherTime = this.data.getThunderTime();
+            }
+            else if (this.data.isWeatherRain())
+            {
+                weatherType = "raining";
+                weatherTime = this.data.getRainTime();
+            }
+            else if (this.data.isWeatherClear())
+            {
+                weatherType = "clear";
+                weatherTime = this.data.getClearTime();
+            }
+            /*
             if (bestWorld.getLevelProperties().isThundering())
             {
                 weatherType = "thundering";
@@ -485,8 +503,9 @@ public class RenderHandler implements IRenderer
                     weatherTime = lp.getRainTime();
                 }
             }
+             */
 
-            if (weatherType.equals("clear") || weatherTime == -1)
+            if (weatherTime == -1)
             {
                 this.addLineI18n("minihud.info_line.weather", StringUtils.translate("minihud.info_line.weather." + weatherType), "");
             }
@@ -495,8 +514,8 @@ public class RenderHandler implements IRenderer
                 // 50 = 1000 (ms/s) / 20 (ticks/s)
                 this.addLineI18n("minihud.info_line.weather",
                                  StringUtils.translate("minihud.info_line.weather." + weatherType),
-                                 ", " + DurationFormatUtils.formatDurationWords(weatherTime * 50L, true, true)
-                                         + " " + StringUtils.translate("minihud.info_line.remaining")
+                                 ", " + StringUtils.getDurationString(weatherTime * 50L)
+                                 + " " + StringUtils.translate("minihud.info_line.remaining")
                 );
             }
         }
@@ -725,7 +744,7 @@ public class RenderHandler implements IRenderer
                 BlockUtils.getBlockEntityTypeFromNbt(pair.getRight()).equals(BlockEntityType.BEEHIVE))
             {
                 Pair<List<BeehiveBlockEntity.BeeData>, BlockPos> bees = BlockUtils.getBeesDataFromNbt(pair.getRight());
-                this.addLineI18n("minihud.info_line.bee_count", bees.getLeft().size());
+                this.addLineI18n("minihud.info_line.bee_count.flower_pos", bees.getLeft().size(), bees.getRight().toShortString());
             }
             else if (pair.getLeft() instanceof BeehiveBlockEntity be)
             {
@@ -822,13 +841,13 @@ public class RenderHandler implements IRenderer
                 speed = horse.getMovementSpeed() > 0 ? horse.getMovementSpeed() : (float) horse.getAttributeValue(EntityAttributes.MOVEMENT_SPEED);
                 jump = horse.getAttributeValue(EntityAttributes.JUMP_STRENGTH);
             }
-            if (InfoToggle.HORSE_SPEED.getBooleanValue())
+            if (InfoToggle.HORSE_SPEED.getBooleanValue() && speed > 0f)
             {
                 speed *= 42.1629629629629f;
                 this.addLineI18n("minihud.info_line.horse_speed", AnimalType, speed);
                 this.addedTypes.add(InfoToggle.HORSE_SPEED);
             }
-            if (InfoToggle.HORSE_JUMP.getBooleanValue())
+            if (InfoToggle.HORSE_JUMP.getBooleanValue() && jump > 0d)
             {
                 double calculatedJumpHeight =
                         -0.1817584952d * jump * jump * jump +
@@ -1118,7 +1137,6 @@ public class RenderHandler implements IRenderer
                         int untilGrown = agePair.getLeft() * (-1);
                         entityLine = entityLine+ " [" + StringUtils.getDurationString(untilGrown * 50) + " " + StringUtils.translate("minihud.info_line.remaining") + "]";
                     }
-
                     this.addLine(entityLine);
                 }
                 else if (pair.getLeft() instanceof LivingEntity living)
@@ -1147,6 +1165,38 @@ public class RenderHandler implements IRenderer
                 else
                 {
                     this.addLineI18n("minihud.info_line.looking_at_entity", pair.getLeft().getName().getString());
+                }
+            }
+        }
+        else if (type == InfoToggle.SHEEP_COLOR)
+        {
+            if (mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.ENTITY)
+            {
+                Pair<Entity, NbtCompound> pair = this.getTargetEntity(world, mc);
+
+                if (pair == null)
+                {
+                    return;
+                }
+                if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue() &&
+                    pair.getLeft() instanceof LivingEntity living)
+                {
+                    NbtCompound nbt = pair.getRight();
+                    EntityType<?> entityType = EntityUtils.getEntityTypeFromNbt(nbt);
+
+                    if (entityType.equals(EntityType.SHEEP))
+                    {
+                        if (nbt.contains("Color", Constants.NBT.TAG_BYTE))
+                        {
+                            DyeColor color = DyeColor.byId(nbt.getByte("Color"));
+                            this.addLineI18n("minihud.info_line.looking_at_entity.color", color.getName());
+                        }
+                    }
+                }
+                else if (pair.getLeft() instanceof SheepEntity sheep)
+                {
+                    DyeColor color = sheep.getColor();
+                    this.addLineI18n("minihud.info_line.looking_at_entity.color", color.getName());
                 }
             }
         }
@@ -1332,7 +1382,7 @@ public class RenderHandler implements IRenderer
         {
             Entity lookedEntity = ((EntityHitResult) mc.crosshairTarget).getEntity();
             World bestWorld = WorldUtils.getBestWorld(mc);
-            Pair<Entity, NbtCompound> pair;
+            Pair<Entity, NbtCompound> pair = null;
 
             if (bestWorld instanceof ServerWorld serverWorld)
             {
@@ -1344,6 +1394,17 @@ public class RenderHandler implements IRenderer
             else
             {
                 pair = EntitiesDataStorage.getInstance().requestEntity(lookedEntity.getId());
+            }
+
+            // Remember the last entity so the "refresh time" is smoothed over.
+            if (pair == null && this.lastEntity != null &&
+                this.lastEntity.getLeft().getId() == lookedEntity.getId())
+            {
+                pair = this.lastEntity;
+            }
+            else if (pair != null)
+            {
+                this.lastEntity = pair;
             }
 
             return pair;
@@ -1391,6 +1452,17 @@ public class RenderHandler implements IRenderer
                 else
                 {
                     pair = EntitiesDataStorage.getInstance().requestBlockEntity(world, posLooking);
+                }
+
+                // Remember the last entity so the "refresh time" is smoothed over.
+                if (pair == null && this.lastBlockEntity != null &&
+                    this.lastBlockEntity.getLeft().getPos().equals(posLooking))
+                {
+                    pair = this.lastBlockEntity;
+                }
+                else if (pair != null)
+                {
+                    this.lastBlockEntity = pair;
                 }
 
                 return pair;

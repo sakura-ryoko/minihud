@@ -41,6 +41,7 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.gen.structure.Structure;
 import fi.dy.masa.malilib.gui.GuiBase;
+import fi.dy.masa.malilib.interfaces.IClientTickHandler;
 import fi.dy.masa.malilib.network.ClientPlayHandler;
 import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
 import fi.dy.masa.malilib.util.*;
@@ -83,6 +84,9 @@ public class DataStorage
     private boolean structureRendererNeedsUpdate;
     private boolean structuresNeedUpdating;
     private boolean shouldRegisterStructureChannel;
+    private boolean isRaining;
+    private boolean isThundering;
+    private int weatherTimer;
     private long worldSeed;
     private long lastServerTick;
     private long lastServerTimeUpdate;
@@ -170,6 +174,9 @@ public class DataStorage
         this.structuresNeedUpdating = true;
         this.hasStructureDataFromServer = false;
         this.structureRendererNeedsUpdate = true;
+        this.isRaining = false;
+        this.isThundering = false;
+        this.weatherTimer = -1;
 
         this.lastStructureUpdatePos = null;
         this.structures.clear();
@@ -239,16 +246,6 @@ public class DataStorage
     public IntegratedServer getIntegratedServer()
     {
         return this.integratedServer;
-    }
-
-    public MinecraftClient getMc()
-    {
-        if (this.mc != null)
-        {
-            return this.mc;
-        }
-
-        return MinecraftClient.getInstance();
     }
 
     public boolean isSinglePlayer()
@@ -450,6 +447,51 @@ public class DataStorage
         return this.worldSeed;
     }
 
+    public boolean isWeatherClear()
+    {
+        return this.getClearTime() > -1;
+    }
+
+    public int getClearTime()
+    {
+        if (this.isRaining == false && this.isThundering == false)
+        {
+            return this.weatherTimer;
+        }
+
+        return -1;
+    }
+
+    public boolean isWeatherRain()
+    {
+        return this.getRainTime() > -1;
+    }
+
+    public int getRainTime()
+    {
+        if (this.isRaining && this.isThundering == false)
+        {
+            return this.weatherTimer;
+        }
+
+        return -1;
+    }
+
+    public boolean isWeatherThunder()
+    {
+        return this.getThunderTime() > -1;
+    }
+
+    public int getThunderTime()
+    {
+        if (this.isThundering && this.isRaining == false)
+        {
+            return this.weatherTimer;
+        }
+
+        return -1;
+    }
+
     /**
      * This function checks the Integrated Server's World Seed at Server Launch.
      * This happens before the WorldLoadListener/fromJson load which works fine for Multiplayer;
@@ -588,6 +630,14 @@ public class DataStorage
         {
             int tick = (int) (mc.world.getTime() % this.blockBreakCounter.length);
             this.blockBreakCounter[tick] = 0;
+        }
+    }
+
+    public void onClientTickPost(MinecraftClient mc)
+    {
+        if (this.hasIntegratedServer == false && this.weatherTimer > 1)
+        {
+            this.weatherTimer--;
         }
     }
 
@@ -800,6 +850,35 @@ public class DataStorage
         }
     }
 
+    public void onServerWeatherTick(int clearTime, int rainTime, boolean isThundering)
+    {
+        if (rainTime > 1)
+        {
+            if (isThundering)
+            {
+                this.isThundering = true;
+                this.isRaining = false;
+            }
+            else
+            {
+                this.isThundering = false;
+                this.isRaining = true;
+            }
+
+            this.weatherTimer = rainTime;
+        }
+        else if (clearTime > 1 && (this.isRaining || this.isThundering))
+        {
+            this.isThundering = false;
+            this.isRaining = false;
+        }
+
+        if (clearTime > 1)
+        {
+            this.weatherTimer = clearTime;
+        }
+    }
+
     public void updateIntegratedServerTPS()
     {
         if (this.mc != null && this.mc.player != null && this.mc.getServer() != null)
@@ -991,6 +1070,38 @@ public class DataStorage
             if (data.contains("worldSeed", Constants.NBT.TAG_LONG))
             {
                 this.setWorldSeed(data.getLong("worldSeed"));
+            }
+
+            if (this.hasInValidServux)
+            {
+                this.hasInValidServux = false;
+            }
+        }
+    }
+
+    public void receiveWeatherData(NbtCompound data)
+    {
+        if (this.hasIntegratedServer == false)
+        {
+            MiniHUD.printDebug("DataStorage#receiveWeatherData(): from Servux");
+
+            if (data.contains("SetRaining", Constants.NBT.TAG_INT))
+            {
+                this.isThundering = false;
+                this.isRaining = true;
+                this.weatherTimer = data.getInt("SetRaining");
+            }
+            else if (data.contains("SetThundering", Constants.NBT.TAG_INT))
+            {
+                this.isThundering = true;
+                this.isRaining = false;
+                this.weatherTimer = data.getInt("SetThundering");
+            }
+            else if (data.contains("SetClear", Constants.NBT.TAG_INT))
+            {
+                this.isRaining = false;
+                this.isThundering = false;
+                this.weatherTimer = data.getInt("SetClear");
             }
 
             if (this.hasInValidServux)

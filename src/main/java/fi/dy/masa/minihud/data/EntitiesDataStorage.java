@@ -71,7 +71,7 @@ public class EntitiesDataStorage implements IClientTickHandler
     // Data Cache
     private final ConcurrentHashMap<BlockPos, Pair<Long, Pair<BlockEntity, NbtCompound>>> blockEntityCache = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Integer,  Pair<Long, Pair<Entity,      NbtCompound>>> entityCache      = new ConcurrentHashMap<>();
-    private long cacheTimeout = 5;
+    private long cacheTimeout = 4;
     private long serverTickTime = 0;
     // Requests to be executed
     private final Set<BlockPos> pendingBlockEntitiesQueue = new LinkedHashSet<>();
@@ -212,7 +212,8 @@ public class EntitiesDataStorage implements IClientTickHandler
     private void tickCache()
     {
         long nowTime = System.currentTimeMillis();
-        long timeout = this.cacheTimeout * 1000L;
+        long blockTimeout = (this.cacheTimeout) * 1000L;
+        long entityTimeout = (this.cacheTimeout / 2) * 1000L;
         int total = this.blockEntityCache.size();
         int count = 0;
 
@@ -222,7 +223,7 @@ public class EntitiesDataStorage implements IClientTickHandler
             {
                 Pair<Long, Pair<BlockEntity, NbtCompound>> pair = this.blockEntityCache.get(pos);
 
-                if (nowTime - pair.getLeft() > timeout || pair.getLeft() - nowTime > 0)
+                if (nowTime - pair.getLeft() > blockTimeout || pair.getLeft() - nowTime > 0)
                 {
                     System.out.printf("SYNC: be at pos [%s] has timed out\n", pos.toShortString());
                     this.blockEntityCache.remove(pos);
@@ -244,7 +245,7 @@ public class EntitiesDataStorage implements IClientTickHandler
             {
                 Pair<Long, Pair<Entity, NbtCompound>> pair = this.entityCache.get(entityId);
 
-                if (nowTime - pair.getLeft() > timeout || pair.getLeft() - nowTime > 0)
+                if (nowTime - pair.getLeft() > entityTimeout || pair.getLeft() - nowTime > 0)
                 {
                     System.out.printf("SYNC: enity Id [%d] has timed out\n", entityId);
                     this.entityCache.remove(entityId);
