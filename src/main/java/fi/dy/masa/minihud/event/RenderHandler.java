@@ -1168,7 +1168,7 @@ public class RenderHandler implements IRenderer
                 }
             }
         }
-        else if (type == InfoToggle.SHEEP_COLOR)
+        else if (type == InfoToggle.ENTITY_VARIANT)
         {
             if (mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.ENTITY)
             {
@@ -1178,6 +1178,7 @@ public class RenderHandler implements IRenderer
                 {
                     return;
                 }
+                // TODO --> Add more entity Types
                 if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue() &&
                     pair.getLeft() instanceof LivingEntity living)
                 {

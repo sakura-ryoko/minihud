@@ -846,8 +846,6 @@
     "minihud.config.generic.comment.debugDevelopmentMode": "Enables the Vanilla Development Mode toggle",
     "minihud.config.generic.comment.entityDataSyncLoadNbt": "Load the synced NBT data into the Client World.\n§6WARNING!  This feature will cause incompatibility\n§6with other mods that rely on this data.",
     "minihud.config.generic.comment.infoLinesUsesNbt": "Force the Info Lines data to strictly use the Raw NBT data.\nThis setting helps ensure compatibility with\nother mods by relying ONLY on obtained NBT tags.",
-    "minihud.config.info_toggle.name.infoSheepColor": "infoSheepColor",
-    "minihud.config.info_toggle.comment.infoSheepColor": "Show the looked-at Sheep's Wool Color variant",
     "minihud.config.render_toggle.name.debugChunkLoading": "debugChunkLoading",
     "minihud.config.render_toggle.name.debugOctreeEnabled": "debugOctreeEnabled",
     "minihud.config.render_toggle.name.debugRedstoneUpdateOrder": "debugRedstoneUpdateOrder",
@@ -859,5 +857,7 @@
     "minihud.config.render_toggle.prettyName.debugChunkLoading": "Chunk Loading",
     "minihud.config.render_toggle.prettyName.debugOctreeEnabled": "Octree Debug",
     "minihud.config.render_toggle.prettyName.debugRedstoneUpdateOrder": "Redstone Update Order",
-    "minihud.config.render_toggle.prettyName.debugSupportingBlock": "Supporting Block"
+    "minihud.config.render_toggle.prettyName.debugSupportingBlock": "Supporting Block",
+    "minihud.config.info_toggle.comment.infoEntityVariant": "Show the looked-at Entity variant information,\nsuch as Sheep Color, or Wolf Type",
+    "minihud.config.info_toggle.name.infoEntityVariant": "infoEntityVariant"
 }
