@@ -21,7 +21,6 @@ import fi.dy.masa.minihud.network.ServuxEntitiesHandler;
 import fi.dy.masa.minihud.network.ServuxEntitiesPacket;
 import fi.dy.masa.minihud.util.DataStorage;
 import fi.dy.masa.minihud.util.EntityUtils;
-import fi.dy.masa.minihud.util.RayTraceUtils;
 
 import net.minecraft.block.BlockEntityProvider;
 import net.minecraft.block.BlockState;
@@ -322,7 +321,7 @@ public class EntitiesDataStorage implements IClientTickHandler
         return servuxVersion;
     }
 
-    public int getPendingBLockEntitiesCount()
+    public int getPendingBlockEntitiesCount()
     {
         return this.pendingBlockEntitiesQueue.size();
     }

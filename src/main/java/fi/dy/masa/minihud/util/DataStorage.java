@@ -235,6 +235,16 @@ public class DataStorage
         }
     }
 
+    public String getServuxVersion()
+    {
+        if (this.hasServuxServer())
+        {
+            return this.servuxVersion;
+        }
+
+        return "not_connected";
+    }
+
     public boolean hasIntegratedServer() { return this.hasIntegratedServer; }
 
     public void setHasIntegratedServer(boolean toggle, @Nullable IntegratedServer server)
@@ -1141,6 +1151,11 @@ public class DataStorage
                 Math.abs(playerPos.getX() - this.lastStructureUpdatePos.getX()) >= hysteresis ||
                 Math.abs(playerPos.getY() - this.lastStructureUpdatePos.getY()) >= hysteresis ||
                 Math.abs(playerPos.getZ() - this.lastStructureUpdatePos.getZ()) >= hysteresis;
+    }
+
+    public int getStrucutreCount()
+    {
+        return this.structures.size();
     }
 
     private void updateStructureDataFromIntegratedServer(final BlockPos playerPos)

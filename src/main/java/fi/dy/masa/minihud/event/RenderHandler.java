@@ -7,14 +7,12 @@ import fi.dy.masa.malilib.render.RenderUtils;
 import fi.dy.masa.malilib.util.*;
 import fi.dy.masa.malilib.util.EntityUtils;
 import fi.dy.masa.malilib.util.InventoryUtils;
-import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.config.RendererToggle;
 import fi.dy.masa.minihud.data.EntitiesDataStorage;
 import fi.dy.masa.minihud.data.MobCapDataHandler;
 import fi.dy.masa.minihud.mixin.*;
-import fi.dy.masa.minihud.network.ServuxEntitiesPacket;
 import fi.dy.masa.minihud.renderer.OverlayRenderer;
 import fi.dy.masa.minihud.util.*;
 
@@ -38,22 +36,19 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.Tameable;
-import net.minecraft.entity.attribute.AttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.mob.SkeletonEntity;
 import net.minecraft.entity.mob.ZombieEntity;
 import net.minecraft.entity.mob.ZombieVillagerEntity;
-import net.minecraft.entity.passive.AbstractHorseEntity;
-import net.minecraft.entity.passive.PandaEntity;
-import net.minecraft.entity.passive.PassiveEntity;
-import net.minecraft.entity.passive.SheepEntity;
+import net.minecraft.entity.passive.*;
 import net.minecraft.item.FilledMapItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.integrated.IntegratedServer;
@@ -81,7 +76,6 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.WorldChunk;
 import net.minecraft.world.chunk.light.LightingProvider;
-import net.minecraft.world.level.LevelProperties;
 
 import com.llamalad7.mixinextras.lib.apache.commons.tuple.Pair;
 import org.joml.Matrix4f;
@@ -453,11 +447,41 @@ public class RenderHandler implements IRenderer
         {
             if (EntitiesDataStorage.getInstance().hasServuxServer())
             {
-                this.addLineI18n("minihud.info_line.servux",
-                                 EntitiesDataStorage.getInstance().getServuxVersion(),
-                                 ServuxEntitiesPacket.PROTOCOL_VERSION,
-                                 EntitiesDataStorage.getInstance().getPendingBLockEntitiesCount(),
+                this.addLineI18n("minihud.info_line.servux", EntitiesDataStorage.getInstance().getServuxVersion());
+            }
+            else if (this.getDataStorage().hasServuxServer())
+            {
+                this.addLineI18n("minihud.info_line.servux", this.getDataStorage().getServuxVersion());
+            }
+            else if (this.getDataStorage().hasIntegratedServer() == false)
+            {
+                this.addLineI18n("minihud.info_line.servux.not_connected");
+            }
+            if (EntitiesDataStorage.getInstance().hasServuxServer())
+            {
+                this.addLineI18n("minihud.info_line.servux.entity_sync",
+                                 EntitiesDataStorage.getInstance().getBlockEntityCacheCount(),
+                                 EntitiesDataStorage.getInstance().getPendingBlockEntitiesCount(),
+                                 EntitiesDataStorage.getInstance().getEntityCacheCount(),
                                  EntitiesDataStorage.getInstance().getPendingEntitiesCount()
+                );
+            }
+            if (this.getDataStorage().hasServuxServer())
+            {
+                this.addLineI18n("minihud.info_line.servux.structures",
+                                 this.getDataStorage().getStrucutreCount(),
+                                 this.getDataStorage().getSpawnChunkRadius(),
+                                 this.getDataStorage().getWorldSpawn().toShortString(),
+                                 this.getDataStorage().isWorldSpawnKnown() ? StringUtils.translate("minihud.info_line.slime_chunk.yes") : StringUtils.translate("minihud.info_line.slime_chunk.no")
+                );
+            }
+            else if (this.getDataStorage().hasIntegratedServer())
+            {
+                this.addLineI18n("minihud.info_line.servux.structures_integrated",
+                                 this.getDataStorage().getStrucutreCount(),
+                                 this.getDataStorage().getSpawnChunkRadius(),
+                                 this.getDataStorage().getWorldSpawn().toShortString(),
+                                 this.getDataStorage().isWorldSpawnKnown() ? StringUtils.translate("minihud.info_line.slime_chunk.yes") : StringUtils.translate("minihud.info_line.slime_chunk.no")
                 );
             }
         }
@@ -1178,26 +1202,119 @@ public class RenderHandler implements IRenderer
                 {
                     return;
                 }
-                // TODO --> Add more entity Types
                 if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue() &&
-                    pair.getLeft() instanceof LivingEntity living)
+                        pair.getLeft() instanceof LivingEntity living)
                 {
                     NbtCompound nbt = pair.getRight();
                     EntityType<?> entityType = EntityUtils.getEntityTypeFromNbt(nbt);
 
-                    if (entityType.equals(EntityType.SHEEP))
+                    if (entityType.equals(EntityType.AXOLOTL))
                     {
-                        if (nbt.contains("Color", Constants.NBT.TAG_BYTE))
+                        AxolotlEntity.Variant variant = EntityUtils.getAxolotlVariantFromNbt(nbt);
+
+                        if (variant != null)
                         {
-                            DyeColor color = DyeColor.byId(nbt.getByte("Color"));
-                            this.addLineI18n("minihud.info_line.looking_at_entity.color", color.getName());
+                            this.addLineI18n("minihud.info_line.entity_variant.axolotl", variant.getName());
+                        }
+                    }
+                    else if (entityType.equals(EntityType.CAT))
+                    {
+                        Pair<RegistryKey<CatVariant>, DyeColor> catPair = EntityUtils.getCatVariantFromNbt(nbt);
+
+                        if (catPair.getLeft() != null)
+                        {
+                            this.addLineI18n("minihud.info_line.entity_variant.cat", catPair.getLeft().getValue().getPath(), catPair.getRight().getName());
+                        }
+                    }
+                    else if (entityType.equals(EntityType.FROG))
+                    {
+                        RegistryKey<FrogVariant> variant = EntityUtils.getFrogVariantFromNbt(nbt);
+
+                        if (variant != null)
+                        {
+                            this.addLineI18n("minihud.info_line.entity_variant.frog", variant.getValue().getPath());
+                        }
+                    }
+                    else if (entityType.equals(EntityType.HORSE))
+                    {
+                        Pair<HorseColor, HorseMarking> horsePair = EntityUtils.getHorseVariantFromNbt(nbt);
+
+                        if (horsePair.getLeft() != null)
+                        {
+                            this.addLineI18n("minihud.info_line.entity_variant.horse", horsePair.getLeft().asString(), horsePair.getRight().name().toLowerCase());
+                        }
+                    }
+                    else if (entityType.equals(EntityType.PARROT))
+                    {
+                        ParrotEntity.Variant variant = EntityUtils.getParrotVariantFromNbt(nbt);
+
+                        if (variant != null)
+                        {
+                            this.addLineI18n("minihud.info_line.entity_variant.parrot", variant.asString());
+                        }
+                    }
+                    else if (entityType.equals(EntityType.SHEEP))
+                    {
+                        DyeColor color = EntityUtils.getSheepColorFromNbt(nbt);
+
+                        if (color != null)
+                        {
+                            this.addLineI18n("minihud.info_line.entity_variant.sheep", color.getName());
+                        }
+                    }
+                    else if (entityType.equals(EntityType.TROPICAL_FISH))
+                    {
+                        TropicalFishEntity.Variety variant = EntityUtils.getFishVariantFromNbt(nbt);
+
+                        if (variant != null)
+                        {
+                            this.addLineI18n("minihud.info_line.entity_variant.tropical_fish", variant.asString());
+                        }
+                    }
+                    else if (entityType.equals(EntityType.WOLF))
+                    {
+                        Pair<RegistryKey<WolfVariant>, DyeColor> wolfPair = EntityUtils.getWolfVariantFromNbt(nbt);
+
+                        if (wolfPair.getLeft() != null)
+                        {
+                            this.addLineI18n("minihud.info_line.entity_variant.wolf", wolfPair.getLeft().getValue().getPath(), wolfPair.getRight().getName());
                         }
                     }
                 }
+                else if (pair.getLeft() instanceof AxolotlEntity axolotl)
+                {
+                    this.addLineI18n("minihud.info_line.entity_variant.axolotl", axolotl.getVariant().getName());
+                }
+                else if (pair.getLeft() instanceof CatEntity cat)
+                {
+                    RegistryKey<CatVariant> variant = cat.getVariant().getKey().orElse(CatVariant.ALL_BLACK);
+                    this.addLineI18n("minihud.info_line.entity_variant.cat", variant.getValue().getPath(), cat.getCollarColor().getName());
+                }
+                else if (pair.getLeft() instanceof FrogEntity frog)
+                {
+                    RegistryKey<FrogVariant> variant = frog.getVariant().getKey().orElse(FrogVariant.TEMPERATE);
+                    this.addLineI18n("minihud.info_line.entity_variant.frog", variant.getValue().getPath());
+                }
+                else if (pair.getLeft() instanceof HorseEntity horse)
+                {
+                    this.addLineI18n("minihud.info_line.entity_variant.horse", horse.getVariant().asString(), horse.getMarking().name().toLowerCase());
+                }
+                else if (pair.getLeft() instanceof ParrotEntity parrot)
+                {
+                    this.addLineI18n("minihud.info_line.entity_variant.parrot", parrot.getVariant().asString());
+                }
                 else if (pair.getLeft() instanceof SheepEntity sheep)
                 {
-                    DyeColor color = sheep.getColor();
-                    this.addLineI18n("minihud.info_line.looking_at_entity.color", color.getName());
+                    this.addLineI18n("minihud.info_line.entity_variant.sheep", sheep.getColor().getName());
+                }
+                else if (pair.getLeft() instanceof TropicalFishEntity fish)
+                {
+                    this.addLineI18n("minihud.info_line.entity_variant.tropical_fish", fish.getVariant().asString());
+                }
+                else if (pair.getLeft() instanceof WolfEntity wolf)
+                {
+                    RegistryKey<WolfVariant> variant = wolf.getVariant().getKey().orElse(WolfVariants.PALE);
+                    this.addLineI18n("minihud.info_line.entity_variant.wolf", variant.getValue().getPath(), wolf.getCollarColor().getName());
                 }
             }
         }
