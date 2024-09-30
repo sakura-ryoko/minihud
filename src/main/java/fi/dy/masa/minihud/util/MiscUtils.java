@@ -17,6 +17,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.recipe.AbstractCookingRecipe;
 import net.minecraft.recipe.RecipeEntry;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.property.Properties;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
@@ -119,6 +120,11 @@ public class MiscUtils
     {
         return bb1.minX == bb2.minX && bb1.minY == bb2.minY && bb1.minZ == bb2.minZ &&
                bb1.maxX == bb2.maxX && bb1.maxY == bb2.maxY && bb1.maxZ == bb2.maxZ;
+    }
+
+    public static int getSpawnableChunksCount(@Nonnull ServerWorld world)
+    {
+        return world.getChunkManager().chunkLoadingManager.getTicketManager().getTickedChunkCount();
     }
 
     public static void addAxolotlTooltip(ItemStack stack, List<Text> lines)

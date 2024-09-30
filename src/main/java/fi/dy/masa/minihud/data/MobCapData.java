@@ -2,6 +2,7 @@ package fi.dy.masa.minihud.data;
 
 import java.util.Arrays;
 import javax.annotation.Nullable;
+
 import net.minecraft.entity.SpawnGroup;
 
 public class MobCapData
@@ -251,35 +252,34 @@ public class MobCapData
 
         public static EntityCategory fromVanillaCategory(SpawnGroup type)
         {
-            switch (type)
+            return switch (type)
             {
-                case MONSTER:                       return MONSTER;
-                case CREATURE:                      return CREATURE;
-                case AMBIENT:                       return AMBIENT;
-                case AXOLOTLS:                      return AXOLOTLS;
-                case UNDERGROUND_WATER_CREATURE:    return UNDERGROUND_WATER_CREATURE;
-                case WATER_CREATURE:                return WATER_CREATURE;
-                case WATER_AMBIENT:                 return WATER_AMBIENT;
-                case MISC:                          return MISC;
-                default:                            return null;
-            }
+                case MONSTER -> MONSTER;
+                case CREATURE -> CREATURE;
+                case AMBIENT -> AMBIENT;
+                case AXOLOTLS -> AXOLOTLS;
+                case UNDERGROUND_WATER_CREATURE -> UNDERGROUND_WATER_CREATURE;
+                case WATER_CREATURE -> WATER_CREATURE;
+                case WATER_AMBIENT -> WATER_AMBIENT;
+                case MISC -> MISC;
+            };
         }
 
         @Nullable
         public static EntityCategory fromVanillaCategoryName(String name)
         {
-            switch (name)
+            return switch (name)
             {
-                case "monster":                     return MONSTER;
-                case "creature":                    return CREATURE;
-                case "ambient":                     return AMBIENT;
-                case "axolotls":                    return AXOLOTLS;
-                case "underground_water_creature":  return UNDERGROUND_WATER_CREATURE;
-                case "water_creature":              return WATER_CREATURE;
-                case "water_ambient":               return WATER_AMBIENT;
-                case "misc":                        return MISC;
-                default:                            return null;
-            }
+                case "monster" -> MONSTER;
+                case "creature" -> CREATURE;
+                case "ambient" -> AMBIENT;
+                case "axolotls" -> AXOLOTLS;
+                case "underground_water_creature" -> UNDERGROUND_WATER_CREATURE;
+                case "water_creature" -> WATER_CREATURE;
+                case "water_ambient" -> WATER_AMBIENT;
+                case "misc" -> MISC;
+                default -> null;
+            };
         }
     }
 }

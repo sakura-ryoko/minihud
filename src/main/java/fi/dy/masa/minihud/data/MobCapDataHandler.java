@@ -2,12 +2,22 @@ package fi.dy.masa.minihud.data;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.entity.SpawnGroup;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.world.SpawnHelper;
+import net.minecraft.world.World;
+
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.data.MobCapData.EntityCategory;
+import fi.dy.masa.minihud.util.MiscUtils;
 
 public class MobCapDataHandler
 {
@@ -121,37 +131,61 @@ public class MobCapDataHandler
 
     public void updateIntegratedServerMobCaps()
     {
-        /*
         if (this.mc.isIntegratedServerRunning() && this.mc.world != null)
         {
             MinecraftServer server = this.mc.getServer();
             RegistryKey<World> dim = this.mc.world.getRegistryKey();
 
+            if (server == null)
+            {
+                return;
+            }
+
             server.execute(() -> {
                 ServerWorld world = server.getWorld(dim);
-                MobCapData.Cap[] data = MobCapData.createCapArray();
-                int spawnableChunks = MiscUtils.getSpawnableChunksCount(world);
-                int divisor = 17 * 17;
-                long worldTime = world.getTime();
 
-                for (EntityCategory category : ENTITY_CATEGORIES)
+                if (world != null)
                 {
-                    SpawnGroup type = category.getVanillaCategory();
-                    int current = world.getEnticountEntities(type.getCreatureClass());
-                    int cap = type.getCapacity() * spawnableChunks / divisor;
-                    data[category.ordinal()].setCurrentAndCap(current, cap);
-                }
+                    MobCapData.Cap[] data = MobCapData.createCapArray();
+                    SpawnHelper.Info info = world.getChunkManager().getSpawnInfo();
 
-                this.mc.execute(() -> {
-                    for (EntityCategory type : ENTITY_CATEGORIES)
+                    if (info != null)
                     {
-                        MobCapData.Cap cap = data[type.ordinal()];
-                        this.localData.setCurrentAndCapValues(type, cap.getCurrent(), cap.getCap(), worldTime);
+                        int spawnableChunks = MiscUtils.getSpawnableChunksCount(world);
+                        int divisor = 17 * 17;
+                        long worldTime = world.getTime();
+
+                        for (Object2IntMap.Entry<SpawnGroup> entry : info.getGroupToCount().object2IntEntrySet())
+                        {
+                            EntityCategory category = EntityCategory.fromVanillaCategory(entry.getKey());
+
+                            int current = entry.getIntValue();
+                            int cap = entry.getKey().getCapacity() * spawnableChunks / divisor;
+                            data[category.ordinal()].setCurrentAndCap(current, cap);
+                        }
+                        /*
+                        for (EntityCategory category : ENTITY_CATEGORIES)
+                        {
+                            SpawnGroup type = category.getVanillaCategory();
+                            int current = world.getEnticountEntities(type.getCreatureClass());
+
+                            int cap = type.getCapacity() * spawnableChunks / divisor;
+                            data[category.ordinal()].setCurrentAndCap(current, cap);
+                        }
+                         */
+
+                        this.mc.execute(() ->
+                        {
+                            for (EntityCategory type : ENTITY_CATEGORIES)
+                            {
+                                MobCapData.Cap cap = data[type.ordinal()];
+                                this.localData.setCurrentAndCapValues(type, cap.getCurrent(), cap.getCap(), worldTime);
+                            }
+                        });
                     }
-                });
+                }
             });
         }
-        */
     }
 
     public void parsePlayerListFooterMobCapData(Text textComponent)
