@@ -28,6 +28,8 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
     protected long seed;
     protected double topY;
 
+    private boolean wasEmpty = true;
+
     @Override
     public String getName()
     {
@@ -115,12 +117,19 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
                 r = mc.options.getViewDistance().getValue();
             }
 
+            if (this.wasEmpty)
+            {
+                this.allocateGlResources();
+                this.wasEmpty = false;
+            }
+
             RenderObjectBase renderQuads = this.renderObjects.get(0);
             RenderObjectBase renderLines = this.renderObjects.get(1);
             BUFFER_1 = TESSELLATOR_1.begin(renderQuads.getGlMode(), VertexFormats.POSITION_COLOR);
             BUFFER_2 = TESSELLATOR_2.begin(renderLines.getGlMode(), VertexFormats.POSITION_COLOR);
             int minY = world != null ? world.getBottomY() : -64;
             int topY = (int) Math.floor(this.topY);
+            int count = 0;
 
             for (int xOff = -r; xOff <= r; xOff++)
             {
@@ -134,12 +143,21 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
                         pos1.set( cx << 4,       minY,  cz << 4      );
                         pos2.set((cx << 4) + 15, topY, (cz << 4) + 15);
                         fi.dy.masa.malilib.render.RenderUtils.drawBoxWithEdgesBatched(pos1, pos2, cameraPos, colorLines, colorSides, BUFFER_1, BUFFER_2);
+                        count++;
                     }
                 }
             }
 
-            renderQuads.uploadData(BUFFER_1);
-            renderLines.uploadData(BUFFER_2);
+            if (count > 0)
+            {
+                renderQuads.uploadData(BUFFER_1);
+                renderLines.uploadData(BUFFER_2);
+            }
+            else
+            {
+                this.deleteGlResources();
+                this.wasEmpty = true;
+            }
         }
 
         needsUpdate = false;
