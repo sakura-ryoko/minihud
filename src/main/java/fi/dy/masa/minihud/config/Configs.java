@@ -111,6 +111,7 @@ public class Configs implements IConfigHandler
         public static final ConfigBoolean       USE_TEXT_BACKGROUND                 = new ConfigBoolean("useTextBackground", true).apply(GENERIC_KEY);
         public static final ConfigBoolean       VILLAGER_CONVERSION_TICKS           = new ConfigBoolean("villagerConversionTicks", true).apply(GENERIC_KEY);
         public static final ConfigBoolean       VILLAGER_OFFER_ENCHANTMENT_BOOKS    = new ConfigBoolean("villagerOfferEnchantmentBooks", true).apply(GENERIC_KEY);
+        public static final ConfigBoolean       VILLAGER_OFFER_PRICE_RANGE          = new ConfigBoolean("villagerOfferPriceRange", true).apply(GENERIC_KEY);
         public static final ConfigBoolean       VILLAGER_OFFER_HIGHEST_LEVEL_ONLY   = new ConfigBoolean("villagerOfferHighestLevelOnly", false).apply(GENERIC_KEY);
         public static final ConfigBoolean       VILLAGER_OFFER_LOWEST_PRICE_NEARBY  = new ConfigBoolean("villagerOfferLowestPriceNearby" , false).apply(GENERIC_KEY);
         public static final ConfigDouble        VILLAGER_OFFER_PRICE_THRESHOLD      = new ConfigDouble("villagerOfferPriceThreshold", 1, 0, 1).apply(GENERIC_KEY);
@@ -199,6 +200,7 @@ public class Configs implements IConfigHandler
                 INVENTORY_PREVIEW_TOGGLE_SCREEN,
                 VILLAGER_CONVERSION_TICKS,
                 VILLAGER_OFFER_ENCHANTMENT_BOOKS,
+                VILLAGER_OFFER_PRICE_RANGE,
                 VILLAGER_OFFER_HIGHEST_LEVEL_ONLY,
                 VILLAGER_OFFER_LOWEST_PRICE_NEARBY,
                 VILLAGER_OFFER_PRICE_THRESHOLD

@@ -162,6 +162,10 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase
 
                                 // Can add additional formatting if you like, but this works as is
                                 sb.append(emeraldCost);
+                                // Add Village Offer Price Range
+                                if (Configs.Generic.VILLAGER_OFFER_PRICE_RANGE.getBooleanValue()){
+                                    sb.append(' ').append('(').append(lowest).append('-').append(highest).append(')');
+                                }
                                 sb.append(GuiBase.TXT_RST);
                             }
                             overlay.add(sb.toString());
