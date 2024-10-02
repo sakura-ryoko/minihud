@@ -7,6 +7,8 @@ import javax.annotation.Nullable;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 
+import it.unimi.dsi.fastutil.objects.Reference2IntMap;
+import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.block.entity.BeehiveBlockEntity;
 import net.minecraft.component.DataComponentTypes;
@@ -16,7 +18,9 @@ import net.minecraft.entity.passive.AxolotlEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.recipe.AbstractCookingRecipe;
+import net.minecraft.recipe.Recipe;
 import net.minecraft.recipe.RecipeEntry;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.property.Properties;
 import net.minecraft.text.MutableText;
@@ -229,12 +233,12 @@ public class MiscUtils
         }
     }
 
-    public static int getFurnaceXpAmount(World world, AbstractFurnaceBlockEntity be)
+    public static int getFurnaceXpAmount(ServerWorld world, AbstractFurnaceBlockEntity be)
     {
-        Object2IntOpenHashMap<Identifier> recipes = ((IMixinAbstractFurnaceBlockEntity) be).minihud_getUsedRecipes();
+        Reference2IntOpenHashMap<RegistryKey<Recipe<?>>> recipes = ((IMixinAbstractFurnaceBlockEntity) be).minihud_getUsedRecipes();
         double xp = 0.0;
 
-        for (Object2IntMap.Entry<Identifier> entry : recipes.object2IntEntrySet())
+        for (Reference2IntMap.Entry<RegistryKey<Recipe<?>>> entry : recipes.reference2IntEntrySet())
         {
             RecipeEntry<?> recipeEntry = world.getRecipeManager().get(entry.getKey()).orElse(null);
 
@@ -247,12 +251,12 @@ public class MiscUtils
         return (int) xp;
     }
 
-    public static int getFurnaceXpAmount(World world, @Nonnull NbtCompound nbt)
+    public static int getFurnaceXpAmount(ServerWorld world, @Nonnull NbtCompound nbt)
     {
-        Object2IntOpenHashMap<Identifier> recipes = BlockUtils.getRecipesUsedFromNbt(nbt);
+        Reference2IntOpenHashMap<RegistryKey<Recipe<?>>> recipes = BlockUtils.getRecipesUsedFromNbt(nbt);
         double xp = 0.0;
 
-        for (Object2IntMap.Entry<Identifier> entry : recipes.object2IntEntrySet())
+        for (Reference2IntMap.Entry<RegistryKey<Recipe<?>>> entry : recipes.reference2IntEntrySet())
         {
             RecipeEntry<?> recipeEntry = world.getRecipeManager().get(entry.getKey()).orElse(null);
 

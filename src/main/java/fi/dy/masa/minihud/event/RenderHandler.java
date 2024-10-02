@@ -784,20 +784,23 @@ public class RenderHandler implements IRenderer
             {
                 return;
             }
-            if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue())
+            if (bestWorld instanceof ServerWorld serverWorld)
             {
-                BlockEntityType<?> beType = BlockUtils.getBlockEntityTypeFromNbt(pair.getRight());
-
-                if (beType.equals(BlockEntityType.FURNACE) ||
-                    beType.equals(BlockEntityType.BLAST_FURNACE) ||
-                    beType.equals(BlockEntityType.SMOKER))
+                if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue())
                 {
-                    this.addLineI18n("minihud.info_line.furnace_xp", MiscUtils.getFurnaceXpAmount(bestWorld, pair.getRight()));
+                    BlockEntityType<?> beType = BlockUtils.getBlockEntityTypeFromNbt(pair.getRight());
+
+                    if (beType.equals(BlockEntityType.FURNACE) ||
+                        beType.equals(BlockEntityType.BLAST_FURNACE) ||
+                        beType.equals(BlockEntityType.SMOKER))
+                    {
+                        this.addLineI18n("minihud.info_line.furnace_xp", MiscUtils.getFurnaceXpAmount(serverWorld, pair.getRight()));
+                    }
                 }
-            }
-            else if (pair.getLeft() instanceof AbstractFurnaceBlockEntity furnace)
-            {
-                this.addLineI18n("minihud.info_line.furnace_xp", MiscUtils.getFurnaceXpAmount(bestWorld, furnace));
+                else if (pair.getLeft() instanceof AbstractFurnaceBlockEntity furnace)
+                {
+                    this.addLineI18n("minihud.info_line.furnace_xp", MiscUtils.getFurnaceXpAmount(serverWorld, furnace));
+                }
             }
         }
         else if (type == InfoToggle.HONEY_LEVEL)
