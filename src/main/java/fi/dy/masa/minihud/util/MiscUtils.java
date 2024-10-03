@@ -1,16 +1,15 @@
 package fi.dy.masa.minihud.util;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import it.unimi.dsi.fastutil.objects.*;
 
-import it.unimi.dsi.fastutil.objects.Reference2IntMap;
-import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.block.entity.BeehiveBlockEntity;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.BlockStateComponent;
 import net.minecraft.component.type.NbtComponent;
@@ -34,6 +33,7 @@ import net.minecraft.world.World;
 import fi.dy.masa.malilib.util.BlockUtils;
 import fi.dy.masa.malilib.util.Constants;
 import fi.dy.masa.malilib.util.IntBoundingBox;
+import fi.dy.masa.minihud.data.HudDataStorage;
 import fi.dy.masa.minihud.mixin.IMixinAbstractFurnaceBlockEntity;
 
 public class MiscUtils
@@ -235,16 +235,26 @@ public class MiscUtils
 
     public static int getFurnaceXpAmount(ServerWorld world, AbstractFurnaceBlockEntity be)
     {
+        System.out.print("getFurnaceXpAmount() server, be\n");
         Reference2IntOpenHashMap<RegistryKey<Recipe<?>>> recipes = ((IMixinAbstractFurnaceBlockEntity) be).minihud_getUsedRecipes();
         double xp = 0.0;
 
-        for (Reference2IntMap.Entry<RegistryKey<Recipe<?>>> entry : recipes.reference2IntEntrySet())
+        if (recipes == null || recipes.isEmpty())
         {
-            RecipeEntry<?> recipeEntry = world.getRecipeManager().get(entry.getKey()).orElse(null);
+            System.out.print("getFurnaceXpAmount() --> EMPTY!\n");
+            return -1;
+        }
 
-            if (recipeEntry != null && recipeEntry.value() instanceof AbstractCookingRecipe recipe)
+        ObjectIterator<Reference2IntMap.Entry<RegistryKey<Recipe<?>>>> iter = recipes.reference2IntEntrySet().fastIterator();
+
+        while (iter.hasNext())
+        {
+            Reference2IntMap.Entry<RegistryKey<Recipe<?>>> entry = iter.next();
+            RecipeEntry<?> recipeEntry = world.getRecipeManager().get(iter.next().getKey()).orElse(null);
+
+            if (recipeEntry != null)
             {
-                xp += entry.getIntValue() * recipe.getExperience();
+                xp += entry.getIntValue() * ((AbstractCookingRecipe) recipeEntry.value()).getExperience();
             }
         }
 
@@ -253,16 +263,83 @@ public class MiscUtils
 
     public static int getFurnaceXpAmount(ServerWorld world, @Nonnull NbtCompound nbt)
     {
+        System.out.printf("getFurnaceXpAmount() server, nbt dump: [%s]\n", nbt);
         Reference2IntOpenHashMap<RegistryKey<Recipe<?>>> recipes = BlockUtils.getRecipesUsedFromNbt(nbt);
         double xp = 0.0;
 
-        for (Reference2IntMap.Entry<RegistryKey<Recipe<?>>> entry : recipes.reference2IntEntrySet())
+        if (recipes.isEmpty())
         {
-            RecipeEntry<?> recipeEntry = world.getRecipeManager().get(entry.getKey()).orElse(null);
+            System.out.print("getFurnaceXpAmount() --> EMPTY!\n");
+            return -1;
+        }
 
-            if (recipeEntry != null && recipeEntry.value() instanceof AbstractCookingRecipe recipe)
+        ObjectIterator<Reference2IntMap.Entry<RegistryKey<Recipe<?>>>> iter = recipes.reference2IntEntrySet().fastIterator();
+
+        while (iter.hasNext())
+        {
+            Reference2IntMap.Entry<RegistryKey<Recipe<?>>> entry = iter.next();
+            RecipeEntry<?> recipeEntry = world.getRecipeManager().get(iter.next().getKey()).orElse(null);
+
+            if (recipeEntry != null)
             {
-                xp += entry.getIntValue() * recipe.getExperience();
+                xp += entry.getIntValue() * ((AbstractCookingRecipe) recipeEntry.value()).getExperience();
+            }
+        }
+
+        return (int) xp;
+    }
+
+    // Servux Sync'd Recipe Manager required
+    public static int getFurnaceXpAmount(AbstractFurnaceBlockEntity be)
+    {
+        System.out.print("getFurnaceXpAmount() servux, be\n");
+        Reference2IntOpenHashMap<RegistryKey<Recipe<?>>> recipes = ((IMixinAbstractFurnaceBlockEntity) be).minihud_getUsedRecipes();
+        double xp = 0.0;
+
+        if (recipes == null || recipes.isEmpty())
+        {
+            System.out.print("getFurnaceXpAmount() --> EMPTY!\n");
+            return -1;
+        }
+
+        ObjectIterator<Reference2IntMap.Entry<RegistryKey<Recipe<?>>>> iter = recipes.reference2IntEntrySet().fastIterator();
+
+        while (iter.hasNext())
+        {
+            Reference2IntMap.Entry<RegistryKey<Recipe<?>>> entry = iter.next();
+            RecipeEntry<?> recipeEntry = HudDataStorage.getInstance().getPreparedRecipes().get(iter.next().getKey());
+
+            if (recipeEntry != null)
+            {
+                xp += entry.getIntValue() * ((AbstractCookingRecipe) recipeEntry.value()).getExperience();
+            }
+        }
+
+        return (int) xp;
+    }
+
+    public static int getFurnaceXpAmount(@Nonnull NbtCompound nbt)
+    {
+        System.out.printf("getFurnaceXpAmount() servux, nbt dump: [%s]\n", nbt);
+        Reference2IntOpenHashMap<RegistryKey<Recipe<?>>> recipes = BlockUtils.getRecipesUsedFromNbt(nbt);
+        double xp = 0.0;
+
+        if (recipes.isEmpty())
+        {
+            System.out.print("getFurnaceXpAmount() --> EMPTY!\n");
+            return -1;
+        }
+
+        ObjectIterator<Reference2IntMap.Entry<RegistryKey<Recipe<?>>>> iter = recipes.reference2IntEntrySet().fastIterator();
+
+        while (iter.hasNext())
+        {
+            Reference2IntMap.Entry<RegistryKey<Recipe<?>>> entry = iter.next();
+            RecipeEntry<?> recipeEntry = HudDataStorage.getInstance().getPreparedRecipes().get(iter.next().getKey());
+
+            if (recipeEntry != null)
+            {
+                xp += entry.getIntValue() * ((AbstractCookingRecipe) recipeEntry.value()).getExperience();
             }
         }
 

@@ -11,6 +11,7 @@ import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.config.RendererToggle;
 import fi.dy.masa.minihud.data.EntitiesDataStorage;
+import fi.dy.masa.minihud.data.HudDataStorage;
 import fi.dy.masa.minihud.data.MobCapDataHandler;
 import fi.dy.masa.minihud.mixin.*;
 import fi.dy.masa.minihud.renderer.OverlayRenderer;
@@ -92,6 +93,7 @@ public class RenderHandler implements IRenderer
 
     private final MinecraftClient mc;
     private final DataStorage data;
+    private final HudDataStorage hudData;
     private final Date date;
     private final Map<ChunkPos, CompletableFuture<OptionalChunk<Chunk>>> chunkFutures = new HashMap<>();
     private final Set<InfoToggle> addedTypes = new HashSet<>();
@@ -107,6 +109,7 @@ public class RenderHandler implements IRenderer
     {
         this.mc = MinecraftClient.getInstance();
         this.data = DataStorage.getInstance();
+        this.hudData = HudDataStorage.getInstance();
         this.date = new Date();
     }
 
@@ -118,6 +121,11 @@ public class RenderHandler implements IRenderer
     public DataStorage getDataStorage()
     {
         return this.data;
+    }
+
+    public HudDataStorage getHudData()
+    {
+        return this.hudData;
     }
 
     public static void fixDebugRendererState()
@@ -470,18 +478,18 @@ public class RenderHandler implements IRenderer
             {
                 this.addLineI18n("minihud.info_line.servux.structures",
                                  this.getDataStorage().getStrucutreCount(),
-                                 this.getDataStorage().getSpawnChunkRadius(),
-                                 this.getDataStorage().getWorldSpawn().toShortString(),
-                                 this.getDataStorage().isWorldSpawnKnown() ? StringUtils.translate("minihud.info_line.slime_chunk.yes") : StringUtils.translate("minihud.info_line.slime_chunk.no")
+                                 this.getHudData().getSpawnChunkRadius(),
+                                 this.getHudData().getWorldSpawn().toShortString(),
+                                 this.getHudData().isWorldSpawnKnown() ? StringUtils.translate("minihud.info_line.slime_chunk.yes") : StringUtils.translate("minihud.info_line.slime_chunk.no")
                 );
             }
             else if (this.getDataStorage().hasIntegratedServer())
             {
                 this.addLineI18n("minihud.info_line.servux.structures_integrated",
                                  this.getDataStorage().getStrucutreCount(),
-                                 this.getDataStorage().getSpawnChunkRadius(),
-                                 this.getDataStorage().getWorldSpawn().toShortString(),
-                                 this.getDataStorage().isWorldSpawnKnown() ? StringUtils.translate("minihud.info_line.slime_chunk.yes") : StringUtils.translate("minihud.info_line.slime_chunk.no")
+                                 this.getHudData().getSpawnChunkRadius(),
+                                 this.getHudData().getWorldSpawn().toShortString(),
+                                 this.getHudData().isWorldSpawnKnown() ? StringUtils.translate("minihud.info_line.slime_chunk.yes") : StringUtils.translate("minihud.info_line.slime_chunk.no")
                 );
             }
         }
@@ -495,20 +503,20 @@ public class RenderHandler implements IRenderer
             {
                 return;
             }
-            if (this.data.isWeatherThunder())
+            if (this.getHudData().isWeatherThunder())
             {
                 weatherType = "thundering";
-                weatherTime = this.data.getThunderTime();
+                weatherTime = this.getHudData().getThunderTime();
             }
-            else if (this.data.isWeatherRain())
+            else if (this.getHudData().isWeatherRain())
             {
                 weatherType = "raining";
-                weatherTime = this.data.getRainTime();
+                weatherTime = this.getHudData().getRainTime();
             }
-            else if (this.data.isWeatherClear())
+            else if (this.getHudData().isWeatherClear())
             {
                 weatherType = "clear";
-                weatherTime = this.data.getClearTime();
+                weatherTime = this.getHudData().getClearTime();
             }
             /*
             if (bestWorld.getLevelProperties().isThundering())
@@ -775,6 +783,15 @@ public class RenderHandler implements IRenderer
                 this.addLineI18n("minihud.info_line.bee_count", ((BeehiveBlockEntity) be).getBeeCount());
             }
         }
+        else if (type == InfoToggle.HONEY_LEVEL)
+        {
+            BlockState state = this.getTargetedBlock(mc);
+
+            if (state != null && state.getBlock() instanceof BeehiveBlock)
+            {
+                this.addLineI18n("minihud.info_line.honey_level", BeehiveBlockEntity.getHoneyLevel(state));
+            }
+        }
         else if (type == InfoToggle.FURNACE_XP)
         {
             World bestWorld = WorldUtils.getBestWorld(mc);
@@ -784,32 +801,57 @@ public class RenderHandler implements IRenderer
             {
                 return;
             }
-            if (bestWorld instanceof ServerWorld serverWorld)
-            {
-                if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue())
-                {
-                    BlockEntityType<?> beType = BlockUtils.getBlockEntityTypeFromNbt(pair.getRight());
 
-                    if (beType.equals(BlockEntityType.FURNACE) ||
-                        beType.equals(BlockEntityType.BLAST_FURNACE) ||
-                        beType.equals(BlockEntityType.SMOKER))
+            System.out.printf("FurnaceXP: nbt dump: %s\n", pair.getRight().toString());
+
+            if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue() && !pair.getRight().isEmpty())
+            {
+                BlockEntityType<?> beType = BlockUtils.getBlockEntityTypeFromNbt(pair.getRight());
+
+                if (beType.equals(BlockEntityType.FURNACE) ||
+                    beType.equals(BlockEntityType.BLAST_FURNACE) ||
+                    beType.equals(BlockEntityType.SMOKER))
+                {
+                    if (bestWorld instanceof ServerWorld serverWorld)
                     {
-                        this.addLineI18n("minihud.info_line.furnace_xp", MiscUtils.getFurnaceXpAmount(serverWorld, pair.getRight()));
+                        int exp = MiscUtils.getFurnaceXpAmount(serverWorld, pair.getRight());
+
+                        if (exp > 0)
+                        {
+                            this.addLineI18n("minihud.info_line.furnace_xp", exp);
+                        }
+                    }
+                    else if (this.getHudData().hasServuxServer() && this.getHudData().hasRecipes())
+                    {
+                        int exp = MiscUtils.getFurnaceXpAmount(pair.getRight());
+
+                        if (exp > 0)
+                        {
+                            this.addLineI18n("minihud.info_line.furnace_xp", exp);
+                        }
                     }
                 }
-                else if (pair.getLeft() instanceof AbstractFurnaceBlockEntity furnace)
-                {
-                    this.addLineI18n("minihud.info_line.furnace_xp", MiscUtils.getFurnaceXpAmount(serverWorld, furnace));
-                }
             }
-        }
-        else if (type == InfoToggle.HONEY_LEVEL)
-        {
-            BlockState state = this.getTargetedBlock(mc);
-
-            if (state != null && state.getBlock() instanceof BeehiveBlock)
+            else if (pair.getLeft() instanceof AbstractFurnaceBlockEntity furnace)
             {
-                this.addLineI18n("minihud.info_line.honey_level", BeehiveBlockEntity.getHoneyLevel(state));
+                if (bestWorld instanceof ServerWorld serverWorld)
+                {
+                    int exp = MiscUtils.getFurnaceXpAmount(serverWorld, furnace);
+
+                    if (exp > 0)
+                    {
+                        this.addLineI18n("minihud.info_line.furnace_xp", exp);
+                    }
+                }
+                else if (this.getHudData().hasServuxServer() && this.getHudData().hasRecipes())
+                {
+                    int exp = MiscUtils.getFurnaceXpAmount(furnace);
+
+                    if (exp > 0)
+                    {
+                        this.addLineI18n("minihud.info_line.furnace_xp", exp);
+                    }
+                }
             }
         }
         else if (type == InfoToggle.HORSE_SPEED ||
@@ -1101,9 +1143,9 @@ public class RenderHandler implements IRenderer
 
             String result;
 
-            if (this.data.isWorldSeedKnown(world))
+            if (this.getHudData().isWorldSeedKnown(world))
             {
-                long seed = this.data.getWorldSeed(world);
+                long seed = this.getHudData().getWorldSeed(world);
 
                 if (MiscUtils.canSlimeSpawnAt(pos.getX(), pos.getZ(), seed))
                 {

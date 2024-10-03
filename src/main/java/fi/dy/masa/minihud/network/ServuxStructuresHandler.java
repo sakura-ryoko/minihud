@@ -16,6 +16,7 @@ import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
 import fi.dy.masa.malilib.network.PacketSplitter;
 import fi.dy.masa.malilib.util.Constants;
 import fi.dy.masa.minihud.MiniHUD;
+import fi.dy.masa.minihud.data.HudDataStorage;
 import fi.dy.masa.minihud.util.DataStorage;
 
 @Environment(EnvType.CLIENT)
@@ -111,8 +112,9 @@ public abstract class ServuxStructuresHandler<T extends CustomPayload> implement
                     this.servuxRegistered = true;
                 }
             }
-            case PACKET_S2C_SPAWN_METADATA -> DataStorage.getInstance().receiveSpawnMetadata(packet.getCompound());
-            case PACKET_S2C_WEATHER_DATA -> DataStorage.getInstance().receiveWeatherData(packet.getCompound());
+            // For backwards compat
+            case PACKET_S2C_SPAWN_METADATA -> HudDataStorage.getInstance().receiveSpawnMetadata(packet.getCompound());
+            case PACKET_S2C_WEATHER_DATA -> HudDataStorage.getInstance().receiveWeatherData(packet.getCompound());
             default -> MiniHUD.logger.warn("decodeStructuresPacket(): received unhandled packetType {} of size {} bytes.", packet.getPacketType(), packet.getTotalSize());
         }
     }

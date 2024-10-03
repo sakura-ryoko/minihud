@@ -13,6 +13,7 @@ import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.data.EntitiesDataStorage;
+import fi.dy.masa.minihud.data.HudDataStorage;
 import fi.dy.masa.minihud.renderer.OverlayRenderer;
 import fi.dy.masa.minihud.renderer.RenderContainer;
 import fi.dy.masa.minihud.renderer.shapes.ShapeManager;
@@ -37,6 +38,7 @@ public class WorldLoadListener implements IWorldLoadListener
         if (worldAfter != null)
         {
             DataStorage.getInstance().onWorldPre();
+            HudDataStorage.getInstance().onWorldPre();
             EntitiesDataStorage.getInstance().onWorldPre();
         }
     }
@@ -46,6 +48,7 @@ public class WorldLoadListener implements IWorldLoadListener
     {
         // Clear the cached data
         DataStorage.getInstance().reset(worldAfter == null);
+        HudDataStorage.getInstance().reset(worldAfter == null);
         EntitiesDataStorage.getInstance().reset(worldAfter == null);
 
         // Logging in to a world or changing dimensions or respawning
@@ -61,6 +64,7 @@ public class WorldLoadListener implements IWorldLoadListener
             OverlayRenderer.resetRenderTimeout();
             DataStorage.getInstance().onWorldJoin();
             DataStorage.getInstance().setWorldRegistryManager(worldAfter.getRegistryManager());
+            HudDataStorage.getInstance().onWorldJoin();
             EntitiesDataStorage.getInstance().onWorldJoin();
         }
     }
@@ -71,7 +75,8 @@ public class WorldLoadListener implements IWorldLoadListener
         JsonObject root = new JsonObject();
 
         root.add("data_storage", DataStorage.getInstance().toJson());
-        root.add("block_entities", EntitiesDataStorage.getInstance().toJson());
+        root.add("hud_data", HudDataStorage.getInstance().toJson());
+        root.add("entities", EntitiesDataStorage.getInstance().toJson());
         root.add("shapes", ShapeManager.INSTANCE.toJson());
 
         JsonUtils.writeJsonToFile(root, file);
@@ -107,9 +112,14 @@ public class WorldLoadListener implements IWorldLoadListener
                 DataStorage.getInstance().fromJson(JsonUtils.getNestedObject(root, "data_storage", false));
             }
 
-            if (JsonUtils.hasObject(root, "block_entities"))
+            if (JsonUtils.hasObject(root, "hud_data"))
             {
-                EntitiesDataStorage.getInstance().fromJson(JsonUtils.getNestedObject(root, "block_entities", false));
+                HudDataStorage.getInstance().fromJson(JsonUtils.getNestedObject(root, "hud_data", false));
+            }
+
+            if (JsonUtils.hasObject(root, "entities"))
+            {
+                EntitiesDataStorage.getInstance().fromJson(JsonUtils.getNestedObject(root, "entities", false));
             }
         }
     }
