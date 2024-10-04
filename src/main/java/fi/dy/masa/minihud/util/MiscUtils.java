@@ -245,6 +245,8 @@ public class MiscUtils
             return -1;
         }
 
+        // FIXME --> Vanilla bug blocks this
+        /*
         ObjectIterator<Reference2IntMap.Entry<RegistryKey<Recipe<?>>>> iter = recipes.reference2IntEntrySet().fastIterator();
 
         while (iter.hasNext())
@@ -259,6 +261,9 @@ public class MiscUtils
         }
 
         return (int) xp;
+         */
+
+        return 0;
     }
 
     public static int getFurnaceXpAmount(ServerWorld world, @Nonnull NbtCompound nbt)
@@ -273,6 +278,8 @@ public class MiscUtils
             return -1;
         }
 
+        // FIXME --> Vanilla bug blocks this
+        /*
         ObjectIterator<Reference2IntMap.Entry<RegistryKey<Recipe<?>>>> iter = recipes.reference2IntEntrySet().fastIterator();
 
         while (iter.hasNext())
@@ -287,6 +294,9 @@ public class MiscUtils
         }
 
         return (int) xp;
+         */
+
+        return 0;
     }
 
     // Servux Sync'd Recipe Manager required
@@ -302,6 +312,8 @@ public class MiscUtils
             return -1;
         }
 
+        // FIXME --> Vanilla bug blocks this
+        /*
         ObjectIterator<Reference2IntMap.Entry<RegistryKey<Recipe<?>>>> iter = recipes.reference2IntEntrySet().fastIterator();
 
         while (iter.hasNext())
@@ -316,6 +328,9 @@ public class MiscUtils
         }
 
         return (int) xp;
+         */
+
+        return 0;
     }
 
     public static int getFurnaceXpAmount(@Nonnull NbtCompound nbt)
@@ -330,6 +345,8 @@ public class MiscUtils
             return -1;
         }
 
+        // FIXME --> Vanilla bug blocks this
+        /*
         ObjectIterator<Reference2IntMap.Entry<RegistryKey<Recipe<?>>>> iter = recipes.reference2IntEntrySet().fastIterator();
 
         while (iter.hasNext())
@@ -344,5 +361,8 @@ public class MiscUtils
         }
 
         return (int) xp;
+         */
+
+        return 0;
     }
 }

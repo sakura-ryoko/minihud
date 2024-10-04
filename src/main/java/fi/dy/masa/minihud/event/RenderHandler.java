@@ -773,7 +773,8 @@ public class RenderHandler implements IRenderer
                 return;
             }
             if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue() &&
-                BlockUtils.getBlockEntityTypeFromNbt(pair.getRight()).equals(BlockEntityType.BEEHIVE))
+                BlockUtils.getBlockEntityTypeFromNbt(pair.getRight()).equals(BlockEntityType.BEEHIVE) &&
+                !pair.getRight().isEmpty())
             {
                 Pair<List<BeehiveBlockEntity.BeeData>, BlockPos> bees = BlockUtils.getBeesDataFromNbt(pair.getRight());
                 this.addLineI18n("minihud.info_line.bee_count.flower_pos", bees.getLeft().size(), bees.getRight().toShortString());
