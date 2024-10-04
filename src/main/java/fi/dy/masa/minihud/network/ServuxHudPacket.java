@@ -286,6 +286,18 @@ public class ServuxHudPacket implements IClientPayloadData
                     MiniHUD.logger.error("ServuxHudPacket#fromPacket: error reading Weather Tick from packet: [{}]", e.getLocalizedMessage());
                 }
             }
+            case PACKET_C2S_RECIPE_MANAGER_REQUEST ->
+            {
+                // Read Nbt
+                try
+                {
+                    return ServuxHudPacket.RecipeManagerRequest(input.readNbt());
+                }
+                catch (Exception e)
+                {
+                    MiniHUD.logger.error("ServuxHudPacket#fromPacket: error reading Recipe Request from packet: [{}]", e.getLocalizedMessage());
+                }
+            }
             default -> MiniHUD.logger.error("ServuxHudPacket#fromPacket: Unknown packet type!");
         }
 

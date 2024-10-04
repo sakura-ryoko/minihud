@@ -33,7 +33,6 @@ import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.RendererToggle;
 import fi.dy.masa.minihud.network.ServuxHudHandler;
 import fi.dy.masa.minihud.network.ServuxHudPacket;
-import fi.dy.masa.minihud.network.ServuxStructuresHandler;
 import fi.dy.masa.minihud.network.ServuxStructuresPacket;
 import fi.dy.masa.minihud.renderer.OverlayRendererSpawnChunks;
 import fi.dy.masa.minihud.util.DataStorage;
@@ -87,7 +86,7 @@ public class HudDataStorage
         HANDLER.registerPlayPayload(ServuxHudPacket.Payload.ID, ServuxHudPacket.Payload.CODEC, IPluginClientPlayHandler.BOTH_CLIENT);
     }
 
-    public Identifier getNetworkChannel() { return ServuxStructuresHandler.CHANNEL_ID; }
+    public Identifier getNetworkChannel() { return ServuxHudHandler.CHANNEL_ID; }
 
     public IPluginClientPlayHandler<ServuxHudPacket.Payload> getNetworkHandler() { return HANDLER; }
 
@@ -99,10 +98,13 @@ public class HudDataStorage
             HANDLER.reset(this.getNetworkChannel());
             HANDLER.resetFailures(this.getNetworkChannel());
 
+            this.servuxServer = false;
+            this.hasInValidServux = false;
             this.spawnChunkRadius = -1;
             this.worldSpawn = BlockPos.ORIGIN;
             this.worldSpawnValid = false;
             this.spawnChunkRadiusValid = false;
+            this.preparedRecipes = PreparedRecipes.EMPTY;
         }
 
         this.isRaining = false;
