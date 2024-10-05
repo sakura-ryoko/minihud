@@ -16,6 +16,7 @@
     "IMixinMinecraftServer",
     "IMixinPassiveEntity",
     "IMixinPiglinEntity",
+    "IMixinServerRecipeManager",
     "IMixinServerWorld",
     "IMixinSkeletonEntity",
     "IMixinWorld",
