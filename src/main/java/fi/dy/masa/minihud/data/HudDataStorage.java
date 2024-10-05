@@ -2,18 +2,21 @@ package fi.dy.masa.minihud.data;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import javax.annotation.Nullable;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import io.netty.buffer.Unpooled;
 
+import com.mojang.datafixers.util.Pair;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.nbt.NbtByteArray;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
-import net.minecraft.network.RegistryByteBuf;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.recipe.PreparedRecipes;
+import net.minecraft.recipe.Recipe;
 import net.minecraft.recipe.RecipeEntry;
+import net.minecraft.recipe.RecipeManager;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
@@ -60,7 +63,8 @@ public class HudDataStorage
     private boolean isThundering;
     private int weatherTimer;
 
-    private PreparedRecipes preparedRecipes = PreparedRecipes.EMPTY;
+    private PreparedRecipes preparedRecipes;
+    private int recipeCount;
 
     public HudDataStorage()
     {
@@ -76,6 +80,8 @@ public class HudDataStorage
         this.isRaining = false;
         this.isThundering = false;
         this.weatherTimer = -1;
+        this.preparedRecipes = PreparedRecipes.EMPTY;
+        this.recipeCount = 0;
     }
 
     public static HudDataStorage getInstance() { return INSTANCE; }
@@ -105,6 +111,7 @@ public class HudDataStorage
             this.worldSpawnValid = false;
             this.spawnChunkRadiusValid = false;
             this.preparedRecipes = PreparedRecipes.EMPTY;
+            this.recipeCount = 0;
         }
 
         this.isRaining = false;
@@ -377,9 +384,33 @@ public class HudDataStorage
         return !this.preparedRecipes.equals(PreparedRecipes.EMPTY);
     }
 
-    public PreparedRecipes getPreparedRecipes()
+    public @Nullable PreparedRecipes getPreparedRecipes()
     {
-        return this.preparedRecipes;
+        if (!DataStorage.getInstance().hasIntegratedServer())
+        {
+            return this.preparedRecipes;
+        }
+
+        return null;
+    }
+
+    public int getRecipeCount()
+    {
+        return this.recipeCount;
+    }
+
+    public @Nullable RecipeManager getRecipeManager()
+    {
+        if (DataStorage.getInstance().hasIntegratedServer() && mc.getServer() != null)
+        {
+            return mc.getServer().getRecipeManager();
+        }
+        else if (mc.world != null)
+        {
+            return mc.world.getRecipeManager();
+        }
+
+        return null;
     }
 
     public void onClientTickPost(MinecraftClient mc)
@@ -440,6 +471,8 @@ public class HudDataStorage
             }
 
             this.setIsServuxServer();
+            this.requestRecipeManager();
+
             return true;
         }
 
@@ -510,23 +543,46 @@ public class HudDataStorage
         }
     }
 
+    public void requestRecipeManager()
+    {
+        if (!DataStorage.getInstance().hasIntegratedServer() && this.hasServuxServer())
+        {
+            NbtCompound nbt = new NbtCompound();
+            nbt.putString("version", Reference.MOD_STRING);
+
+            HANDLER.encodeClientData(ServuxHudPacket.RecipeManagerRequest(nbt));
+        }
+    }
+
     public void receiveRecipeManager(NbtCompound data)
     {
         if (!DataStorage.getInstance().hasIntegratedServer() && data.contains("RecipeManager"))
         {
             Collection<RecipeEntry<?>> recipes = new ArrayList<>();
-            NbtList list = data.getList("RecipeManager", NbtElement.BYTE_ARRAY_TYPE);
-            MiniHUD.printDebug("HudDataStorage#receiveRecipeManager(): from Servux");
+            NbtList list = data.getList("RecipeManager", Constants.NBT.TAG_COMPOUND);
+            int count = 0;
+
+            this.preparedRecipes = PreparedRecipes.EMPTY;
+            this.recipeCount = 0;
 
             for (int i = 0; i < list.size(); i++)
             {
+                NbtCompound item = list.getCompound(i);
+                Identifier idReg = Identifier.tryParse(item.getString("id_reg"));
+                Identifier idValue = Identifier.tryParse(item.getString("id_value"));
+
+                if (idReg == null || idValue == null)
+                {
+                    continue;
+                }
+
                 try
                 {
-                    NbtByteArray byteArray = (NbtByteArray) list.get(i);
-                    RegistryByteBuf buf = new RegistryByteBuf(Unpooled.buffer(), DataStorage.getInstance().getWorldRegistryManager());
-                    buf.writeByteArray(byteArray.getByteArray());
-                    RecipeEntry<?> entry = RecipeEntry.PACKET_CODEC.decode(buf);
+                    RegistryKey<Recipe<?>> key = RegistryKey.of(RegistryKey.ofRegistry(idReg), idValue);
+                    Pair<Recipe<?>, NbtElement> pair = Recipe.CODEC.decode(DataStorage.getInstance().getWorldRegistryManager().getOps(NbtOps.INSTANCE), item.getCompound("recipe")).getOrThrow();
+                    RecipeEntry<?> entry = new RecipeEntry<>(key, pair.getFirst());
                     recipes.add(entry);
+                    count++;
                 }
                 catch (Exception e)
                 {
@@ -537,7 +593,8 @@ public class HudDataStorage
             if (!recipes.isEmpty())
             {
                 this.preparedRecipes = PreparedRecipes.of(recipes);
-                MiniHUD.printDebug("HudDataStorage#receiveRecipeManager(): finished loading Recipe Manager -> Prepared Recipes from Servux");
+                this.recipeCount = count;
+                MiniHUD.printDebug("HudDataStorage#receiveRecipeManager(): finished loading Recipe Manager: Read [{}] Recipes from Servux", count);
             }
             else
             {

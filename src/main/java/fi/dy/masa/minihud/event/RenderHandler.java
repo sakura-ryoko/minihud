@@ -28,6 +28,7 @@ import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.block.enums.ChestType;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.Fog;
@@ -53,6 +54,7 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.integrated.IntegratedServer;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.OptionalChunk;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;
@@ -79,6 +81,7 @@ import net.minecraft.world.chunk.WorldChunk;
 import net.minecraft.world.chunk.light.LightingProvider;
 
 import com.llamalad7.mixinextras.lib.apache.commons.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.joml.Matrix4f;
 
 import javax.annotation.Nonnull;
@@ -803,8 +806,6 @@ public class RenderHandler implements IRenderer
                 return;
             }
 
-            System.out.printf("FurnaceXP: nbt dump: %s\n", pair.getRight().toString());
-
             if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue() && !pair.getRight().isEmpty())
             {
                 BlockEntityType<?> beType = BlockUtils.getBlockEntityTypeFromNbt(pair.getRight());
@@ -887,7 +888,7 @@ public class RenderHandler implements IRenderer
             float speed = 0f;
             double jump = 0d;
 
-            if (pair != null && Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue())
+            if (pair != null && Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue() && !pair.getRight().isEmpty())
             {
                 NbtCompound nbt = pair.getRight();
                 EntityType<?> entityType = EntityUtils.getEntityTypeFromNbt(nbt);
@@ -1020,7 +1021,7 @@ public class RenderHandler implements IRenderer
             {
                 return;
             }
-            if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue())
+            if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue() && !pair.getRight().isEmpty())
             {
                 NbtCompound nbt = pair.getRight();
                 EntityType<?> entityType = EntityUtils.getEntityTypeFromNbt(nbt);
@@ -1175,7 +1176,7 @@ public class RenderHandler implements IRenderer
                     return;
                 }
                 if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue() &&
-                    pair.getLeft() instanceof LivingEntity living)
+                    pair.getLeft() instanceof LivingEntity living && !pair.getRight().isEmpty())
                 {
                     NbtCompound nbt = pair.getRight();
                     Pair<Float, Float> healthPair = EntityUtils.getHealthFromNbt(nbt);
@@ -1249,7 +1250,7 @@ public class RenderHandler implements IRenderer
                     return;
                 }
                 if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue() &&
-                        pair.getLeft() instanceof LivingEntity living)
+                        pair.getLeft() instanceof LivingEntity living && !pair.getRight().isEmpty())
                 {
                     NbtCompound nbt = pair.getRight();
                     EntityType<?> entityType = EntityUtils.getEntityTypeFromNbt(nbt);
@@ -1375,7 +1376,7 @@ public class RenderHandler implements IRenderer
                     return;
                 }
                 if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue() &&
-                    pair.getLeft() instanceof LivingEntity)
+                    pair.getLeft() instanceof LivingEntity && !pair.getRight().isEmpty())
                 {
                     NbtCompound nbt = pair.getRight();
                     Map<RegistryEntry<StatusEffect>, StatusEffectInstance> effects = EntityUtils.getActiveStatusEffectsFromNbt(nbt);
@@ -1438,7 +1439,7 @@ public class RenderHandler implements IRenderer
                 String zombieType = pair.getLeft().getType().getName().getString();
                 int conversionTimer = -1;
 
-                if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue())
+                if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue() && !pair.getRight().isEmpty())
                 {
                     NbtCompound nbt = pair.getRight();
                     EntityType<?> entityType = EntityUtils.getEntityTypeFromNbt(nbt);
@@ -1486,6 +1487,7 @@ public class RenderHandler implements IRenderer
             if (mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.ENTITY)
             {
                 Pair<Entity, NbtCompound> pair = this.getTargetEntity(world, mc);
+
                 if (pair == null)
                 {
                     return;
@@ -1495,6 +1497,44 @@ public class RenderHandler implements IRenderer
                 if (regName != null)
                 {
                     this.addLineI18n("minihud.info_line.entity_reg_name", regName);
+                }
+            }
+        }
+        else if (type == InfoToggle.PLAYER_EXPERIENCE)
+        {
+            if (mc.player != null)
+            {
+                this.addLineI18n("minihud.info_line.player_experience", mc.player.experienceLevel, mc.player.experienceProgress, mc.player.totalExperience);
+            }
+        }
+        else if (type == InfoToggle.LOOKING_AT_PLAYER_EXP)
+        {
+            if (mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.ENTITY)
+            {
+                Pair<Entity, NbtCompound> pair = this.getTargetEntity(world, mc);
+
+                if (pair == null)
+                {
+                    return;
+                }
+                if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue() && !pair.getRight().isEmpty())
+                {
+                    NbtCompound nbt = pair.getRight();
+                    EntityType<?> entityType = EntityUtils.getEntityTypeFromNbt(nbt);
+
+                    if (entityType.equals(EntityType.PLAYER))
+                    {
+                        Triple<Integer, Integer, Float> triple = EntityUtils.getPlayerExpFromNbt(nbt);
+
+                        if (triple.getLeft() > 0)
+                        {
+                            this.addLineI18n("minihud.info_line.looking_at_player_exp", triple.getLeft(), triple.getRight(), triple.getMiddle());
+                        }
+                    }
+                }
+                else if (pair.getLeft() instanceof ServerPlayerEntity player)
+                {
+                    this.addLineI18n("minihud.info_line.looking_at_player_exp", player.experienceLevel, player.experienceProgress, player.totalExperience);
                 }
             }
         }
