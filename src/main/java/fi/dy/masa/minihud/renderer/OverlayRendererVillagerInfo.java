@@ -67,7 +67,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase
             {
                 for (VillagerEntity librarian : librarians)
                 {
-                    TradeOfferList offers = ((IMixinMerchantEntity) librarian).offers();
+                    TradeOfferList offers = ((IMixinMerchantEntity) librarian).minihud_offers();
                     if (offers != null)
                     {
                         for (TradeOffer tradeOffer : offers)
@@ -104,7 +104,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase
                     EntitiesDataStorage.getInstance().requestEntity(librarian.getId());
                 }
                 List<String> overlay = new ArrayList<>();
-                TradeOfferList offers = ((IMixinMerchantEntity) librarian).offers();
+                TradeOfferList offers = ((IMixinMerchantEntity) librarian).minihud_offers();
                 if (offers == null)
                 {
                     continue;

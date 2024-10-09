@@ -8,5 +8,5 @@ import net.minecraft.entity.passive.PassiveEntity;
 public interface IMixinPassiveEntity
 {
     @Accessor("breedingAge")
-    int getRealBreedingAge();
+    int minihud_getRealBreedingAge();
 }

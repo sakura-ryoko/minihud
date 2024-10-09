@@ -9,5 +9,5 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 public interface IMixinMerchantEntity
 {
     @Accessor("offers")
-    TradeOfferList offers();
+    TradeOfferList minihud_offers();
 }

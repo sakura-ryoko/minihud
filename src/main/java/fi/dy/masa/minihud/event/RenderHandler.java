@@ -28,7 +28,6 @@ import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.block.enums.ChestType;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.Fog;
@@ -59,7 +58,6 @@ import net.minecraft.server.world.OptionalChunk;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.DyeColor;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.util.hit.BlockHitResult;
@@ -1226,7 +1224,7 @@ public class RenderHandler implements IRenderer
                     {
                         if (passive.getBreedingAge() < 0)
                         {
-                            int untilGrown = ((IMixinPassiveEntity) passive).getRealBreedingAge() * (-1);
+                            int untilGrown = ((IMixinPassiveEntity) passive).minihud_getRealBreedingAge() * (-1);
                             entityLine = entityLine+ " [" + StringUtils.getDurationString(untilGrown * 50) + " " + StringUtils.translate("minihud.info_line.remaining") + "]";
                         }
                     }
