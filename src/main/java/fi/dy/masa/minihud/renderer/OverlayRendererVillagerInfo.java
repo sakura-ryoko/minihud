@@ -24,7 +24,7 @@ import fi.dy.masa.malilib.render.RenderUtils;
 import fi.dy.masa.malilib.util.WorldUtils;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.RendererToggle;
-import fi.dy.masa.minihud.data.EntitiesDataStorage;
+import fi.dy.masa.minihud.data.EntitiesDataManager;
 import fi.dy.masa.minihud.mixin.IMixinMerchantEntity;
 import fi.dy.masa.minihud.mixin.IMixinZombieVillagerEntity;
 import fi.dy.masa.minihud.util.EntityUtils;
@@ -101,7 +101,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase
             {
                 if (librarian.isClient())
                 {
-                    EntitiesDataStorage.getInstance().requestEntity(librarian.getId());
+                    EntitiesDataManager.getInstance().requestEntity(librarian.getId());
                 }
                 List<String> overlay = new ArrayList<>();
                 TradeOfferList offers = ((IMixinMerchantEntity) librarian).minihud_offers();
@@ -186,7 +186,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase
             {
                 if (villager.getWorld().isClient)
                 {
-                    EntitiesDataStorage.getInstance().requestEntity(villager.getId());
+                    EntitiesDataManager.getInstance().requestEntity(villager.getId());
                 }
 
                 int conversionTimer = ((IMixinZombieVillagerEntity) villager).minihud_conversionTimer();

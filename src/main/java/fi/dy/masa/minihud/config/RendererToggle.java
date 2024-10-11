@@ -37,6 +37,7 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
     OVERLAY_VILLAGER_INFO               ("overlayVillagerInfo",         ""),
     SHAPE_RENDERER                      ("shapeRenderer",               ""),
 
+    DEBUG_DATA_MAIN_TOGGLE              ("debugDataMainToggle",         ""),
     //DEBUG_BEEDATA                       ("debugBeeDataEnabled",         ""),
     DEBUG_BREEZE_JUMP                   ("debugBreezeJumpEnabled",      ""),
     DEBUG_CHUNK_BORDER                  ("debugChunkBorder",            ""),

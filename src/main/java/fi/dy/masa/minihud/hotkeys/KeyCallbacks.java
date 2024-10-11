@@ -74,6 +74,7 @@ public class KeyCallbacks
         RendererToggle.OVERLAY_SPAWN_CHUNK_OVERLAY_REAL.setValueChangeCallback(RendererCallbacks::onSpawnChunksRealToggled);
         RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.setValueChangeCallback(RendererCallbacks::onStructuresToggled);
 
+        RendererToggle.DEBUG_DATA_MAIN_TOGGLE.setValueChangeCallback(RendererCallbacks::onDebugServiceToggled);
         RendererToggle.DEBUG_CHUNK_BORDER.setValueChangeCallback(DebugInfoUtils::toggleDebugRenderer);
         RendererToggle.DEBUG_CHUNK_INFO.setValueChangeCallback(DebugInfoUtils::toggleDebugRenderer);
         RendererToggle.DEBUG_CHUNK_LOADING.setValueChangeCallback(DebugInfoUtils::toggleDebugRenderer);

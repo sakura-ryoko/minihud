@@ -39,11 +39,9 @@
     "MixinServerWorld",
     "MixinSubtitlesHud",
     "debug.IMixinDebugRenderer",
-    "debug.MixinBlockOutlineDebugRenderer",
+    "debug.IMixinMobEntity",
     "debug.MixinDebugInfoSender",
     "debug.MixinDebugRenderer",
-    "debug.MixinHeightmapDebugRenderer",
-    "debug.MixinNeighborUpdateDebugRenderer",
     "debug.MixinSharedConstants"
   ],
   "injectors": {

@@ -4,8 +4,9 @@ import fi.dy.masa.malilib.config.ConfigManager;
 import fi.dy.masa.malilib.event.*;
 import fi.dy.masa.malilib.interfaces.IInitializationHandler;
 import fi.dy.masa.minihud.config.Configs;
-import fi.dy.masa.minihud.data.EntitiesDataStorage;
-import fi.dy.masa.minihud.data.HudDataStorage;
+import fi.dy.masa.minihud.data.DebugDataManager;
+import fi.dy.masa.minihud.data.EntitiesDataManager;
+import fi.dy.masa.minihud.data.HudDataManager;
 import fi.dy.masa.minihud.event.*;
 import fi.dy.masa.minihud.hotkeys.KeyCallbacks;
 import fi.dy.masa.minihud.util.DataStorage;
@@ -17,8 +18,9 @@ public class InitHandler implements IInitializationHandler
     {
         ConfigManager.getInstance().registerConfigHandler(Reference.MOD_ID, new Configs());
         DataStorage.getInstance().onGameInit();
-        HudDataStorage.getInstance().onGameInit();
-        EntitiesDataStorage.getInstance().onGameInit();
+        HudDataManager.getInstance().onGameInit();
+        EntitiesDataManager.getInstance().onGameInit();
+        DebugDataManager.getInstance().onGameInit();
 
         InputEventHandler.getKeybindManager().registerKeybindProvider(InputHandler.getInstance());
         InputEventHandler.getInputManager().registerMouseInputHandler(InputHandler.getInstance());
@@ -36,7 +38,7 @@ public class InitHandler implements IInitializationHandler
         ServerHandler.getInstance().registerServerHandler(serverListener);
 
         TickHandler.getInstance().registerClientTickHandler(new ClientTickHandler());
-        TickHandler.getInstance().registerClientTickHandler(EntitiesDataStorage.getInstance());
+        TickHandler.getInstance().registerClientTickHandler(EntitiesDataManager.getInstance());
 
         KeyCallbacks.init();
     }

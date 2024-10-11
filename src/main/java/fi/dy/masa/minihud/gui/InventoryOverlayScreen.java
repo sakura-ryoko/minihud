@@ -27,7 +27,7 @@ import fi.dy.masa.malilib.util.BlockUtils;
 import fi.dy.masa.malilib.util.GuiUtils;
 import fi.dy.masa.malilib.util.WorldUtils;
 import fi.dy.masa.minihud.config.Configs;
-import fi.dy.masa.minihud.data.EntitiesDataStorage;
+import fi.dy.masa.minihud.data.EntitiesDataManager;
 import fi.dy.masa.minihud.event.RenderHandler;
 import fi.dy.masa.minihud.util.RayTraceUtils;
 
@@ -165,7 +165,7 @@ public class InventoryOverlayScreen extends Screen
                 }
                 else if (previewData.entity() != null)
                 {
-                    EntitiesDataStorage.getInstance().requestEntity(previewData.entity().getId());
+                    EntitiesDataManager.getInstance().requestEntity(previewData.entity().getId());
                     previewData = RayTraceUtils.getTargetInventoryFromEntity(previewData.entity(), previewData.nbt());
                 }
 

@@ -16,7 +16,7 @@ import fi.dy.masa.malilib.util.EntityUtils;
 import fi.dy.masa.malilib.util.JsonUtils;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.RendererToggle;
-import fi.dy.masa.minihud.data.HudDataStorage;
+import fi.dy.masa.minihud.data.HudDataManager;
 import fi.dy.masa.minihud.util.MiscUtils;
 
 public class OverlayRendererSlimeChunks extends OverlayRendererBase
@@ -64,7 +64,7 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
     public boolean shouldRender(MinecraftClient mc)
     {
         return RendererToggle.OVERLAY_SLIME_CHUNKS_OVERLAY.getBooleanValue() && mc.world != null &&
-                HudDataStorage.getInstance().isWorldSeedKnown(mc.world) &&
+                HudDataManager.getInstance().isWorldSeedKnown(mc.world) &&
                 MiscUtils.isOverworld(mc.world);
     }
 
@@ -77,8 +77,8 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
         }
 
         World world = entity.getEntityWorld();
-        boolean isSeedKnown = HudDataStorage.getInstance().isWorldSeedKnown(world);
-        long seed = HudDataStorage.getInstance().getWorldSeed(world);
+        boolean isSeedKnown = HudDataManager.getInstance().isWorldSeedKnown(world);
+        long seed = HudDataManager.getInstance().getWorldSeed(world);
 
         if (this.topY != overlayTopY || this.wasSeedKnown != isSeedKnown || this.seed != seed)
         {
@@ -96,7 +96,7 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
     @Override
     public void update(Vec3d cameraPos, Entity entity, MinecraftClient mc)
     {
-        HudDataStorage data = HudDataStorage.getInstance();
+        HudDataManager data = HudDataManager.getInstance();
         World world = entity.getEntityWorld();
         this.topY = overlayTopY;
         this.wasSeedKnown = data.isWorldSeedKnown(world);

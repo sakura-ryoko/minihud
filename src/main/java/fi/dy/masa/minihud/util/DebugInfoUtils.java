@@ -44,12 +44,6 @@ public class DebugInfoUtils
     private static int tickCounter;
     private static final Map<Entity, Path> OLD_PATHS = new MapMaker().weakKeys().weakValues().makeMap();
 
-    public static void registerPayloads()
-    {
-        PayloadTypeRegistry.playC2S().register(DebugBrainCustomPayload.ID, DebugBrainCustomPayload.CODEC);
-        PayloadTypeRegistry.playS2C().register(DebugBrainCustomPayload.ID, DebugBrainCustomPayload.CODEC);
-    }
-
     public static void sendPacketDebugPath(MinecraftServer server, int entityId, Path path, float maxDistance)
     {
         // FIXME --> This causes a custom_payload crash (Unregistered Vanilla channel)
@@ -228,6 +222,11 @@ public class DebugInfoUtils
                                           VertexConsumerProvider.Immediate vtx,
                                           double cameraX, double cameraY, double cameraZ)
     {
+        if (RendererToggle.DEBUG_DATA_MAIN_TOGGLE.getBooleanValue() == false)
+        {
+            return;
+        }
+
         DebugRenderer renderer = MinecraftClient.getInstance().debugRenderer;
 
         if (RendererToggle.DEBUG_COLLISION_BOXES.getBooleanValue())
@@ -317,7 +316,7 @@ public class DebugInfoUtils
             vtx.draw();
         }
 
-        // FIXME These cause a custom_payload crash
+        // FIXME These cause a custom_payload crash when used
         /*
         if (RendererToggle.DEBUG_PATH_FINDING.getBooleanValue())
         {

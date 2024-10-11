@@ -54,11 +54,11 @@ import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class EntitiesDataStorage implements IClientTickHandler
+public class EntitiesDataManager implements IClientTickHandler
 {
-    private static final EntitiesDataStorage INSTANCE = new EntitiesDataStorage();
+    private static final EntitiesDataManager INSTANCE = new EntitiesDataManager();
 
-    public static EntitiesDataStorage getInstance()
+    public static EntitiesDataManager getInstance()
     {
         return INSTANCE;
     }
@@ -98,7 +98,7 @@ public class EntitiesDataStorage implements IClientTickHandler
         return clientWorld;
     }
 
-    private EntitiesDataStorage() { }
+    private EntitiesDataManager() { }
 
     @Override
     public void onClientTick(MinecraftClient mc)

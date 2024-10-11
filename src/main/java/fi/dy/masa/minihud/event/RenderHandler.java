@@ -10,8 +10,8 @@ import fi.dy.masa.malilib.util.InventoryUtils;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.config.RendererToggle;
-import fi.dy.masa.minihud.data.EntitiesDataStorage;
-import fi.dy.masa.minihud.data.HudDataStorage;
+import fi.dy.masa.minihud.data.EntitiesDataManager;
+import fi.dy.masa.minihud.data.HudDataManager;
 import fi.dy.masa.minihud.data.MobCapDataHandler;
 import fi.dy.masa.minihud.mixin.*;
 import fi.dy.masa.minihud.renderer.OverlayRenderer;
@@ -88,13 +88,15 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
+import com.mojang.blaze3d.systems.RenderSystem;
+
 public class RenderHandler implements IRenderer
 {
     private static final RenderHandler INSTANCE = new RenderHandler();
 
     private final MinecraftClient mc;
     private final DataStorage data;
-    private final HudDataStorage hudData;
+    private final HudDataManager hudData;
     private final Date date;
     private final Map<ChunkPos, CompletableFuture<OptionalChunk<Chunk>>> chunkFutures = new HashMap<>();
     private final Set<InfoToggle> addedTypes = new HashSet<>();
@@ -110,7 +112,7 @@ public class RenderHandler implements IRenderer
     {
         this.mc = MinecraftClient.getInstance();
         this.data = DataStorage.getInstance();
-        this.hudData = HudDataStorage.getInstance();
+        this.hudData = HudDataManager.getInstance();
         this.date = new Date();
     }
 
@@ -124,19 +126,21 @@ public class RenderHandler implements IRenderer
         return this.data;
     }
 
-    public HudDataStorage getHudData()
+    public HudDataManager getHudData()
     {
         return this.hudData;
     }
 
     public static void fixDebugRendererState()
     {
-        //if (Configs.Generic.FIX_VANILLA_DEBUG_RENDERERS.getBooleanValue())
-        //{
-            //RenderSystem.disableLighting();
-            //RenderUtils.color(1, 1, 1, 1);
-            //OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240f, 240f);
-        //}
+        /*
+        if (Configs.Generic.FIX_VANILLA_DEBUG_RENDERERS.getBooleanValue())
+        {
+            RenderSystem.disableLighting();
+            RenderUtils.color(1, 1, 1, 1);
+            OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240f, 240f);
+        }
+         */
     }
 
     @Override
@@ -454,9 +458,9 @@ public class RenderHandler implements IRenderer
         }
         else if (type == InfoToggle.SERVUX)
         {
-            if (EntitiesDataStorage.getInstance().hasServuxServer())
+            if (EntitiesDataManager.getInstance().hasServuxServer())
             {
-                this.addLineI18n("minihud.info_line.servux", EntitiesDataStorage.getInstance().getServuxVersion());
+                this.addLineI18n("minihud.info_line.servux", EntitiesDataManager.getInstance().getServuxVersion());
             }
             else if (this.getDataStorage().hasServuxServer())
             {
@@ -466,13 +470,13 @@ public class RenderHandler implements IRenderer
             {
                 this.addLineI18n("minihud.info_line.servux.not_connected");
             }
-            if (EntitiesDataStorage.getInstance().hasServuxServer())
+            if (EntitiesDataManager.getInstance().hasServuxServer())
             {
                 this.addLineI18n("minihud.info_line.servux.entity_sync",
-                                 EntitiesDataStorage.getInstance().getBlockEntityCacheCount(),
-                                 EntitiesDataStorage.getInstance().getPendingBlockEntitiesCount(),
-                                 EntitiesDataStorage.getInstance().getEntityCacheCount(),
-                                 EntitiesDataStorage.getInstance().getPendingEntitiesCount()
+                                 EntitiesDataManager.getInstance().getBlockEntityCacheCount(),
+                                 EntitiesDataManager.getInstance().getPendingBlockEntitiesCount(),
+                                 EntitiesDataManager.getInstance().getEntityCacheCount(),
+                                 EntitiesDataManager.getInstance().getPendingEntitiesCount()
                 );
             }
             if (this.getDataStorage().hasServuxServer())
@@ -504,20 +508,20 @@ public class RenderHandler implements IRenderer
             {
                 return;
             }
-            if (this.getHudData().isWeatherThunder())
+            if (this.getHudData().isWeatherClear())
             {
-                weatherType = "thundering";
-                weatherTime = this.getHudData().getThunderTime();
+                weatherType = "clear";
+                weatherTime = this.getHudData().getClearTime();
             }
             else if (this.getHudData().isWeatherRain())
             {
                 weatherType = "raining";
                 weatherTime = this.getHudData().getRainTime();
             }
-            else if (this.getHudData().isWeatherClear())
+            else if (this.getHudData().isWeatherThunder())
             {
-                weatherType = "clear";
-                weatherTime = this.getHudData().getClearTime();
+                weatherType = "thundering";
+                weatherTime = this.getHudData().getThunderTime();
             }
             /*
             if (bestWorld.getLevelProperties().isThundering())
@@ -1595,7 +1599,7 @@ public class RenderHandler implements IRenderer
             }
             else
             {
-                pair = EntitiesDataStorage.getInstance().requestEntity(lookedEntity.getId());
+                pair = EntitiesDataManager.getInstance().requestEntity(lookedEntity.getId());
             }
 
             // Remember the last entity so the "refresh time" is smoothed over.
@@ -1653,7 +1657,7 @@ public class RenderHandler implements IRenderer
                 }
                 else
                 {
-                    pair = EntitiesDataStorage.getInstance().requestBlockEntity(world, posLooking);
+                    pair = EntitiesDataManager.getInstance().requestBlockEntity(world, posLooking);
                 }
 
                 // Remember the last entity so the "refresh time" is smoothed over.
@@ -1679,7 +1683,7 @@ public class RenderHandler implements IRenderer
     {
         if (!(world instanceof ServerWorld))
         {
-            Pair<BlockEntity, NbtCompound> pair = EntitiesDataStorage.getInstance().requestBlockEntity(world, pos);
+            Pair<BlockEntity, NbtCompound> pair = EntitiesDataManager.getInstance().requestBlockEntity(world, pos);
 
             BlockState state = world.getBlockState(pos);
 
@@ -1689,7 +1693,7 @@ public class RenderHandler implements IRenderer
 
                 if (type != ChestType.SINGLE)
                 {
-                    return EntitiesDataStorage.getInstance().requestBlockEntity(world, pos.offset(ChestBlock.getFacing(state)));
+                    return EntitiesDataManager.getInstance().requestBlockEntity(world, pos.offset(ChestBlock.getFacing(state)));
                 }
             }
 

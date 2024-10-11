@@ -38,7 +38,7 @@ import fi.dy.masa.malilib.util.*;
 import fi.dy.masa.malilib.util.EntityUtils;
 import fi.dy.masa.malilib.util.InventoryUtils;
 import fi.dy.masa.minihud.config.Configs;
-import fi.dy.masa.minihud.data.EntitiesDataStorage;
+import fi.dy.masa.minihud.data.EntitiesDataManager;
 import fi.dy.masa.minihud.event.RenderHandler;
 import fi.dy.masa.minihud.mixin.IMixinAbstractHorseEntity;
 import fi.dy.masa.minihud.mixin.IMixinPiglinEntity;
@@ -187,7 +187,7 @@ public class RayTraceUtils
             }
             else
             {
-                Pair<Entity, NbtCompound> pair = EntitiesDataStorage.getInstance().requestEntity(entity.getId());
+                Pair<Entity, NbtCompound> pair = EntitiesDataManager.getInstance().requestEntity(entity.getId());
 
                 if (pair != null)
                 {
@@ -235,7 +235,7 @@ public class RayTraceUtils
                 }
             }
 
-            inv = EntitiesDataStorage.getInstance().getBlockInventory(world, pos, false);
+            inv = EntitiesDataManager.getInstance().getBlockInventory(world, pos, false);
         }
 
         if (nbt != null && !nbt.isEmpty())

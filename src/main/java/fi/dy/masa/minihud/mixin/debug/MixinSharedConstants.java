@@ -17,6 +17,7 @@ public abstract class MixinSharedConstants
 
     public MixinSharedConstants() {}
 
+    /*
     @Inject(method = "<clinit>", at = @At("TAIL"))
     private static void minihud_enableDevelopmentMode(CallbackInfo ci)
     {
@@ -25,4 +26,5 @@ public abstract class MixinSharedConstants
             isDevelopment = true;
         }
     }
+     */
 }

@@ -13,7 +13,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Queues;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
+
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NbtCompound;
@@ -41,15 +41,13 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.gen.structure.Structure;
 import fi.dy.masa.malilib.gui.GuiBase;
-import fi.dy.masa.malilib.interfaces.IClientTickHandler;
 import fi.dy.masa.malilib.network.ClientPlayHandler;
 import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
 import fi.dy.masa.malilib.util.*;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.Reference;
-import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.RendererToggle;
-import fi.dy.masa.minihud.data.HudDataStorage;
+import fi.dy.masa.minihud.data.HudDataManager;
 import fi.dy.masa.minihud.data.MobCapDataHandler;
 import fi.dy.masa.minihud.mixin.IMixinMinecraftServer;
 import fi.dy.masa.minihud.network.ServuxStructuresHandler;
@@ -438,8 +436,8 @@ public class DataStorage
             {
                 try
                 {
-                    HudDataStorage.getInstance().setWorldSeed(Long.parseLong(parts[1]));
-                    InfoUtils.printActionbarMessage("minihud.message.seed_set", HudDataStorage.getInstance().worldSeed());
+                    HudDataManager.getInstance().setWorldSeed(Long.parseLong(parts[1]));
+                    InfoUtils.printActionbarMessage("minihud.message.seed_set", HudDataManager.getInstance().worldSeed());
                 }
                 catch (NumberFormatException e)
                 {
@@ -448,9 +446,9 @@ public class DataStorage
             }
             else if (parts.length == 1)
             {
-                if (HudDataStorage.getInstance().hasStoredWorldSeed())
+                if (HudDataManager.getInstance().hasStoredWorldSeed())
                 {
-                    InfoUtils.printActionbarMessage("minihud.message.seed_is", HudDataStorage.getInstance().worldSeed());
+                    InfoUtils.printActionbarMessage("minihud.message.seed_is", HudDataManager.getInstance().worldSeed());
                 }
                 else
                 {
@@ -470,7 +468,7 @@ public class DataStorage
 
                     if (radius >= 0 && radius <= 32)
                     {
-                        HudDataStorage.getInstance().setSpawnChunkRadius(radius, true);
+                        HudDataManager.getInstance().setSpawnChunkRadius(radius, true);
                     }
                     else
                     {
@@ -484,9 +482,9 @@ public class DataStorage
             }
             else if (parts.length == 1)
             {
-                if (HudDataStorage.getInstance().isSpawnChunkRadiusKnown())
+                if (HudDataManager.getInstance().isSpawnChunkRadiusKnown())
                 {
-                    int radius = HudDataStorage.getInstance().getSpawnChunkRadius();
+                    int radius = HudDataManager.getInstance().getSpawnChunkRadius();
                     String strRadius = radius > 0 ? GuiBase.TXT_GREEN + String.format("%d", radius) + GuiBase.TXT_RST : GuiBase.TXT_RED + String.format("%d", radius) + GuiBase.TXT_RST;
                     InfoUtils.printActionbarMessage(StringUtils.translate("minihud.message.spawn_chunk_radius_is", strRadius));
                 }
@@ -523,9 +521,9 @@ public class DataStorage
                     //if (i1 != -1 && i2 != -1)
                     {
                         //this.setWorldSeed(Long.parseLong(str.substring(i1 + 1, i2)));
-                        HudDataStorage.getInstance().setWorldSeed(Long.parseLong(str));
-                        MiniHUD.logger.info("Received world seed from the vanilla /seed command: {}", HudDataStorage.getInstance().worldSeed());
-                        InfoUtils.printActionbarMessage("minihud.message.seed_set", HudDataStorage.getInstance().worldSeed());
+                        HudDataManager.getInstance().setWorldSeed(Long.parseLong(str));
+                        MiniHUD.logger.info("Received world seed from the vanilla /seed command: {}", HudDataManager.getInstance().worldSeed());
+                        InfoUtils.printActionbarMessage("minihud.message.seed_set", HudDataManager.getInstance().worldSeed());
                     }
                 }
                 catch (Exception e)
@@ -538,9 +536,9 @@ public class DataStorage
             {
                 try
                 {
-                    HudDataStorage.getInstance().setWorldSeed(Long.parseLong(text.getArgs()[1].toString()));
-                    MiniHUD.logger.info("Received world seed from the JED '/jed seed' command: {}", HudDataStorage.getInstance().worldSeed());
-                    InfoUtils.printActionbarMessage("minihud.message.seed_set", HudDataStorage.getInstance().worldSeed());
+                    HudDataManager.getInstance().setWorldSeed(Long.parseLong(text.getArgs()[1].toString()));
+                    MiniHUD.logger.info("Received world seed from the JED '/jed seed' command: {}", HudDataManager.getInstance().worldSeed());
+                    InfoUtils.printActionbarMessage("minihud.message.seed_set", HudDataManager.getInstance().worldSeed());
                 }
                 catch (Exception e)
                 {
@@ -557,7 +555,7 @@ public class DataStorage
                     int z = Integer.parseInt(o[2].toString());
 
                     BlockPos newSpawn = new BlockPos(x, y, z);
-                    HudDataStorage.getInstance().setWorldSpawn(newSpawn);
+                    HudDataManager.getInstance().setWorldSpawn(newSpawn);
 
                     String spawnStr = String.format("x: %d, y: %d, z: %d", newSpawn.getX(), newSpawn.getY(), newSpawn.getZ());
                     MiniHUD.logger.info("Received world spawn from the vanilla /setworldspawn command: {}", spawnStr);
@@ -579,14 +577,14 @@ public class DataStorage
                     {
                         int value = Integer.parseInt(o[1].toString());
 
-                        if (HudDataStorage.getInstance().getSpawnChunkRadius() != value)
+                        if (HudDataManager.getInstance().getSpawnChunkRadius() != value)
                         {
-                            MiniHUD.logger.info("Received spawn chunk radius from the vanilla /gamerule command: {}", HudDataStorage.getInstance().getSpawnChunkRadius());
-                            HudDataStorage.getInstance().setSpawnChunkRadius(value, true);
+                            MiniHUD.logger.info("Received spawn chunk radius from the vanilla /gamerule command: {}", HudDataManager.getInstance().getSpawnChunkRadius());
+                            HudDataManager.getInstance().setSpawnChunkRadius(value, true);
                         }
                         else
                         {
-                            int radius = HudDataStorage.getInstance().getSpawnChunkRadius();
+                            int radius = HudDataManager.getInstance().getSpawnChunkRadius();
                             String strRadius = radius > 0 ? GuiBase.TXT_GREEN + String.format("%d", radius) + GuiBase.TXT_RST : GuiBase.TXT_RED + String.format("%d", radius) + GuiBase.TXT_RST;
                             InfoUtils.printActionbarMessage(StringUtils.translate("minihud.message.spawn_chunk_radius_is", strRadius));
                         }
@@ -785,15 +783,15 @@ public class DataStorage
             this.setServuxVersion(data.getString("servux"));
             if (data.contains("spawnPosX", Constants.NBT.TAG_INT))
             {
-                HudDataStorage.getInstance().setWorldSpawn(new BlockPos(data.getInt("spawnPosX"), data.getInt("spawnPosY"), data.getInt("spawnPosZ")));
+                HudDataManager.getInstance().setWorldSpawn(new BlockPos(data.getInt("spawnPosX"), data.getInt("spawnPosY"), data.getInt("spawnPosZ")));
             }
             if (data.contains("spawnChunkRadius", Constants.NBT.TAG_INT))
             {
-                HudDataStorage.getInstance().setSpawnChunkRadius(data.getInt("spawnChunkRadius"), true);
+                HudDataManager.getInstance().setSpawnChunkRadius(data.getInt("spawnChunkRadius"), true);
             }
             if (data.contains("worldSeed", Constants.NBT.TAG_LONG))
             {
-                HudDataStorage.getInstance().setWorldSeed(data.getLong("worldSeed"));
+                HudDataManager.getInstance().setWorldSeed(data.getLong("worldSeed"));
             }
             this.setIsServuxServer();
 
@@ -1032,11 +1030,11 @@ public class DataStorage
         // Backwards compat
         if (JsonUtils.hasLong(obj, "seed"))
         {
-            HudDataStorage.getInstance().setWorldSeed(JsonUtils.getLong(obj, "seed"));
+            HudDataManager.getInstance().setWorldSeed(JsonUtils.getLong(obj, "seed"));
         }
         if (JsonUtils.hasInteger(obj, "spawn_chunk_radius"))
         {
-            HudDataStorage.getInstance().setSpawnChunkRadius(JsonUtils.getIntegerOrDefault(obj, "spawn_chunk_radius", 2), false);
+            HudDataManager.getInstance().setSpawnChunkRadius(JsonUtils.getIntegerOrDefault(obj, "spawn_chunk_radius", 2), false);
         }
     }
 }

@@ -41,9 +41,9 @@ import fi.dy.masa.minihud.network.ServuxStructuresPacket;
 import fi.dy.masa.minihud.renderer.OverlayRendererSpawnChunks;
 import fi.dy.masa.minihud.util.DataStorage;
 
-public class HudDataStorage
+public class HudDataManager
 {
-    private static final HudDataStorage INSTANCE = new HudDataStorage();
+    private static final HudDataManager INSTANCE = new HudDataManager();
 
     private final static ServuxHudHandler<ServuxHudPacket.Payload> HANDLER = ServuxHudHandler.getInstance();
     private final MinecraftClient mc = MinecraftClient.getInstance();
@@ -67,7 +67,7 @@ public class HudDataStorage
     private PreparedRecipes preparedRecipes;
     private int recipeCount;
 
-    public HudDataStorage()
+    public HudDataManager()
     {
         this.servuxServer = false;
         this.hasInValidServux = false;
@@ -85,7 +85,7 @@ public class HudDataStorage
         this.recipeCount = 0;
     }
 
-    public static HudDataStorage getInstance() { return INSTANCE; }
+    public static HudDataManager getInstance() { return INSTANCE; }
 
     public void onGameInit()
     {
@@ -107,6 +107,7 @@ public class HudDataStorage
 
             this.servuxServer = false;
             this.hasInValidServux = false;
+            this.servuxVersion = "";
             this.spawnChunkRadius = -1;
             this.worldSpawn = BlockPos.ORIGIN;
             this.worldSpawnValid = false;
@@ -420,7 +421,7 @@ public class HudDataStorage
 
     public void onClientTickPost(MinecraftClient mc)
     {
-        if (!DataStorage.getInstance().hasIntegratedServer() && this.weatherTimer > 1)
+        if (!DataStorage.getInstance().hasIntegratedServer() && this.weatherTimer > 0)
         {
             this.weatherTimer--;
         }
@@ -443,15 +444,17 @@ public class HudDataStorage
 
             this.weatherTimer = rainTime;
         }
-        else if (clearTime > 1 && (this.isRaining || this.isThundering))
+        else if (clearTime > 1)
         {
             this.isThundering = false;
             this.isRaining = false;
-        }
-
-        if (clearTime > 1)
-        {
             this.weatherTimer = clearTime;
+        }
+        else
+        {
+            this.isThundering = false;
+            this.isRaining = false;
+            this.weatherTimer = -1;
         }
     }
 
@@ -520,7 +523,7 @@ public class HudDataStorage
     {
         if (!DataStorage.getInstance().hasIntegratedServer())
         {
-            MiniHUD.printDebug("HudDataStorage#receiveWeatherData(): from Servux");
+            //MiniHUD.printDebug("HudDataStorage#receiveWeatherData(): from Servux");
 
             if (data.contains("SetRaining", Constants.NBT.TAG_INT))
             {

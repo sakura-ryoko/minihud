@@ -31,7 +31,7 @@ import net.minecraft.world.World;
 import fi.dy.masa.malilib.util.BlockUtils;
 import fi.dy.masa.malilib.util.Constants;
 import fi.dy.masa.malilib.util.IntBoundingBox;
-import fi.dy.masa.minihud.data.HudDataStorage;
+import fi.dy.masa.minihud.data.HudDataManager;
 import fi.dy.masa.minihud.mixin.IMixinAbstractFurnaceBlockEntity;
 
 public class MiscUtils
@@ -283,14 +283,14 @@ public class MiscUtils
         Reference2IntOpenHashMap<RegistryKey<Recipe<?>>> recipes = ((IMixinAbstractFurnaceBlockEntity) be).minihud_getUsedRecipes();
         double xp = 0.0;
 
-        if (recipes == null || recipes.isEmpty() || HudDataStorage.getInstance().getPreparedRecipes() == null)
+        if (recipes == null || recipes.isEmpty() || HudDataManager.getInstance().getPreparedRecipes() == null)
         {
             return -1;
         }
 
         for (Reference2IntMap.Entry<RegistryKey<Recipe<?>>> entry : recipes.reference2IntEntrySet())
         {
-            RecipeEntry<?> recipeEntry = HudDataStorage.getInstance().getPreparedRecipes().get(entry.getKey());
+            RecipeEntry<?> recipeEntry = HudDataManager.getInstance().getPreparedRecipes().get(entry.getKey());
 
             if (recipeEntry != null)
             {
@@ -306,14 +306,14 @@ public class MiscUtils
         Reference2IntOpenHashMap<RegistryKey<Recipe<?>>> recipes = BlockUtils.getRecipesUsedFromNbt(nbt);
         double xp = 0.0;
 
-        if (recipes.isEmpty() || HudDataStorage.getInstance().getPreparedRecipes() == null)
+        if (recipes.isEmpty() || HudDataManager.getInstance().getPreparedRecipes() == null)
         {
             return -1;
         }
 
         for (Reference2IntMap.Entry<RegistryKey<Recipe<?>>> entry : recipes.reference2IntEntrySet())
         {
-            RecipeEntry<?> recipeEntry = HudDataStorage.getInstance().getPreparedRecipes().get(entry.getKey());
+            RecipeEntry<?> recipeEntry = HudDataManager.getInstance().getPreparedRecipes().get(entry.getKey());
 
             if (recipeEntry != null)
             {

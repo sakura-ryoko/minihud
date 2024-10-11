@@ -16,7 +16,7 @@ import fi.dy.masa.malilib.util.PositionUtils;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.RendererToggle;
-import fi.dy.masa.minihud.data.HudDataStorage;
+import fi.dy.masa.minihud.data.HudDataManager;
 import fi.dy.masa.minihud.util.DataStorage;
 import fi.dy.masa.minihud.util.MiscUtils;
 
@@ -50,7 +50,7 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
         return this.toggle.getBooleanValue() &&
                 (this.isPlayerFollowing ||
                  (mc.world != null && MiscUtils.isOverworld(mc.world) &&
-                 HudDataStorage.getInstance().isWorldSpawnKnown()));
+                 HudDataManager.getInstance().isWorldSpawnKnown()));
     }
 
     @Override
@@ -85,7 +85,7 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
         // Use the client player, to allow looking from the camera perspective
         entity = this.isPlayerFollowing ? mc.player : entity;
 
-        HudDataStorage data = HudDataStorage.getInstance();
+        HudDataManager data = HudDataManager.getInstance();
         BlockPos spawn;
         int spawnChunkRadius;
         int red;
@@ -236,9 +236,9 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
         {
             return server.getOverworld().getGameRules().getInt(GameRules.SPAWN_CHUNK_RADIUS);
         }
-        else if (HudDataStorage.getInstance().isSpawnChunkRadiusKnown())
+        else if (HudDataManager.getInstance().isSpawnChunkRadiusKnown())
         {
-            return HudDataStorage.getInstance().getSpawnChunkRadius();
+            return HudDataManager.getInstance().getSpawnChunkRadius();
         }
 
         return 2;

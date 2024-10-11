@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import fi.dy.masa.minihud.data.HudDataStorage;
+import fi.dy.masa.minihud.data.HudDataManager;
 import fi.dy.masa.minihud.util.DebugInfoUtils;
 
 @Mixin(MinecraftServer.class)
@@ -29,7 +29,7 @@ public abstract class MixinMinecraftServer
     private void onPrepareStartRegion(WorldGenerationProgressListener worldGenerationProgressListener, CallbackInfo ci,
                                       @Local BlockPos blockPos, @Local int i)
     {
-        HudDataStorage.getInstance().setWorldSpawn(blockPos);
-        HudDataStorage.getInstance().setSpawnChunkRadius(i, true);
+        HudDataManager.getInstance().setWorldSpawn(blockPos);
+        HudDataManager.getInstance().setSpawnChunkRadius(i, true);
     }
 }
