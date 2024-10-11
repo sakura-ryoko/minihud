@@ -187,7 +187,7 @@ public class DebugDataManager
         {
             MiniHUD.printDebug("DebugDataManager#receiveMetadata(): received METADATA from Servux");
 
-            if (data.getInt("version") != ServuxStructuresPacket.PROTOCOL_VERSION)
+            if (data.getInt("version") != ServuxDebugPacket.PROTOCOL_VERSION)
             {
                 MiniHUD.logger.warn("debugDataChannel: Mis-matched protocol version!");
             }
