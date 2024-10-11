@@ -46,6 +46,16 @@ public class ServuxDebugPacket implements IClientPayloadData
         return packet;
     }
 
+    public static ServuxDebugPacket MetadataConfirm(@Nullable NbtCompound nbt)
+    {
+        var packet = new ServuxDebugPacket(Type.PACKET_C2S_METADATA_CONFIRM);
+        if (nbt != null)
+        {
+            packet.nbt.copyFrom(nbt);
+        }
+        return packet;
+    }
+
     public static ServuxDebugPacket DebugServiceRegister(@Nullable NbtCompound nbt)
     {
         var packet = new ServuxDebugPacket(Type.PACKET_C2S_DEBUG_SERVICE_REGISTER);
@@ -164,7 +174,7 @@ public class ServuxDebugPacket implements IClientPayloadData
                     MiniHUD.logger.error("ServuxDebugPacket#toPacket: error writing buffer data to packet: [{}]", e.getLocalizedMessage());
                 }
             }
-            case PACKET_C2S_METADATA_REQUEST, PACKET_S2C_METADATA, PACKET_C2S_DEBUG_SERVICE_REGISTER, PACKET_C2S_DEBUG_SERVICE_UNREGISTER ->
+            case PACKET_C2S_METADATA_REQUEST, PACKET_S2C_METADATA, PACKET_C2S_METADATA_CONFIRM, PACKET_C2S_DEBUG_SERVICE_REGISTER, PACKET_C2S_DEBUG_SERVICE_UNREGISTER ->
             {
                 // Write NBT
                 try
@@ -230,6 +240,18 @@ public class ServuxDebugPacket implements IClientPayloadData
                     MiniHUD.logger.error("ServuxDebugPacket#fromPacket: error reading Metadata Response from packet: [{}]", e.getLocalizedMessage());
                 }
             }
+            case PACKET_C2S_METADATA_CONFIRM ->
+            {
+                // Read Nbt
+                try
+                {
+                    return ServuxDebugPacket.MetadataConfirm(input.readNbt());
+                }
+                catch (Exception e)
+                {
+                    MiniHUD.logger.error("ServuxDebugPacket#fromPacket: error reading Metadata Confirm from packet: [{}]", e.getLocalizedMessage());
+                }
+            }
             case PACKET_C2S_DEBUG_SERVICE_REGISTER ->
             {
                 // Read Nbt
@@ -289,8 +311,9 @@ public class ServuxDebugPacket implements IClientPayloadData
     {
         PACKET_S2C_METADATA(1),
         PACKET_C2S_METADATA_REQUEST(2),
-        PACKET_C2S_DEBUG_SERVICE_REGISTER(3),
-        PACKET_C2S_DEBUG_SERVICE_UNREGISTER(4),
+        PACKET_C2S_METADATA_CONFIRM(3),
+        PACKET_C2S_DEBUG_SERVICE_REGISTER(4),
+        PACKET_C2S_DEBUG_SERVICE_UNREGISTER(5),
         // For Packet Splitter (Oversize Packets, S2C)
         PACKET_S2C_NBT_RESPONSE_START(10),
         PACKET_S2C_NBT_RESPONSE_DATA(11);

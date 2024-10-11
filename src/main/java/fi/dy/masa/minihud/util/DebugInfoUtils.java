@@ -79,7 +79,8 @@ public class DebugInfoUtils
     {
         // This will only work in single player...
         // We are catching updates from the server world, and adding them to the debug renderer directly
-        if (neighborUpdateEnabled && world.isClient == false)
+        //if (neighborUpdateEnabled && world.isClient == false)
+        if (world.isClient == false)
         {
             MinecraftClient mc = MinecraftClient.getInstance();
             mc.execute(() -> ((NeighborUpdateDebugRenderer) mc.debugRenderer.neighborUpdateDebugRenderer).addNeighborUpdate(world.getTime(), pos.toImmutable()));
@@ -232,88 +233,88 @@ public class DebugInfoUtils
         if (RendererToggle.DEBUG_COLLISION_BOXES.getBooleanValue())
         {
             renderer.collisionDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
-            vtx.draw();
+            //vtx.draw();
         }
         if (RendererToggle.DEBUG_NEIGHBOR_UPDATES.getBooleanValue())
         {
             renderer.neighborUpdateDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
-            vtx.draw();
+            //vtx.draw();
         }
         if (RendererToggle.DEBUG_SOLID_FACES.getBooleanValue())
         {
             RenderSystem.enableDepthTest();
             renderer.blockOutlineDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
-            vtx.draw();
+            //vtx.draw();
         }
         if (RendererToggle.DEBUG_WATER.getBooleanValue())
         {
             renderer.waterDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
-            vtx.draw();
+            //vtx.draw();
         }
         if (RendererToggle.DEBUG_CHUNK_LOADING.getBooleanValue())
         {
             renderer.chunkLoadingDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
-            vtx.draw();
+            //vtx.draw();
         }
         if (RendererToggle.DEBUG_CHUNK_DEBUG.getBooleanValue())
         {
             renderer.chunkDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
-            vtx.draw();
+            //vtx.draw();
         }
         if (RendererToggle.DEBUG_SUPPORTING_BLOCK.getBooleanValue())
         {
             renderer.supportingBlockDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
-            vtx.draw();
+            //vtx.draw();
         }
         if (RendererToggle.DEBUG_HEIGHTMAP.getBooleanValue())
         {
             renderer.heightmapDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
-            vtx.draw();
+            //vtx.draw();
         }
         if (RendererToggle.DEBUG_WORLDGEN.getBooleanValue())
         {
             renderer.worldGenAttemptDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
-            vtx.draw();
+            //vtx.draw();
         }
         if (RendererToggle.DEBUG_STRUCTURES.getBooleanValue())
         {
             renderer.structureDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
-            vtx.draw();
+            //vtx.draw();
         }
         if (RendererToggle.DEBUG_VILLAGE_SECTIONS.getBooleanValue())
         {
             renderer.villageSectionsDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
-            vtx.draw();
+            //vtx.draw();
         }
         if (RendererToggle.DEBUG_BREEZE_JUMP.getBooleanValue())
         {
             renderer.breezeDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
-            vtx.draw();
+            //vtx.draw();
         }
         if (RendererToggle.DEBUG_RAID_CENTER.getBooleanValue())
         {
             renderer.raidCenterDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
-            vtx.draw();
+            //vtx.draw();
         }
         if (RendererToggle.DEBUG_GOAL_SELECTOR.getBooleanValue())
         {
             renderer.goalSelectorDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
-            vtx.draw();
+            //vtx.draw();
         }
         if (RendererToggle.DEBUG_SKYLIGHT.getBooleanValue())
         {
             renderer.skyLightDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
-            vtx.draw();
+            //vtx.draw();
         }
         if (RendererToggle.DEBUG_GAME_EVENT.getBooleanValue())
         {
             renderer.gameEventDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
-            vtx.draw();
+            //vtx.draw();
         }
         if (RendererToggle.DEBUG_LIGHT.getBooleanValue())
         {
             renderer.lightDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
-            vtx.draw();
+            //vtx.draw();
         }
 
         // FIXME These cause a custom_payload crash when used

@@ -1,24 +1,17 @@
 package fi.dy.masa.minihud.data;
 
 import java.util.*;
-import java.util.stream.Collectors;
 import com.google.common.collect.Lists;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.brain.*;
-import net.minecraft.entity.ai.brain.task.Task;
 import net.minecraft.entity.ai.goal.GoalSelector;
-import net.minecraft.entity.ai.pathing.Path;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.BreezeEntity;
 import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.mob.WardenEntity;
-import net.minecraft.entity.passive.BeeEntity;
-import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.network.packet.Packet;
@@ -36,7 +29,6 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.NameGenerator;
 import net.minecraft.util.Nameable;
 import net.minecraft.util.math.*;
-import net.minecraft.village.VillageGossipType;
 import net.minecraft.village.raid.Raid;
 import net.minecraft.world.StructureWorldAccess;
 import net.minecraft.world.event.GameEvent;
@@ -52,7 +44,6 @@ import fi.dy.masa.minihud.mixin.debug.IMixinMobEntity;
 import fi.dy.masa.minihud.network.ServuxDebugHandler;
 import fi.dy.masa.minihud.network.ServuxDebugPacket;
 import fi.dy.masa.minihud.network.ServuxHudHandler;
-import fi.dy.masa.minihud.network.ServuxStructuresPacket;
 import fi.dy.masa.minihud.util.DataStorage;
 
 public class DebugDataManager
@@ -197,7 +188,12 @@ public class DebugDataManager
 
             if (RendererToggle.DEBUG_DATA_MAIN_TOGGLE.getBooleanValue())
             {
-                this.registerDebugService();
+                this.shouldRegisterDebugService = true;
+
+                NbtCompound nbt = new NbtCompound();
+                nbt.putString("version", Reference.MOD_STRING);
+
+                HANDLER.encodeClientData(ServuxDebugPacket.MetadataConfirm(nbt));
                 return true;
             }
             else
