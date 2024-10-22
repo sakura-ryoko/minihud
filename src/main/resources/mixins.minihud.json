@@ -46,5 +46,8 @@
   ],
   "injectors": {
     "defaultRequire": 1
-  }
+  },
+  "mixins": [
+    "debug.MixinPath"
+  ]
 }

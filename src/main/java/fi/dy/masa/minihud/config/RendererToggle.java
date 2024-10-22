@@ -38,7 +38,8 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
     SHAPE_RENDERER                      ("shapeRenderer",               ""),
 
     DEBUG_DATA_MAIN_TOGGLE              ("debugDataMainToggle",         ""),
-    //DEBUG_BEEDATA                       ("debugBeeDataEnabled",         ""),
+    DEBUG_BEEDATA                       ("debugBeeDataEnabled",         ""),
+    DEBUG_BRAIN                         ("debugBrainEnabled",           ""),
     DEBUG_BREEZE_JUMP                   ("debugBreezeJumpEnabled",      ""),
     DEBUG_CHUNK_BORDER                  ("debugChunkBorder",            ""),
     DEBUG_CHUNK_DEBUG                   ("debugChunkDebug",             ""),
@@ -49,19 +50,21 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
     DEBUG_HEIGHTMAP                     ("debugHeightmapEnabled",       ""),
     DEBUG_LIGHT                         ("debugLightEnabled",           ""),
     DEBUG_NEIGHBOR_UPDATES              ("debugNeighborsUpdateEnabled", ""),
+    // todo
     //DEBUG_GAME_TEST                     ("debugGameTestEnabled",        ""),
     DEBUG_GAME_EVENT                    ("debugGameEventsEnabled",      ""),
     DEBUG_GOAL_SELECTOR                 ("debugGoalSelectorEnabled",    ""),
     DEBUG_OCTREEE                       ("debugOctreeEnabled",          ""),
-    //DEBUG_PATH_FINDING                  ("debugPathfindingEnabled",     ""),
+    DEBUG_PATH_FINDING                  ("debugPathfindingEnabled",     ""),
     DEBUG_RAID_CENTER                   ("debugRaidCenterEnabled",      ""),
+    // todo
     //DEBUG_REDSTONE_UPDATE_ORDER         ("debugRedstoneUpdateOrder",    ""),
     DEBUG_SKYLIGHT                      ("debugSkylightEnabled",        ""),
     DEBUG_SOLID_FACES                   ("debugSolidFaceEnabled",       ""),
     DEBUG_STRUCTURES                    ("debugStructuresEnabled",      ""),
     DEBUG_SUPPORTING_BLOCK              ("debugSupportingBlock",        ""),
     DEBUG_WATER                         ("debugWaterEnabled",           ""),
-    //DEBUG_VILLAGE                       ("debugVillageEnabled",         ""),
+    DEBUG_VILLAGE                       ("debugVillageEnabled",         ""),
     DEBUG_VILLAGE_SECTIONS              ("debugVillageSectionsEnabled", ""),
     DEBUG_WORLDGEN                      ("debugWorldGenEnabled",        "");
 

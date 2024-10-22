@@ -54,6 +54,7 @@ import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+@SuppressWarnings("deprecation")
 public class EntitiesDataManager implements IClientTickHandler
 {
     private static final EntitiesDataManager INSTANCE = new EntitiesDataManager();

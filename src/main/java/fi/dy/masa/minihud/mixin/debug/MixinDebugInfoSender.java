@@ -2,13 +2,18 @@ package fi.dy.masa.minihud.mixin.debug;
 
 import java.util.Collection;
 
+import javax.annotation.Nullable;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.GoalSelector;
+import net.minecraft.entity.ai.pathing.Path;
 import net.minecraft.entity.mob.BreezeEntity;
 import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.entity.passive.BeeEntity;
 import net.minecraft.network.packet.s2c.custom.DebugRedstoneUpdateOrderCustomPayload;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.network.DebugInfoSender;
@@ -60,7 +65,6 @@ public abstract class MixinDebugInfoSender
     }
 
     //FIXME (CustomPayload Error)
-    /*
     @Inject(method = "sendPathfindingData", at = @At("HEAD"))
     private static void servux_onSendPathfindingData(World world, MobEntity mob, @Nullable Path path, float nodeReachProximity, CallbackInfo ci)
     {
@@ -69,7 +73,6 @@ public abstract class MixinDebugInfoSender
             DebugDataManager.getInstance().sendPathfindingData(serverWorld, mob, path, nodeReachProximity);
         }
     }
-     */
 
     @Inject(method = "sendRedstoneUpdateOrder", at = @At("HEAD"))
     private static void servux_onSendRedstoneUpdateOrder(World world, DebugRedstoneUpdateOrderCustomPayload payload, CallbackInfo ci)
@@ -105,19 +108,16 @@ public abstract class MixinDebugInfoSender
     }
 
     //FIXME (CustomPayload Error)
-    /*
     @Inject(method = "sendBrainDebugData", at = @At("HEAD"))
     private static void servux_onSendBrainDebugData(LivingEntity living, CallbackInfo ci)
     {
         if (living.getWorld() instanceof ServerWorld world)
         {
-            DebugDataManager.getInstance().sendBrainDebugData(world, living, listMemories(living, world.getTime()));
+            DebugDataManager.getInstance().sendBrainDebugData(world, living);
         }
     }
-     */
 
     //FIXME (CustomPayload Error)
-    /*
     @Inject(method = "sendBeeDebugData", at = @At("HEAD"))
     private static void servux_onSendBeeDebugData(BeeEntity bee, CallbackInfo ci)
     {
@@ -126,7 +126,6 @@ public abstract class MixinDebugInfoSender
             DebugDataManager.getInstance().sendBeeDebugData(world, bee);
         }
     }
-     */
 
     @Inject(method = "sendBreezeDebugData", at = @At("HEAD"))
     private static void servux_onSendBreezeDebugData(BreezeEntity breeze, CallbackInfo ci)

@@ -43,7 +43,7 @@ public abstract class ServuxDebugHandler<T extends CustomPayload> implements IPl
     {
         if (channel.equals(CHANNEL_ID))
         {
-            return payloadRegistered;
+            return this.payloadRegistered;
         }
 
         return false;
@@ -73,31 +73,6 @@ public abstract class ServuxDebugHandler<T extends CustomPayload> implements IPl
             {
                 this.servuxRegistered = true;
             }
-            /*
-            case PACKET_S2C_NBT_RESPONSE_DATA ->
-            {
-                if (this.readingSessionKey == -1)
-                {
-                    this.readingSessionKey = Random.create(Util.getMeasuringTimeMs()).nextLong();
-                }
-
-                MiniHUD.printDebug("ServuxDebugHandler#decodeClientData(): received Entity Data Packet Slice of size {} (in bytes) // reading session key [{}]", packet.getTotalSize(), this.readingSessionKey);
-                PacketByteBuf fullPacket = PacketSplitter.receive(this, this.readingSessionKey, packet.getBuffer());
-
-                if (fullPacket != null)
-                {
-                    try
-                    {
-                        this.readingSessionKey = -1;
-                        HudDataStorage.getInstance().receiveRecipeManager((NbtCompound) fullPacket.readNbt(NbtSizeTracker.ofUnlimitedBytes()));
-                    }
-                    catch (Exception e)
-                    {
-                        MiniHUD.logger.error("ServuxDebugHandler#decodeClientData(): Entity Data: error reading fullBuffer [{}]", e.getLocalizedMessage());
-                    }
-                }
-            }
-             */
         }
         else
         {

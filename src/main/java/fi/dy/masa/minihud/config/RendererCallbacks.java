@@ -202,18 +202,13 @@ public class RendererCallbacks
                 if (config.getBooleanValue())
                 {
                     DebugDataManager.getInstance().registerDebugService();
+                    DebugDataManager.getInstance().requestMetadata();
                 }
                 else
                 {
                     DebugDataManager.getInstance().unregisterDebugService();
                 }
             }
-            /*
-            else
-            {
-                DebugDataManager.getInstance().setStructuresNeedUpdating();
-            }
-             */
         }
     }
 }

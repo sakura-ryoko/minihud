@@ -1,17 +1,23 @@
 package fi.dy.masa.minihud.data;
 
 import java.util.*;
+import java.util.stream.Collectors;
 import com.google.common.collect.Lists;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.brain.*;
+import net.minecraft.entity.ai.brain.task.Task;
 import net.minecraft.entity.ai.goal.GoalSelector;
+import net.minecraft.entity.ai.pathing.Path;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.BreezeEntity;
 import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.entity.mob.WardenEntity;
+import net.minecraft.entity.passive.BeeEntity;
+import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.network.packet.Packet;
@@ -29,6 +35,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.NameGenerator;
 import net.minecraft.util.Nameable;
 import net.minecraft.util.math.*;
+import net.minecraft.village.VillageGossipType;
 import net.minecraft.village.raid.Raid;
 import net.minecraft.world.StructureWorldAccess;
 import net.minecraft.world.event.GameEvent;
@@ -43,15 +50,14 @@ import fi.dy.masa.minihud.config.RendererToggle;
 import fi.dy.masa.minihud.mixin.debug.IMixinMobEntity;
 import fi.dy.masa.minihud.network.ServuxDebugHandler;
 import fi.dy.masa.minihud.network.ServuxDebugPacket;
-import fi.dy.masa.minihud.network.ServuxHudHandler;
 import fi.dy.masa.minihud.util.DataStorage;
 
+@SuppressWarnings({"unchecked", "deprecation"})
 public class DebugDataManager
 {
     private static final DebugDataManager INSTANCE = new DebugDataManager();
 
     private final static ServuxDebugHandler<ServuxDebugPacket.Payload> HANDLER = ServuxDebugHandler.getInstance();
-    private final MinecraftClient mc = MinecraftClient.getInstance();
 
     private boolean servuxServer;
     private boolean hasInValidServux;
@@ -73,7 +79,7 @@ public class DebugDataManager
         HANDLER.registerPlayPayload(ServuxDebugPacket.Payload.ID, ServuxDebugPacket.Payload.CODEC, IPluginClientPlayHandler.BOTH_CLIENT);
     }
 
-    public Identifier getNetworkChannel() {return ServuxHudHandler.CHANNEL_ID;}
+    public Identifier getNetworkChannel() {return ServuxDebugHandler.CHANNEL_ID;}
 
     public IPluginClientPlayHandler<ServuxDebugPacket.Payload> getNetworkHandler() {return HANDLER;}
 
@@ -168,6 +174,25 @@ public class DebugDataManager
         else
         {
             this.shouldRegisterDebugService = false;
+        }
+    }
+
+    public void requestMetadata()
+    {
+        if (this.shouldRegisterDebugService)
+        {
+            if (!this.hasServuxServer() && !DataStorage.getInstance().hasIntegratedServer() && !this.hasInValidServux)
+            {
+                if (HANDLER.isPlayRegistered(this.getNetworkChannel()))
+                {
+                    MiniHUD.printDebug("DebugDataManager#requestMetadata(): sending REQUEST_METADATA to Servux");
+
+                    NbtCompound nbt = new NbtCompound();
+                    nbt.putString("version", Reference.MOD_STRING);
+
+                    HANDLER.encodeClientData(ServuxDebugPacket.MetadataRequest(nbt));
+                }
+            }
         }
     }
 
@@ -338,7 +363,6 @@ public class DebugDataManager
     }
 
     // FIXME -- WARNING!  Causes CustomPayload Crash
-    /*
     public void sendPathfindingData(ServerWorld world, MobEntity mob, @Nullable Path path, float nodeReachProximity)
     {
         if (this.isEnabled() == false)
@@ -353,8 +377,9 @@ public class DebugDataManager
             }
         }
     }
-     */
 
+    // Masa already wrote something for this; just have it here in case I want to swap it out
+    /*
     public void sendNeighborUpdate(ServerWorld world, BlockPos pos)
     {
         if (this.isEnabled() == false)
@@ -366,6 +391,7 @@ public class DebugDataManager
             this.sendDebugData(world, new DebugNeighborsUpdateCustomPayload(world.getTime(), pos));
         }
     }
+     */
 
     public void sendStructureStart(StructureWorldAccess world, StructureStart structureStart)
     {
@@ -415,8 +441,7 @@ public class DebugDataManager
     }
 
     // FIXME -- WARNING!  Causes CustomPayload Crash
-    /*
-    public void sendBrainDebugData(ServerWorld serverWorld, LivingEntity livingEntity, List<String> memories)
+    public void sendBrainDebugData(ServerWorld serverWorld, LivingEntity livingEntity)
     {
         if (this.isEnabled() == false)
         {
@@ -488,15 +513,12 @@ public class DebugDataManager
                     wantsGolem, angerLevel,
                     entity.getBrain().getPossibleActivities().stream().map(Activity::toString).toList(),
                     entity.getBrain().getRunningTasks().stream().map(Task::getName).toList(),
-                    //this.listMemories(entity, serverWorld.getTime()),
-                    memories,
+                    this.listMemories(entity, serverWorld.getTime()),
                     gossips, pois, potentialPois)));
         }
     }
-     */
 
     // FIXME -- WARNING!  Causes CustomPayload Crash
-    /*
     public void sendBeeDebugData(ServerWorld world, BeeEntity bee)
     {
         if (this.isEnabled() == false)
@@ -507,13 +529,12 @@ public class DebugDataManager
         {
             this.sendDebugData(world, new DebugBeeCustomPayload(
                     new DebugBeeCustomPayload.Bee(bee.getUuid(), bee.getId(), bee.getPos(),
-                                                  bee.getNavigation().getCurrentPath(), bee.getHivePos(), bee.getFlowerPos(), bee.getMoveGoalTicks(),
-                                                  bee.getGoalSelector().getGoals().stream().map((prioritizedGoal) ->
-                                                                                                        prioritizedGoal.getGoal().toString()).collect(Collectors.toSet()), bee.getPossibleHives())));
+                          bee.getNavigation().getCurrentPath(), bee.getHivePos(), bee.getFlowerPos(), bee.getMoveGoalTicks(),
+                          bee.getGoalSelector().getGoals().stream().map((prioritizedGoal) ->
+                              prioritizedGoal.getGoal().toString()).collect(Collectors.toSet()), bee.getPossibleHives())));
 
         }
     }
-     */
 
     public void sendBreezeDebugData(ServerWorld world, BreezeEntity breeze)
     {
@@ -562,7 +583,7 @@ public class DebugDataManager
         opt.ifPresent(set::add);
     }
 
-    private List<String> listMemories(LivingEntity entity, long currentTime)
+    public List<String> listMemories(LivingEntity entity, long currentTime)
     {
         Map<MemoryModuleType<?>, Optional<? extends Memory<?>>> map = entity.getBrain().getMemories();
         List<String> list = Lists.newArrayList();
