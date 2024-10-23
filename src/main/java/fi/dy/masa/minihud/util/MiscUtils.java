@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.Random;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Reference2IntMap;
+import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.block.entity.BeehiveBlockEntity;
@@ -16,13 +16,14 @@ import net.minecraft.entity.passive.AxolotlEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.recipe.AbstractCookingRecipe;
+import net.minecraft.recipe.Recipe;
 import net.minecraft.recipe.RecipeEntry;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.property.Properties;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockBox;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -30,6 +31,7 @@ import net.minecraft.world.World;
 import fi.dy.masa.malilib.util.BlockUtils;
 import fi.dy.masa.malilib.util.Constants;
 import fi.dy.masa.malilib.util.IntBoundingBox;
+import fi.dy.masa.minihud.data.HudDataManager;
 import fi.dy.masa.minihud.mixin.IMixinAbstractFurnaceBlockEntity;
 
 public class MiscUtils
@@ -229,36 +231,93 @@ public class MiscUtils
         }
     }
 
-    public static int getFurnaceXpAmount(World world, AbstractFurnaceBlockEntity be)
+    public static int getFurnaceXpAmount(ServerWorld world, AbstractFurnaceBlockEntity be)
     {
-        Object2IntOpenHashMap<Identifier> recipes = ((IMixinAbstractFurnaceBlockEntity) be).minihud_getUsedRecipes();
+        Reference2IntOpenHashMap<RegistryKey<Recipe<?>>> recipes = ((IMixinAbstractFurnaceBlockEntity) be).minihud_getUsedRecipes();
         double xp = 0.0;
 
-        for (Object2IntMap.Entry<Identifier> entry : recipes.object2IntEntrySet())
+        if (recipes == null || recipes.isEmpty())
+        {
+            return -1;
+        }
+
+        for (Reference2IntMap.Entry<RegistryKey<Recipe<?>>> entry : recipes.reference2IntEntrySet())
         {
             RecipeEntry<?> recipeEntry = world.getRecipeManager().get(entry.getKey()).orElse(null);
 
-            if (recipeEntry != null && recipeEntry.value() instanceof AbstractCookingRecipe recipe)
+            if (recipeEntry != null)
             {
-                xp += entry.getIntValue() * recipe.getExperience();
+                xp += entry.getIntValue() * ((AbstractCookingRecipe) recipeEntry.value()).getExperience();
             }
         }
 
         return (int) xp;
     }
 
-    public static int getFurnaceXpAmount(World world, @Nonnull NbtCompound nbt)
+    public static int getFurnaceXpAmount(ServerWorld world, @Nonnull NbtCompound nbt)
     {
-        Object2IntOpenHashMap<Identifier> recipes = BlockUtils.getRecipesUsedFromNbt(nbt);
+        Reference2IntOpenHashMap<RegistryKey<Recipe<?>>> recipes = BlockUtils.getRecipesUsedFromNbt(nbt);
         double xp = 0.0;
 
-        for (Object2IntMap.Entry<Identifier> entry : recipes.object2IntEntrySet())
+        if (recipes.isEmpty())
+        {
+            return -1;
+        }
+
+        for (Reference2IntMap.Entry<RegistryKey<Recipe<?>>> entry : recipes.reference2IntEntrySet())
         {
             RecipeEntry<?> recipeEntry = world.getRecipeManager().get(entry.getKey()).orElse(null);
 
-            if (recipeEntry != null && recipeEntry.value() instanceof AbstractCookingRecipe recipe)
+            if (recipeEntry != null)
             {
-                xp += entry.getIntValue() * recipe.getExperience();
+                xp += entry.getIntValue() * ((AbstractCookingRecipe) recipeEntry.value()).getExperience();
+            }
+        }
+
+        return (int) xp;
+    }
+
+    // Servux Synced Recipe Manager required
+    public static int getFurnaceXpAmount(AbstractFurnaceBlockEntity be)
+    {
+        Reference2IntOpenHashMap<RegistryKey<Recipe<?>>> recipes = ((IMixinAbstractFurnaceBlockEntity) be).minihud_getUsedRecipes();
+        double xp = 0.0;
+
+        if (recipes == null || recipes.isEmpty() || HudDataManager.getInstance().getPreparedRecipes() == null)
+        {
+            return -1;
+        }
+
+        for (Reference2IntMap.Entry<RegistryKey<Recipe<?>>> entry : recipes.reference2IntEntrySet())
+        {
+            RecipeEntry<?> recipeEntry = HudDataManager.getInstance().getPreparedRecipes().get(entry.getKey());
+
+            if (recipeEntry != null)
+            {
+                xp += entry.getIntValue() * ((AbstractCookingRecipe) recipeEntry.value()).getExperience();
+            }
+        }
+
+        return (int) xp;
+    }
+
+    public static int getFurnaceXpAmount(@Nonnull NbtCompound nbt)
+    {
+        Reference2IntOpenHashMap<RegistryKey<Recipe<?>>> recipes = BlockUtils.getRecipesUsedFromNbt(nbt);
+        double xp = 0.0;
+
+        if (recipes.isEmpty() || HudDataManager.getInstance().getPreparedRecipes() == null)
+        {
+            return -1;
+        }
+
+        for (Reference2IntMap.Entry<RegistryKey<Recipe<?>>> entry : recipes.reference2IntEntrySet())
+        {
+            RecipeEntry<?> recipeEntry = HudDataManager.getInstance().getPreparedRecipes().get(entry.getKey());
+
+            if (recipeEntry != null)
+            {
+                xp += entry.getIntValue() * ((AbstractCookingRecipe) recipeEntry.value()).getExperience();
             }
         }
 

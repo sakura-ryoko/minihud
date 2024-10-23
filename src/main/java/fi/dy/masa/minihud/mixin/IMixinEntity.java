@@ -9,5 +9,5 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 public interface IMixinEntity
 {
     @Invoker("readCustomDataFromNbt")
-    void readCustomDataFromNbt(NbtCompound nbt);
+    void minihud_readCustomDataFromNbt(NbtCompound nbt);
 }

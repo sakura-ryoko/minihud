@@ -34,11 +34,11 @@ import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
 
 import fi.dy.masa.malilib.render.InventoryOverlay;
+import fi.dy.masa.malilib.util.*;
 import fi.dy.masa.malilib.util.EntityUtils;
 import fi.dy.masa.malilib.util.InventoryUtils;
-import fi.dy.masa.malilib.util.*;
 import fi.dy.masa.minihud.config.Configs;
-import fi.dy.masa.minihud.data.EntitiesDataStorage;
+import fi.dy.masa.minihud.data.EntitiesDataManager;
 import fi.dy.masa.minihud.event.RenderHandler;
 import fi.dy.masa.minihud.mixin.IMixinAbstractHorseEntity;
 import fi.dy.masa.minihud.mixin.IMixinPiglinEntity;
@@ -187,7 +187,7 @@ public class RayTraceUtils
             }
             else
             {
-                Pair<Entity, NbtCompound> pair = EntitiesDataStorage.getInstance().requestEntity(entity.getId());
+                Pair<Entity, NbtCompound> pair = EntitiesDataManager.getInstance().requestEntity(entity.getId());
 
                 if (pair != null)
                 {
@@ -235,7 +235,7 @@ public class RayTraceUtils
                 }
             }
 
-            inv = EntitiesDataStorage.getInstance().getBlockInventory(world, pos, false);
+            inv = EntitiesDataManager.getInstance().getBlockInventory(world, pos, false);
         }
 
         if (nbt != null && !nbt.isEmpty())
@@ -298,13 +298,13 @@ public class RayTraceUtils
 
             // Fix for empty horse inv
             if (inv != null && inv.size() == 1 &&
-                nbt.contains(NbtKeys.ITEMS) &&
-                nbt.getList(NbtKeys.ITEMS, Constants.NBT.TAG_COMPOUND).size() > 1 &&
-                !DataStorage.getInstance().hasIntegratedServer())
+                    nbt.contains(NbtKeys.ITEMS) &&
+                    nbt.getList(NbtKeys.ITEMS, Constants.NBT.TAG_COMPOUND).size() > 1 &&
+                    !DataStorage.getInstance().hasIntegratedServer())
             {
                 if (entity instanceof AbstractHorseEntity)
                 {
-                    inv2 = fi.dy.masa.minihud.util.InventoryUtils.getNbtInventoryHorseFix(nbt, -1, entity.getRegistryManager());
+                    inv2 = InventoryUtils.getNbtInventoryHorseFix(nbt, -1, entity.getRegistryManager());
                 }
                 else
                 {
@@ -317,7 +317,7 @@ public class RayTraceUtils
                     nbt.contains(NbtKeys.SADDLE) &&
                     !DataStorage.getInstance().hasIntegratedServer())
             {
-                inv2 = fi.dy.masa.minihud.util.InventoryUtils.getNbtInventoryHorseFix(nbt, -1, entity.getRegistryManager());
+                inv2 = InventoryUtils.getNbtInventoryHorseFix(nbt, -1, entity.getRegistryManager());
                 inv = null;
             }
             // Fix for empty Villager/Piglin inv

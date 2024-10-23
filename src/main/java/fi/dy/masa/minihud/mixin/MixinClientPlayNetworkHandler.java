@@ -7,7 +7,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import net.minecraft.network.packet.s2c.play.GameJoinS2CPacket;
 import net.minecraft.network.packet.s2c.play.NbtQueryResponseS2CPacket;
 import fi.dy.masa.minihud.config.Configs;
-import fi.dy.masa.minihud.data.EntitiesDataStorage;
+import fi.dy.masa.minihud.data.EntitiesDataManager;
+import fi.dy.masa.minihud.data.HudDataManager;
 import fi.dy.masa.minihud.util.DataStorage;
 import fi.dy.masa.minihud.util.NotificationUtils;
 
@@ -49,13 +50,13 @@ public abstract class MixinClientPlayNetworkHandler
     @Inject(method = "onWorldTimeUpdate", at = @At("RETURN"))
     private void onTimeUpdate(net.minecraft.network.packet.s2c.play.WorldTimeUpdateS2CPacket packetIn, CallbackInfo ci)
     {
-        DataStorage.getInstance().onServerTimeUpdate(packetIn.getTime());
+        DataStorage.getInstance().onServerTimeUpdate(packetIn.time());
     }
 
     @Inject(method = "onPlayerSpawnPosition", at = @At("RETURN"))
     private void onSetSpawn(net.minecraft.network.packet.s2c.play.PlayerSpawnPositionS2CPacket packet, CallbackInfo ci)
     {
-        DataStorage.getInstance().setWorldSpawn(packet.getPos());
+        HudDataManager.getInstance().setWorldSpawn(packet.getPos());
     }
 
     @Inject(method = "onGameJoin", at = @At("RETURN"))
@@ -69,7 +70,7 @@ public abstract class MixinClientPlayNetworkHandler
     {
         if (Configs.Generic.ENTITY_DATA_SYNC_BACKUP.getBooleanValue())
         {
-            EntitiesDataStorage.getInstance().handleVanillaQueryNbt(packet.getTransactionId(), packet.getNbt());
+            EntitiesDataManager.getInstance().handleVanillaQueryNbt(packet.getTransactionId(), packet.getNbt());
         }
     }
 }

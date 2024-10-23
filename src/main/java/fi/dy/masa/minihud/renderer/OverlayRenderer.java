@@ -1,14 +1,18 @@
 package fi.dy.masa.minihud.renderer;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import org.joml.Matrix4f;
+
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.ShaderProgramKeys;
 import net.minecraft.client.render.*;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.profiler.Profiler;
+
 import fi.dy.masa.malilib.util.Color4f;
 import fi.dy.masa.malilib.util.EntityUtils;
 import fi.dy.masa.minihud.config.RendererToggle;
@@ -24,7 +28,7 @@ public class OverlayRenderer
         loginTime = System.currentTimeMillis();
     }
 
-    public static void renderOverlays(Matrix4f matrix4f, Matrix4f projMatrix, MinecraftClient mc)
+    public static void renderOverlays(Matrix4f matrix4f, Matrix4f projMatrix, MinecraftClient mc, Frustum frustum, Camera camera, Fog fog, Profiler profiler)
     {
         Entity entity = EntityUtils.getCameraEntity();
 
@@ -50,12 +54,12 @@ public class OverlayRenderer
 
         if (RendererToggle.OVERLAY_BEACON_RANGE.getBooleanValue())
         {
-            mc.getProfiler().push(() -> "BeaconRangeHeldItem");
+            profiler.push(() -> "BeaconRangeHeldItem");
             renderBeaconBoxForPlayerIfHoldingItem(entity, mc);
-            mc.getProfiler().pop();
+            profiler.pop();
         }
 
-        RenderContainer.INSTANCE.render(entity, matrix4f, projMatrix, mc);
+        RenderContainer.INSTANCE.render(entity, matrix4f, projMatrix, mc, camera, profiler);
     }
 
 
@@ -106,8 +110,9 @@ public class OverlayRenderer
         BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
         BuiltBuffer builtBuffer;
 
-        RenderSystem.setShader(GameRenderer::getPositionColorProgram);
-        RenderSystem.applyModelViewMatrix();
+        RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
+        //RenderSystem.setShader(GameRenderer::getPositionColorProgram);
+        //RenderSystem.applyModelViewMatrix();
 
         fi.dy.masa.malilib.render.RenderUtils.drawBoxAllSidesBatchedQuads(minX, minY, minZ, maxX, maxY, maxZ, Color4f.fromColor(color, 0.3f), buffer);
 

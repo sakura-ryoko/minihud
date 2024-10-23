@@ -10,6 +10,8 @@ import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.util.EntityUtils;
 import fi.dy.masa.malilib.util.InfoUtils;
 import fi.dy.masa.malilib.util.StringUtils;
+import fi.dy.masa.minihud.data.DebugDataManager;
+import fi.dy.masa.minihud.data.HudDataManager;
 import fi.dy.masa.minihud.renderer.OverlayRendererBeaconRange;
 import fi.dy.masa.minihud.renderer.OverlayRendererBiomeBorders;
 import fi.dy.masa.minihud.renderer.OverlayRendererConduitRange;
@@ -122,8 +124,8 @@ public class RendererCallbacks
         {
             if (config.getBooleanValue())
             {
-                BlockPos spawn = DataStorage.getInstance().getWorldSpawn();
-                int radius = DataStorage.getInstance().getSpawnChunkRadius();
+                BlockPos spawn = HudDataManager.getInstance().getWorldSpawn();
+                int radius = HudDataManager.getInstance().getSpawnChunkRadius();
                 String green = GuiBase.TXT_GREEN;
                 String red = GuiBase.TXT_RED;
                 String rst = GuiBase.TXT_RST;
@@ -131,7 +133,7 @@ public class RendererCallbacks
 
                 if (radius < 0)
                 {
-                    DataStorage.getInstance().setSpawnChunkRadius(2, true);   // 1.20.5 Vanilla Default
+                    HudDataManager.getInstance().setSpawnChunkRadius(2, true);   // 1.20.5 Vanilla Default
                     radius = 2;
                 }
                 if (radius > 0)
@@ -140,9 +142,9 @@ public class RendererCallbacks
                     String strPos = String.format("x: %d, y: %d, z: %d [R: %d]", spawn.getX(), spawn.getY(), spawn.getZ(), radius);
                     message = StringUtils.translate("minihud.message.toggled_using_world_spawn", config.getPrettyName(), strStatus, strPos);
 
-                    if (mc.isIntegratedServerRunning() == false && DataStorage.getInstance().hasServuxServer())
+                    if (mc.isIntegratedServerRunning() == false && HudDataManager.getInstance().hasServuxServer())
                     {
-                        DataStorage.getInstance().requestSpawnMetadata();
+                        HudDataManager.getInstance().requestSpawnMetadata();
                     }
                     else
                     {
@@ -185,6 +187,27 @@ public class RendererCallbacks
             else
             {
                 DataStorage.getInstance().setStructuresNeedUpdating();
+            }
+        }
+    }
+
+    public static void onDebugServiceToggled(IConfigBoolean config)
+    {
+        MinecraftClient mc = MinecraftClient.getInstance();
+
+        if (mc != null && mc.player != null)
+        {
+            if (!mc.isIntegratedServerRunning() && !DataStorage.getInstance().hasIntegratedServer())
+            {
+                if (config.getBooleanValue())
+                {
+                    DebugDataManager.getInstance().registerDebugService();
+                    DebugDataManager.getInstance().requestMetadata();
+                }
+                else
+                {
+                    DebugDataManager.getInstance().unregisterDebugService();
+                }
             }
         }
     }

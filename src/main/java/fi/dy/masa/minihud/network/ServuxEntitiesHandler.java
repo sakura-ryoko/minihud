@@ -17,7 +17,7 @@ import fi.dy.masa.malilib.network.IClientPayloadData;
 import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
 import fi.dy.masa.malilib.network.PacketSplitter;
 import fi.dy.masa.minihud.MiniHUD;
-import fi.dy.masa.minihud.data.EntitiesDataStorage;
+import fi.dy.masa.minihud.data.EntitiesDataManager;
 
 @Environment(EnvType.CLIENT)
 public abstract class ServuxEntitiesHandler<T extends CustomPayload> implements IPluginClientPlayHandler<T>
@@ -76,13 +76,13 @@ public abstract class ServuxEntitiesHandler<T extends CustomPayload> implements 
         {
             case PACKET_S2C_METADATA ->
             {
-                if (EntitiesDataStorage.getInstance().receiveServuxMetadata(packet.getCompound()))
+                if (EntitiesDataManager.getInstance().receiveServuxMetadata(packet.getCompound()))
                 {
                     this.servuxRegistered = true;
                 }
             }
-            case PACKET_S2C_BLOCK_NBT_RESPONSE_SIMPLE -> EntitiesDataStorage.getInstance().handleBlockEntityData(packet.getPos(), packet.getCompound(), null);
-            case PACKET_S2C_ENTITY_NBT_RESPONSE_SIMPLE -> EntitiesDataStorage.getInstance().handleEntityData(packet.getEntityId(), packet.getCompound());
+            case PACKET_S2C_BLOCK_NBT_RESPONSE_SIMPLE -> EntitiesDataManager.getInstance().handleBlockEntityData(packet.getPos(), packet.getCompound(), null);
+            case PACKET_S2C_ENTITY_NBT_RESPONSE_SIMPLE -> EntitiesDataManager.getInstance().handleEntityData(packet.getEntityId(), packet.getCompound());
             case PACKET_S2C_NBT_RESPONSE_DATA ->
             {
                 if (this.readingSessionKey == -1)
@@ -98,7 +98,7 @@ public abstract class ServuxEntitiesHandler<T extends CustomPayload> implements 
                     try
                     {
                         this.readingSessionKey = -1;
-                        EntitiesDataStorage.getInstance().handleBulkEntityData(fullPacket.readVarInt(), (NbtCompound) fullPacket.readNbt(NbtSizeTracker.ofUnlimitedBytes()));
+                        EntitiesDataManager.getInstance().handleBulkEntityData(fullPacket.readVarInt(), (NbtCompound) fullPacket.readNbt(NbtSizeTracker.ofUnlimitedBytes()));
                     }
                     catch (Exception e)
                     {
@@ -164,7 +164,7 @@ public abstract class ServuxEntitiesHandler<T extends CustomPayload> implements 
                 MiniHUD.printDebug("encodeClientData(): encountered [{}] sendPayload failures, cancelling any Servux join attempt(s)", MAX_FAILURES);
                 this.servuxRegistered = false;
                 ServuxEntitiesHandler.INSTANCE.unregisterPlayReceiver();
-                EntitiesDataStorage.getInstance().onPacketFailure();
+                EntitiesDataManager.getInstance().onPacketFailure();
             }
             else
             {

@@ -54,11 +54,12 @@ import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class EntitiesDataStorage implements IClientTickHandler
+@SuppressWarnings("deprecation")
+public class EntitiesDataManager implements IClientTickHandler
 {
-    private static final EntitiesDataStorage INSTANCE = new EntitiesDataStorage();
+    private static final EntitiesDataManager INSTANCE = new EntitiesDataManager();
 
-    public static EntitiesDataStorage getInstance()
+    public static EntitiesDataManager getInstance()
     {
         return INSTANCE;
     }
@@ -98,7 +99,7 @@ public class EntitiesDataStorage implements IClientTickHandler
         return clientWorld;
     }
 
-    private EntitiesDataStorage() { }
+    private EntitiesDataManager() { }
 
     @Override
     public void onClientTick(MinecraftClient mc)
@@ -227,7 +228,7 @@ public class EntitiesDataStorage implements IClientTickHandler
 
                 if (nowTime - pair.getLeft() > blockTimeout || pair.getLeft() - nowTime > 0)
                 {
-                    //MiniHUD.printDebug("entityCache: be at pos [{}] has timed out", pos.toShortString());
+                    MiniHUD.printDebug("entityCache: be at pos [{}] has timed out", pos.toShortString());
                     this.blockEntityCache.remove(pos);
                     count++;
                 }
@@ -244,7 +245,7 @@ public class EntitiesDataStorage implements IClientTickHandler
 
                 if (nowTime - pair.getLeft() > entityTimeout || pair.getLeft() - nowTime > 0)
                 {
-                    //MiniHUD.printDebug("entityCache: enity Id [{}] has timed out", entityId);
+                    MiniHUD.printDebug("entityCache: enity Id [{}] has timed out", entityId);
                     this.entityCache.remove(entityId);
                     count++;
                 }

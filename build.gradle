@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '1.7-SNAPSHOT'
+	id 'fabric-loom' version '1.8-SNAPSHOT'
 }
 
 sourceCompatibility = JavaVersion.VERSION_21
@@ -8,7 +8,7 @@ targetCompatibility = JavaVersion.VERSION_21
 repositories {
 	maven {	url 'https://masa.dy.fi/maven' }
 	maven {	url 'https://maven.terraformersmc.com/releases/' }
-	maven {	url 'https://jitpack.io' }
+	maven { url 'https://jitpack.io' }
 }
 
 dependencies {
@@ -21,7 +21,7 @@ dependencies {
 	modImplementation "com.github.sakura-ryoko:malilib:${project.malilib_id}"
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
-	//modCompile "net.fabricmc.fabric-api:fabric-api:" + project.fabric_version
+	//modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
 	modCompileOnly "com.terraformersmc:modmenu:${project.mod_menu_version}"
 }

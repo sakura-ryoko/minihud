@@ -16,6 +16,7 @@ import fi.dy.masa.malilib.util.PositionUtils;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.RendererToggle;
+import fi.dy.masa.minihud.data.HudDataManager;
 import fi.dy.masa.minihud.util.DataStorage;
 import fi.dy.masa.minihud.util.MiscUtils;
 
@@ -49,7 +50,7 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
         return this.toggle.getBooleanValue() &&
                 (this.isPlayerFollowing ||
                  (mc.world != null && MiscUtils.isOverworld(mc.world) &&
-                  DataStorage.getInstance().isWorldSpawnKnown()));
+                 HudDataManager.getInstance().isWorldSpawnKnown()));
     }
 
     @Override
@@ -84,7 +85,7 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
         // Use the client player, to allow looking from the camera perspective
         entity = this.isPlayerFollowing ? mc.player : entity;
 
-        DataStorage data = DataStorage.getInstance();
+        HudDataManager data = HudDataManager.getInstance();
         BlockPos spawn;
         int spawnChunkRadius;
         int red;
@@ -195,12 +196,38 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
         int cx = (worldSpawn.getX() >> 4);
         int cz = (worldSpawn.getZ() >> 4);
 
-        int minY = world != null ? world.getBottomY() : -64;
-        int maxY = world != null ? world.getTopY() : 320;
+        int minY = this.getMinY(world);
+        int maxY = world != null ? world.getTopYInclusive() + 1 : 320;
         BlockPos pos1 = new BlockPos( (cx - chunkRange) << 4      , minY,  (cz - chunkRange) << 4);
         BlockPos pos2 = new BlockPos(((cx + chunkRange) << 4) + 15, maxY, ((cz + chunkRange) << 4) + 15);
 
         return Pair.of(pos1, pos2);
+    }
+
+    private int getMinY(World world)
+    {
+        MinecraftClient mc = MinecraftClient.getInstance();
+        int minY;
+
+        // For whatever reason, in Fabulous! Graphics, the Y level gets rendered through to -64,
+        //  so let's make use of the player's current Y position, and seaLevel.
+        if (MinecraftClient.isFabulousGraphicsOrBetter() && world != null && mc.player != null)
+        {
+            if (mc.player.getBlockPos().getY() >= world.getSeaLevel())
+            {
+                minY = world.getSeaLevel() - 2;
+            }
+            else
+            {
+                minY = world.getBottomY();
+            }
+        }
+        else
+        {
+            minY = world != null ? world.getBottomY() : -64;
+        }
+
+        return minY;
     }
 
     protected int getSpawnChunkRadius(@Nullable MinecraftServer server)
@@ -209,9 +236,9 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
         {
             return server.getOverworld().getGameRules().getInt(GameRules.SPAWN_CHUNK_RADIUS);
         }
-        else if (DataStorage.getInstance().isSpawnChunkRadiusKnown())
+        else if (HudDataManager.getInstance().isSpawnChunkRadiusKnown())
         {
-            return DataStorage.getInstance().getSpawnChunkRadius();
+            return HudDataManager.getInstance().getSpawnChunkRadius();
         }
 
         return 2;

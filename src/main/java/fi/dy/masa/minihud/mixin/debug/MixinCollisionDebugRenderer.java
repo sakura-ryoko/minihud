@@ -1,4 +1,4 @@
-package fi.dy.masa.minihud.mixin;
+package fi.dy.masa.minihud.mixin.debug;
 
 //@Mixin(CollisionDebugRenderer.class)
 public abstract class MixinCollisionDebugRenderer

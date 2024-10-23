@@ -116,6 +116,7 @@ public abstract class ShapeCircleBase extends ShapeBlocky
     protected void updateEffectiveCenter()
     {
         this.effectiveCenter = this.getBlockSnappedPosition(this.center);
+        //System.out.printf("ShapeCircleBase - updateEffectiveCenter: center: [%s], effectiveCenter [%s] // radius: [%f]\n", this.center.toString(), this.effectiveCenter.toString(), this.radius);
         this.setRenderPerimeter(this.effectiveCenter, this.radius + 512);
         this.setNeedsUpdate();
     }

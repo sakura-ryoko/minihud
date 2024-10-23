@@ -1,9 +1,11 @@
 package fi.dy.masa.minihud.renderer;
 
-import java.util.function.Supplier;
-import com.mojang.blaze3d.systems.RenderSystem;
 import org.joml.Matrix4f;
+
+import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.gl.GlUsage;
 import net.minecraft.client.gl.ShaderProgram;
+import net.minecraft.client.gl.ShaderProgramKey;
 import net.minecraft.client.gl.VertexBuffer;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.BuiltBuffer;
@@ -17,11 +19,11 @@ public class RenderObjectVbo extends RenderObjectBase
     protected final boolean hasTexture;
     protected boolean hasData;
 
-    public RenderObjectVbo(VertexFormat.DrawMode glMode, VertexFormat format, Supplier<ShaderProgram> shader)
+    public RenderObjectVbo(VertexFormat.DrawMode glMode, VertexFormat format, ShaderProgramKey shader)
     {
         super(glMode, shader);
 
-        this.vertexBuffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
+        this.vertexBuffer = new VertexBuffer(GlUsage.STATIC_WRITE);
         this.format = format;
 
         boolean hasTexture = false;
@@ -65,9 +67,9 @@ public class RenderObjectVbo extends RenderObjectBase
     {
         if (this.hasData)
         {
-            RenderSystem.setShader(this.getShader());
+            ShaderProgram program = RenderSystem.setShader(this.getShader());
             this.vertexBuffer.bind();
-            this.vertexBuffer.draw(matrix4f, projMatrix, this.getShader().get());
+            this.vertexBuffer.draw(matrix4f, projMatrix, program);
             VertexBuffer.unbind();
         }
     }
@@ -76,5 +78,6 @@ public class RenderObjectVbo extends RenderObjectBase
     public void deleteGlResources()
     {
         this.vertexBuffer.close();
+        this.hasData = false;
     }
 }

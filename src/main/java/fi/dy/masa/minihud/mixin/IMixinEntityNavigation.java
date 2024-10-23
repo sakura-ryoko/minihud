@@ -8,5 +8,5 @@ import net.minecraft.entity.ai.pathing.EntityNavigation;
 public interface IMixinEntityNavigation
 {
     @Accessor("nodeReachProximity")
-    float getMaxDistanceToWaypoint();
+    float minihud_getMaxDistanceToWaypoint();
 }

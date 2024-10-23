@@ -4,6 +4,7 @@ import java.util.List;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -19,22 +20,22 @@ import fi.dy.masa.minihud.util.ConduitExtra;
 public abstract class MixinConduitBlockEntity implements ConduitExtra
 {
     @Shadow @Final private List<BlockPos> activatingBlocks;
-    private int minihud_activatingBlockCount;
+    @Unique private int minihud_activatingBlockCount;
 
     @Override
-    public int getCurrentActivatingBlockCount()
+    public int minihud$getCurrentActivatingBlockCount()
     {
         return this.activatingBlocks.size();
     }
 
     @Override
-    public int getStoredActivatingBlockCount()
+    public int minihud$getStoredActivatingBlockCount()
     {
         return this.minihud_activatingBlockCount;
     }
 
     @Override
-    public void setActivatingBlockCount(int count)
+    public void minihud$setActivatingBlockCount(int count)
     {
         this.minihud_activatingBlockCount = count;
     }
@@ -47,13 +48,13 @@ public abstract class MixinConduitBlockEntity implements ConduitExtra
     {
         if (RendererToggle.OVERLAY_CONDUIT_RANGE.getBooleanValue())
         {
-            int count = ((ConduitExtra) blockEntity).getCurrentActivatingBlockCount();
-            int countBefore = ((ConduitExtra) blockEntity).getStoredActivatingBlockCount();
+            int count = ((ConduitExtra) blockEntity).minihud$getCurrentActivatingBlockCount();
+            int countBefore = ((ConduitExtra) blockEntity).minihud$getStoredActivatingBlockCount();
 
             if (count != countBefore)
             {
                 OverlayRendererConduitRange.INSTANCE.onBlockStatusChange(pos);
-                ((ConduitExtra) blockEntity).setActivatingBlockCount(count);
+                ((ConduitExtra) blockEntity).minihud$setActivatingBlockCount(count);
             }
         }
     }
