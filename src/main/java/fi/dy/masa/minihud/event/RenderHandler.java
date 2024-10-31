@@ -1085,7 +1085,14 @@ public class RenderHandler implements IRenderer
             {
                 Biome biome = mc.world.getBiome(pos).value();
                 Identifier id = mc.world.getRegistryManager().getOrThrow(RegistryKeys.BIOME).getId(biome);
-                this.addLineI18n("minihud.info_line.biome", StringUtils.translate("biome." + id.toString().replace(":", ".")));
+                String translationKey = "biome." + id.toString().replace(":", ".");
+                String biomeName = StringUtils.translate(translationKey);
+                if (biomeName.equals(translationKey))
+                {
+                    biomeName = StringUtils.prettifyRawTranslationPath(id.getPath());
+                }
+
+                this.addLineI18n("minihud.info_line.biome", biomeName);
             }
         }
         else if (type == InfoToggle.BIOME_REG_NAME)
