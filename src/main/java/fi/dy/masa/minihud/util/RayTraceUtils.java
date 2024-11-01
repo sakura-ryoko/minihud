@@ -34,9 +34,9 @@ import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
 
 import fi.dy.masa.malilib.render.InventoryOverlay;
-import fi.dy.masa.malilib.util.*;
 import fi.dy.masa.malilib.util.EntityUtils;
 import fi.dy.masa.malilib.util.InventoryUtils;
+import fi.dy.masa.malilib.util.*;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.data.EntitiesDataManager;
 import fi.dy.masa.minihud.event.RenderHandler;
@@ -240,6 +240,8 @@ public class RayTraceUtils
 
         if (nbt != null && !nbt.isEmpty())
         {
+            //MiniHUD.logger.warn("getTargetInventoryFromBlock(): rawNbt: [{}]", nbt.toString());
+
             Inventory inv2 = InventoryUtils.getNbtInventory(nbt, inv != null ? inv.size() : -1, world.getRegistryManager());
 
             if (inv == null)
@@ -298,9 +300,9 @@ public class RayTraceUtils
 
             // Fix for empty horse inv
             if (inv != null && inv.size() == 1 &&
-                    nbt.contains(NbtKeys.ITEMS) &&
-                    nbt.getList(NbtKeys.ITEMS, Constants.NBT.TAG_COMPOUND).size() > 1 &&
-                    !DataStorage.getInstance().hasIntegratedServer())
+                nbt.contains(NbtKeys.ITEMS) &&
+                nbt.getList(NbtKeys.ITEMS, Constants.NBT.TAG_COMPOUND).size() > 1 &&
+                !DataStorage.getInstance().hasIntegratedServer())
             {
                 if (entity instanceof AbstractHorseEntity)
                 {
@@ -332,16 +334,14 @@ public class RayTraceUtils
             else
             {
                 inv2 = InventoryUtils.getNbtInventory(nbt, inv != null ? inv.size() : -1, entity.getRegistryManager());
+                inv = null;
             }
 
             //MiniHUD.logger.error("getTargetInventoryFromEntity(): inv.size [{}], inv2.size [{}]", inv != null ? inv.size() : "null", inv2 != null ? inv2.size() : "null");
 
             if (inv2 != null)
             {
-                if (inv == null)
-                {
-                    inv = inv2;
-                }
+                inv = inv2;
             }
         }
 

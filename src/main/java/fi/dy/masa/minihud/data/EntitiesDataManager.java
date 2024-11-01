@@ -1,27 +1,12 @@
 package fi.dy.masa.minihud.data;
 
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import javax.annotation.Nullable;
 import com.google.gson.JsonObject;
 import com.llamalad7.mixinextras.lib.apache.commons.tuple.Pair;
 
 import com.mojang.datafixers.util.Either;
-import fi.dy.masa.malilib.interfaces.IClientTickHandler;
-import fi.dy.masa.malilib.network.ClientPlayHandler;
-import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
-import fi.dy.masa.malilib.util.Constants;
-import fi.dy.masa.malilib.util.InventoryUtils;
-import fi.dy.masa.malilib.util.NbtKeys;
-import fi.dy.masa.malilib.util.WorldUtils;
-import fi.dy.masa.minihud.MiniHUD;
-import fi.dy.masa.minihud.Reference;
-import fi.dy.masa.minihud.config.Configs;
-import fi.dy.masa.minihud.mixin.IMixinAbstractHorseEntity;
-import fi.dy.masa.minihud.mixin.IMixinDataQueryHandler;
-import fi.dy.masa.minihud.mixin.IMixinPiglinEntity;
-import fi.dy.masa.minihud.network.ServuxEntitiesHandler;
-import fi.dy.masa.minihud.network.ServuxEntitiesPacket;
-import fi.dy.masa.minihud.util.DataStorage;
-import fi.dy.masa.minihud.util.EntityUtils;
-
 import net.minecraft.block.BlockEntityProvider;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ChestBlock;
@@ -45,14 +30,27 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-import javax.annotation.Nullable;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import fi.dy.masa.malilib.interfaces.IClientTickHandler;
+import fi.dy.masa.malilib.network.ClientPlayHandler;
+import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
+import fi.dy.masa.malilib.util.Constants;
+import fi.dy.masa.malilib.util.InventoryUtils;
+import fi.dy.masa.malilib.util.NbtKeys;
+import fi.dy.masa.malilib.util.WorldUtils;
+import fi.dy.masa.minihud.MiniHUD;
+import fi.dy.masa.minihud.Reference;
+import fi.dy.masa.minihud.config.Configs;
+import fi.dy.masa.minihud.mixin.IMixinAbstractHorseEntity;
+import fi.dy.masa.minihud.mixin.IMixinDataQueryHandler;
+import fi.dy.masa.minihud.mixin.IMixinPiglinEntity;
+import fi.dy.masa.minihud.network.ServuxEntitiesHandler;
+import fi.dy.masa.minihud.network.ServuxEntitiesPacket;
+import fi.dy.masa.minihud.util.DataStorage;
+import fi.dy.masa.minihud.util.EntityUtils;
 
 @SuppressWarnings("deprecation")
 public class EntitiesDataManager implements IClientTickHandler
@@ -410,23 +408,21 @@ public class EntitiesDataManager implements IClientTickHandler
         }
         else if (world.getBlockState(pos).getBlock() instanceof BlockEntityProvider)
         {
-            if (world instanceof ServerWorld)
-            {
-                BlockEntity be = world.getWorldChunk(pos).getBlockEntity(pos);
-
-                if (be != null)
-                {
-                    NbtCompound nbt = be.createNbtWithIdentifyingData(world.getRegistryManager());
-                    Pair<BlockEntity, NbtCompound> pair = Pair.of(be, nbt);
-
-                    this.blockEntityCache.put(pos, Pair.of(System.currentTimeMillis(), pair));
-
-                    return pair;
-                }
-            }
-            else if (Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue())
+            if (!DataStorage.getInstance().hasIntegratedServer() &&
+                Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue())
             {
                 this.pendingBlockEntitiesQueue.add(pos);
+            }
+
+            BlockEntity be = world.getWorldChunk(pos).getBlockEntity(pos);
+
+            if (be != null)
+            {
+                NbtCompound nbt = be.createNbtWithIdentifyingData(world.getRegistryManager());
+                Pair<BlockEntity, NbtCompound> pair = Pair.of(be, nbt);
+
+                this.blockEntityCache.put(pos, Pair.of(System.currentTimeMillis(), pair));
+                return pair;
             }
         }
 
@@ -439,21 +435,24 @@ public class EntitiesDataManager implements IClientTickHandler
         {
             return this.entityCache.get(entityId).getRight();
         }
-        else if (this.getWorld() instanceof ServerWorld)
+
+        if (!DataStorage.getInstance().hasIntegratedServer() &&
+            Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue())
+        {
+            this.pendingEntitiesQueue.add(entityId);
+        }
+
+        if (this.getWorld() != null)
         {
             Entity entity = this.getWorld().getEntityById(entityId);
             NbtCompound nbt = new NbtCompound();
 
-            if (entity.saveSelfNbt(nbt))
+            if (entity != null && entity.saveSelfNbt(nbt))
             {
                 Pair<Entity, NbtCompound> pair = Pair.of(entity, nbt);
                 this.entityCache.put(entityId, Pair.of(System.currentTimeMillis(), pair));
                 return pair;
             }
-        }
-        else if (Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue())
-        {
-            this.pendingEntitiesQueue.add(entityId);
         }
 
         return null;
@@ -589,7 +588,7 @@ public class EntitiesDataManager implements IClientTickHandler
             return;
         }
 
-        ClientPlayNetworkHandler handler = this.getVanillaHandler();
+        ClientPlayNetworkHandler handler = getVanillaHandler();
 
         if (handler != null)
         {
@@ -608,7 +607,7 @@ public class EntitiesDataManager implements IClientTickHandler
             return;
         }
 
-        ClientPlayNetworkHandler handler = this.getVanillaHandler();
+        ClientPlayNetworkHandler handler = getVanillaHandler();
 
         if (handler != null)
         {
