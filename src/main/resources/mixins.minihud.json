@@ -48,6 +48,7 @@
     "defaultRequire": 1
   },
   "mixins": [
+    "MixinBundleItem",
     "debug.MixinPath"
   ]
 }
