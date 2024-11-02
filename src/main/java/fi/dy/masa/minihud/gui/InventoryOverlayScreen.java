@@ -27,6 +27,7 @@ import fi.dy.masa.malilib.render.RenderUtils;
 import fi.dy.masa.malilib.util.BlockUtils;
 import fi.dy.masa.malilib.util.GuiUtils;
 import fi.dy.masa.malilib.util.WorldUtils;
+import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.data.EntitiesDataManager;
 import fi.dy.masa.minihud.event.RenderHandler;
@@ -65,14 +66,20 @@ public class InventoryOverlayScreen extends Screen
             List<ItemStack> armourItems = new ArrayList<>();
             if (previewData.entity() instanceof AbstractHorseEntity)
             {
-                armourItems.add(previewData.inv().getStack(0));
+                if (previewData.inv() == null)
+                {
+                    MiniHUD.logger.error("InventoryOverlayScreen(): Horse inv() = null");
+                    return;
+                }
                 armourItems.add(previewData.entity().getEquippedStack(EquipmentSlot.BODY));
+                armourItems.add(previewData.inv().getStack(0));
                 startSlot = 1;
                 totalSlots = previewData.inv().size() - 1;
             }
             else if (previewData.entity() instanceof WolfEntity)
             {
                 armourItems.add(previewData.entity().getEquippedStack(EquipmentSlot.BODY));
+                //armourItems.add(ItemStack.EMPTY);
             }
 
             final InventoryOverlay.InventoryRenderType type = (previewData.entity() instanceof VillagerEntity) ? InventoryOverlay.InventoryRenderType.VILLAGER : InventoryOverlay.getBestInventoryType(previewData.inv(), previewData.nbt() != null ? previewData.nbt() : new NbtCompound(), previewData);
