@@ -62,7 +62,9 @@ public class HudDataManager
 
     private boolean isRaining;
     private boolean isThundering;
-    private int weatherTimer;
+    private int clearWeatherTimer;
+    private int rainWeatherTimer;
+    private int thunderWeatherTimer;
 
     private PreparedRecipes preparedRecipes;
     private int recipeCount;
@@ -80,7 +82,9 @@ public class HudDataManager
         this.worldSpawnValid = false;
         this.isRaining = false;
         this.isThundering = false;
-        this.weatherTimer = -1;
+        this.clearWeatherTimer = -1;
+        this.rainWeatherTimer = -1;
+        this.thunderWeatherTimer = -1;
         this.preparedRecipes = PreparedRecipes.EMPTY;
         this.recipeCount = 0;
     }
@@ -118,7 +122,9 @@ public class HudDataManager
 
         this.isRaining = false;
         this.isThundering = false;
-        this.weatherTimer = -1;
+        this.clearWeatherTimer = -1;
+        this.rainWeatherTimer = -1;
+        this.thunderWeatherTimer = -1;
 
         if (isLogout || !Configs.Generic.DONT_RESET_SEED_ON_DIMENSION_CHANGE.getBooleanValue())
         {
@@ -353,14 +359,14 @@ public class HudDataManager
 
     public boolean isWeatherRain()
     {
-        return this.getRainTime() > -1;
+        return this.isRaining && this.getRainTime() > -1;
     }
 
     public int getRainTime()
     {
-        if (this.isRaining && !this.isThundering)
+        if (this.isRaining && this.rainWeatherTimer > -1)
         {
-            return this.weatherTimer;
+            return this.rainWeatherTimer;
         }
 
         return -1;
@@ -368,14 +374,14 @@ public class HudDataManager
 
     public boolean isWeatherThunder()
     {
-        return this.getThunderTime() > -1;
+        return this.isThundering && this.getThunderTime() > -1;
     }
 
     public int getThunderTime()
     {
-        if (this.isThundering && !this.isRaining)
+        if (this.isThundering && this.thunderWeatherTimer > -1)
         {
-            return this.weatherTimer;
+            return this.thunderWeatherTimer;
         }
 
         return -1;
@@ -421,41 +427,30 @@ public class HudDataManager
 
     public void onClientTickPost(MinecraftClient mc)
     {
-        if (!DataStorage.getInstance().hasIntegratedServer() && this.weatherTimer > 0)
+        if (!DataStorage.getInstance().hasIntegratedServer())
         {
-            this.weatherTimer--;
+            if (this.clearWeatherTimer > 0)
+            {
+                this.clearWeatherTimer--;
+            }
+            if (this.rainWeatherTimer > 0)
+            {
+                this.rainWeatherTimer--;
+            }
+            if (this.thunderWeatherTimer > 0)
+            {
+                this.thunderWeatherTimer--;
+            }
         }
     }
 
     public void onServerWeatherTick(int clearTime, int rainTime, boolean isThundering)
     {
-        if (rainTime > 1)
-        {
-            if (isThundering)
-            {
-                this.isThundering = true;
-                this.isRaining = false;
-            }
-            else
-            {
-                this.isThundering = false;
-                this.isRaining = true;
-            }
-
-            this.weatherTimer = rainTime;
-        }
-        else if (clearTime > 1)
-        {
-            this.isThundering = false;
-            this.isRaining = false;
-            this.weatherTimer = clearTime;
-        }
-        else
-        {
-            this.isThundering = false;
-            this.isRaining = false;
-            this.weatherTimer = -1;
-        }
+        this.clearWeatherTimer = clearTime;
+        this.rainWeatherTimer = rainTime;
+        this.thunderWeatherTimer = thunderTime;
+        this.isRaining = isRaining;
+        this.isThundering = isThunder;
     }
 
     public boolean receiveMetadata(NbtCompound data)
@@ -511,11 +506,6 @@ public class HudDataManager
             {
                 this.setWorldSeed(data.getLong("worldSeed"));
             }
-
-            if (this.hasInValidServux)
-            {
-                this.hasInValidServux = false;
-            }
         }
     }
 
@@ -527,26 +517,30 @@ public class HudDataManager
 
             if (data.contains("SetRaining", Constants.NBT.TAG_INT))
             {
-                this.isThundering = false;
-                this.isRaining = true;
-                this.weatherTimer = data.getInt("SetRaining");
+                this.rainWeatherTimer = data.getInt("SetRaining");
             }
-            else if (data.contains("SetThundering", Constants.NBT.TAG_INT))
+            if (data.contains("isRaining"))
             {
-                this.isThundering = true;
-                this.isRaining = false;
-                this.weatherTimer = data.getInt("SetThundering");
+                this.isRaining = data.getBoolean("isRaining");
             }
-            else if (data.contains("SetClear", Constants.NBT.TAG_INT))
+            if (data.contains("SetThundering", Constants.NBT.TAG_INT))
             {
-                this.isRaining = false;
-                this.isThundering = false;
-                this.weatherTimer = data.getInt("SetClear");
+                this.thunderWeatherTimer = data.getInt("SetThundering");
+            }
+            if (data.contains("isThundering"))
+            {
+                this.isThundering = data.getBoolean("isThundering");
+            }
+            if (data.contains("SetClear", Constants.NBT.TAG_INT))
+            {
+                this.clearWeatherTimer = data.getInt("SetClear");
             }
 
-            if (this.hasInValidServux)
+            if (!this.hasServuxServer() && DataStorage.getInstance().hasServuxServer())
             {
-                this.hasInValidServux = false;
+                // Backwards compat, the best effort.
+                this.isThundering = this.thunderWeatherTimer > 0 && !this.isThundering;
+                this.isRaining = this.rainWeatherTimer > 0 && !this.isRaining;
             }
         }
     }

@@ -112,9 +112,21 @@ public abstract class ServuxStructuresHandler<T extends CustomPayload> implement
                     this.servuxRegistered = true;
                 }
             }
-            // For backwards compat
-            case PACKET_S2C_SPAWN_METADATA -> HudDataManager.getInstance().receiveSpawnMetadata(packet.getCompound());
-            case PACKET_S2C_WEATHER_DATA -> HudDataManager.getInstance().receiveWeatherData(packet.getCompound());
+            // For backwards compat, only if hud_data isn't connected
+            case PACKET_S2C_SPAWN_METADATA ->
+            {
+                if (!HudDataManager.getInstance().hasServuxServer())
+                {
+                    HudDataManager.getInstance().receiveSpawnMetadata(packet.getCompound());
+                }
+            }
+            case PACKET_S2C_WEATHER_DATA ->
+            {
+                if (!HudDataManager.getInstance().hasServuxServer())
+                {
+                    HudDataManager.getInstance().receiveWeatherData(packet.getCompound());
+                }
+            }
             default -> MiniHUD.logger.warn("decodeStructuresPacket(): received unhandled packetType {} of size {} bytes.", packet.getPacketType(), packet.getTotalSize());
         }
     }
