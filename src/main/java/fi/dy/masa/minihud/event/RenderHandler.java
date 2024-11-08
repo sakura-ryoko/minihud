@@ -532,25 +532,6 @@ public class RenderHandler implements IRenderer
                 weatherTime = this.getHudData().getClearTime();
             }
 
-            /*
-            if (bestWorld.getLevelProperties().isThundering())
-            {
-                weatherType = "thundering";
-                if (bestWorld.getLevelProperties() instanceof LevelProperties lp)
-                {
-                    weatherTime = lp.getThunderTime();
-                }
-            }
-            else if (bestWorld.getLevelProperties().isRaining())
-            {
-                weatherType = "raining";
-                if (bestWorld.getLevelProperties() instanceof LevelProperties lp)
-                {
-                    weatherTime = lp.getRainTime();
-                }
-            }
-             */
-
             if (weatherTime == -1)
             {
                 this.addLineI18n("minihud.info_line.weather", StringUtils.translate("minihud.info_line.weather." + weatherType), "");

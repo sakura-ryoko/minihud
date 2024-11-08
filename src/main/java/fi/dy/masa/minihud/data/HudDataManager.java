@@ -536,7 +536,7 @@ public class HudDataManager
                 this.clearWeatherTimer = data.getInt("SetClear");
             }
 
-            if (this.hasServuxServer() == false && DataStorage.getInstance().hasServuxServer())
+            if (!this.hasServuxServer() && DataStorage.getInstance().hasServuxServer())
             {
                 // Backwards compat, the best effort.
                 this.isThundering = this.thunderWeatherTimer > 0 && !this.isThundering;
