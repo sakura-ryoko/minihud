@@ -351,7 +351,7 @@ public class HudDataManager
     {
         if (!this.isRaining && !this.isThundering)
         {
-            return this.weatherTimer;
+            return this.clearWeatherTimer;
         }
 
         return -1;
@@ -444,7 +444,7 @@ public class HudDataManager
         }
     }
 
-    public void onServerWeatherTick(int clearTime, int rainTime, boolean isThundering)
+    public void onServerWeatherTick(int clearTime, int rainTime, int thunderTime, boolean isRaining, boolean isThunder)
     {
         this.clearWeatherTimer = clearTime;
         this.rainWeatherTimer = rainTime;
@@ -536,7 +536,7 @@ public class HudDataManager
                 this.clearWeatherTimer = data.getInt("SetClear");
             }
 
-            if (!this.hasServuxServer() && DataStorage.getInstance().hasServuxServer())
+            if (this.hasServuxServer() == false && DataStorage.getInstance().hasServuxServer())
             {
                 // Backwards compat, the best effort.
                 this.isThundering = this.thunderWeatherTimer > 0 && !this.isThundering;

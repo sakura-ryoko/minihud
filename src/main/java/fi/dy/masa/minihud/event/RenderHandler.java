@@ -516,21 +516,22 @@ public class RenderHandler implements IRenderer
             {
                 return;
             }
-            if (this.getHudData().isWeatherClear())
+            if (this.getHudData().isWeatherThunder())
             {
-                weatherType = "clear";
-                weatherTime = this.getHudData().getClearTime();
+                weatherType = "thundering";
+                weatherTime = this.getHudData().getThunderTime();
             }
             else if (this.getHudData().isWeatherRain())
             {
                 weatherType = "raining";
                 weatherTime = this.getHudData().getRainTime();
             }
-            else if (this.getHudData().isWeatherThunder())
+            else if (this.getHudData().isWeatherClear())
             {
-                weatherType = "thundering";
-                weatherTime = this.getHudData().getThunderTime();
+                weatherType = "clear";
+                weatherTime = this.getHudData().getClearTime();
             }
+
             /*
             if (bestWorld.getLevelProperties().isThundering())
             {
