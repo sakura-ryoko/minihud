@@ -39,6 +39,8 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.Tameable;
+import net.minecraft.entity.attribute.AttributeContainer;
+import net.minecraft.entity.attribute.EntityAttributeInstance;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
@@ -53,6 +55,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
@@ -539,7 +542,7 @@ public class RenderHandler implements IRenderer
             {
                 return;
             }
-            if (this.getHudData().isWeatherThunder())
+            if (this.getHudData().isWeatherThunder() && this.getHudData().isWeatherRain())
             {
                 weatherType = "thundering";
                 weatherTime = this.getHudData().getThunderTime();
@@ -900,7 +903,7 @@ public class RenderHandler implements IRenderer
 
             AbstractHorseEntity horse = (AbstractHorseEntity) vehicle;
             String AnimalType = horse.getType().getName().getString();
-            float speed = 0f;
+            double speed = 0d;
             double jump = 0d;
 
             if (pair != null && Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue() && !pair.getRight().isEmpty())
@@ -917,17 +920,19 @@ public class RenderHandler implements IRenderer
                     entityType.equals(EntityType.TRADER_LLAMA) ||
                     entityType.equals(EntityType.ZOMBIE_HORSE))
                 {
-                    Pair<Float, Float> horsePair = EntityUtils.getSpeedAndJumpStrengthFromNbt(nbt);
-                    speed = horse.getMovementSpeed() > 0 ? horse.getMovementSpeed() : (float) horsePair.getLeft();
+                    Pair<Double, Double> horsePair = EntityUtils.getSpeedAndJumpStrengthFromNbt(nbt);
+                    speed = horsePair.getLeft();
                     jump = horsePair.getRight();
                 }
             }
             else
             {
-                speed = horse.getMovementSpeed() > 0 ? horse.getMovementSpeed() : (float) horse.getAttributeValue(EntityAttributes.MOVEMENT_SPEED);
+                //speed = horse.getMovementSpeed() > 0 ? horse.getMovementSpeed() : horse.getAttributeValue(EntityAttributes.MOVEMENT_SPEED);
+                speed = horse.getAttributeValue(EntityAttributes.MOVEMENT_SPEED);
                 jump = horse.getAttributeValue(EntityAttributes.JUMP_STRENGTH);
             }
-            if (InfoToggle.HORSE_SPEED.getBooleanValue() && speed > 0f)
+
+            if (InfoToggle.HORSE_SPEED.getBooleanValue() && speed > 0d)
             {
                 speed *= 42.1629629629629f;
                 this.addLineI18n("minihud.info_line.horse_speed", AnimalType, speed);
@@ -1201,12 +1206,12 @@ public class RenderHandler implements IRenderer
                     pair.getLeft() instanceof LivingEntity living && !pair.getRight().isEmpty())
                 {
                     NbtCompound nbt = pair.getRight();
-                    Pair<Float, Float> healthPair = EntityUtils.getHealthFromNbt(nbt);
+                    Pair<Double, Double> healthPair = EntityUtils.getHealthFromNbt(nbt);
                     Pair<UUID, ItemStack> ownerPair = EntityUtils.getOwnerAndSaddle(nbt, world.getRegistryManager());
                     Pair<Integer, Integer> agePair = EntityUtils.getAgeFromNbt(nbt);
 
-                    float health = healthPair.getLeft();
-                    float maxHealth = healthPair.getRight();
+                    double health = healthPair.getLeft();
+                    double maxHealth = healthPair.getRight();
 
                     // Update the Health, as it might not be timely otherwise.
                     if (living.getHealth() != health)

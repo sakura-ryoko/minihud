@@ -344,12 +344,12 @@ public class HudDataManager
 
     public boolean isWeatherClear()
     {
-        return this.getClearTime() > -1;
+        return !this.isWeatherRain() && !this.isWeatherThunder();
     }
 
     public int getClearTime()
     {
-        if (!this.isRaining && !this.isThundering)
+        if (this.isWeatherClear())
         {
             return this.clearWeatherTimer;
         }
@@ -359,12 +359,12 @@ public class HudDataManager
 
     public boolean isWeatherRain()
     {
-        return this.isRaining && this.getRainTime() > -1;
+        return this.isRaining;
     }
 
     public int getRainTime()
     {
-        if (this.isRaining && this.rainWeatherTimer > -1)
+        if (this.isWeatherRain())
         {
             return this.rainWeatherTimer;
         }
@@ -374,12 +374,12 @@ public class HudDataManager
 
     public boolean isWeatherThunder()
     {
-        return this.isThundering && this.getThunderTime() > -1;
+        return this.isThundering;
     }
 
     public int getThunderTime()
     {
-        if (this.isThundering && this.thunderWeatherTimer > -1)
+        if (this.isWeatherThunder())
         {
             return this.thunderWeatherTimer;
         }
@@ -451,6 +451,7 @@ public class HudDataManager
         this.thunderWeatherTimer = thunderTime;
         this.isRaining = isRaining;
         this.isThundering = isThunder;
+        //System.out.printf("onServerWeatherTick - c: %d, r: %d, t: %d, iR: %s, iT: %s\n", clearTime, rainTime, thunderTime, isRaining, isThunder);
     }
 
     public boolean receiveMetadata(NbtCompound data)
