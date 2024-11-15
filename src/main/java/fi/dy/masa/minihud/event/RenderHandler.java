@@ -233,10 +233,24 @@ public class RenderHandler implements IRenderer
 
                 if (player != null)
                 {
-                    EnderChestInventory inv = player.getEnderChestInventory();
+                    Pair<Entity, NbtCompound> pair = EntitiesDataManager.getInstance().requestEntity(player.getId());
                     NbtCompound nbt = new NbtCompound();
-                    nbt.put(NbtKeys.ENDER_ITEMS, inv.toNbtList(world.getRegistryManager()));
-                    RenderUtils.renderNbtItemsPreview(stack, nbt, x, y, false, drawContext);
+                    EnderChestInventory inv;
+
+                    if (pair != null && pair.getRight() != null && pair.getRight().contains(NbtKeys.ENDER_ITEMS))
+                    {
+                        inv = InventoryUtils.getPlayerEnderItemsFromNbt(pair.getRight(), world.getRegistryManager());
+                    }
+                    else
+                    {
+                        inv = player.getEnderChestInventory();
+                    }
+
+                    if (inv != null)
+                    {
+                        nbt.put(NbtKeys.ENDER_ITEMS, inv.toNbtList(world.getRegistryManager()));
+                        RenderUtils.renderNbtItemsPreview(stack, nbt, x, y, false, drawContext);
+                    }
                 }
             }
         }

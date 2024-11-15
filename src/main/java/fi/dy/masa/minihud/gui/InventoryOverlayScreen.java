@@ -104,7 +104,6 @@ public class InventoryOverlayScreen extends Screen implements Drawable
                 xInv = xCenter + 2;
                 yInv = Math.min(yInv, yCenter - 92);
             }
-            //if (previewData.te() instanceof CrafterBlockEntity cbe)
             if (previewData.be() instanceof CrafterBlockEntity cbe)
             {
                 lockedSlots = BlockUtils.getDisabledSlots(cbe);
@@ -138,7 +137,7 @@ public class InventoryOverlayScreen extends Screen implements Drawable
                     InventoryOverlay.renderBrewerBackgroundSlots(previewData.inv(), xInv, yInv, drawContext);
                 }
 
-                //this.dumpInvStacks(previewData.inv(), world);
+                //dumpInvStacks(previewData.inv(), world);
                 InventoryOverlay.renderInventoryStacks(type, previewData.inv(), xInv + props.slotOffsetX, yInv + props.slotOffsetY, props.slotsPerRow, startSlot, totalSlots, lockedSlots, mc, drawContext, mouseX, mouseY);
             }
 
@@ -153,7 +152,7 @@ public class InventoryOverlayScreen extends Screen implements Drawable
                     enderItems = new EnderChestInventory();
                 }
 
-                //this.dumpInvStacks(enderItems, world);
+                //dumpInvStacks(enderItems, world);
                 yInv = yCenter + 6;
                 InventoryOverlay.renderInventoryBackground(InventoryOverlay.InventoryRenderType.GENERIC, xInv, yInv, 9, 27, mc);
                 InventoryOverlay.renderInventoryStacks(InventoryOverlay.InventoryRenderType.GENERIC, enderItems, xInv + props.slotOffsetX, yInv + props.slotOffsetY, 9, 0, 27, mc, drawContext, mouseX, mouseY);
