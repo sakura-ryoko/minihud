@@ -324,7 +324,7 @@
     "minihud.config.info_toggle.comment.infoChunkSectionsLine": "F3 화면에서 C 값의 전체 줄을 표시합니다.",
     "minihud.config.info_toggle.comment.infoChunkUpdates": "초당 현재 청크 업데이트 수 표시",
     "minihud.config.info_toggle.comment.infoCoordinates": "플레이어의 좌표를 표시하세요",
-    "minihud.config.info_toggle.comment.infoCoordinatesScaled": "플레이어의 좌표를 차원의 축척 요인에 따라 조정하여 표시합니다.\n오버월드와 네더에서만 작동하고,\n바닐라 네더 포털 축척 요인을 가정합니다.",
+    "minihud.config.info_toggle.comment.infoCoordinatesScaled": "플레이어의 좌표를 차원의 축척 요인에 따라 축척하여 표시합니다.\n오버월드와 네더에서만 작동하고,\n바닐라 네더 포털 축척 요인을 가정합니다.",
     "minihud.config.info_toggle.comment.infoDifficulty": "지역적 난이도를 보여주세요",
     "minihud.config.info_toggle.comment.infoDimensionId": "현재의 차원 ID를 표시합니다.\n(서버(Sponge?)에 따라\n은 정확하지 않을 수 있음!)",
     "minihud.config.info_toggle.comment.infoDistance": "현재 참조점까지의 거리를 표시합니다.\nsetDistanceReferencePoint 단축키로 참조점을 설정합니다.",
