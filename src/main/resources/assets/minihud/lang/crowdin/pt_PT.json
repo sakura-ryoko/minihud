@@ -466,7 +466,7 @@
     "minihud.config.render_toggle.prettyName.overlaySlimeChunks": "Slime Chunks overlay",
     "minihud.config.render_toggle.prettyName.overlaySpawnableColumnHeights": "Sobreposição de altura de coluna gerável",
     "minihud.config.render_toggle.prettyName.overlaySpawnChunkReal": "Invocar Chunks (real) sobreposição",
-    "minihud.config.render_toggle.prettyName.overlaySpawnChunkPlayer": "Invocar Chunks (seguindo o jogador, aspirante a sobreposição",
+    "minihud.config.render_toggle.prettyName.overlaySpawnChunkPlayer": "Sobreposição de Spawn Chunks (jogador que segue, em potencial)",
     "minihud.config.render_toggle.prettyName.overlayStructureMainToggle": "Caixas Saltadoras da Estrutura principal",
     "minihud.config.render_toggle.prettyName.overlayVillagerInfo": "Ofertas para Aldeão sobreposição",
     "minihud.config.render_toggle.prettyName.shapeRenderer": "Renderizador de forma",
