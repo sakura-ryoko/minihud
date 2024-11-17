@@ -751,7 +751,7 @@
     "minihud.gui.title.shape_manager": "シェイプマネージャー",
     "minihud.label.axolotl_tooltip.label": "§7バリアント: ",
     "minihud.label.axolotl_tooltip.value": "%s [%s]",
-    "minihud.label.bee_tooltip.count": "§7§b%s§7の蜂が含まれています",
+    "minihud.label.bee_tooltip.count": "§7 §b%s§7 蜂を含む",
     "minihud.label.bee_tooltip.count_babies": "§7§b%s§7蜂が含まれています(§b%s§7赤ちゃん)",
     "minihud.label.bee_tooltip.name": "§7- %s",
     "minihud.label.honey_info.level": "§7ハニーレベルは§b%s§7/5",
