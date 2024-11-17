@@ -423,7 +423,7 @@
     "minihud.config.render_toggle.comment.overlaySlimeChunks": "Slime Chunk 오버레이 렌더러 전환",
     "minihud.config.render_toggle.comment.overlaySpawnableColumnHeights": "생성 가능한 열 높이 오버레이 렌더러 전환",
     "minihud.config.render_toggle.comment.overlaySpawnChunkReal": "스폰 청크 오버레이 렌더러 전환\n§aGreen - 엔티티 처리\n§eYellow - 레드스톤 처리(기본값: 꺼짐)\n§cRed - 몹 캡만(일명 레이지/테두리 청크)\n§6Brown - 청크 로딩의 외부 한계,\n§6월드 생성 및 렌더링과 같은 항목(기본값: 꺼짐)",
-    "minihud.config.render_toggle.comment.overlaySpawnChunkPlayer": "Toggle the pseudo (player-following) spawn chunks overlay renderer,\nbased on the simulation distance\n§9Blue - Entity Processing\n§eYellow - Redstone Processing (Default: off)\n§dMagenta - Mob Caps only (aka lazy/border chunk)\n§5Purple - Outer limits for chunk loading,\n§5for things like World gen and rendering (Default: off)",
+    "minihud.config.render_toggle.comment.overlaySpawnChunkPlayer": "시뮬레이션 거리에 따라\n가짜(플레이어를 따르는) 스폰 청크 오버레이 렌더러를 토글합니다.\n§9파란색 - 엔티티 처리\n§e노란색 - 레드스톤 처리(기본값: 꺼짐)\n§d마젠타색 - 몹 캡만(일명 레이지/보더 청크)\n§5보라색 - 청크 로딩을 위한 외부 한계,\n§5세계 생성 및 렌더링과 같은 것(기본값: 꺼짐)",
     "minihud.config.render_toggle.comment.overlayStructureMainToggle": "모든 구조 경계 상자에 대한 기본 토글",
     "minihud.config.render_toggle.comment.overlayVillagerInfo": "마을 사람의 제안을 표시합니다.\n판매하는 마법책을 표시합니다.",
     "minihud.config.render_toggle.comment.shapeRenderer": "모양 렌더러의 기본 토글",
