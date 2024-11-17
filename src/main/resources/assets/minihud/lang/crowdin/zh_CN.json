@@ -354,7 +354,7 @@
     "minihud.config.info_toggle.comment.infoRegionFile": "显示当前玩家所在区域的文件",
     "minihud.config.info_toggle.comment.infoRotationPitch": "显示玩家的音调旋转",
     "minihud.config.info_toggle.comment.infoRotationYaw": "显示玩家的 yaw 旋转",
-    "minihud.config.info_toggle.comment.infoServerTPS": "Show the server TPS and ms/tick (MSPT) values\nNote: This is only accurate when running a Carpet server\nand the TPS display carpet rule is enabled.\nOtherwise it is estimated on the client side,\nbased on the world time update packet, and it can\nonly detect TPS values lower than 20 that way.",
+    "minihud.config.info_toggle.comment.infoServerTPS": "显示服务器 TPS 和 ms/tick (MSPT) 值\n注意：这仅在运行 Carpet 服务器\n并且启用 TPS 显示地毯规则时才准确。\n否则，它会在客户端根据世界时间更新包进行估算，并且它只能以这种方式检测低于 20 的 TPS 值。",
     "minihud.config.info_toggle.comment.infoServux": "显示 Servux 版本和实体数据同步协议版本",
     "minihud.config.info_toggle.comment.infoSlimeChunk": "显示玩家当前是否处于粘液块中。\n注意：这仅在单人游戏中有效，无需任何用户干预！\n在服务器上，玩家需要：\n  1) 成为管理员/OP，每次\n     加入或更改维度时手动运行 /seed 命令，或\n  2) 通过聊天输入种子，发送“命令”，例如：minihud-seed 12345",
     "minihud.config.info_toggle.comment.infoSpeed": "显示玩家当前移动速度",
