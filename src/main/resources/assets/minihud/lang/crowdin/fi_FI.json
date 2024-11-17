@@ -356,7 +356,7 @@
     "minihud.config.info_toggle.comment.infoRotationYaw": "Näytä pelaajan aakkoskierto",
     "minihud.config.info_toggle.comment.infoServerTPS": "Näytä palvelimen TPS ja ms/tick (MSPT) arvot\nHuomautus: Tämä on tarkka vain, kun ajetaan matto palvelinta\nja TPS näytön matto sääntö on käytössä.\nMuussa tapauksessa se on arvioitu asiakkaan puolella,\nperustuen maailman aikapäivityspakettiin, ja se voi\nhavaita vain tällä tavalla alle 20 TPS-arvoa.",
     "minihud.config.info_toggle.comment.infoServux": "Näytä Servux-version ja entiteettien synkronointiprotokollan versio",
-    "minihud.config.info_toggle.comment.infoSlimeChunk": "Show whether the player is currently in a slime chunk.\nNOTE: This only works in single player without any user intervention!\nOn a server the player needs to either:\n  1) be admin/OP and run the /seed command manually EVERY TIME\n     they join or change dimensions, or\n  2) input the seed via chat, by sending a \"command\" like: minihud-seed 12345",
+    "minihud.config.info_toggle.comment.infoSlimeChunk": "Näytä, onko soitin tällä hetkellä limapalassa.\nHUOMAA: Tämä toimii vain yksinpelissä ilman käyttäjän toimia!\nPalvelimella pelaajan tulee joko:\n 1) ole admin/OP ja suorita /seed-komento manuaalisesti JOKA kerta\n ne liittyvät yhteen tai muuttavat kokoa tai\n 2) syötä siemen chatin kautta lähettämällä \"komento\" kuten: minihud-seed 12345",
     "minihud.config.info_toggle.comment.infoSpeed": "Näytä pelaajan nykyinen liikkuva nopeus",
     "minihud.config.info_toggle.comment.infoSpeedAxis": "Näytä pelaajan nykyinen liikkuva nopeus akselia kohti",
     "minihud.config.info_toggle.comment.infoSpeedHV": "Näyttää pelaajan nykyisen liikkuvan nopeuden sekä vaakasuunnassa että pystysuunnassa.",
