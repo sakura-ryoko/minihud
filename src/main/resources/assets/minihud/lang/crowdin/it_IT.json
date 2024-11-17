@@ -751,7 +751,7 @@
     "minihud.gui.title.shape_manager": "Gestore Forme",
     "minihud.label.axolotl_tooltip.label": "§7Variante: ",
     "minihud.label.axolotl_tooltip.value": "%s [%s]",
-    "minihud.label.bee_tooltip.count": "§7Contiene §b%s§7 api",
+    "minihud.label.bee_tooltip.count": "§7Contiene §b%s§7 api, (§b%s§7 bambini)",
     "minihud.label.bee_tooltip.count_babies": "§7Contiene §b%s§7 api, (§b%s§7 babies)",
     "minihud.label.bee_tooltip.name": "§7- %s",
     "minihud.label.honey_info.level": "§7Il livello del miele è §b%s§7/5",
