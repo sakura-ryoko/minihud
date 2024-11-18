@@ -572,7 +572,7 @@ public class RenderHandler implements IRenderer
                 weatherTime = this.getHudData().getClearTime();
             }
 
-            if (weatherTime == -1)
+            if (weatherTime < 1)
             {
                 this.addLineI18n("minihud.info_line.weather", StringUtils.translate("minihud.info_line.weather." + weatherType), "");
             }

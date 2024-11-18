@@ -40,6 +40,7 @@ import fi.dy.masa.malilib.render.InventoryOverlay;
 import fi.dy.masa.malilib.util.EntityUtils;
 import fi.dy.masa.malilib.util.InventoryUtils;
 import fi.dy.masa.malilib.util.*;
+import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.data.EntitiesDataManager;
 import fi.dy.masa.minihud.event.RenderHandler;
@@ -48,6 +49,9 @@ import fi.dy.masa.minihud.mixin.IMixinPiglinEntity;
 
 public class RayTraceUtils
 {
+    private static Pair<BlockPos, InventoryOverlay.Context> lastBlockEntityContext = null;
+    private static Pair<Integer,  InventoryOverlay.Context> lastEntityContext = null;
+
     @Nonnull
     public static HitResult getRayTraceFromEntity(World worldIn, Entity entityIn, boolean useLiquids)
     {
@@ -173,7 +177,22 @@ public class RayTraceUtils
 
                 //MiniHUD.logger.warn("getTarget():2: pos [{}], be [{}], nbt [{}]", pos.toShortString(), be != null, nbt != null);
 
-                return getTargetInventoryFromBlock(world, pos, be, nbt);
+                InventoryOverlay.Context ctx = getTargetInventoryFromBlock(world, pos, be, nbt);
+
+                if (lastBlockEntityContext != null && !lastBlockEntityContext.getLeft().equals(pos))
+                {
+                    lastBlockEntityContext = null;
+                }
+
+                if (ctx != null)
+                {
+                    lastBlockEntityContext = Pair.of(pos, ctx);
+                    return ctx;
+                }
+                else if (lastBlockEntityContext != null && lastBlockEntityContext.getLeft().equals(pos))
+                {
+                    return lastBlockEntityContext.getRight();
+                }
             }
 
             return null;
@@ -201,9 +220,27 @@ public class RayTraceUtils
                 }
             }
 
-            //MiniHUD.logger.error("getTarget(): Entity [{}] raw NBT [{}]", entity.getId(), nbt.toString());
+            MiniHUD.logger.error("getTarget(): Entity [{}] raw NBT [{}]", entity.getId(), nbt.toString());
 
-            return getTargetInventoryFromEntity(world.getEntityById(entity.getId()), nbt);
+            InventoryOverlay.Context ctx = getTargetInventoryFromEntity(world.getEntityById(entity.getId()), nbt);
+
+            if (lastEntityContext != null && !lastEntityContext.getLeft().equals(entity.getId()))
+            {
+                System.out.printf("getTarget(): Pair != (%d)\n", entity.getId());
+                lastEntityContext = null;
+            }
+
+            if (ctx != null)
+            {
+                lastEntityContext = Pair.of(entity.getId(), ctx);
+                System.out.printf("getTarget(): save Pair (%d)\n", entity.getId());
+                return ctx;
+            }
+            else if (lastEntityContext != null && lastEntityContext.getLeft().equals(entity.getId()))
+            {
+                System.out.printf("getTarget(): return Pair (%d)\n", entity.getId());
+                return lastEntityContext.getRight();
+            }
         }
 
         return null;

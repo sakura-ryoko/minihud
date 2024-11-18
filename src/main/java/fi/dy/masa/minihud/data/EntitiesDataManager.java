@@ -32,6 +32,7 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 
 import fi.dy.masa.malilib.interfaces.IClientTickHandler;
@@ -198,7 +199,7 @@ public class EntitiesDataManager implements IClientTickHandler
         else
         {
             MiniHUD.printDebug("EntitiesDataStorage#reset() - dimension change or log-in");
-            this.serverTickTime = System.currentTimeMillis() - (this.cacheTimeout + 5) * 1000L;
+            this.serverTickTime = System.currentTimeMillis() - (this.getCacheTimeout() + 5000L);
             this.tickCache();
             this.serverTickTime = System.currentTimeMillis();
             this.clientWorld = mc.world;
@@ -210,11 +211,16 @@ public class EntitiesDataManager implements IClientTickHandler
         this.pendingEntitiesQueue.clear();
     }
 
+    private long getCacheTimeout()
+    {
+        return (long) (MathHelper.clamp(Configs.Generic.ENTITY_DATA_SYNC_CACHE_TIMEOUT.getFloatValue(), 0.5f, 25.0f) * 1000L);
+    }
+
     private void tickCache()
     {
         long nowTime = System.currentTimeMillis();
-        long blockTimeout = (this.cacheTimeout) * 1000L;
-        long entityTimeout = (this.cacheTimeout / 2) * 1000L;
+        long blockTimeout = this.getCacheTimeout();
+        long entityTimeout = this.getCacheTimeout() * 2;
         int total = this.blockEntityCache.size();
         int count = 0;
 
@@ -226,7 +232,7 @@ public class EntitiesDataManager implements IClientTickHandler
 
                 if (nowTime - pair.getLeft() > blockTimeout || pair.getLeft() - nowTime > 0)
                 {
-                    MiniHUD.printDebug("entityCache: be at pos [{}] has timed out", pos.toShortString());
+                    MiniHUD.printDebug("entityCache: be at pos [{}] has timed out [{}]", pos.toShortString(), blockTimeout);
                     this.blockEntityCache.remove(pos);
                     count++;
                 }
@@ -243,7 +249,7 @@ public class EntitiesDataManager implements IClientTickHandler
 
                 if (nowTime - pair.getLeft() > entityTimeout || pair.getLeft() - nowTime > 0)
                 {
-                    MiniHUD.printDebug("entityCache: enity Id [{}] has timed out", entityId);
+                    MiniHUD.printDebug("entityCache: enity Id [{}] has timed out [{}]", entityId, entityTimeout);
                     this.entityCache.remove(entityId);
                     count++;
                 }
