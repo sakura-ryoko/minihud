@@ -442,8 +442,7 @@ public class EntitiesDataManager implements IClientTickHandler
     {
         if (this.entityCache.containsKey(entityId))
         {
-            Pair<Entity, NbtCompound> pair = this.entityCache.get(entityId).getRight();
-            return pair;
+            return this.entityCache.get(entityId).getRight();
         }
 
         if (!DataStorage.getInstance().hasIntegratedServer() &&
