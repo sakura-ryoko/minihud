@@ -110,7 +110,7 @@
     "minihud.config.generic.comment.dontClearStoredSeedOnDimensionChange": "当只是改变维度时，不要清除存储的世界种子。\n有些 Mod 可能会在每个维度使用不同的种子，所以你可能需要修改这个，\n以防你的服务器 Mod 中不同维度有不同的世界种子。",
     "minihud.config.generic.comment.entityDataSync": "使用 Servux 的实体同步协议获取服务端实体数据",
     "minihud.config.generic.comment.entityDataSyncBackup": "当 Servux 不可用时使用原版 NBT 查询协议同步实体数据。\n这需要 OP 权限。（译注：需要2级及以上权限）",
-    "minihud.config.generic.comment.entityDataSyncCacheTimeout": "\n实体缓存保存记录的缓存超时值。\n较低的值意味着更频繁的更新。",
+    "minihud.config.generic.comment.entityDataSyncCacheTimeout": "快取逾時值（以秒為單位）\n實體快取保存記錄。\n值越低意味著更新越頻繁。",
     "minihud.config.generic.comment.entityDataSyncLoadNbt": "将同步的 NBT 数据加载到客户端世界。\n§6警告！此功能将导致与依赖此数据的其它模组不兼容\n§6。",
     "minihud.config.generic.comment.enableVanillaDebugRendererFix": "如果该选项启用，那么 OpenGL 所显示的状态是固定的。",
     "minihud.config.generic.comment.fontScale": "HUD 中字体的缩放系数。\n默认值：0.5",

@@ -110,7 +110,7 @@
     "minihud.config.generic.comment.dontClearStoredSeedOnDimensionChange": "改變維度時不要清除儲存的世界種子。\n某些 mod 可能使用每個維度的種子，因此您可能需要更改\n以防伺服器/mod 包上的不同維度\n具有不同的世界種子。",
     "minihud.config.generic.comment.entityDataSync": "使用 Servux 中的實體資料同步協定\n從伺服器取得實體資料\n此功能需要啟用“infoLinesUsesNbt”或“entityDataSyncLoadNbt”",
     "minihud.config.generic.comment.entityDataSyncBackup": "當 Servux\n不可用時，使用 Vanilla NBT 查詢方法。此方法需要操作員權限。",
-    "minihud.config.generic.comment.entityDataSyncCacheTimeout": "The Cache timeout value in seconds that\nthe Entity Cache keeps records for.\nA lower value means more frequent updates.",
+    "minihud.config.generic.comment.entityDataSyncCacheTimeout": "快取逾時值（以秒為單位）\n實體快取保存記錄。\n值越低意味著更新越頻繁。",
     "minihud.config.generic.comment.entityDataSyncLoadNbt": "將同步的NBT資料載入到客戶端世界。\n§6警告！此功能將導致\n§6 與依賴此資料的其他 mod 不相容。",
     "minihud.config.generic.comment.enableVanillaDebugRendererFix": "如果為 true，則普通偵錯渲染器 OpenGL 狀態已修復。",
     "minihud.config.generic.comment.fontScale": "資訊行 HUD 的字體比例因子。預設值：0.5",
