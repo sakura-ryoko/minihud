@@ -223,7 +223,7 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     @Override
     public String getTranslatedName()
     {
-        return this.translatedName.isEmpty() ? this.name : this.translatedName;
+        return StringUtils.getTranslatedOrFallback(this.translatedName, this.name);
     }
 
     @Override
