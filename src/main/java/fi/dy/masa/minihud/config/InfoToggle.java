@@ -96,9 +96,9 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     private static final String INFO_KEY = Reference.MOD_ID+".config.info_toggle";
 
     private final String name;
-    private final String comment;
-    private final String prettyName;
-    private final String translatedName;
+    private String comment;
+    private String prettyName;
+    private String translatedName;
     private final IKeybind keybind;
     private final boolean defaultValueBoolean;
     private final int defaultLinePosition;
@@ -193,7 +193,13 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     @Override
     public String getPrettyName()
     {
-        return StringUtils.getTranslatedOrFallback(this.prettyName, this.prettyName.isEmpty() ? this.name : this.prettyName);
+        return StringUtils.getTranslatedOrFallback(this.prettyName, this.prettyName.isEmpty() ? StringUtils.splitCamelCase(this.name) : this.prettyName);
+    }
+
+    @Override
+    public String getConfigGuiDisplayName()
+    {
+        return StringUtils.getTranslatedOrFallback(this.translatedName, this.name);
     }
 
     @Override
@@ -218,6 +224,24 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     public String getTranslatedName()
     {
         return this.translatedName.isEmpty() ? this.name : this.translatedName;
+    }
+
+    @Override
+    public void setPrettyName(String s)
+    {
+        this.prettyName = s;
+    }
+
+    @Override
+    public void setTranslatedName(String s)
+    {
+        this.translatedName = s;
+    }
+
+    @Override
+    public void setComment(String s)
+    {
+        this.comment = s;
     }
 
     private static String buildTranslateName(String name, String type)

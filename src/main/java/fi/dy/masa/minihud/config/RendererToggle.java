@@ -72,9 +72,9 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
     private static final String RENDER_KEY = Reference.MOD_ID+".config.render_toggle";
 
     private final String name;
-    private final String comment;
-    private final String prettyName;
-    private final String translatedName;
+    private String comment;
+    private String prettyName;
+    private String translatedName;
     private final IKeybind keybind;
     private final boolean defaultValueBoolean;
     private boolean valueBoolean;
@@ -82,37 +82,57 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
 
     RendererToggle(String name, String defaultHotkey)
     {
-        this(name, defaultHotkey, KeybindSettings.DEFAULT, buildTranslateName(name, "comment"), buildTranslateName(name, "prettyName"), buildTranslateName(name, "name"));
+        this(name, defaultHotkey, KeybindSettings.DEFAULT,
+             buildTranslateName(name, "comment"),
+             buildTranslateName(name, "prettyName"),
+             buildTranslateName(name, "name"));
     }
 
     RendererToggle(String name, String defaultHotkey, String comment)
     {
-        this(name, defaultHotkey, KeybindSettings.DEFAULT, comment, StringUtils.splitCamelCase(name), name);
+        this(name, defaultHotkey, KeybindSettings.DEFAULT,
+             comment,
+             buildTranslateName(name, "prettyName"),
+             buildTranslateName(name, "name"));
     }
 
     RendererToggle(String name, String defaultHotkey, String comment, String prettyName)
     {
-        this(name, defaultHotkey, KeybindSettings.DEFAULT, comment, prettyName, name);
+        this(name, defaultHotkey, KeybindSettings.DEFAULT,
+             comment,
+             prettyName,
+             buildTranslateName(name, "name"));
     }
 
     RendererToggle(String name, String defaultHotkey, String comment, String prettyName, String translatedName)
     {
-        this(name, defaultHotkey, KeybindSettings.DEFAULT, comment, prettyName, translatedName);
+        this(name, defaultHotkey, KeybindSettings.DEFAULT,
+             comment,
+             prettyName,
+             translatedName);
     }
 
     RendererToggle(String name, String defaultHotkey, KeybindSettings settings)
     {
-        this(name, defaultHotkey, settings, buildTranslateName(name, "comment"), buildTranslateName(name, "prettyName"), buildTranslateName(name, "name"));
+        this(name, defaultHotkey, settings,
+             buildTranslateName(name, "comment"),
+             buildTranslateName(name, "prettyName"),
+             buildTranslateName(name, "name"));
     }
 
     RendererToggle(String name, String defaultHotkey, KeybindSettings settings, String comment)
     {
-        this(name, defaultHotkey, settings, comment, StringUtils.splitCamelCase(name), name);
+        this(name, defaultHotkey, settings, comment,
+             buildTranslateName(name, "prettyName"),
+             buildTranslateName(name, "name"));
     }
 
     RendererToggle(String name, String defaultHotkey, KeybindSettings settings, String comment, String prettyName)
     {
-        this(name, defaultHotkey, settings, comment, prettyName, name);
+        this(name, defaultHotkey, settings,
+             comment,
+             prettyName,
+             buildTranslateName(name, "name"));
     }
 
     RendererToggle(String name, String defaultHotkey, KeybindSettings settings, String comment, String prettyName, String translatedName)
@@ -150,7 +170,13 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
     @Override
     public String getPrettyName()
     {
-        return StringUtils.getTranslatedOrFallback(this.prettyName, this.name);
+        return StringUtils.getTranslatedOrFallback(this.prettyName, this.prettyName);
+    }
+
+    @Override
+    public String getConfigGuiDisplayName()
+    {
+        return StringUtils.getTranslatedOrFallback(this.translatedName, this.name);
     }
 
     @Override
@@ -168,13 +194,32 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
     @Override
     public String getComment()
     {
-        return StringUtils.getTranslatedOrFallback("config.comment." + this.getName().toLowerCase(), this.comment);
+        //return StringUtils.getTranslatedOrFallback("config.comment." + this.getName().toLowerCase(), this.comment);
+        return StringUtils.getTranslatedOrFallback(this.comment, this.comment);
     }
 
     @Override
     public String getTranslatedName()
     {
         return this.translatedName;
+    }
+
+    @Override
+    public void setPrettyName(String s)
+    {
+        this.prettyName = s;
+    }
+
+    @Override
+    public void setTranslatedName(String s)
+    {
+        this.translatedName = s;
+    }
+
+    @Override
+    public void setComment(String s)
+    {
+        this.comment = s;
     }
 
     @Override
