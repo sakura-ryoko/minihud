@@ -6,6 +6,7 @@ import com.google.gson.JsonPrimitive;
 import fi.dy.masa.malilib.config.ConfigType;
 import fi.dy.masa.malilib.config.IConfigInteger;
 import fi.dy.masa.malilib.config.IHotkeyTogglable;
+import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.hotkeys.IKeybind;
 import fi.dy.masa.malilib.hotkeys.KeyCallbackToggleBoolean;
 import fi.dy.masa.malilib.hotkeys.KeybindMulti;
@@ -44,14 +45,14 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
 
     // Server
     SERVER_TPS              ("infoServerTPS",               false, ""),
-    SERVUX                  ("infoServux",                  false, ""),
+    SERVUX                  ("infoServux",                  false, true, ""),
     PING                    ("infoPing",                    false, ""),
 
     // World
-    WEATHER                 ("infoWeather",                 false, ""),
+    WEATHER                 ("infoWeather",                 false, true, ""),
     TIME_TOTAL_MODULO       ("infoTimeTotalModulo",         false, ""),
     TIME_DAY_MODULO         ("infoTimeDayModulo",           false, ""),
-    MOB_CAPS                ("infoMobCaps",                 false, ""),
+    MOB_CAPS                ("infoMobCaps",                 false, true,""),
     PARTICLE_COUNT          ("infoParticleCount",           false, ""),
     DIFFICULTY              ("infoDifficulty",              false, ""),
     ENTITIES                ("infoEntities",                false, ""),
@@ -76,9 +77,9 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     LOOKING_AT_BLOCK        ("infoLookingAtBlock",          false, ""),
     LOOKING_AT_BLOCK_CHUNK  ("infoLookingAtBlockInChunk",   false, ""),
     BLOCK_PROPS             ("infoBlockProperties",         false, ""),
-    BEE_COUNT               ("infoBeeCount",                false, ""),
+    BEE_COUNT               ("infoBeeCount",                false, true, ""),
     HONEY_LEVEL             ("infoHoneyLevel",              false, ""),
-    FURNACE_XP              ("infoFurnaceXp",               false, ""),
+    FURNACE_XP              ("infoFurnaceXp",               false, true, ""),
 
     // Entity
     ENTITY_REG_NAME         ("infoEntityRegistryName",      false, ""),
@@ -105,6 +106,7 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     private boolean valueBoolean;
     private int linePosition;
     static private int nextDefaultLinePosition;
+    private final boolean serverDataRequired;
 
     private static int getNextDefaultLinePosition()
     {
@@ -113,18 +115,29 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
 
     InfoToggle(String name, boolean defaultValue, String defaultHotkey)
     {
-        this(name, defaultValue,
+        this(name, defaultValue, false,
                 getNextDefaultLinePosition(),
                 defaultHotkey,
                 buildTranslateName(name, "comment"),
                 KeybindSettings.DEFAULT,
                 buildTranslateName(name, "name"),
                 buildTranslateName(name, "prettyName"));
+    }
+
+    InfoToggle(String name, boolean defaultValue, boolean serverDataRequired, String defaultHotkey)
+    {
+        this(name, defaultValue, serverDataRequired,
+             getNextDefaultLinePosition(),
+             defaultHotkey,
+             buildTranslateName(name, "comment"),
+             KeybindSettings.DEFAULT,
+             buildTranslateName(name, "name"),
+             buildTranslateName(name, "prettyName"));
     }
 
     InfoToggle(String name, boolean defaultValue, String defaultHotkey, KeybindSettings settings)
     {
-        this(name, defaultValue,
+        this(name, defaultValue, false,
                 getNextDefaultLinePosition(),
                 defaultHotkey,
                 buildTranslateName(name, "comment"),
@@ -133,9 +146,20 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
                 buildTranslateName(name, "prettyName"));
     }
 
+    InfoToggle(String name, boolean defaultValue, boolean serverDataRequired, String defaultHotkey, KeybindSettings settings)
+    {
+        this(name, defaultValue, serverDataRequired,
+             getNextDefaultLinePosition(),
+             defaultHotkey,
+             buildTranslateName(name, "comment"),
+             settings,
+             buildTranslateName(name, "name"),
+             buildTranslateName(name, "prettyName"));
+    }
+
     InfoToggle(String name, boolean defaultValue, int linePosition, String defaultHotkey)
     {
-        this(name, defaultValue,
+        this(name, defaultValue, false,
                 linePosition,
                 defaultHotkey,
                 buildTranslateName(name, "comment"),
@@ -144,9 +168,20 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
                 buildTranslateName(name, "prettyName"));
     }
 
+    InfoToggle(String name, boolean defaultValue, boolean serverDataRequired, int linePosition, String defaultHotkey)
+    {
+        this(name, defaultValue, serverDataRequired,
+             linePosition,
+             defaultHotkey,
+             buildTranslateName(name, "comment"),
+             KeybindSettings.DEFAULT,
+             buildTranslateName(name, "name"),
+             buildTranslateName(name, "prettyName"));
+    }
+
     InfoToggle(String name, boolean defaultValue, int linePosition, String defaultHotkey, KeybindSettings settings)
     {
-        this(name, defaultValue,
+        this(name, defaultValue, false,
                 linePosition,
                 defaultHotkey,
                 buildTranslateName(name, "comment"),
@@ -155,17 +190,38 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
                 buildTranslateName(name, "prettyName"));
     }
 
+    InfoToggle(String name, boolean defaultValue, boolean serverDataRequired, int linePosition, String defaultHotkey, KeybindSettings settings)
+    {
+        this(name, defaultValue, serverDataRequired,
+             linePosition,
+             defaultHotkey,
+             buildTranslateName(name, "comment"),
+             settings,
+             buildTranslateName(name, "name"),
+             buildTranslateName(name, "prettyName"));
+    }
+
     InfoToggle(String name, boolean defaultValue, String defaultHotkey, String comment)
     {
-        this(name, defaultValue, getNextDefaultLinePosition(), defaultHotkey, comment, KeybindSettings.DEFAULT, buildTranslateName(name, "name"), name);
+        this(name, defaultValue, false, getNextDefaultLinePosition(), defaultHotkey, comment, KeybindSettings.DEFAULT, buildTranslateName(name, "name"), name);
+    }
+
+    InfoToggle(String name, boolean defaultValue, boolean serverDataRequired, String defaultHotkey, String comment)
+    {
+        this(name, defaultValue, serverDataRequired, getNextDefaultLinePosition(), defaultHotkey, comment, KeybindSettings.DEFAULT, buildTranslateName(name, "name"), name);
     }
 
     InfoToggle(String name, boolean defaultValue, String defaultHotkey, String comment, String translatedName)
     {
-        this(name, defaultValue, getNextDefaultLinePosition(), defaultHotkey, comment, KeybindSettings.DEFAULT, translatedName, name);
+        this(name, defaultValue, false, getNextDefaultLinePosition(), defaultHotkey, comment, KeybindSettings.DEFAULT, translatedName, name);
     }
 
-    InfoToggle(String name, boolean defaultValue, int linePosition, String defaultHotkey, String comment, KeybindSettings settings, String translatedName, String prettyName)
+    InfoToggle(String name, boolean defaultValue, boolean serverDataRequired, String defaultHotkey, String comment, String translatedName)
+    {
+        this(name, defaultValue, serverDataRequired, getNextDefaultLinePosition(), defaultHotkey, comment, KeybindSettings.DEFAULT, translatedName, name);
+    }
+
+    InfoToggle(String name, boolean defaultValue, boolean serverDataRequired, int linePosition, String defaultHotkey, String comment, KeybindSettings settings, String translatedName, String prettyName)
     {
         this.name = name;
         this.valueBoolean = defaultValue;
@@ -176,6 +232,7 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
         this.comment = comment;
         this.prettyName = prettyName;
         this.translatedName = translatedName;
+        this.serverDataRequired = serverDataRequired;
     }
 
     @Override
@@ -187,6 +244,11 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     @Override
     public String getName()
     {
+        if (this.serverDataRequired)
+        {
+            return GuiBase.TXT_GOLD + this.name + GuiBase.TXT_RST;
+        }
+
         return this.name;
     }
 
@@ -199,7 +261,14 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     @Override
     public String getConfigGuiDisplayName()
     {
-        return StringUtils.getTranslatedOrFallback(this.translatedName, this.name);
+        String name = StringUtils.getTranslatedOrFallback(this.translatedName, this.name);
+
+        if (this.serverDataRequired)
+        {
+            return GuiBase.TXT_GOLD + name + GuiBase.TXT_RST;
+        }
+
+        return name;
     }
 
     @Override
@@ -217,13 +286,27 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     @Override
     public String getComment()
     {
-        return StringUtils.getTranslatedOrFallback(this.comment, this.comment.isEmpty() ? this.name : this.comment);
+        String comment = StringUtils.getTranslatedOrFallback(this.comment, this.comment);
+
+        if (comment != null && this.serverDataRequired)
+        {
+            return comment + "\n" + StringUtils.translate(Reference.MOD_ID + ".label.config_comment.server_side_data");
+        }
+
+        return comment;
     }
 
     @Override
     public String getTranslatedName()
     {
-        return StringUtils.getTranslatedOrFallback(this.translatedName, this.name);
+        String name = StringUtils.getTranslatedOrFallback(this.translatedName, this.name);
+
+        if (this.serverDataRequired)
+        {
+            return GuiBase.TXT_GOLD + name + GuiBase.TXT_RST;
+        }
+
+        return name;
     }
 
     @Override

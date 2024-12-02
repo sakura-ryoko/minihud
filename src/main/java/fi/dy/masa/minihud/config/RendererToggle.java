@@ -3,10 +3,12 @@ package fi.dy.masa.minihud.config;
 import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
+
 import fi.dy.masa.malilib.config.ConfigType;
 import fi.dy.masa.malilib.config.IConfigBoolean;
 import fi.dy.masa.malilib.config.IConfigNotifiable;
 import fi.dy.masa.malilib.config.IHotkeyTogglable;
+import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.hotkeys.IKeybind;
 import fi.dy.masa.malilib.hotkeys.KeyAction;
 import fi.dy.masa.malilib.hotkeys.KeybindMulti;
@@ -33,40 +35,41 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
     OVERLAY_SPAWNABLE_COLUMN_HEIGHTS    ("overlaySpawnableColumnHeights",""),
     OVERLAY_SPAWN_CHUNK_OVERLAY_REAL    ("overlaySpawnChunkReal",       ""),
     OVERLAY_SPAWN_CHUNK_OVERLAY_PLAYER  ("overlaySpawnChunkPlayer",     ""),
-    OVERLAY_STRUCTURE_MAIN_TOGGLE       ("overlayStructureMainToggle",  ""),
-    OVERLAY_VILLAGER_INFO               ("overlayVillagerInfo",         ""),
+    OVERLAY_STRUCTURE_MAIN_TOGGLE       ("overlayStructureMainToggle",  true, ""),
+    OVERLAY_VILLAGER_INFO               ("overlayVillagerInfo",         true, ""),
     SHAPE_RENDERER                      ("shapeRenderer",               ""),
 
-    DEBUG_DATA_MAIN_TOGGLE              ("debugDataMainToggle",         ""),
-    DEBUG_BEEDATA                       ("debugBeeDataEnabled",         ""),
-    DEBUG_BRAIN                         ("debugBrainEnabled",           ""),
-    DEBUG_BREEZE_JUMP                   ("debugBreezeJumpEnabled",      ""),
+    DEBUG_DATA_MAIN_TOGGLE              ("debugDataMainToggle",         true, ""),
+    DEBUG_BEEDATA                       ("debugBeeDataEnabled",         true, ""),
+    DEBUG_BRAIN                         ("debugBrainEnabled",           true, ""),
+    DEBUG_BREEZE_JUMP                   ("debugBreezeJumpEnabled",      true, ""),
     DEBUG_CHUNK_BORDER                  ("debugChunkBorder",            ""),
     DEBUG_CHUNK_DEBUG                   ("debugChunkDebug",             ""),
+    DEBUG_CHUNK_DEBUG                   ("debugChunkDebug",             ""),
     DEBUG_CHUNK_INFO                    ("debugChunkInfo",              ""),
-    DEBUG_CHUNK_LOADING                 ("debugChunkLoading",           ""),
+    DEBUG_CHUNK_LOADING                 ("debugChunkLoading",           true, ""),
     DEBUG_CHUNK_OCCLUSION               ("debugChunkOcclusion",         ""),
     DEBUG_COLLISION_BOXES               ("debugCollisionBoxEnabled",    ""),
     DEBUG_HEIGHTMAP                     ("debugHeightmapEnabled",       ""),
     DEBUG_LIGHT                         ("debugLightEnabled",           ""),
-    DEBUG_NEIGHBOR_UPDATES              ("debugNeighborsUpdateEnabled", ""),
+    DEBUG_NEIGHBOR_UPDATES              ("debugNeighborsUpdateEnabled", true, ""),
     // todo
-    //DEBUG_GAME_TEST                     ("debugGameTestEnabled",        ""),
-    DEBUG_GAME_EVENT                    ("debugGameEventsEnabled",      ""),
-    DEBUG_GOAL_SELECTOR                 ("debugGoalSelectorEnabled",    ""),
+    //DEBUG_GAME_TEST                     ("debugGameTestEnabled",        true, ""),
+    DEBUG_GAME_EVENT                    ("debugGameEventsEnabled",      true,""),
+    DEBUG_GOAL_SELECTOR                 ("debugGoalSelectorEnabled",    true, ""),
     DEBUG_OCTREEE                       ("debugOctreeEnabled",          ""),
-    DEBUG_PATH_FINDING                  ("debugPathfindingEnabled",     ""),
-    DEBUG_RAID_CENTER                   ("debugRaidCenterEnabled",      ""),
+    DEBUG_PATH_FINDING                  ("debugPathfindingEnabled",     true, ""),
+    DEBUG_RAID_CENTER                   ("debugRaidCenterEnabled",      true, ""),
     // todo
-    //DEBUG_REDSTONE_UPDATE_ORDER         ("debugRedstoneUpdateOrder",    ""),
+    //DEBUG_REDSTONE_UPDATE_ORDER         ("debugRedstoneUpdateOrder",    true, ""),
     DEBUG_SKYLIGHT                      ("debugSkylightEnabled",        ""),
     DEBUG_SOLID_FACES                   ("debugSolidFaceEnabled",       ""),
-    DEBUG_STRUCTURES                    ("debugStructuresEnabled",      ""),
+    DEBUG_STRUCTURES                    ("debugStructuresEnabled",      true, ""),
     DEBUG_SUPPORTING_BLOCK              ("debugSupportingBlock",        ""),
     DEBUG_WATER                         ("debugWaterEnabled",           ""),
-    DEBUG_VILLAGE                       ("debugVillageEnabled",         ""),
-    DEBUG_VILLAGE_SECTIONS              ("debugVillageSectionsEnabled", ""),
-    DEBUG_WORLDGEN                      ("debugWorldGenEnabled",        "");
+    DEBUG_VILLAGE                       ("debugVillageEnabled",         true, ""),
+    DEBUG_VILLAGE_SECTIONS              ("debugVillageSectionsEnabled", true, ""),
+    DEBUG_WORLDGEN                      ("debugWorldGenEnabled",        true, "");
 
     public static final ImmutableList<RendererToggle> VALUES = ImmutableList.copyOf(values());
     private static final String RENDER_KEY = Reference.MOD_ID+".config.render_toggle";
@@ -78,11 +81,22 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
     private final IKeybind keybind;
     private final boolean defaultValueBoolean;
     private boolean valueBoolean;
+    private final boolean serverDataRequired;
     @Nullable private IValueChangeCallback<IConfigBoolean> callback;
 
     RendererToggle(String name, String defaultHotkey)
     {
-        this(name, defaultHotkey, KeybindSettings.DEFAULT,
+        this(name, false,
+             defaultHotkey, KeybindSettings.DEFAULT,
+             buildTranslateName(name, "comment"),
+             buildTranslateName(name, "prettyName"),
+             buildTranslateName(name, "name"));
+    }
+
+    RendererToggle(String name, boolean serverDataRequired, String defaultHotkey)
+    {
+        this(name, serverDataRequired,
+             defaultHotkey, KeybindSettings.DEFAULT,
              buildTranslateName(name, "comment"),
              buildTranslateName(name, "prettyName"),
              buildTranslateName(name, "name"));
@@ -90,7 +104,17 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
 
     RendererToggle(String name, String defaultHotkey, String comment)
     {
-        this(name, defaultHotkey, KeybindSettings.DEFAULT,
+        this(name, false,
+             defaultHotkey, KeybindSettings.DEFAULT,
+             comment,
+             buildTranslateName(name, "prettyName"),
+             buildTranslateName(name, "name"));
+    }
+
+    RendererToggle(String name, boolean serverDataRequired, String defaultHotkey, String comment)
+    {
+        this(name, serverDataRequired,
+             defaultHotkey, KeybindSettings.DEFAULT,
              comment,
              buildTranslateName(name, "prettyName"),
              buildTranslateName(name, "name"));
@@ -98,7 +122,17 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
 
     RendererToggle(String name, String defaultHotkey, String comment, String prettyName)
     {
-        this(name, defaultHotkey, KeybindSettings.DEFAULT,
+        this(name, false,
+             defaultHotkey, KeybindSettings.DEFAULT,
+             comment,
+             prettyName,
+             buildTranslateName(name, "name"));
+    }
+
+    RendererToggle(String name, boolean serverDataRequired, String defaultHotkey, String comment, String prettyName)
+    {
+        this(name, serverDataRequired,
+             defaultHotkey, KeybindSettings.DEFAULT,
              comment,
              prettyName,
              buildTranslateName(name, "name"));
@@ -106,7 +140,17 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
 
     RendererToggle(String name, String defaultHotkey, String comment, String prettyName, String translatedName)
     {
-        this(name, defaultHotkey, KeybindSettings.DEFAULT,
+        this(name, false,
+             defaultHotkey, KeybindSettings.DEFAULT,
+             comment,
+             prettyName,
+             translatedName);
+    }
+
+    RendererToggle(String name, boolean serverDataRequired, String defaultHotkey, String comment, String prettyName, String translatedName)
+    {
+        this(name, serverDataRequired,
+             defaultHotkey, KeybindSettings.DEFAULT,
              comment,
              prettyName,
              translatedName);
@@ -114,7 +158,17 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
 
     RendererToggle(String name, String defaultHotkey, KeybindSettings settings)
     {
-        this(name, defaultHotkey, settings,
+        this(name, false,
+             defaultHotkey, settings,
+             buildTranslateName(name, "comment"),
+             buildTranslateName(name, "prettyName"),
+             buildTranslateName(name, "name"));
+    }
+
+    RendererToggle(String name, boolean serverDataRequired, String defaultHotkey, KeybindSettings settings)
+    {
+        this(name, serverDataRequired,
+             defaultHotkey, settings,
              buildTranslateName(name, "comment"),
              buildTranslateName(name, "prettyName"),
              buildTranslateName(name, "name"));
@@ -122,20 +176,39 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
 
     RendererToggle(String name, String defaultHotkey, KeybindSettings settings, String comment)
     {
-        this(name, defaultHotkey, settings, comment,
+        this(name, false,
+             defaultHotkey, settings, comment,
+             buildTranslateName(name, "prettyName"),
+             buildTranslateName(name, "name"));
+    }
+
+    RendererToggle(String name, boolean serverDataRequired, String defaultHotkey, KeybindSettings settings, String comment)
+    {
+        this(name, serverDataRequired,
+             defaultHotkey, settings, comment,
              buildTranslateName(name, "prettyName"),
              buildTranslateName(name, "name"));
     }
 
     RendererToggle(String name, String defaultHotkey, KeybindSettings settings, String comment, String prettyName)
     {
-        this(name, defaultHotkey, settings,
+        this(name, false,
+             defaultHotkey, settings,
              comment,
              prettyName,
              buildTranslateName(name, "name"));
     }
 
-    RendererToggle(String name, String defaultHotkey, KeybindSettings settings, String comment, String prettyName, String translatedName)
+    RendererToggle(String name, boolean serverDataRequired, String defaultHotkey, KeybindSettings settings, String comment, String prettyName)
+    {
+        this(name, serverDataRequired,
+             defaultHotkey, settings,
+             comment,
+             prettyName,
+             buildTranslateName(name, "name"));
+    }
+
+    RendererToggle(String name, boolean serverDataRequired, String defaultHotkey, KeybindSettings settings, String comment, String prettyName, String translatedName)
     {
         this.name = name;
         this.defaultValueBoolean = false;
@@ -144,6 +217,7 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
         this.comment = comment;
         this.prettyName = prettyName;
         this.translatedName = translatedName;
+        this.serverDataRequired = serverDataRequired;
     }
 
     private boolean toggleValueWithMessage(KeyAction action, IKeybind key)
@@ -164,6 +238,11 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
     @Override
     public String getName()
     {
+        if (this.serverDataRequired)
+        {
+            return GuiBase.TXT_GOLD + this.name + GuiBase.TXT_RST;
+        }
+
         return this.name;
     }
 
@@ -176,7 +255,14 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
     @Override
     public String getConfigGuiDisplayName()
     {
-        return StringUtils.getTranslatedOrFallback(this.translatedName, this.name);
+        String name = StringUtils.getTranslatedOrFallback(this.translatedName, this.name);
+
+        if (this.serverDataRequired)
+        {
+            return GuiBase.TXT_GOLD + name + GuiBase.TXT_RST;
+        }
+
+        return name;
     }
 
     @Override
@@ -194,14 +280,27 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
     @Override
     public String getComment()
     {
-        //return StringUtils.getTranslatedOrFallback("config.comment." + this.getName().toLowerCase(), this.comment);
-        return StringUtils.getTranslatedOrFallback(this.comment, this.comment);
+        String comment = StringUtils.getTranslatedOrFallback(this.comment, this.comment);
+
+        if (comment != null && this.serverDataRequired)
+        {
+            return comment + "\n" + StringUtils.translate(Reference.MOD_ID + ".label.config_comment.server_side_data");
+        }
+
+        return comment;
     }
 
     @Override
     public String getTranslatedName()
     {
-        return StringUtils.getTranslatedOrFallback(this.translatedName, this.name);
+        String name = StringUtils.getTranslatedOrFallback(this.translatedName, this.name);
+
+        if (this.serverDataRequired)
+        {
+            return GuiBase.TXT_GOLD + name + GuiBase.TXT_RST;
+        }
+
+        return name;
     }
 
     @Override
@@ -265,6 +364,12 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
     public IKeybind getKeybind()
     {
         return this.keybind;
+    }
+
+
+    public boolean needsServerData()
+    {
+        return this.serverDataRequired;
     }
 
     @Override

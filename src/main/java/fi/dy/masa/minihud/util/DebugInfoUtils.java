@@ -1,11 +1,5 @@
 package fi.dy.masa.minihud.util;
 
-import java.util.List;
-import java.util.Map;
-import java.util.function.Predicate;
-import com.google.common.collect.MapMaker;
-import io.netty.buffer.Unpooled;
-
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.Frustum;
@@ -13,24 +7,13 @@ import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.debug.DebugRenderer;
 import net.minecraft.client.render.debug.NeighborUpdateDebugRenderer;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.pathing.EntityNavigation;
-import net.minecraft.entity.ai.pathing.Path;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.TypeFilter;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import fi.dy.masa.malilib.config.IConfigBoolean;
-import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.RendererToggle;
 import fi.dy.masa.minihud.mixin.debug.IMixinDebugRenderer;
 
@@ -177,22 +160,7 @@ public class DebugInfoUtils
 
     public static void toggleDebugRenderer(IConfigBoolean config)
     {
-        if (RendererToggle.DEBUG_DATA_MAIN_TOGGLE.getBooleanValue() == false)
-        {
-            return;
-        }
-        if (config == RendererToggle.DEBUG_NEIGHBOR_UPDATES)
-        {
-            neighborUpdateEnabled = config.getBooleanValue();
-        }
-        // FIXME --> Pathfinding renderer causes a custom_payload crash (Unregistered Vanilla Payload)
-        /*
-        else if (config == RendererToggle.DEBUG_PATH_FINDING)
-        {
-            pathfindingEnabled = config.getBooleanValue();
-        }
-         */
-        else if (config == RendererToggle.DEBUG_CHUNK_BORDER)
+        if (config == RendererToggle.DEBUG_CHUNK_BORDER)
         {
             boolean enabled = ((IMixinDebugRenderer) MinecraftClient.getInstance().debugRenderer).minihud_getShowChunkBorder();
 
@@ -229,6 +197,23 @@ public class DebugInfoUtils
                 MiniHUD.logger.warn("Toggled Vanilla 'Octree' Debug Renderer OFF.");
             }
         }
+         */
+
+        // NeedsServerData
+        if (RendererToggle.DEBUG_DATA_MAIN_TOGGLE.getBooleanValue() == false)
+        {
+            return;
+        }
+        if (config == RendererToggle.DEBUG_NEIGHBOR_UPDATES)
+        {
+            neighborUpdateEnabled = config.getBooleanValue();
+        }
+        /*
+        else if (config == RendererToggle.DEBUG_PATH_FINDING)
+        {
+            pathfindingEnabled = config.getBooleanValue();
+        }
+         */
     }
 
     private static void debugWarn(String key, Object... args)
@@ -243,45 +228,55 @@ public class DebugInfoUtils
                                           VertexConsumerProvider.Immediate vtx,
                                           double cameraX, double cameraY, double cameraZ)
     {
-        if (RendererToggle.DEBUG_DATA_MAIN_TOGGLE.getBooleanValue() == false)
-        {
-            return;
-        }
-
         DebugRenderer renderer = MinecraftClient.getInstance().debugRenderer;
 
+        if (RendererToggle.DEBUG_CHUNK_DEBUG.getBooleanValue())
+        {
+            renderer.chunkDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
+        }
+        if (RendererToggle.DEBUG_CHUNK_LOADING.getBooleanValue())
+        {
+            renderer.chunkLoadingDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
+        }
         if (RendererToggle.DEBUG_COLLISION_BOXES.getBooleanValue())
         {
             renderer.collisionDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
         }
-        if (RendererToggle.DEBUG_NEIGHBOR_UPDATES.getBooleanValue())
+        if (RendererToggle.DEBUG_HEIGHTMAP.getBooleanValue())
         {
-            renderer.neighborUpdateDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
+            renderer.heightmapDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
+        }
+        if (RendererToggle.DEBUG_LIGHT.getBooleanValue())
+        {
+            renderer.lightDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
+        }
+        if (RendererToggle.DEBUG_SKYLIGHT.getBooleanValue())
+        {
+            renderer.skyLightDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
         }
         if (RendererToggle.DEBUG_SOLID_FACES.getBooleanValue())
         {
             RenderSystem.enableDepthTest();
             renderer.blockOutlineDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
         }
-        if (RendererToggle.DEBUG_WATER.getBooleanValue())
-        {
-            renderer.waterDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
-        }
-        if (RendererToggle.DEBUG_CHUNK_LOADING.getBooleanValue())
-        {
-            renderer.chunkLoadingDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
-        }
-        if (RendererToggle.DEBUG_CHUNK_DEBUG.getBooleanValue())
-        {
-            renderer.chunkDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
-        }
         if (RendererToggle.DEBUG_SUPPORTING_BLOCK.getBooleanValue())
         {
             renderer.supportingBlockDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
         }
-        if (RendererToggle.DEBUG_HEIGHTMAP.getBooleanValue())
+        if (RendererToggle.DEBUG_WATER.getBooleanValue())
         {
-            renderer.heightmapDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
+            renderer.waterDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
+        }
+
+        // NeedsServerData
+        if (RendererToggle.DEBUG_DATA_MAIN_TOGGLE.getBooleanValue() == false)
+        {
+            return;
+        }
+
+        if (RendererToggle.DEBUG_NEIGHBOR_UPDATES.getBooleanValue())
+        {
+            renderer.neighborUpdateDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
         }
         if (RendererToggle.DEBUG_WORLDGEN.getBooleanValue())
         {
@@ -307,20 +302,10 @@ public class DebugInfoUtils
         {
             renderer.goalSelectorDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
         }
-        if (RendererToggle.DEBUG_SKYLIGHT.getBooleanValue())
-        {
-            renderer.skyLightDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
-        }
         if (RendererToggle.DEBUG_GAME_EVENT.getBooleanValue())
         {
             renderer.gameEventDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
         }
-        if (RendererToggle.DEBUG_LIGHT.getBooleanValue())
-        {
-            renderer.lightDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
-        }
-
-        // FIXME These cause a custom_payload crash when used
         if (RendererToggle.DEBUG_PATH_FINDING.getBooleanValue())
         {
             renderer.pathfindingDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
