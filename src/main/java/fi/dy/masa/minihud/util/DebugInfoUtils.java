@@ -14,6 +14,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import fi.dy.masa.malilib.config.IConfigBoolean;
+import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.RendererToggle;
 import fi.dy.masa.minihud.mixin.debug.IMixinDebugRenderer;
 
@@ -197,7 +198,6 @@ public class DebugInfoUtils
                 MiniHUD.logger.warn("Toggled Vanilla 'Octree' Debug Renderer OFF.");
             }
         }
-         */
 
         // NeedsServerData
         if (RendererToggle.DEBUG_DATA_MAIN_TOGGLE.getBooleanValue() == false)
@@ -230,10 +230,13 @@ public class DebugInfoUtils
     {
         DebugRenderer renderer = MinecraftClient.getInstance().debugRenderer;
 
+        // TODO not needed
+        /*
         if (RendererToggle.DEBUG_CHUNK_DEBUG.getBooleanValue())
         {
             renderer.chunkDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
         }
+         */
         if (RendererToggle.DEBUG_CHUNK_LOADING.getBooleanValue())
         {
             renderer.chunkLoadingDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);

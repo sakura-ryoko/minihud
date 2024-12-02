@@ -44,8 +44,8 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
     DEBUG_BRAIN                         ("debugBrainEnabled",           true, ""),
     DEBUG_BREEZE_JUMP                   ("debugBreezeJumpEnabled",      true, ""),
     DEBUG_CHUNK_BORDER                  ("debugChunkBorder",            ""),
-    DEBUG_CHUNK_DEBUG                   ("debugChunkDebug",             ""),
-    DEBUG_CHUNK_DEBUG                   ("debugChunkDebug",             ""),
+    // todo not needed
+    //DEBUG_CHUNK_DEBUG                   ("debugChunkDebug",             ""),
     DEBUG_CHUNK_INFO                    ("debugChunkInfo",              ""),
     DEBUG_CHUNK_LOADING                 ("debugChunkLoading",           true, ""),
     DEBUG_CHUNK_OCCLUSION               ("debugChunkOcclusion",         ""),
@@ -53,7 +53,7 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
     DEBUG_HEIGHTMAP                     ("debugHeightmapEnabled",       ""),
     DEBUG_LIGHT                         ("debugLightEnabled",           ""),
     DEBUG_NEIGHBOR_UPDATES              ("debugNeighborsUpdateEnabled", true, ""),
-    // todo
+    // todo not needed
     //DEBUG_GAME_TEST                     ("debugGameTestEnabled",        true, ""),
     DEBUG_GAME_EVENT                    ("debugGameEventsEnabled",      true,""),
     DEBUG_GOAL_SELECTOR                 ("debugGoalSelectorEnabled",    true, ""),
