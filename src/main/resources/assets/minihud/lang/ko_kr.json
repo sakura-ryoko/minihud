@@ -370,7 +370,7 @@
   "minihud.config.info_toggle.comment.infoTimeWorld": "현재 월드 시간을 틱 단위로 표시합니다.",
   "minihud.config.info_toggle.comment.infoWorldTimeFormatted": "현재 월드 시간을 일, 시, 분 형식으로 표시합니다.",
   "minihud.config.info_toggle.comment.infoWeather": "현재 날씨와 남은 시간을 표시합니다.",
-  "minihud.config.info_toggle.comment.infoZombieConversion": "Show the Time that a Zombie Villager,\nZombie (Drowned), or Skeleton (Stray) has\nuntil Conversion",
+  "minihud.config.info_toggle.comment.infoZombieConversion": "좀비 주민, 좀비(드라운드), 스켈레톤(스트레이)이\n변환될 때까지 남은 시간을 보여줍니다.",
   "minihud.config.render_toggle.name.overlayBeaconRange": "오버레이 신호기 범위",
   "minihud.config.render_toggle.name.overlayBiomeBorder": "오버레이 생물군계 경계",
   "minihud.config.render_toggle.name.overlayBlockGrid": "오버레이 블록 테두리",
