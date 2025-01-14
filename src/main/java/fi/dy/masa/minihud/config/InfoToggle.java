@@ -230,6 +230,7 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
         this.keybind = KeybindMulti.fromStorageString(defaultHotkey, settings);
         this.keybind.setCallback(new KeyCallbackToggleBoolean(this));
         this.defaultLinePosition = linePosition;
+        this.linePosition = linePosition;
         this.comment = comment;
         this.prettyName = prettyName;
         this.translatedName = translatedName;
