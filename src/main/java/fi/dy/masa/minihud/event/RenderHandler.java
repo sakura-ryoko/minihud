@@ -1007,17 +1007,18 @@ public class RenderHandler implements IRenderer
 
             if (InfoToggle.HORSE_SPEED.getBooleanValue() && speed > 0d)
             {
-                speed *= 42.1629629629629f;
+                speed *= 42.157796f;
                 this.addLineI18n("minihud.info_line.horse_speed", AnimalType, speed);
                 this.addedTypes.add(InfoToggle.HORSE_SPEED);
             }
             if (InfoToggle.HORSE_JUMP.getBooleanValue() && jump > 0d)
             {
-                double calculatedJumpHeight =
-                        -0.1817584952d * jump * jump * jump +
-                                3.689713992d * jump * jump +
-                                2.128599134d * jump +
-                                -0.343930367;
+                double calculatedJumpHeight = 0;
+                while (jump > 0)
+                {
+                    calculatedJumpHeight += jump;
+                    jump = (jump - .08) * .98 * .98;
+                }
                 this.addLineI18n("minihud.info_line.horse_jump", AnimalType, calculatedJumpHeight);
                 this.addedTypes.add(InfoToggle.HORSE_JUMP);
             }
