@@ -292,7 +292,7 @@
   "minihud.config.info_toggle.comment.infoDifficulty": "顯示當前的區域難度",
   "minihud.config.info_toggle.comment.infoDimensionId": "顯示當前維度 ID\n(結果可能不準確，\n這個問題取決於伺服器 (Sponge?)!)",
   "minihud.config.info_toggle.comment.infoDistance": "顯示到當前參考點的距離。\n使用 §6[設定距離參考點]§f 設定參考點",
-  "minihud.config.info_toggle.comment.infoDolphinTreasure": "Show the Treasure Location that a Dolphin is tracking",
+  "minihud.config.info_toggle.comment.infoDolphinTreasure": "Show the Treasure Location that a Dolphin is\ntracking, and if they are drying out",
   "minihud.config.info_toggle.comment.infoEntities": "顯示可見/已加載的實體數量",
   "minihud.config.info_toggle.comment.infoEntitiesClientWorld": "顯示世界列表/地圖中的實體數量",
   "minihud.config.info_toggle.comment.infoEntityRegistryName": "顯示玩家當前注視實體的註冊名稱",

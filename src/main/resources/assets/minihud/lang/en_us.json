@@ -292,7 +292,7 @@
   "minihud.config.info_toggle.comment.infoDifficulty": "Show the local difficulty",
   "minihud.config.info_toggle.comment.infoDimensionId": "Show the current dimension ID\n(might not be accurate in every case,\ndepending on the server (Sponge?)!)",
   "minihud.config.info_toggle.comment.infoDistance": "Show the distance to the current reference point.\nSet the reference point with the setDistanceReferencePoint hotkey",
-  "minihud.config.info_toggle.comment.infoDolphinTreasure": "Show the Treasure Location that a Dolphin is tracking",
+  "minihud.config.info_toggle.comment.infoDolphinTreasure": "Show the Treasure Location that a Dolphin is\ntracking, and if they are drying out",
   "minihud.config.info_toggle.comment.infoEntities": "Show the visible/loaded entity count",
   "minihud.config.info_toggle.comment.infoEntitiesClientWorld": "Show the entity count in the world list/map",
   "minihud.config.info_toggle.comment.infoEntityRegistryName": "Show the registry name of the entity\nthe player is currently looking at",

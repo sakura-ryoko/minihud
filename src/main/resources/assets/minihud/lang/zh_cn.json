@@ -292,7 +292,7 @@
   "minihud.config.info_toggle.comment.infoDifficulty": "显示当前的区域难度",
   "minihud.config.info_toggle.comment.infoDimensionId": "显示当前维度 ID\n(结果可能不准确，\n这个问题取决于服务器 (Sponge?)!)",
   "minihud.config.info_toggle.comment.infoDistance": "显示到当前参考点的距离。\n使用 §6[设置距离参考点]§f 设置参考点",
-  "minihud.config.info_toggle.comment.infoDolphinTreasure": "Show the Treasure Location that a Dolphin is tracking",
+  "minihud.config.info_toggle.comment.infoDolphinTreasure": "Show the Treasure Location that a Dolphin is\ntracking, and if they are drying out",
   "minihud.config.info_toggle.comment.infoEntities": "显示可见/已加载的实体数量",
   "minihud.config.info_toggle.comment.infoEntitiesClientWorld": "显示世界列表/地图中的实体数量",
   "minihud.config.info_toggle.comment.infoEntityRegistryName": "显示玩家当前注视实体的注册名称",
