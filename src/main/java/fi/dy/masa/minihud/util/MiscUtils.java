@@ -1,22 +1,25 @@
 package fi.dy.masa.minihud.util;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
+import java.util.function.Consumer;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import org.apache.commons.lang3.math.Fraction;
 
+import com.mojang.serialization.DataResult;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.block.entity.BeehiveBlockEntity;
 import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.BlockStateComponent;
-import net.minecraft.component.type.BundleContentsComponent;
-import net.minecraft.component.type.NbtComponent;
+import net.minecraft.component.type.*;
 import net.minecraft.entity.passive.AxolotlEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.recipe.AbstractCookingRecipe;
 import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.server.world.ServerWorld;
@@ -27,6 +30,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockBox;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.GlobalPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 
@@ -271,7 +275,59 @@ public class MiscUtils
         }
     }
 
-    public static int getFurnaceXpAmount(World world, AbstractFurnaceBlockEntity be)
+    public static void addCustomModelTooltip(ItemStack stack, List<Text> lines)
+    {
+        CustomModelDataComponent data = stack.get(DataComponentTypes.CUSTOM_MODEL_DATA);
+
+        if (data != null)
+        {
+            // Only display the first entry of any type
+            Float aFloat = data.getFloat(0);
+            Boolean aFlag = data.getFlag(0);
+            String aString = data.getString(0);
+            Integer aColor = data.getColor(0);
+
+            if (aFloat != null)
+            {
+                lines.accept(StringUtils.translateAsText("minihud.label.custom_model_data_tooltip.float", aFloat));
+            }
+            if (aFlag != null)
+            {
+                lines.accept(StringUtils.translateAsText("minihud.label.custom_model_data_tooltip.flag", aFlag));
+            }
+            if (aString != null)
+            {
+                lines.accept(StringUtils.translateAsText("minihud.label.custom_model_data_tooltip.string", aString));
+            }
+            if (aColor != null)
+            {
+                lines.accept(StringUtils.translateAsText("minihud.label.custom_model_data_tooltip.color", aColor));
+            }
+        }
+    }
+
+    public static void addFoodTooltip(ItemStack stack, List<Text> lines)
+    {
+        FoodComponent data = stack.get(DataComponentTypes.FOOD);
+
+        if (data != null)
+        {
+            lines.accept(StringUtils.translateAsText("minihud.label.food_tooltip", ((float) data.nutrition() / 2) , data.saturation()));
+        }
+    }
+
+    public static void addLodestoneTooltip(ItemStack stack, List<Text> lines)
+    {
+        LodestoneTrackerComponent data = stack.get(DataComponentTypes.LODESTONE_TRACKER);
+
+        if (data != null && data.target().isPresent())
+        {
+            GlobalPos pos = data.target().get();
+            lines.accept(StringUtils.translateAsText("minihud.label.lodestone_tooltip", pos.dimension().getValue().getPath(), pos.pos().toShortString()));
+        }
+    }
+
+    public static int getFurnaceXpAmount(ServerWorld world, AbstractFurnaceBlockEntity be)
     {
         Object2IntOpenHashMap<Identifier> recipes = ((IMixinAbstractFurnaceBlockEntity) be).minihud_getUsedRecipes();
         double xp = 0.0;
