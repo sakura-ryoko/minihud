@@ -164,7 +164,8 @@ public class MiscUtils
 
     public static void addBeeTooltip(ItemStack stack, List<Text> lines)
     {
-        List<BeehiveBlockEntity.BeeData> beeList = stack.getComponents().get(DataComponentTypes.BEES);
+        BeesComponent bees = stack.getComponents().getOrDefault(DataComponentTypes.BEES, BeesComponent.DEFAULT);
+        List<BeehiveBlockEntity.BeeData> beeList = bees.bees();
 
         if (beeList != null && beeList.isEmpty() == false)
         {

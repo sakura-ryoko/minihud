@@ -1576,6 +1576,13 @@ public class RenderHandler implements IRenderer
                 {
                     this.addLineI18n("minihud.info_line.entity_variant.parrot", parrot.getVariant().asString());
                 }
+                // TODO 1.21.5+
+                /*
+                else if (pair.getLeft() instanceof PigEntity pig)
+                {
+                    this.addLineI18n("minihud.info_line.entity_variant.pig", pig.getVariant().getKey().get().getValue().getPath());
+                }
+                */
                 else if (pair.getLeft() instanceof RabbitEntity rabbit)
                 {
                     this.addLineI18n("minihud.info_line.entity_variant.rabbit", rabbit.getVariant().asString());
