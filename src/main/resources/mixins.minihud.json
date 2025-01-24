@@ -34,7 +34,6 @@
     "MixinClientPlayerInteractionManager",
     "MixinClientPlayNetworkHandler",
     "MixinConduitBlockEntity",
-    "MixinItemStack",
     "MixinLanguage",
     "MixinMinecraftClient",
     "MixinMinecraftServer",

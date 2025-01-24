@@ -33,7 +33,10 @@ public class Configs implements IConfigHandler
         public static final ConfigBoolean       BEE_TOOLTIPS                        = new ConfigBoolean("beeTooltips", false).apply(GENERIC_KEY);
         public static final ConfigBoolean       BUNDLE_TOOLTIPS                     = new ConfigBoolean("bundleTooltips", true).apply(GENERIC_KEY);
         public static final ConfigInteger       BUNDLE_TOOLTIPS_FILL_LEVEL          = new ConfigInteger("bundleTooltipsFillLevel", 64, 1, 64).apply(GENERIC_KEY);
+        public static final ConfigBoolean       CUSTOM_MODEL_TOOLTIPS               = new ConfigBoolean("customModelTooltips", false).apply(GENERIC_KEY);
+        public static final ConfigBoolean       FOOD_TOOLTIPS                       = new ConfigBoolean("foodTooltips", false).apply(GENERIC_KEY);
         public static final ConfigBoolean       HONEY_TOOLTIPS                      = new ConfigBoolean("honeyTooltips", false).apply(GENERIC_KEY);
+        public static final ConfigBoolean       LODESTONE_TOOLTIPS                  = new ConfigBoolean("lodestoneTooltips", false).apply(GENERIC_KEY);
         public static final ConfigInteger       BIOME_OVERLAY_RANGE                 = new ConfigInteger("biomeOverlayRange", 4, 0, 32).apply(GENERIC_KEY);
         public static final ConfigInteger       BIOME_OVERLAY_RANGE_VERTICAL        = new ConfigInteger("biomeOverlayRangeVertical", 0, 0, 32).apply(GENERIC_KEY);
         public static final ConfigBoolean       BIOME_OVERLAY_SINGLE_COLOR          = new ConfigBoolean("biomeOverlaySingleColor", true).apply(GENERIC_KEY);
@@ -129,7 +132,10 @@ public class Configs implements IConfigHandler
                 BEE_TOOLTIPS,
                 BUNDLE_TOOLTIPS,
                 BUNDLE_TOOLTIPS_FILL_LEVEL,
+                CUSTOM_MODEL_TOOLTIPS,
+                FOOD_TOOLTIPS,
                 HONEY_TOOLTIPS,
+                LODESTONE_TOOLTIPS,
                 BIOME_OVERLAY_SINGLE_COLOR,
                 BUNDLE_PREVIEW,
                 BUNDLE_DISPLAY_BACKGROUND_COLOR,
