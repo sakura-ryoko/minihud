@@ -1,22 +1,25 @@
 package fi.dy.masa.minihud.util;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
+import java.util.function.Consumer;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import it.unimi.dsi.fastutil.objects.Reference2IntMap;
 import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import org.apache.commons.lang3.math.Fraction;
 
+import com.mojang.serialization.DataResult;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.block.entity.BeehiveBlockEntity;
 import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.BlockStateComponent;
-import net.minecraft.component.type.BundleContentsComponent;
-import net.minecraft.component.type.NbtComponent;
+import net.minecraft.component.type.*;
 import net.minecraft.entity.passive.AxolotlEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.recipe.AbstractCookingRecipe;
 import net.minecraft.recipe.Recipe;
 import net.minecraft.recipe.RecipeEntry;
@@ -26,8 +29,10 @@ import net.minecraft.state.property.Properties;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
+import net.minecraft.text.TextCodecs;
 import net.minecraft.util.math.BlockBox;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.GlobalPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 
@@ -134,7 +139,7 @@ public class MiscUtils
         return world.getChunkManager().chunkLoadingManager.getLevelManager().getTickedChunkCount();
     }
 
-    public static void addAxolotlTooltip(ItemStack stack, List<Text> lines)
+    public static void addAxolotlTooltip(ItemStack stack, Consumer<Text> lines)
     {
         NbtComponent entityData = stack.getComponents().get(DataComponentTypes.BUCKET_ENTITY_DATA);
 
@@ -142,7 +147,6 @@ public class MiscUtils
         {
             NbtCompound tag = entityData.copyNbt();
             int variantId = tag.getInt(AxolotlEntity.VARIANT_KEY);
-            // FIXME 1.19.3+ this is not validated now... with AIOOB it will return the entry for ID 0
             AxolotlEntity.Variant variant = AxolotlEntity.Variant.byIndex(variantId);
             String variantName = variant.getId();
             MutableText labelText = Text.translatable("minihud.label.axolotl_tooltip.label");
@@ -153,13 +157,14 @@ public class MiscUtils
                 valueText.setStyle(Style.EMPTY.withColor(AXOLOTL_COLORS[variantId]));
             }
 
-            lines.add(Math.min(1, lines.size()), labelText.append(valueText));
+            lines.accept(labelText.append(valueText));
         }
     }
 
-    public static void addBeeTooltip(ItemStack stack, List<Text> lines)
+    public static void addBeeTooltip(ItemStack stack, Consumer<Text> lines)
     {
-        List<BeehiveBlockEntity.BeeData> beeList = stack.getComponents().get(DataComponentTypes.BEES);
+        BeesComponent bees = stack.getComponents().getOrDefault(DataComponentTypes.BEES, BeesComponent.DEFAULT);
+        List<BeehiveBlockEntity.BeeData> beeList = bees.bees();
 
         if (beeList != null && beeList.isEmpty() == false)
         {
@@ -171,12 +176,22 @@ public class MiscUtils
                 NbtComponent beeData = beeOccupant.entityData();
                 NbtCompound beeTag = beeData.copyNbt();
                 int beeTicks = beeOccupant.ticksInHive();
-                String beeName = "";
+                Optional<Text> beeName = Optional.empty();
                 int beeAge = -1;
 
-                if (beeTag.contains("CustomName", Constants.NBT.TAG_STRING))
+                if (beeTag.contains("CustomName"))
                 {
-                    beeName = beeTag.getString("CustomName");
+                    NbtElement nbtName = beeTag.get("CustomName");
+
+                    if (nbtName != null)
+                    {
+                        DataResult<Text> dr = TextCodecs.CODEC.parse(DataStorage.getInstance().getWorldRegistryManager().getOps(NbtOps.INSTANCE), nbtName);
+
+                        if (dr.isSuccess())
+                        {
+                            beeName = Optional.of(dr.getPartialOrThrow());
+                        }
+                    }
                 }
                 if (beeTag.contains("Age", Constants.NBT.TAG_INT))
                 {
@@ -187,38 +202,22 @@ public class MiscUtils
                     babyCount++;
                 }
 
-                if (beeName.isEmpty() == false)
-                {
-                    Text beeText;
-
-                    try
-                    {
-                        beeText = Text.Serialization.fromJson(beeName, DataStorage.getInstance().getWorldRegistryManager());
-                    }
-                    catch (Exception ignored)
-                    {
-                        beeText = Text.of(beeName);
-                    }
-
-                    lines.add(Math.min(1, lines.size()), Text.translatable("minihud.label.bee_tooltip.name", beeText));
-                }
+                //beeName.ifPresent(text -> lines.accept(StringUtils.translateAsText("minihud.label.bee_tooltip.name", text.getString())));
+                beeName.ifPresent(text -> lines.accept(Text.translatable("minihud.label.bee_tooltip.name", text)));
             }
-            Text text;
 
             if (babyCount > 0)
             {
-                text = Text.translatable("minihud.label.bee_tooltip.count_babies", String.valueOf(count), String.valueOf(babyCount));
+                lines.accept(StringUtils.translateAsText("minihud.label.bee_tooltip.count_babies", String.valueOf(count), String.valueOf(babyCount)));
             }
             else
             {
-                text = Text.translatable("minihud.label.bee_tooltip.count", String.valueOf(count));
+                lines.accept(StringUtils.translateAsText("minihud.label.bee_tooltip.count", String.valueOf(count)));
             }
-
-            lines.add(Math.min(1, lines.size()), text);
         }
     }
 
-    public static void addBundleTooltip(ItemStack stack, List<Text> lines)
+    public static void addBundleTooltip(ItemStack stack, Consumer<Text> lines)
     {
         BundleContentsComponent bundleData = stack.get(DataComponentTypes.BUNDLE_CONTENTS);
         final int maxCount = Configs.Generic.BUNDLE_TOOLTIPS_FILL_LEVEL.getIntegerValue();
@@ -240,22 +239,18 @@ public class MiscUtils
                 fillPercent = 100 * occupancy.floatValue();
             }
 
-            String result;
-
             if (count > maxCount)
             {
-                result = StringUtils.translate("minihud.label.bundle_tooltip.count.full", count, maxCount, fillPercent);
+                lines.accept(StringUtils.translateAsText("minihud.label.bundle_tooltip.count.full", count, maxCount, fillPercent));
             }
             else
             {
-                result = StringUtils.translate("minihud.label.bundle_tooltip.count", count, maxCount, fillPercent);
+                lines.accept(StringUtils.translateAsText("minihud.label.bundle_tooltip.count", count, maxCount, fillPercent));
             }
-
-            lines.add(Text.of(result));
         }
     }
 
-    public static void addHoneyTooltip(ItemStack stack, List<Text> lines)
+    public static void addHoneyTooltip(ItemStack stack, Consumer<Text> lines)
     {
         BlockStateComponent blockItemState = stack.getComponents().get(DataComponentTypes.BLOCK_STATE);
 
@@ -269,7 +264,59 @@ public class MiscUtils
                 honeyLevel = String.valueOf(honey);
             }
 
-            lines.add(Math.min(1, lines.size()), Text.translatable("minihud.label.honey_info.level", honeyLevel));
+            lines.accept(StringUtils.translateAsText("minihud.label.honey_info.level", honeyLevel));
+        }
+    }
+
+    public static void addCustomModelTooltip(ItemStack stack, Consumer<Text> lines)
+    {
+        CustomModelDataComponent data = stack.get(DataComponentTypes.CUSTOM_MODEL_DATA);
+
+        if (data != null)
+        {
+            // Only display the first entry of any type
+            Float aFloat = data.getFloat(0);
+            Boolean aFlag = data.getFlag(0);
+            String aString = data.getString(0);
+            Integer aColor = data.getColor(0);
+
+            if (aFloat != null)
+            {
+                lines.accept(StringUtils.translateAsText("minihud.label.custom_model_data_tooltip.float", aFloat));
+            }
+            if (aFlag != null)
+            {
+                lines.accept(StringUtils.translateAsText("minihud.label.custom_model_data_tooltip.flag", aFlag));
+            }
+            if (aString != null)
+            {
+                lines.accept(StringUtils.translateAsText("minihud.label.custom_model_data_tooltip.string", aString));
+            }
+            if (aColor != null)
+            {
+                lines.accept(StringUtils.translateAsText("minihud.label.custom_model_data_tooltip.color", aColor));
+            }
+        }
+    }
+
+    public static void addFoodTooltip(ItemStack stack, Consumer<Text> lines)
+    {
+        FoodComponent data = stack.get(DataComponentTypes.FOOD);
+
+        if (data != null)
+        {
+            lines.accept(StringUtils.translateAsText("minihud.label.food_tooltip", ((float) data.nutrition() / 2) , data.saturation()));
+        }
+    }
+
+    public static void addLodestoneTooltip(ItemStack stack, Consumer<Text> lines)
+    {
+        LodestoneTrackerComponent data = stack.get(DataComponentTypes.LODESTONE_TRACKER);
+
+        if (data != null && data.target().isPresent())
+        {
+            GlobalPos pos = data.target().get();
+            lines.accept(StringUtils.translateAsText("minihud.label.lodestone_tooltip", pos.dimension().getValue().getPath(), pos.pos().toShortString()));
         }
     }
 
