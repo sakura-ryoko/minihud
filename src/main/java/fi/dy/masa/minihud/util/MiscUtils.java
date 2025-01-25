@@ -1,16 +1,13 @@
 package fi.dy.masa.minihud.util;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Random;
-import java.util.function.Consumer;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import org.apache.commons.lang3.math.Fraction;
 
-import com.mojang.serialization.DataResult;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.block.entity.BeehiveBlockEntity;
 import net.minecraft.component.DataComponentTypes;
@@ -18,8 +15,6 @@ import net.minecraft.component.type.*;
 import net.minecraft.entity.passive.AxolotlEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.recipe.AbstractCookingRecipe;
 import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.server.world.ServerWorld;
@@ -161,8 +156,7 @@ public class MiscUtils
 
     public static void addBeeTooltip(ItemStack stack, List<Text> lines)
     {
-        BeesComponent bees = stack.getComponents().getOrDefault(DataComponentTypes.BEES, BeesComponent.DEFAULT);
-        List<BeehiveBlockEntity.BeeData> beeList = bees.bees();
+        List<BeehiveBlockEntity.BeeData> beeList = stack.getOrDefault(DataComponentTypes.BEES, List.of());
 
         if (beeList != null && beeList.isEmpty() == false)
         {
@@ -290,19 +284,19 @@ public class MiscUtils
 
             if (aFloat != null)
             {
-                lines.accept(StringUtils.translateAsText("minihud.label.custom_model_data_tooltip.float", aFloat));
+                lines.add(StringUtils.translateAsText("minihud.label.custom_model_data_tooltip.float", aFloat));
             }
             if (aFlag != null)
             {
-                lines.accept(StringUtils.translateAsText("minihud.label.custom_model_data_tooltip.flag", aFlag));
+                lines.add(StringUtils.translateAsText("minihud.label.custom_model_data_tooltip.flag", aFlag));
             }
             if (aString != null)
             {
-                lines.accept(StringUtils.translateAsText("minihud.label.custom_model_data_tooltip.string", aString));
+                lines.add(StringUtils.translateAsText("minihud.label.custom_model_data_tooltip.string", aString));
             }
             if (aColor != null)
             {
-                lines.accept(StringUtils.translateAsText("minihud.label.custom_model_data_tooltip.color", aColor));
+                lines.add(StringUtils.translateAsText("minihud.label.custom_model_data_tooltip.color", aColor));
             }
         }
     }
@@ -313,7 +307,7 @@ public class MiscUtils
 
         if (data != null)
         {
-            lines.accept(StringUtils.translateAsText("minihud.label.food_tooltip", ((float) data.nutrition() / 2) , data.saturation()));
+            lines.add(StringUtils.translateAsText("minihud.label.food_tooltip", ((float) data.nutrition() / 2) , data.saturation()));
         }
     }
 
@@ -324,7 +318,7 @@ public class MiscUtils
         if (data != null && data.target().isPresent())
         {
             GlobalPos pos = data.target().get();
-            lines.accept(StringUtils.translateAsText("minihud.label.lodestone_tooltip", pos.dimension().getValue().getPath(), pos.pos().toShortString()));
+            lines.add(StringUtils.translateAsText("minihud.label.lodestone_tooltip", pos.dimension().getValue().getPath(), pos.pos().toShortString()));
         }
     }
 
