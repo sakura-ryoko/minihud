@@ -1432,7 +1432,7 @@ public class RenderHandler implements IRenderer
                     }
                     else if (entityType.equals(EntityType.FOX))
                     {
-                        FoxEntity.Type foxType = NbtEntityUtils.getFoxVariantFromNbt(nbt);
+                        FoxEntity.Variant foxType = NbtEntityUtils.getFoxVariantFromNbt(nbt);
 
                         if (foxType != null)
                         {
