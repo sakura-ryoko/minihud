@@ -277,6 +277,8 @@ public class MiscUtils
         if (data != null)
         {
             // Only display the first entry of any type
+            // TODO 1.21.4+
+            /*
             Float aFloat = data.getFloat(0);
             Boolean aFlag = data.getFlag(0);
             String aString = data.getString(0);
@@ -298,6 +300,10 @@ public class MiscUtils
             {
                 lines.add(StringUtils.translateAsText("minihud.label.custom_model_data_tooltip.color", aColor));
             }
+             */
+
+            Integer value = data.value();
+            lines.add(StringUtils.translateAsText("minihud.label.custom_model_data_tooltip.color", value));
         }
     }
 

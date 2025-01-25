@@ -295,8 +295,8 @@ public class RenderHandler implements IRenderer
         }
 
         if (Configs.Generic.BEE_TOOLTIPS.getBooleanValue() &&
-            //stack.getItem() instanceof BlockItem blockItem &&
-            //blockItem.getBlock() instanceof BeehiveBlock)
+            stack.getItem() instanceof BlockItem blockItem &&
+            blockItem.getBlock() instanceof BeehiveBlock &&
             stack.contains(DataComponentTypes.BEES))
         {
             MiscUtils.addBeeTooltip(stack, list);
@@ -1381,7 +1381,7 @@ public class RenderHandler implements IRenderer
                     }
                     else if (entityType.equals(EntityType.CAT))
                     {
-                        Pair<RegistryKey<CatVariant>, DyeColor> catPair = NbtEntityUtils.getCatVariantFromNbt(nbt, world.getRegistryManager());
+                        Pair<RegistryKey<CatVariant>, DyeColor> catPair = NbtEntityUtils.getCatVariantFromNbt(nbt);
 
                         if (catPair.getLeft() != null)
                         {
@@ -1399,7 +1399,7 @@ public class RenderHandler implements IRenderer
                     }
                     else if (entityType.equals(EntityType.FROG))
                     {
-                        RegistryKey<FrogVariant> variant = NbtEntityUtils.getFrogVariantFromNbt(nbt, world.getRegistryManager());
+                        RegistryKey<FrogVariant> variant = NbtEntityUtils.getFrogVariantFromNbt(nbt);
 
                         if (variant != null)
                         {
@@ -1491,7 +1491,7 @@ public class RenderHandler implements IRenderer
                     }
                     else if (entityType.equals(EntityType.TROPICAL_FISH))
                     {
-                        TropicalFishEntity.Pattern variant = NbtEntityUtils.getFishVariantFromNbt(nbt);
+                        TropicalFishEntity.Variety variant = NbtEntityUtils.getFishVariantFromNbt(nbt);
 
                         if (variant != null)
                         {
