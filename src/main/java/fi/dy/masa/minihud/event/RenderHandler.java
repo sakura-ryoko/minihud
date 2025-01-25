@@ -38,10 +38,7 @@ import net.minecraft.entity.mob.ZombieVillagerEntity;
 import net.minecraft.entity.passive.*;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.EnderChestInventory;
-import net.minecraft.item.FilledMapItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
+import net.minecraft.item.*;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKey;
@@ -281,13 +278,13 @@ public class RenderHandler implements IRenderer
     }
 
     @Override
-    public void onRenderTooltipComponentInsertFirst(Item.TooltipContext context, ItemStack stack, Consumer<Text> list)
+    public void onRenderTooltipComponentInsertFirst(Item.TooltipContext context, ItemStack stack, List<Text> list)
     {
         // NO-OP
     }
 
     @Override
-    public void onRenderTooltipComponentInsertMiddle(Item.TooltipContext context, ItemStack stack, Consumer<Text> list)
+    public void onRenderTooltipComponentInsertMiddle(Item.TooltipContext context, ItemStack stack, List<Text> list)
     {
         if (Configs.Generic.BUNDLE_TOOLTIPS.getBooleanValue() &&
             stack.getItem() instanceof BundleItem)
@@ -297,7 +294,7 @@ public class RenderHandler implements IRenderer
     }
 
     @Override
-    public void onRenderTooltipComponentInsertLast(Item.TooltipContext context, ItemStack stack, Consumer<Text> list)
+    public void onRenderTooltipComponentInsertLast(Item.TooltipContext context, ItemStack stack, List<Text> list)
     {
         if (Configs.Generic.AXOLOTL_TOOLTIPS.getBooleanValue() &&
             stack.getItem() == Items.AXOLOTL_BUCKET)
@@ -1536,12 +1533,12 @@ public class RenderHandler implements IRenderer
                 }
                 else if (pair.getLeft() instanceof CatEntity cat)
                 {
-                    RegistryKey<CatVariant> variant = cat.getVariant().getKey().orElse(CatVariants.BLACK);
+                    RegistryKey<CatVariant> variant = cat.getVariant().getKey().orElse(CatVariant.BLACK);
                     this.addLineI18n("minihud.info_line.entity_variant.cat", variant.getValue().getPath(), cat.getCollarColor().getName());
                 }
                 else if (pair.getLeft() instanceof FrogEntity frog)
                 {
-                    RegistryKey<FrogVariant> variant = frog.getVariant().getKey().orElse(FrogVariants.TEMPERATE);
+                    RegistryKey<FrogVariant> variant = frog.getVariant().getKey().orElse(FrogVariant.TEMPERATE);
                     this.addLineI18n("minihud.info_line.entity_variant.frog", variant.getValue().getPath());
                 }
                 else if (pair.getLeft() instanceof HorseEntity horse)
