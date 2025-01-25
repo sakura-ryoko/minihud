@@ -1431,6 +1431,15 @@ public class RenderHandler implements IRenderer
                             this.addLineI18n("minihud.info_line.entity_variant.cat", catPair.getLeft().getValue().getPath(), catPair.getRight().getName());
                         }
                     }
+                    else if (entityType.equals(EntityType.FOX))
+                    {
+                        FoxEntity.Type foxType = NbtEntityUtils.getFoxVariantFromNbt(nbt);
+
+                        if (foxType != null)
+                        {
+                            this.addLineI18n("minihud.info_line.entity_variant.fox", foxType.asString());
+                        }
+                    }
                     else if (entityType.equals(EntityType.FROG))
                     {
                         RegistryKey<FrogVariant> variant = NbtEntityUtils.getFrogVariantFromNbt(nbt);
@@ -1499,6 +1508,15 @@ public class RenderHandler implements IRenderer
                             this.addLineI18n("minihud.info_line.entity_variant.rabbit", rabbitType.asString());
                         }
                     }
+                    else if (entityType.equals(EntityType.SALMON))
+                    {
+                        SalmonEntity.Variant salmonVariant = NbtEntityUtils.getSalmonVariantFromNbt(nbt);
+
+                        if (salmonVariant != null)
+                        {
+                            this.addLineI18n("minihud.info_line.entity_variant.salmon", salmonVariant.asString());
+                        }
+                    }
                     else if (entityType.equals(EntityType.SHEEP))
                     {
                         DyeColor color = NbtEntityUtils.getSheepColorFromNbt(nbt);
@@ -1535,6 +1553,10 @@ public class RenderHandler implements IRenderer
                 {
                     RegistryKey<CatVariant> variant = cat.getVariant().getKey().orElse(CatVariant.BLACK);
                     this.addLineI18n("minihud.info_line.entity_variant.cat", variant.getValue().getPath(), cat.getCollarColor().getName());
+                }
+                else if (pair.getLeft() instanceof FoxEntity fox)
+                {
+                    this.addLineI18n("minihud.info_line.entity_variant.fox", fox.getVariant().asString());
                 }
                 else if (pair.getLeft() instanceof FrogEntity frog)
                 {
@@ -1586,6 +1608,10 @@ public class RenderHandler implements IRenderer
                 else if (pair.getLeft() instanceof RabbitEntity rabbit)
                 {
                     this.addLineI18n("minihud.info_line.entity_variant.rabbit", rabbit.getVariant().asString());
+                }
+                else if (pair.getLeft() instanceof SalmonEntity salmon)
+                {
+                    this.addLineI18n("minihud.info_line.entity_variant.salmon", salmon.getVariant().asString());
                 }
                 else if (pair.getLeft() instanceof SheepEntity sheep)
                 {
