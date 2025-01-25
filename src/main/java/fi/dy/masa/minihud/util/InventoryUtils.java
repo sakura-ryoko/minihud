@@ -5,7 +5,6 @@ import java.util.List;
 
 import net.minecraft.block.entity.BeehiveBlockEntity;
 import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.BeesComponent;
 import net.minecraft.component.type.BundleContentsComponent;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
@@ -41,8 +40,7 @@ public class InventoryUtils
 
             if (!entry.isEmpty())
             {
-                BeesComponent beeData = entry.getOrDefault(DataComponentTypes.BEES, BeesComponent.DEFAULT);
-                List<BeehiveBlockEntity.BeeData> list = beeData.bees();
+                List<BeehiveBlockEntity.BeeData> list = entry.getOrDefault(DataComponentTypes.BEES, List.of());
 
                 if (!list.isEmpty())
                 {
