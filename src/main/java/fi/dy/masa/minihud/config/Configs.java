@@ -31,6 +31,7 @@ public class Configs implements IConfigHandler
     {
         public static final ConfigBoolean       AXOLOTL_TOOLTIPS                    = new ConfigBoolean("axolotlTooltips", false).apply(GENERIC_KEY);
         public static final ConfigBoolean       BEE_TOOLTIPS                        = new ConfigBoolean("beeTooltips", false).apply(GENERIC_KEY);
+        public static final ConfigBoolean       DISABLE_VANILLA_BEE_TOOLTIPS        = new ConfigBoolean("disableVanillaBeeTooltips", false).apply(GENERIC_KEY);
         public static final ConfigBoolean       BUNDLE_TOOLTIPS                     = new ConfigBoolean("bundleTooltips", true).apply(GENERIC_KEY);
         public static final ConfigInteger       BUNDLE_TOOLTIPS_FILL_LEVEL          = new ConfigInteger("bundleTooltipsFillLevel", 64, 1, 64).apply(GENERIC_KEY);
         public static final ConfigBoolean       CUSTOM_MODEL_TOOLTIPS               = new ConfigBoolean("customModelTooltips", false).apply(GENERIC_KEY);
@@ -130,6 +131,7 @@ public class Configs implements IConfigHandler
         public static final ImmutableList<IConfigBase> OPTIONS = ImmutableList.of(
                 AXOLOTL_TOOLTIPS,
                 BEE_TOOLTIPS,
+                DISABLE_VANILLA_BEE_TOOLTIPS,
                 BUNDLE_TOOLTIPS,
                 BUNDLE_TOOLTIPS_FILL_LEVEL,
                 CUSTOM_MODEL_TOOLTIPS,
