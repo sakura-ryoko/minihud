@@ -46,6 +46,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.OptionalChunk;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.Text;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
@@ -1471,6 +1472,8 @@ public class RenderHandler implements IRenderer
                             this.addLineI18n("minihud.info_line.entity_variant.rabbit", rabbitType.asString());
                         }
                     }
+                    // TODO 1.21.3+
+                    /*
                     else if (entityType.equals(EntityType.SALMON))
                     {
                         SalmonEntity.Variant salmonVariant = NbtEntityUtils.getSalmonVariantFromNbt(nbt);
@@ -1480,6 +1483,7 @@ public class RenderHandler implements IRenderer
                             this.addLineI18n("minihud.info_line.entity_variant.salmon", salmonVariant.asString());
                         }
                     }
+                     */
                     else if (entityType.equals(EntityType.SHEEP))
                     {
                         DyeColor color = NbtEntityUtils.getSheepColorFromNbt(nbt);
@@ -1579,10 +1583,13 @@ public class RenderHandler implements IRenderer
                 {
                     this.addLineI18n("minihud.info_line.entity_variant.rabbit", rabbit.getVariant().asString());
                 }
+                // TODO 1.21.3+
+                /*
                 else if (pair.getLeft() instanceof SalmonEntity salmon)
                 {
                     this.addLineI18n("minihud.info_line.entity_variant.salmon", salmon.getVariant().asString());
                 }
+                 */
                 else if (pair.getLeft() instanceof SheepEntity sheep)
                 {
                     this.addLineI18n("minihud.info_line.entity_variant.sheep", sheep.getColor().getName());
