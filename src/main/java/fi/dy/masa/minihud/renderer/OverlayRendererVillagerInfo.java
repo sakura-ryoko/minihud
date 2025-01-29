@@ -381,7 +381,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
 
     private void renderAtEntity(List<String> texts, Entity entity, Entity targetEntity)
     {
-        float delta = MinecraftClient.getInstance().getRenderTickCounter().getTickDelta(true);
+        float delta = MinecraftClient.getInstance().getRenderTickCounter().getTickProgress(true);
         var cameraPos = entity.getLerpedPos(delta);
         var targetPos = targetEntity.getLerpedPos(delta);
         double hypot = MathHelper.hypot(cameraPos.getX() - targetPos.getX(), cameraPos.getZ() - targetPos.getZ());
