@@ -6,6 +6,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
+import fi.dy.masa.minihud.info.InfoLine;
+import fi.dy.masa.minihud.info.InfoLineEntityVariant;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.joml.Matrix4f;
@@ -1406,6 +1409,12 @@ public class RenderHandler implements IRenderer
                 {
                     return;
                 }
+
+                /*
+                InfoLine line = new InfoLineEntityVariant();
+                InfoLine.Context ctx = new InfoLine.Context(world, pair.getLeft(), null, null, pair.getRight());
+                InfoLine.Text result = new InfoLine.Text(line.parse(ctx));
+                 */
                 if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue() &&
                     pair.getLeft() instanceof LivingEntity living && !pair.getRight().isEmpty())
                 {

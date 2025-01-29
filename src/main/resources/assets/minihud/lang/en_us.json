@@ -807,6 +807,7 @@
   "minihud.info_line.entity_reg_name": "Entity reg name: %s",
   "minihud.info_line.entity_variant.axolotl": "Axolotl Color: §b%s§r",
   "minihud.info_line.entity_variant.cat": "Cat Variant: §b%s§r (%s collar)",
+  "minihud.info_line.entity_variant.cow": "Cow Variant: §b%s§r",
   "minihud.info_line.entity_variant.fox": "Fox Variant: §b%s§r",
   "minihud.info_line.entity_variant.frog": "Frog Variant: §b%s§r",
   "minihud.info_line.entity_variant.horse": "Horse Variant: §b%s§r / §d%s§r",
