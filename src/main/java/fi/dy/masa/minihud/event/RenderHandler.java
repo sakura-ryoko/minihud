@@ -1647,7 +1647,7 @@ public class RenderHandler implements IRenderer
                     pair.getLeft() instanceof LivingEntity && !pair.getRight().isEmpty())
                 {
                     NbtCompound nbt = pair.getRight();
-                    Map<RegistryEntry<StatusEffect>, StatusEffectInstance> effects = NbtEntityUtils.getActiveStatusEffectsFromNbt(nbt);
+                    Map<RegistryEntry<StatusEffect>, StatusEffectInstance> effects = NbtEntityUtils.getActiveStatusEffectsFromNbt(nbt, world.getRegistryManager());
 
                     if (effects == null || effects.isEmpty())
                     {
