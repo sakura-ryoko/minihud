@@ -3,11 +3,10 @@ package fi.dy.masa.minihud.info.entity;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
+import net.minecraft.text.Text;
 import org.apache.commons.lang3.tuple.Pair;
 
-import net.minecraft.class_10730;
-import net.minecraft.class_10731;
-import net.minecraft.class_10733;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.decoration.painting.PaintingEntity;
@@ -37,7 +36,7 @@ public class InfoLineEntityVariant extends InfoLine
 
     public InfoLineEntityVariant()
     {
-        this(InfoToggle.ENTITY_VARIANT);
+        super(InfoToggle.ENTITY_VARIANT);
     }
 
     @Override
@@ -78,7 +77,7 @@ public class InfoLineEntityVariant extends InfoLine
         }
         else if (entityType.equals(EntityType.COW))
         {
-            RegistryKey<class_10731> variant = NbtEntityUtils.getCowVariantFromNbt(nbt, world.getRegistryManager());
+            RegistryKey<CowVariant> variant = NbtEntityUtils.getCowVariantFromNbt(nbt, world.getRegistryManager());
 
             if (variant != null)
             {
@@ -234,9 +233,9 @@ public class InfoLineEntityVariant extends InfoLine
                 RegistryKey<CatVariant> variant = cat.getVariant().getKey().orElse(CatVariants.BLACK);
                 return this.translate(VARIANT_KEY + ".cat", variant.getValue().getPath(), cat.getCollarColor().getName());
             }
-            case class_10730 cow ->
+            case CowEntity cow ->
             {
-                RegistryKey<class_10731> variant = cow.method_67349().getKey().orElse(class_10733.field_56438);
+                RegistryKey<CowVariant> variant = cow.getVariant().getKey().orElse(CowVariants.DEFAULT);
                 return this.translate(VARIANT_KEY + ".cow", variant.getValue().getPath());
             }
             case MooshroomEntity mooshroom ->
@@ -266,8 +265,8 @@ public class InfoLineEntityVariant extends InfoLine
 
                 if (paintingVariant != null)
                 {
-                    Optional<net.minecraft.text.Text> title = paintingVariant.title();
-                    Optional<net.minecraft.text.Text> author = paintingVariant.author();
+                    Optional<Text> title = paintingVariant.title();
+                    Optional<Text> author = paintingVariant.author();
 
                     if (title.isPresent() && author.isPresent())
                     {
@@ -289,7 +288,8 @@ public class InfoLineEntityVariant extends InfoLine
             }
             case PigEntity pig ->
             {
-                return this.translate(VARIANT_KEY + ".pig", pig.getVariant().getKey().get().getValue().getPath());
+                RegistryKey<PigVariant> pigVariant = pig.getVariant().getKey().orElse(PigVariants.DEFAULT);
+                return this.translate(VARIANT_KEY + ".pig", pigVariant.getValue().getPath());
             }
             case RabbitEntity rabbit ->
             {
