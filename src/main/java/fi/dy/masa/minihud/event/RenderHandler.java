@@ -8,7 +8,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import fi.dy.masa.minihud.info.InfoLine;
-import fi.dy.masa.minihud.info.InfoLineEntityVariant;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.joml.Matrix4f;
@@ -31,8 +31,6 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.Tameable;
 import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.decoration.painting.PaintingEntity;
-import net.minecraft.entity.decoration.painting.PaintingVariant;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.mob.SkeletonEntity;
@@ -44,7 +42,6 @@ import net.minecraft.inventory.EnderChestInventory;
 import net.minecraft.item.*;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.integrated.IntegratedServer;
@@ -53,8 +50,6 @@ import net.minecraft.server.world.OptionalChunk;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
-import net.minecraft.util.DyeColor;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.util.hit.BlockHitResult;
@@ -75,7 +70,6 @@ import fi.dy.masa.malilib.config.HudAlignment;
 import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.interfaces.IRenderer;
 import fi.dy.masa.malilib.render.RenderUtils;
-import fi.dy.masa.malilib.util.EntityUtils;
 import fi.dy.masa.malilib.util.InventoryUtils;
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.malilib.util.WorldUtils;
@@ -957,52 +951,27 @@ public class RenderHandler implements IRenderer
                 return;
             }
 
-            if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue() && !pair.getRight().isEmpty())
+            // Make into a generic call
+            InfoLine parser = type.initParser();
+
+            if (parser != null)
             {
-                BlockEntityType<?> beType = NbtBlockUtils.getBlockEntityTypeFromNbt(pair.getRight());
+                InfoLine.Context ctx = new InfoLine.Context(bestWorld, null, pair.getLeft(), null, pair.getRight());
+                InfoLine.Entry result = parser.parse(ctx);
 
-                if (beType.equals(BlockEntityType.FURNACE) ||
-                    beType.equals(BlockEntityType.BLAST_FURNACE) ||
-                    beType.equals(BlockEntityType.SMOKER))
+                if (result != null && !result.isEmpty())
                 {
-                    if (bestWorld instanceof ServerWorld serverWorld)
+                    if (result.isTranslated())
                     {
-                        int exp = MiscUtils.getFurnaceXpAmount(serverWorld, pair.getRight());
-
-                        if (exp > 0)
-                        {
-                            this.addLineI18n("minihud.info_line.furnace_xp", exp);
-                        }
+                        this.addLine(result.format());
                     }
-                    else if (this.getHudData().hasServuxServer() && this.getHudData().hasRecipes())
+                    else if (result.hasArgs())
                     {
-                        int exp = MiscUtils.getFurnaceXpAmount(pair.getRight());
-
-                        if (exp > 0)
-                        {
-                            this.addLineI18n("minihud.info_line.furnace_xp", exp);
-                        }
+                        this.addLineI18n(result.format(), result.args());
                     }
-                }
-            }
-            else if (pair.getLeft() instanceof AbstractFurnaceBlockEntity furnace)
-            {
-                if (bestWorld instanceof ServerWorld serverWorld)
-                {
-                    int exp = MiscUtils.getFurnaceXpAmount(serverWorld, furnace);
-
-                    if (exp > 0)
+                    else
                     {
-                        this.addLineI18n("minihud.info_line.furnace_xp", exp);
-                    }
-                }
-                else if (this.getHudData().hasServuxServer() && this.getHudData().hasRecipes())
-                {
-                    int exp = MiscUtils.getFurnaceXpAmount(furnace);
-
-                    if (exp > 0)
-                    {
-                        this.addLineI18n("minihud.info_line.furnace_xp", exp);
+                        this.addLineI18n(result.format());
                     }
                 }
             }
@@ -1335,67 +1304,30 @@ public class RenderHandler implements IRenderer
                 {
                     return;
                 }
-                if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue() &&
-                    pair.getLeft() instanceof LivingEntity living && !pair.getRight().isEmpty())
+
+                // Make into a generic call
+                InfoLine parser = type.initParser();
+
+                if (parser != null)
                 {
-                    NbtCompound nbt = pair.getRight();
-                    Pair<Double, Double> healthPair = NbtEntityUtils.getHealthFromNbt(nbt);
-                    Pair<UUID, Boolean> ownerPair = NbtEntityUtils.getTamableOwner(nbt);
-                    Pair<Integer, Integer> agePair = NbtEntityUtils.getAgeFromNbt(nbt);
+                    InfoLine.Context ctx = new InfoLine.Context(world, pair.getLeft(), null, null, pair.getRight());
+                    InfoLine.Entry result = parser.parse(ctx);
 
-                    double health = healthPair.getLeft();
-                    double maxHealth = healthPair.getRight();
-
-                    // Update the Health, as it might not be timely otherwise.
-                    if (living.getHealth() != health)
+                    if (result != null && !result.isEmpty())
                     {
-                        health = living.getHealth();
-                    }
-
-                    String entityLine = StringUtils.translate("minihud.info_line.looking_at_entity.livingentity", pair.getLeft().getName().getString(), health, maxHealth);
-
-                    if (ownerPair.getLeft() != Util.NIL_UUID)
-                    {
-                        LivingEntity owner = world.getPlayerByUuid(ownerPair.getLeft());
-
-                        if (owner != null)
+                        if (result.isTranslated())
                         {
-                            entityLine = entityLine + " - " + StringUtils.translate("minihud.info_line.looking_at_entity.owner") + ": " + owner.getName().getLiteralString();
+                            this.addLine(result.format());
+                        }
+                        else if (result.hasArgs())
+                        {
+                            this.addLineI18n(result.format(), result.args());
+                        }
+                        else
+                        {
+                            this.addLineI18n(result.format());
                         }
                     }
-                    if (agePair.getLeft() < 0)
-                    {
-                        int untilGrown = agePair.getLeft() * (-1);
-                        entityLine = entityLine+ " [" + StringUtils.getDurationString(untilGrown * 50) + " " + StringUtils.translate("minihud.info_line.remaining") + "]";
-                    }
-                    this.addLine(entityLine);
-                }
-                else if (pair.getLeft() instanceof LivingEntity living)
-                {
-                    String entityLine = StringUtils.translate("minihud.info_line.looking_at_entity.livingentity", living.getName().getString(), living.getHealth(), living.getMaxHealth());
-
-                    if (living instanceof Tameable tamable)
-                    {
-                        LivingEntity owner = tamable.getOwner();
-                        if (owner != null)
-                        {
-                            entityLine = entityLine + " - " + StringUtils.translate("minihud.info_line.looking_at_entity.owner") + ": " + owner.getName().getLiteralString();
-                        }
-                    }
-                    if (living instanceof PassiveEntity passive)
-                    {
-                        if (passive.getBreedingAge() < 0)
-                        {
-                            int untilGrown = ((IMixinPassiveEntity) passive).minihud_getRealBreedingAge() * (-1);
-                            entityLine = entityLine+ " [" + StringUtils.getDurationString(untilGrown * 50) + " " + StringUtils.translate("minihud.info_line.remaining") + "]";
-                        }
-                    }
-
-                    this.addLine(entityLine);
-                }
-                else
-                {
-                    this.addLineI18n("minihud.info_line.looking_at_entity", pair.getLeft().getName().getString());
                 }
             }
         }
@@ -1410,235 +1342,29 @@ public class RenderHandler implements IRenderer
                     return;
                 }
 
-                /*
-                InfoLine line = new InfoLineEntityVariant();
-                InfoLine.Context ctx = new InfoLine.Context(world, pair.getLeft(), null, null, pair.getRight());
-                InfoLine.Text result = new InfoLine.Text(line.parse(ctx));
-                 */
-                if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue() &&
-                    pair.getLeft() instanceof LivingEntity living && !pair.getRight().isEmpty())
+                // Make into a generic call
+                InfoLine parser = type.initParser();
+
+                if (parser != null)
                 {
-                    NbtCompound nbt = pair.getRight();
-                    EntityType<?> entityType = NbtEntityUtils.getEntityTypeFromNbt(nbt);
+                    InfoLine.Context ctx = new InfoLine.Context(world, pair.getLeft(), null, null, pair.getRight());
+                    InfoLine.Entry result = parser.parse(ctx);
 
-                    if (entityType.equals(EntityType.AXOLOTL))
+                    if (result != null && !result.isEmpty())
                     {
-                        AxolotlEntity.Variant variant = NbtEntityUtils.getAxolotlVariantFromNbt(nbt);
-
-                        if (variant != null)
+                        if (result.isTranslated())
                         {
-                            this.addLineI18n("minihud.info_line.entity_variant.axolotl", variant.getId());
+                            this.addLine(result.format());
+                        }
+                        else if (result.hasArgs())
+                        {
+                            this.addLineI18n(result.format(), result.args());
+                        }
+                        else
+                        {
+                            this.addLineI18n(result.format());
                         }
                     }
-                    else if (entityType.equals(EntityType.CAT))
-                    {
-                        Pair<RegistryKey<CatVariant>, DyeColor> catPair = NbtEntityUtils.getCatVariantFromNbt(nbt, world.getRegistryManager());
-
-                        if (catPair.getLeft() != null)
-                        {
-                            this.addLineI18n("minihud.info_line.entity_variant.cat", catPair.getLeft().getValue().getPath(), catPair.getRight().getName());
-                        }
-                    }
-                    else if (entityType.equals(EntityType.FOX))
-                    {
-                        FoxEntity.Variant foxType = NbtEntityUtils.getFoxVariantFromNbt(nbt);
-
-                        if (foxType != null)
-                        {
-                            this.addLineI18n("minihud.info_line.entity_variant.fox", foxType.asString());
-                        }
-                    }
-                    else if (entityType.equals(EntityType.FROG))
-                    {
-                        RegistryKey<FrogVariant> variant = NbtEntityUtils.getFrogVariantFromNbt(nbt, world.getRegistryManager());
-
-                        if (variant != null)
-                        {
-                            this.addLineI18n("minihud.info_line.entity_variant.frog", variant.getValue().getPath());
-                        }
-                    }
-                    else if (entityType.equals(EntityType.HORSE))
-                    {
-                        Pair<HorseColor, HorseMarking> horsePair = NbtEntityUtils.getHorseVariantFromNbt(nbt);
-
-                        if (horsePair.getLeft() != null)
-                        {
-                            this.addLineI18n("minihud.info_line.entity_variant.horse", horsePair.getLeft().asString(), horsePair.getRight().name().toLowerCase());
-                        }
-                    }
-                    else if (entityType.equals(EntityType.LLAMA) || entityType.equals(EntityType.TRADER_LLAMA))
-                    {
-                        Pair<LlamaEntity.Variant, Integer> llamaPair = NbtEntityUtils.getLlamaTypeFromNbt(nbt);
-
-                        if (llamaPair.getLeft() != null)
-                        {
-                            this.addLineI18n("minihud.info_line.entity_variant.llama", llamaPair.getLeft().asString(), llamaPair.getRight());
-                        }
-                    }
-                    else if (entityType.equals(EntityType.PAINTING))
-                    {
-                        Pair<Direction, PaintingVariant> paintingPair = NbtEntityUtils.getPaintingDataFromNbt(nbt, world.getRegistryManager());
-
-                        if (paintingPair.getRight() != null)
-                        {
-                            Optional<Text> title = paintingPair.getRight().title();
-                            Optional<Text> author = paintingPair.getRight().author();
-
-                            if (title.isPresent() && author.isPresent())
-                            {
-                                this.addLineI18n("minihud.info_line.entity_variant.painting.both", title.get().getString(), author.get().getString());
-                            }
-                            else if (title.isPresent())
-                            {
-                                this.addLineI18n("minihud.info_line.entity_variant.painting.title_only", title.get().getString());
-                            }
-                            else if (author.isPresent())
-                            {
-                                this.addLineI18n("minihud.info_line.entity_variant.painting.author_only", author.get().getString());
-                            }
-                        }
-                    }
-                    else if (entityType.equals(EntityType.PARROT))
-                    {
-                        ParrotEntity.Variant variant = NbtEntityUtils.getParrotVariantFromNbt(nbt);
-
-                        if (variant != null)
-                        {
-                            this.addLineI18n("minihud.info_line.entity_variant.parrot", variant.asString());
-                        }
-                    }
-                    else if (entityType.equals(EntityType.PIG))
-                    {
-                        RegistryKey<PigVariant> variant = NbtEntityUtils.getPigVariantFromNbt(nbt, world.getRegistryManager());
-
-                        if (variant != null)
-                        {
-                            this.addLineI18n("minihud.info_line.entity_variant.pig", variant.getValue().getPath());
-                        }
-                    }
-                    else if (entityType.equals(EntityType.RABBIT))
-                    {
-                        RabbitEntity.Variant rabbitType = NbtEntityUtils.getRabbitTypeFromNbt(nbt);
-
-                        if (rabbitType != null)
-                        {
-                            this.addLineI18n("minihud.info_line.entity_variant.rabbit", rabbitType.asString());
-                        }
-                    }
-                    else if (entityType.equals(EntityType.SALMON))
-                    {
-                        SalmonEntity.Variant salmonVariant = NbtEntityUtils.getSalmonVariantFromNbt(nbt);
-
-                        if (salmonVariant != null)
-                        {
-                            this.addLineI18n("minihud.info_line.entity_variant.salmon", salmonVariant.asString());
-                        }
-                    }
-                    else if (entityType.equals(EntityType.SHEEP))
-                    {
-                        DyeColor color = NbtEntityUtils.getSheepColorFromNbt(nbt);
-
-                        if (color != null)
-                        {
-                            this.addLineI18n("minihud.info_line.entity_variant.sheep", color.getName());
-                        }
-                    }
-                    else if (entityType.equals(EntityType.TROPICAL_FISH))
-                    {
-                        TropicalFishEntity.Pattern variant = NbtEntityUtils.getFishVariantFromNbt(nbt);
-
-                        if (variant != null)
-                        {
-                            this.addLineI18n("minihud.info_line.entity_variant.tropical_fish", variant.asString());
-                        }
-                    }
-                    else if (entityType.equals(EntityType.WOLF))
-                    {
-                        Pair<RegistryKey<WolfVariant>, DyeColor> wolfPair = NbtEntityUtils.getWolfVariantFromNbt(nbt);
-
-                        if (wolfPair.getLeft() != null)
-                        {
-                            this.addLineI18n("minihud.info_line.entity_variant.wolf", wolfPair.getLeft().getValue().getPath(), wolfPair.getRight().getName());
-                        }
-                    }
-                }
-                else if (pair.getLeft() instanceof AxolotlEntity axolotl)
-                {
-                    this.addLineI18n("minihud.info_line.entity_variant.axolotl", axolotl.getVariant().name());
-                }
-                else if (pair.getLeft() instanceof CatEntity cat)
-                {
-                    RegistryKey<CatVariant> variant = cat.getVariant().getKey().orElse(CatVariants.BLACK);
-                    this.addLineI18n("minihud.info_line.entity_variant.cat", variant.getValue().getPath(), cat.getCollarColor().getName());
-                }
-                else if (pair.getLeft() instanceof FoxEntity fox)
-                {
-                    this.addLineI18n("minihud.info_line.entity_variant.fox", fox.getVariant().asString());
-                }
-                else if (pair.getLeft() instanceof FrogEntity frog)
-                {
-                    RegistryKey<FrogVariant> variant = frog.getVariant().getKey().orElse(FrogVariants.TEMPERATE);
-                    this.addLineI18n("minihud.info_line.entity_variant.frog", variant.getValue().getPath());
-                }
-                else if (pair.getLeft() instanceof HorseEntity horse)
-                {
-                    this.addLineI18n("minihud.info_line.entity_variant.horse", horse.getHorseColor().asString(), horse.getMarking().name().toLowerCase());
-                }
-                else if (pair.getLeft() instanceof LlamaEntity llama)
-                {
-                    this.addLineI18n("minihud.info_line.entity_variant.llama", llama.getVariant().asString(), llama.getStrength());
-                }
-                else if (pair.getLeft() instanceof PaintingEntity painting)
-                {
-                    PaintingVariant paintingVariant = painting.getVariant().value();
-
-                    if (paintingVariant != null)
-                    {
-                        Optional<Text> title = paintingVariant.title();
-                        Optional<Text> author = paintingVariant.author();
-
-                        if (title.isPresent() && author.isPresent())
-                        {
-                            this.addLineI18n("minihud.info_line.entity_variant.painting.both", title.get().getString(), author.get().getString());
-                        }
-                        else if (title.isPresent())
-                        {
-                            this.addLineI18n("minihud.info_line.entity_variant.painting.title_only", title.get().getString());
-                        }
-                        else if (author.isPresent())
-                        {
-                            this.addLineI18n("minihud.info_line.entity_variant.painting.author_only", author.get().getString());
-                        }
-                    }
-                }
-                else if (pair.getLeft() instanceof ParrotEntity parrot)
-                {
-                    this.addLineI18n("minihud.info_line.entity_variant.parrot", parrot.getVariant().asString());
-                }
-                else if (pair.getLeft() instanceof PigEntity pig)
-                {
-                    this.addLineI18n("minihud.info_line.entity_variant.pig", pig.getVariant().getKey().get().getValue().getPath());
-                }
-                else if (pair.getLeft() instanceof RabbitEntity rabbit)
-                {
-                    this.addLineI18n("minihud.info_line.entity_variant.rabbit", rabbit.getVariant().asString());
-                }
-                else if (pair.getLeft() instanceof SalmonEntity salmon)
-                {
-                    this.addLineI18n("minihud.info_line.entity_variant.salmon", salmon.getVariant().asString());
-                }
-                else if (pair.getLeft() instanceof SheepEntity sheep)
-                {
-                    this.addLineI18n("minihud.info_line.entity_variant.sheep", sheep.getColor().getName());
-                }
-                else if (pair.getLeft() instanceof TropicalFishEntity fish)
-                {
-                    this.addLineI18n("minihud.info_line.entity_variant.tropical_fish", fish.getVariety().asString());
-                }
-                else if (pair.getLeft() instanceof WolfEntity wolf)
-                {
-                    Pair<RegistryKey<WolfVariant>, DyeColor> wolfPair = EntityUtils.getWolfVariantFromNbt(wolf);
-                    this.addLineI18n("minihud.info_line.entity_variant.wolf", wolfPair.getLeft().getValue().getPath(), wolfPair.getRight().getName());
                 }
             }
         }
@@ -1652,51 +1378,28 @@ public class RenderHandler implements IRenderer
                 {
                     return;
                 }
-                if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue() &&
-                    pair.getLeft() instanceof LivingEntity && !pair.getRight().isEmpty())
+
+                // Make into a generic call
+                InfoLine parser = type.initParser();
+
+                if (parser != null)
                 {
-                    NbtCompound nbt = pair.getRight();
-                    Map<RegistryEntry<StatusEffect>, StatusEffectInstance> effects = NbtEntityUtils.getActiveStatusEffectsFromNbt(nbt, world.getRegistryManager());
+                    InfoLine.Context ctx = new InfoLine.Context(world, pair.getLeft(), null, null, pair.getRight());
+                    InfoLine.Entry result = parser.parse(ctx);
 
-                    if (effects == null || effects.isEmpty())
+                    if (result != null && !result.isEmpty())
                     {
-                        return;
-                    }
-
-                    for (RegistryEntry<StatusEffect> effectType : effects.keySet())
-                    {
-                        StatusEffectInstance effect = effects.get(effectType);
-
-                        if (effect.isInfinite() || effect.getDuration() > 0)
+                        if (result.isTranslated())
                         {
-                            this.addLineI18n("minihud.info_line.looking_at_effects",
-                                             effectType.value().getName().getString(),
-                                             effect.getAmplifier() > 0 ? StringUtils.translate("minihud.info_line.looking_at_effects.amplifier", effect.getAmplifier() + 1) : "",
-                                             effect.isInfinite() ? StringUtils.translate("minihud.info_line.looking_at_effects.infinite") :
-                                             StringUtils.getDurationString((effect.getDuration() / 20) * 1000L),
-                                             StringUtils.translate("minihud.info_line.remaining")
-                            );
+                            this.addLine(result.format());
                         }
-                    }
-                }
-                else if (pair.getLeft() instanceof LivingEntity living)
-                {
-                    Collection<StatusEffectInstance> effects = living.getStatusEffects();
-                    Iterator<StatusEffectInstance> iter = effects.iterator();
-
-                    while (iter.hasNext())
-                    {
-                        StatusEffectInstance effect = iter.next();
-
-                        if (effect.isInfinite() || effect.getDuration() > 0)
+                        else if (result.hasArgs())
                         {
-                            this.addLineI18n("minihud.info_line.looking_at_effects",
-                                    effect.getEffectType().value().getName().getString(),
-                                    effect.getAmplifier() > 0 ? StringUtils.translate("minihud.info_line.looking_at_effects.amplifier", effect.getAmplifier() + 1) : "",
-                                    effect.isInfinite() ? StringUtils.translate("minihud.info_line.looking_at_effects.infinite") :
-                                    StringUtils.getDurationString((effect.getDuration() / 20) * 1000L),
-                                    StringUtils.translate("minihud.info_line.remaining")
-                            );
+                            this.addLineI18n(result.format(), result.args());
+                        }
+                        else
+                        {
+                            this.addLineI18n(result.format());
                         }
                     }
                 }
