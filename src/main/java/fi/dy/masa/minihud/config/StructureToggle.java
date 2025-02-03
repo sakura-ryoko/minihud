@@ -11,28 +11,28 @@ import fi.dy.masa.minihud.util.DataStorage;
 
 public enum StructureToggle
 {
-    OVERLAY_STRUCTURE_ANCIENT_CITY      ("Ancient City",    "", "#30D10AE6", "#30D506C9", "ancient_city"),
-    OVERLAY_STRUCTURE_BASTION_REMNANT   ("Bastion Remnant", "", "#302171F5", "#302171F5", "bastion_remnant"),
+    OVERLAY_STRUCTURE_ANCIENT_CITY      ("Ancient City",    "", "#20D10AE6", "#30D506C9", "ancient_city"),
+    OVERLAY_STRUCTURE_BASTION_REMNANT   ("Bastion Remnant", "", "#202171F5", "#302171F5", "bastion_remnant"),
     OVERLAY_STRUCTURE_BURIED_TREASURE   ("Buried Treasure", "", "#302298E6", "#302298E6", "buried_treasure"),
-    OVERLAY_STRUCTURE_DESERT_PYRAMID    ("Desert Pyramid",  "", "#30FFFF00", "#30FFFF00", "desert_pyramid"),
-    OVERLAY_STRUCTURE_END_CITY          ("End City",        "", "#30EB07EB", "#30EB07EB", "end_city"),
-    OVERLAY_STRUCTURE_IGLOO             ("Igloo",           "", "#300FAFE4", "#300FAFE4", "igloo"),
-    OVERLAY_STRUCTURE_JUNGLE_TEMPLE     ("Jungle Temple",   "", "#3099FF00", "#3099FF00", "jungle_pyramid"),
-    OVERLAY_STRUCTURE_MANSION           ("Mansion",         "", "#30FF6500", "#30FF6500", "mansion"),
-    OVERLAY_STRUCTURE_MINESHAFT         ("Mineshaft",       "", "#30F8D650", "#30F8D650", "mineshaft"),
-    OVERLAY_STRUCTURE_NETHER_FORTRESS   ("Nether Fortress", "", "#30FC381D", "#30FC381D", "fortress"),
+    OVERLAY_STRUCTURE_DESERT_PYRAMID    ("Desert Pyramid",  "", "#20FFFF00", "#30FFFF00", "desert_pyramid"),
+    OVERLAY_STRUCTURE_END_CITY          ("End City",        "", "#20EB07EB", "#30EB07EB", "end_city"),
+    OVERLAY_STRUCTURE_IGLOO             ("Igloo",           "", "#200FAFE4", "#300FAFE4", "igloo"),
+    OVERLAY_STRUCTURE_JUNGLE_TEMPLE     ("Jungle Temple",   "", "#2099FF00", "#3099FF00", "jungle_pyramid"),
+    OVERLAY_STRUCTURE_MANSION           ("Mansion",         "", "#20FF6500", "#30FF6500", "mansion"),
+    OVERLAY_STRUCTURE_MINESHAFT         ("Mineshaft",       "", "#20F8D650", "#30F8D650", "mineshaft"),
+    OVERLAY_STRUCTURE_NETHER_FORTRESS   ("Nether Fortress", "", "#20FC381D", "#30FC381D", "fortress"),
     OVERLAY_STRUCTURE_NETHER_FOSSIL     ("Nether Fossil",   "", "#30868E99", "#30868E99", "nether_fossil"),
-    OVERLAY_STRUCTURE_OCEAN_MONUMENT    ("Ocean Monument",  "", "#3029E6EF", "#3029E6EF", "monument"),
-    OVERLAY_STRUCTURE_OCEAN_RUIN        ("Ocean Ruin",      "", "#300FAD83", "#300FAD83", "ocean_ruin"),
-    OVERLAY_STRUCTURE_PILLAGER_OUTPOST  ("Pillager Outpost","", "#300FAD83", "#300FAD83", "pillager_outpost"),
+    OVERLAY_STRUCTURE_OCEAN_MONUMENT    ("Ocean Monument",  "", "#2029E6EF", "#3029E6EF", "monument"),
+    OVERLAY_STRUCTURE_OCEAN_RUIN        ("Ocean Ruin",      "", "#200FAD83", "#300FAD83", "ocean_ruin"),
+    OVERLAY_STRUCTURE_PILLAGER_OUTPOST  ("Pillager Outpost","", "#200FAD83", "#300FAD83", "pillager_outpost"),
     OVERLAY_STRUCTURE_RUINED_PORTAL     ("Ruined Portal",   "", "#309F03D3", "#309F03D3", "ruined_portal"),
     OVERLAY_STRUCTURE_SHIPWRECK         ("Shipwreck",       "", "#30EB1995", "#30EB1995", "shipwreck"),
-    OVERLAY_STRUCTURE_STRONGHOLD        ("Stronghold",      "", "#30009999", "#30009999", "stronghold"),
-    OVERLAY_STRUCTURE_TRIAL_CHAMBERS    ("Trial Chambers",  "", "#3099664E", "#30CC8868", "trial_chambers"),
-    OVERLAY_STRUCTURE_VILLAGE           ("Village",         "", "#3054CB4E", "#3054CB4E", "village"),
-    OVERLAY_STRUCTURE_WITCH_HUT         ("Witch Hut",       "", "#30BE1DFC", "#300099FF", "swamp_hut"),
-    OVERLAY_STRUCTURE_TRAIL_RUINS       ("Trail Ruins",     "", "#307F5AFF", "#307F5AFF", "trail_ruins"),
-    OVERLAY_STRUCTURE_UNKNOWN           ("Unknown",         "", "#50FFFFFF", "#50FFFFFF", "unknown");
+    OVERLAY_STRUCTURE_STRONGHOLD        ("Stronghold",      "", "#20009999", "#30009999", "stronghold"),
+    OVERLAY_STRUCTURE_TRIAL_CHAMBERS    ("Trial Chambers",  "", "#2099664E", "#30CC8868", "trial_chambers"),
+    OVERLAY_STRUCTURE_VILLAGE           ("Village",         "", "#2054CB4E", "#3054CB4E", "village"),
+    OVERLAY_STRUCTURE_WITCH_HUT         ("Witch Hut",       "", "#20BE1DFC", "#300099FF", "swamp_hut"),
+    OVERLAY_STRUCTURE_TRAIL_RUINS       ("Trail Ruins",     "", "#207F5AFF", "#307F5AFF", "trail_ruins"),
+    OVERLAY_STRUCTURE_UNKNOWN           ("Unknown",         "", "#30FFFFFF", "#30FFFFFF", "unknown");
 
     public static final ImmutableList<StructureToggle> VALUES = ImmutableList.copyOf(values());
     public static final ImmutableList<IConfigBoolean> TOGGLE_CONFIGS = ImmutableList.copyOf(VALUES.stream().map(StructureToggle::getToggleOption).toList());
