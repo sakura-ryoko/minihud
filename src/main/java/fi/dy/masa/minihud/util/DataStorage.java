@@ -724,10 +724,12 @@ public class DataStorage
                     if (RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue())
                     {
                         BlockPos playerPos = PositionUtils.getEntityBlockPos(this.mc.player);
+                        final int maxRange = this.mc.options.getClampedViewDistance() + 2;
+                        final int hysteresis = 16;
 
-                        if (this.structuresNeedUpdating(playerPos, 32))
+                        if (this.structuresNeedUpdating(playerPos, hysteresis))
                         {
-                            this.updateStructureDataFromIntegratedServer(playerPos);
+                            this.updateStructureDataFromIntegratedServer(playerPos, maxRange);
                         }
                     }
                 }
@@ -839,7 +841,7 @@ public class DataStorage
         this.hasInValidServux = true;
     }
 
-    private boolean structuresNeedUpdating(BlockPos playerPos, int hysteresis)
+    private boolean structuresNeedUpdating(BlockPos playerPos, final int hysteresis)
     {
         return this.structuresNeedUpdating || this.lastStructureUpdatePos == null ||
                 Math.abs(playerPos.getX() - this.lastStructureUpdatePos.getX()) >= hysteresis ||
@@ -852,22 +854,22 @@ public class DataStorage
         return this.structures.size();
     }
 
-    private void updateStructureDataFromIntegratedServer(final BlockPos playerPos)
+    private void updateStructureDataFromIntegratedServer(final BlockPos playerPos, final int maxRange)
     {
+        if (this.mc.player == null || this.mc.getServer() == null) return;
+
         final RegistryKey<World> worldId = this.mc.player.getEntityWorld().getRegistryKey();
         final ServerWorld world = this.mc.getServer().getWorld(worldId);
 
         if (world != null)
         {
             MinecraftServer server = this.mc.getServer();
-            final int maxChunkRange = this.mc.options.getClampedViewDistance();
 
-            //server.executeTask(new ServerTask(server.getTicks(), () ->
             ((IMixinMinecraftServer) server).minihud_send(new ServerTask(server.getTicks(), () ->
             {
                 synchronized (this.structures)
                 {
-                    this.addStructureDataFromGenerator(world, playerPos, maxChunkRange);
+                    this.addStructureDataFromGenerator(world, playerPos, maxRange);
                 }
             }));
         }
@@ -959,7 +961,7 @@ public class DataStorage
                 Chunk chunk;
                 try
                 {
-                     chunk = world.getChunk(cx, cz, ChunkStatus.FULL, false);
+                     chunk = world.getChunk(cx, cz, ChunkStatus.STRUCTURE_REFERENCES, false);
                 }
                 catch (Exception ignored)
                 {
