@@ -13,6 +13,7 @@ import net.minecraft.item.Item;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.profiler.Profiler;
 
+import fi.dy.masa.malilib.render.RenderContext;
 import fi.dy.masa.malilib.util.EntityUtils;
 import fi.dy.masa.malilib.util.data.Color4f;
 import fi.dy.masa.minihud.config.RendererToggle;
@@ -88,7 +89,7 @@ public class OverlayRenderer
         double y = Math.floor(entity.getY()) - cameraPos.y;
         double z = Math.floor(entity.getZ()) - cameraPos.z;
         // Use the slot number as the level if sneaking
-        int level = mc.player.isSneaking() ? Math.min(4, mc.player.getInventory().selectedSlot + 1) : 4;
+        int level = mc.player.isSneaking() ? Math.min(4, mc.player.getInventory().getSelectedSlot() + 1) : 4;
         float range = level * 10 + 10;
         float minX = (float) (x - range);
         float minY = (float) (y - range);
@@ -106,33 +107,47 @@ public class OverlayRenderer
         fi.dy.masa.malilib.render.RenderUtils.setupBlend();
         fi.dy.masa.malilib.render.RenderUtils.color(1f, 1f, 1f, 1f);
 
+        /*
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder buffer = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
         BuiltBuffer builtBuffer;
 
         RenderSystem.setShader(ShaderProgramKeys.POSITION_COLOR);
-        //RenderSystem.setShader(GameRenderer::getPositionColorProgram);
-        //RenderSystem.applyModelViewMatrix();
+         */
+
+        RenderContext ctx = new RenderContext(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+        BufferBuilder buffer = ctx.getBuilder();
 
         fi.dy.masa.malilib.render.RenderUtils.drawBoxAllSidesBatchedQuads(minX, minY, minZ, maxX, maxY, maxZ, Color4f.fromColor(color.intValue, 0.3f), buffer);
 
         try
         {
+            /*
             builtBuffer = buffer.end();
             BufferRenderer.drawWithGlobalProgram(builtBuffer);
             builtBuffer.close();
+             */
+
+            ctx.drawWithShaders(buffer.end(), ShaderProgramKeys.POSITION_COLOR);
         }
         catch (Exception ignored) { }
 
-        buffer = tessellator.begin(VertexFormat.DrawMode.DEBUG_LINES, VertexFormats.POSITION_COLOR);
+        ctx.reset();
+        ctx.start(VertexFormat.DrawMode.DEBUG_LINES, VertexFormats.POSITION_COLOR);
+        buffer = ctx.getBuilder();
+        //buffer = tessellator.begin(VertexFormat.DrawMode.DEBUG_LINES, VertexFormats.POSITION_COLOR);
 
         fi.dy.masa.malilib.render.RenderUtils.drawBoxAllEdgesBatchedLines(minX, minY, minZ, maxX, maxY, maxZ, Color4f.fromColor(color.intValue, 1f), buffer);
 
         try
         {
+            /*
             builtBuffer = buffer.end();
             BufferRenderer.drawWithGlobalProgram(builtBuffer);
             builtBuffer.close();
+             */
+            ctx.drawWithShaders(buffer.end(), ShaderProgramKeys.POSITION_COLOR);
+            ctx.close();
         }
         catch (Exception ignored) { }
 

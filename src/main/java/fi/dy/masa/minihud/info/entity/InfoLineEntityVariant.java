@@ -84,6 +84,15 @@ public class InfoLineEntityVariant extends InfoLine
                 return this.translate(VARIANT_KEY+".cow", variant.getValue().getPath());
             }
         }
+        else if (entityType.equals(EntityType.CHICKEN))
+        {
+            RegistryKey<ChickenVariant> variant = NbtEntityUtils.getChickenVariantFromNbt(nbt, world.getRegistryManager());
+
+            if (variant != null)
+            {
+                return this.translate(VARIANT_KEY+".chicken", variant.getValue().getPath());
+            }
+        }
         else if (entityType.equals(EntityType.MOOSHROOM))
         {
             MooshroomEntity.Variant mooType = NbtEntityUtils.getMooshroomVariantFromNbt(nbt);
@@ -232,6 +241,11 @@ public class InfoLineEntityVariant extends InfoLine
             {
                 RegistryKey<CatVariant> variant = cat.getVariant().getKey().orElse(CatVariants.BLACK);
                 return this.translate(VARIANT_KEY + ".cat", variant.getValue().getPath(), cat.getCollarColor().getName());
+            }
+            case ChickenEntity chicken ->
+            {
+                RegistryKey<ChickenVariant> variant = chicken.getVariant().getKey().orElse(ChickenVariants.DEFAULT);
+                return this.translate(VARIANT_KEY + ".chicken", variant.getValue().getPath());
             }
             case CowEntity cow ->
             {
