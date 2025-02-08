@@ -182,7 +182,7 @@ public class ServuxHudPacket implements IClientPayloadData
                 }
                 catch (Exception e)
                 {
-                    MiniHUD.logger.error("ServuxHudPacket#toPacket: error writing buffer data to packet: [{}]", e.getLocalizedMessage());
+                    MiniHUD.LOGGER.error("ServuxHudPacket#toPacket: error writing buffer data to packet: [{}]", e.getLocalizedMessage());
                 }
             }
             case PACKET_C2S_METADATA_REQUEST, PACKET_S2C_METADATA, PACKET_C2S_SPAWN_DATA_REQUEST, PACKET_S2C_SPAWN_DATA, PACKET_S2C_WEATHER_TICK, PACKET_C2S_RECIPE_MANAGER_REQUEST ->
@@ -194,10 +194,10 @@ public class ServuxHudPacket implements IClientPayloadData
                 }
                 catch (Exception e)
                 {
-                    MiniHUD.logger.error("ServuxHudPacket#toPacket: error writing NBT to packet: [{}]", e.getLocalizedMessage());
+                    MiniHUD.LOGGER.error("ServuxHudPacket#toPacket: error writing NBT to packet: [{}]", e.getLocalizedMessage());
                 }
             }
-            default -> MiniHUD.logger.error("ServuxHudPacket#toPacket: Unknown packet type!");
+            default -> MiniHUD.LOGGER.error("ServuxHudPacket#toPacket: Unknown packet type!");
         }
     }
 
@@ -210,7 +210,7 @@ public class ServuxHudPacket implements IClientPayloadData
         if (type == null)
         {
             // Invalid Type
-            MiniHUD.logger.warn("ServuxHudPacket#fromPacket: invalid packet type received");
+            MiniHUD.LOGGER.warn("ServuxHudPacket#fromPacket: invalid packet type received");
             return null;
         }
         switch (type)
@@ -224,7 +224,7 @@ public class ServuxHudPacket implements IClientPayloadData
                 }
                 catch (Exception e)
                 {
-                    MiniHUD.logger.error("ServuxHudPacket#fromPacket: error reading S2C Bulk Response Buffer from packet: [{}]", e.getLocalizedMessage());
+                    MiniHUD.LOGGER.error("ServuxHudPacket#fromPacket: error reading S2C Bulk Response Buffer from packet: [{}]", e.getLocalizedMessage());
                 }
             }
             case PACKET_C2S_METADATA_REQUEST ->
@@ -236,7 +236,7 @@ public class ServuxHudPacket implements IClientPayloadData
                 }
                 catch (Exception e)
                 {
-                    MiniHUD.logger.error("ServuxHudPacket#fromPacket: error reading Metadata Request from packet: [{}]", e.getLocalizedMessage());
+                    MiniHUD.LOGGER.error("ServuxHudPacket#fromPacket: error reading Metadata Request from packet: [{}]", e.getLocalizedMessage());
                 }
             }
             case PACKET_S2C_METADATA ->
@@ -248,7 +248,7 @@ public class ServuxHudPacket implements IClientPayloadData
                 }
                 catch (Exception e)
                 {
-                    MiniHUD.logger.error("ServuxHudPacket#fromPacket: error reading Metadata Response from packet: [{}]", e.getLocalizedMessage());
+                    MiniHUD.LOGGER.error("ServuxHudPacket#fromPacket: error reading Metadata Response from packet: [{}]", e.getLocalizedMessage());
                 }
             }
             case PACKET_C2S_SPAWN_DATA_REQUEST ->
@@ -260,7 +260,7 @@ public class ServuxHudPacket implements IClientPayloadData
                 }
                 catch (Exception e)
                 {
-                    MiniHUD.logger.error("ServuxHudPacket#fromPacket: error reading Spawn Data Request from packet: [{}]", e.getLocalizedMessage());
+                    MiniHUD.LOGGER.error("ServuxHudPacket#fromPacket: error reading Spawn Data Request from packet: [{}]", e.getLocalizedMessage());
                 }
             }
             case PACKET_S2C_SPAWN_DATA ->
@@ -272,7 +272,7 @@ public class ServuxHudPacket implements IClientPayloadData
                 }
                 catch (Exception e)
                 {
-                    MiniHUD.logger.error("ServuxHudPacket#fromPacket: error reading Spawn Data Response from packet: [{}]", e.getLocalizedMessage());
+                    MiniHUD.LOGGER.error("ServuxHudPacket#fromPacket: error reading Spawn Data Response from packet: [{}]", e.getLocalizedMessage());
                 }
             }
             case PACKET_S2C_WEATHER_TICK ->
@@ -284,7 +284,7 @@ public class ServuxHudPacket implements IClientPayloadData
                 }
                 catch (Exception e)
                 {
-                    MiniHUD.logger.error("ServuxHudPacket#fromPacket: error reading Weather Tick from packet: [{}]", e.getLocalizedMessage());
+                    MiniHUD.LOGGER.error("ServuxHudPacket#fromPacket: error reading Weather Tick from packet: [{}]", e.getLocalizedMessage());
                 }
             }
             case PACKET_C2S_RECIPE_MANAGER_REQUEST ->
@@ -296,10 +296,10 @@ public class ServuxHudPacket implements IClientPayloadData
                 }
                 catch (Exception e)
                 {
-                    MiniHUD.logger.error("ServuxHudPacket#fromPacket: error reading Recipe Request from packet: [{}]", e.getLocalizedMessage());
+                    MiniHUD.LOGGER.error("ServuxHudPacket#fromPacket: error reading Recipe Request from packet: [{}]", e.getLocalizedMessage());
                 }
             }
-            default -> MiniHUD.logger.error("ServuxHudPacket#fromPacket: Unknown packet type!");
+            default -> MiniHUD.LOGGER.error("ServuxHudPacket#fromPacket: Unknown packet type!");
         }
 
         return null;

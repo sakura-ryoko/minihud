@@ -33,6 +33,8 @@ import fi.dy.masa.malilib.util.IntBoundingBox;
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.malilib.util.data.Constants;
 import fi.dy.masa.malilib.util.nbt.NbtBlockUtils;
+import fi.dy.masa.malilib.util.time.DurationFormat;
+import fi.dy.masa.malilib.util.time.TimeFormat;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.mixin.IMixinAbstractFurnaceBlockEntity;
 
@@ -362,5 +364,35 @@ public class MiscUtils
         }
 
         return (int) xp;
+    }
+
+    public static String formatDateNow()
+    {
+        return formatDateFromEpoch(-1);
+    }
+
+    public static String formatDateFromEpoch(long epochMs)
+    {
+        TimeFormat type = (TimeFormat) Configs.Generic.DATE_FORMAT_TYPE.getOptionListValue();
+
+        if (epochMs < 0)
+        {
+            return type.formatNow(Configs.Generic.DATE_FORMAT_STRING.getStringValue());
+        }
+
+        return type.formatTo(epochMs, Configs.Generic.DATE_FORMAT_STRING.getStringValue());
+    }
+
+    public static long getEpochMsFromString(String time)
+    {
+        TimeFormat type = (TimeFormat) Configs.Generic.DATE_FORMAT_TYPE.getOptionListValue();
+
+        return type.formatFrom(time, Configs.Generic.DATE_FORMAT_STRING.getStringValue());
+    }
+
+    public static String formatDuration(long duration)
+    {
+        DurationFormat type = (DurationFormat) Configs.Generic.DURATION_FORMAT_TYPE.getOptionListValue();
+        return type.format(duration, Configs.Generic.DURATION_FORMAT_STRING.getStringValue());
     }
 }

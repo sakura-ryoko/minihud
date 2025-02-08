@@ -87,7 +87,7 @@ public class DebugDataManager
     {
         if (isLogout)
         {
-            MiniHUD.printDebug("DebugDataManager#reset() - log-out");
+            MiniHUD.debugLog("DebugDataManager#reset() - log-out");
             HANDLER.reset(this.getNetworkChannel());
             HANDLER.resetFailures(this.getNetworkChannel());
 
@@ -107,7 +107,7 @@ public class DebugDataManager
 
     public void onWorldJoin()
     {
-        MiniHUD.printDebug("DebugDataManager#onWorldJoin()");
+        MiniHUD.debugLog("DebugDataManager#onWorldJoin()");
 
         if (!DataStorage.getInstance().hasIntegratedServer())
         {
@@ -163,7 +163,7 @@ public class DebugDataManager
         {
             if (HANDLER.isPlayRegistered(this.getNetworkChannel()))
             {
-                MiniHUD.printDebug("DebugDataManager#registerDebugService(): sending DEBUG_SERVICE_REGISTER to Servux");
+                MiniHUD.debugLog("DebugDataManager#registerDebugService(): sending DEBUG_SERVICE_REGISTER to Servux");
 
                 NbtCompound nbt = new NbtCompound();
                 nbt.putString("version", Reference.MOD_STRING);
@@ -185,7 +185,7 @@ public class DebugDataManager
             {
                 if (HANDLER.isPlayRegistered(this.getNetworkChannel()))
                 {
-                    MiniHUD.printDebug("DebugDataManager#requestMetadata(): sending REQUEST_METADATA to Servux");
+                    MiniHUD.debugLog("DebugDataManager#requestMetadata(): sending REQUEST_METADATA to Servux");
 
                     NbtCompound nbt = new NbtCompound();
                     nbt.putString("version", Reference.MOD_STRING);
@@ -201,11 +201,11 @@ public class DebugDataManager
         if (!this.hasServuxServer() && !DataStorage.getInstance().hasIntegratedServer() &&
                 this.shouldRegisterDebugService)
         {
-            MiniHUD.printDebug("DebugDataManager#receiveMetadata(): received METADATA from Servux");
+            MiniHUD.debugLog("DebugDataManager#receiveMetadata(): received METADATA from Servux");
 
             if (data.getInt("version") != ServuxDebugPacket.PROTOCOL_VERSION)
             {
-                MiniHUD.logger.warn("debugDataChannel: Mis-matched protocol version!");
+                MiniHUD.LOGGER.warn("debugDataChannel: Mis-matched protocol version!");
             }
 
             this.setServuxVersion(data.getString("servux"));
@@ -237,7 +237,7 @@ public class DebugDataManager
             this.servuxServer = false;
             if (!this.hasInValidServux)
             {
-                MiniHUD.printDebug("DebugDataManager#unregisterDebugService(): for {}", this.servuxVersion != null ? this.servuxVersion : "<unknown>");
+                MiniHUD.debugLog("DebugDataManager#unregisterDebugService(): for {}", this.servuxVersion != null ? this.servuxVersion : "<unknown>");
 
                 HANDLER.encodeClientData(ServuxDebugPacket.DebugServiceUnregister(new NbtCompound()));
                 HANDLER.reset(HANDLER.getPayloadChannel());
