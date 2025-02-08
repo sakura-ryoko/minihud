@@ -1,6 +1,8 @@
 package fi.dy.masa.minihud.info.entity;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -20,6 +22,7 @@ import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.info.InfoLine;
+import fi.dy.masa.minihud.util.MiscUtils;
 
 public class InfoLineLookingAtEffects extends InfoLine
 {
@@ -60,20 +63,28 @@ public class InfoLineLookingAtEffects extends InfoLine
             return null;
         }
 
+        List<String> list = new ArrayList<>();
+
         for (RegistryEntry<StatusEffect> effectType : effects.keySet())
         {
             StatusEffectInstance effect = effects.get(effectType);
 
             if (effect.isInfinite() || effect.getDuration() > 0)
             {
-                return this.translate(EFFECTS_KEY,
+                list.add(StringUtils.translate(EFFECTS_KEY,
                                       effectType.value().getName().getString(),
                                       effect.getAmplifier() > 0 ? StringUtils.translate(EFFECTS_KEY+".amplifier", effect.getAmplifier() + 1) : "",
                                       effect.isInfinite() ? StringUtils.translate(EFFECTS_KEY+".infinite") :
-                                      StringUtils.getDurationString((effect.getDuration() / 20) * 1000L),
+                                      MiscUtils.formatDuration((effect.getDuration() / 20) * 1000L),
                                       StringUtils.translate(REMAINING_KEY)
-                );
+                ));
             }
+        }
+
+        // FIXME Multiline Entries
+        if (!list.isEmpty())
+        {
+            return this.format(list.getFirst());
         }
 
         return null;
@@ -85,19 +96,26 @@ public class InfoLineLookingAtEffects extends InfoLine
         if (ent instanceof LivingEntity living)
         {
             Collection<StatusEffectInstance> effects = living.getStatusEffects();
+            List<String> list = new ArrayList<>();
 
             for (StatusEffectInstance effect : effects)
             {
                 if (effect.isInfinite() || effect.getDuration() > 0)
                 {
-                    return this.translate(EFFECTS_KEY,
+                    list.add(StringUtils.translate(EFFECTS_KEY,
                                           effect.getEffectType().value().getName().getString(),
                                           effect.getAmplifier() > 0 ? StringUtils.translate(EFFECTS_KEY + ".amplifier", effect.getAmplifier() + 1) : "",
                                           effect.isInfinite() ? StringUtils.translate(EFFECTS_KEY + ".infinite") :
-                                          StringUtils.getDurationString((effect.getDuration() / 20) * 1000L),
+                                          MiscUtils.formatDuration((effect.getDuration() / 20) * 1000L),
                                           StringUtils.translate(REMAINING_KEY)
-                    );
+                    ));
                 }
+            }
+
+            // FIXME Multiline Entries
+            if (!list.isEmpty())
+            {
+                return this.format(list.getFirst());
             }
         }
 

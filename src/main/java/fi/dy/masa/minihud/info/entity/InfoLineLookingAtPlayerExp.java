@@ -1,0 +1,75 @@
+package fi.dy.masa.minihud.info.entity;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
+import org.apache.commons.lang3.tuple.Triple;
+
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.world.World;
+
+import fi.dy.masa.malilib.util.nbt.NbtEntityUtils;
+import fi.dy.masa.minihud.Reference;
+import fi.dy.masa.minihud.config.Configs;
+import fi.dy.masa.minihud.config.InfoToggle;
+import fi.dy.masa.minihud.info.InfoLine;
+
+public class InfoLineLookingAtPlayerExp extends InfoLine
+{
+    private static final String PLAYER_KEY = Reference.MOD_ID+".info_line.looking_at_player_exp";
+
+    public InfoLineLookingAtPlayerExp(InfoToggle type)
+    {
+        super(type);
+    }
+
+    public InfoLineLookingAtPlayerExp()
+    {
+        this(InfoToggle.LOOKING_AT_PLAYER_EXP);
+    }
+
+    @Override
+    public @Nullable Entry parse(@Nonnull Context ctx)
+    {
+        if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue() &&
+            ctx.hasLiving() && ctx.hasNbt())
+        {
+            EntityType<?> entityType = NbtEntityUtils.getEntityTypeFromNbt(ctx.nbt());
+            if (entityType == null) return null;
+
+            return this.parseNbt(ctx.world(), entityType, ctx.nbt());
+        }
+
+        return ctx.ent() != null ? this.parseEnt(ctx.world(), ctx.ent()) : null;
+    }
+
+    @Override
+    public @Nullable Entry parseNbt(@Nonnull World world, @Nonnull EntityType<?> entityType, @Nonnull NbtCompound nbt)
+    {
+        if (entityType.equals(EntityType.PLAYER))
+        {
+            Triple<Integer, Integer, Float> triple = NbtEntityUtils.getPlayerExpFromNbt(nbt);
+
+            if (triple.getLeft() > 0)
+            {
+                return this.translate(PLAYER_KEY, triple.getLeft(), triple.getRight(), 100 * triple.getMiddle());
+            }
+        }
+
+        return null;
+    }
+
+    @Override
+    public @Nullable Entry parseEnt(@Nonnull World world, @Nonnull Entity ent)
+    {
+        if (ent instanceof ServerPlayerEntity player)
+        {
+            return this.translate(PLAYER_KEY, player.experienceLevel, 100 * player.experienceProgress, player.totalExperience);
+        }
+
+        return null;
+    }
+}

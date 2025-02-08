@@ -191,11 +191,11 @@ public class DebugInfoUtils
 
             if (enabled)
             {
-                MiniHUD.logger.warn("Toggled Vanilla 'Octree' Debug Renderer ON.");
+                MiniHUD.LOGGER.warn("Toggled Vanilla 'Octree' Debug Renderer ON.");
             }
             else
             {
-                MiniHUD.logger.warn("Toggled Vanilla 'Octree' Debug Renderer OFF.");
+                MiniHUD.LOGGER.warn("Toggled Vanilla 'Octree' Debug Renderer OFF.");
             }
         }
 

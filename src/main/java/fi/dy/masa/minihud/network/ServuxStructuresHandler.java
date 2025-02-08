@@ -97,12 +97,12 @@ public abstract class ServuxStructuresHandler<T extends CustomPayload> implement
                         }
                         else
                         {
-                            MiniHUD.logger.warn("decodeStructuresPacket(): Structures Data: error reading fullBuffer NBT is NULL");
+                            MiniHUD.LOGGER.warn("decodeStructuresPacket(): Structures Data: error reading fullBuffer NBT is NULL");
                         }
                     }
                     catch (Exception e)
                     {
-                        MiniHUD.logger.error("decodeStructuresPacket(): Structures Data: error reading fullBuffer [{}]", e.getLocalizedMessage());
+                        MiniHUD.LOGGER.error("decodeStructuresPacket(): Structures Data: error reading fullBuffer [{}]", e.getLocalizedMessage());
                     }
                 }
             }
@@ -128,7 +128,7 @@ public abstract class ServuxStructuresHandler<T extends CustomPayload> implement
                     HudDataManager.getInstance().receiveWeatherData(packet.getCompound());
                 }
             }
-            default -> MiniHUD.logger.warn("decodeStructuresPacket(): received unhandled packetType {} of size {} bytes.", packet.getPacketType(), packet.getTotalSize());
+            default -> MiniHUD.LOGGER.warn("decodeStructuresPacket(): received unhandled packetType {} of size {} bytes.", packet.getPacketType(), packet.getTotalSize());
         }
     }
 
@@ -172,7 +172,7 @@ public abstract class ServuxStructuresHandler<T extends CustomPayload> implement
         {
             if (this.failures > MAX_FAILURES)
             {
-                MiniHUD.printDebug("encodeStructuresPacket(): encountered [{}] sendPayload failures, cancelling any Servux join attempt(s)", MAX_FAILURES);
+                MiniHUD.debugLog("encodeStructuresPacket(): encountered [{}] sendPayload failures, cancelling any Servux join attempt(s)", MAX_FAILURES);
                 this.servuxRegistered = false;
                 ServuxStructuresHandler.INSTANCE.unregisterPlayReceiver();
                 DataStorage.getInstance().onPacketFailure();

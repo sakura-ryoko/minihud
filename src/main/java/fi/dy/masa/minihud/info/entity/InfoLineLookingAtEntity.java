@@ -18,6 +18,7 @@ import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.info.InfoLine;
 import fi.dy.masa.minihud.mixin.entity.IMixinPassiveEntity;
+import fi.dy.masa.minihud.util.MiscUtils;
 
 public class InfoLineLookingAtEntity extends InfoLine
 {
@@ -66,7 +67,7 @@ public class InfoLineLookingAtEntity extends InfoLine
             if (agePair.getLeft() < 0)
             {
                 int untilGrown = agePair.getLeft() * (-1);
-                entityLine = entityLine+ " [" + StringUtils.getDurationString(untilGrown * 50L) + " " + StringUtils.translate(REMAINING_KEY) + "]";
+                entityLine = entityLine+ " [" + MiscUtils.formatDuration(untilGrown * 50L) + " " + StringUtils.translate(REMAINING_KEY) + "]";
             }
 
             return this.format(entityLine);
@@ -89,7 +90,7 @@ public class InfoLineLookingAtEntity extends InfoLine
                 if (passive.getBreedingAge() < 0)
                 {
                     int untilGrown = ((IMixinPassiveEntity) passive).minihud_getRealBreedingAge() * (-1);
-                    entityLine = entityLine+ " [" + StringUtils.getDurationString(untilGrown * 50L) + " " + StringUtils.translate(REMAINING_KEY) + "]";
+                    entityLine = entityLine+ " [" + MiscUtils.formatDuration(untilGrown * 50L) + " " + StringUtils.translate(REMAINING_KEY) + "]";
                 }
             }
 

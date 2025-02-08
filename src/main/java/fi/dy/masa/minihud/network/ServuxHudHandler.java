@@ -88,7 +88,7 @@ public abstract class ServuxHudHandler<T extends CustomPayload> implements IPlug
                     this.readingSessionKey = Random.create(Util.getMeasuringTimeMs()).nextLong();
                 }
 
-                MiniHUD.printDebug("ServuxHudHandler#decodeClientData(): received Hud Data Packet Slice of size {} (in bytes) // reading session key [{}]", packet.getTotalSize(), this.readingSessionKey);
+                MiniHUD.debugLog("ServuxHudHandler#decodeClientData(): received Hud Data Packet Slice of size {} (in bytes) // reading session key [{}]", packet.getTotalSize(), this.readingSessionKey);
                 PacketByteBuf fullPacket = PacketSplitter.receive(this, this.readingSessionKey, packet.getBuffer());
 
                 if (fullPacket != null)
@@ -100,11 +100,11 @@ public abstract class ServuxHudHandler<T extends CustomPayload> implements IPlug
                     }
                     catch (Exception e)
                     {
-                        MiniHUD.logger.error("ServuxHudHandler#decodeClientData(): Hud Data: error reading fullBuffer [{}]", e.getLocalizedMessage());
+                        MiniHUD.LOGGER.error("ServuxHudHandler#decodeClientData(): Hud Data: error reading fullBuffer [{}]", e.getLocalizedMessage());
                     }
                 }
             }
-            default -> MiniHUD.logger.warn("ServuxHudHandler#decodeClientData(): received unhandled packetType {} of size {} bytes.", packet.getPacketType(), packet.getTotalSize());
+            default -> MiniHUD.LOGGER.warn("ServuxHudHandler#decodeClientData(): received unhandled packetType {} of size {} bytes.", packet.getPacketType(), packet.getTotalSize());
         }
     }
 
@@ -151,7 +151,7 @@ public abstract class ServuxHudHandler<T extends CustomPayload> implements IPlug
         {
             if (this.failures > MAX_FAILURES)
             {
-                MiniHUD.printDebug("ServuxHudHandler#encodeClientData(): encountered [{}] sendPayload failures, cancelling any Servux join attempt(s)", MAX_FAILURES);
+                MiniHUD.debugLog("ServuxHudHandler#encodeClientData(): encountered [{}] sendPayload failures, cancelling any Servux join attempt(s)", MAX_FAILURES);
                 this.servuxRegistered = false;
                 ServuxHudHandler.INSTANCE.unregisterPlayReceiver();
                 HudDataManager.getInstance().onPacketFailure();

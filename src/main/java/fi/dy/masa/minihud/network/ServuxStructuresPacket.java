@@ -115,7 +115,7 @@ public class ServuxStructuresPacket implements IClientPayloadData
             }
             catch (Exception e)
             {
-                MiniHUD.logger.error("ServuxStructuresPacket#toPacket: error writing data to packet: [{}]", e.getLocalizedMessage());
+                MiniHUD.LOGGER.error("ServuxStructuresPacket#toPacket: error writing data to packet: [{}]", e.getLocalizedMessage());
             }
         }
         else
@@ -127,7 +127,7 @@ public class ServuxStructuresPacket implements IClientPayloadData
             }
             catch (Exception e)
             {
-                MiniHUD.logger.error("ServuxStructuresPacket#toPacket: error writing NBT to packet: [{}]", e.getLocalizedMessage());
+                MiniHUD.LOGGER.error("ServuxStructuresPacket#toPacket: error writing NBT to packet: [{}]", e.getLocalizedMessage());
             }
         }
     }
@@ -143,7 +143,7 @@ public class ServuxStructuresPacket implements IClientPayloadData
             if (type == null)
             {
                 // Invalid Type
-                MiniHUD.logger.warn("ServuxStructuresPacket#fromPacket: invalid packet type received");
+                MiniHUD.LOGGER.warn("ServuxStructuresPacket#fromPacket: invalid packet type received");
             }
             else if (type.equals(Type.PACKET_S2C_STRUCTURE_DATA))
             {
@@ -154,7 +154,7 @@ public class ServuxStructuresPacket implements IClientPayloadData
                 }
                 catch (Exception e)
                 {
-                    MiniHUD.logger.error("ServuxStructuresPacket#fromPacket: error reading Buffer from packet: [{}]", e.getLocalizedMessage());
+                    MiniHUD.LOGGER.error("ServuxStructuresPacket#fromPacket: error reading Buffer from packet: [{}]", e.getLocalizedMessage());
                 }
             }
             else
@@ -166,7 +166,7 @@ public class ServuxStructuresPacket implements IClientPayloadData
                 }
                 catch (Exception e)
                 {
-                    MiniHUD.logger.error("ServuxStructuresPacket#fromPacket: error reading NBT from packet: [{}]", e.getLocalizedMessage());
+                    MiniHUD.LOGGER.error("ServuxStructuresPacket#fromPacket: error reading NBT from packet: [{}]", e.getLocalizedMessage());
                 }
             }
 
@@ -174,7 +174,7 @@ public class ServuxStructuresPacket implements IClientPayloadData
         }
         catch (Exception e)
         {
-            MiniHUD.logger.error("ServuxStructuresPacket#fromPacket: error reading packet", e);
+            MiniHUD.LOGGER.error("ServuxStructuresPacket#fromPacket: error reading packet", e);
             DataStorage.getInstance().onPacketFailure();
             return null;
         }
@@ -182,7 +182,7 @@ public class ServuxStructuresPacket implements IClientPayloadData
         {
             if (input.isReadable())
             {
-                MiniHUD.logger.error("ServuxStructuresPacket#fromPacket: input buffer is not empty, skipping remaining bytes. are you using the correct version?");
+                MiniHUD.LOGGER.error("ServuxStructuresPacket#fromPacket: input buffer is not empty, skipping remaining bytes. are you using the correct version?");
                 DataStorage.getInstance().onPacketFailure();
                 input.skipBytes(input.readableBytes());
             }

@@ -81,22 +81,22 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     LOOKING_AT_BLOCK        ("infoLookingAtBlock",          null, false, ""),
     LOOKING_AT_BLOCK_CHUNK  ("infoLookingAtBlockInChunk",   null, false, ""),
     BLOCK_PROPS             ("infoBlockProperties",         null, false, ""),
-    BEE_COUNT               ("infoBeeCount",                null, false, true, ""),
-    COMPARATOR_OUTPUT       ("infoComparatorOutput",        null, false, true, ""),
-    HONEY_LEVEL             ("infoHoneyLevel",              null, false, ""),
+    BEE_COUNT               ("infoBeeCount",                InfoLineTypes.BEE_COUNT, false, true, ""),
+    COMPARATOR_OUTPUT       ("infoComparatorOutput",        InfoLineTypes.COMPARATOR, false, true, ""),
+    HONEY_LEVEL             ("infoHoneyLevel",              InfoLineTypes.HONEY_LEVEL, false, ""),
     FURNACE_XP              ("infoFurnaceXp",               InfoLineTypes.FURNACE_EXP, false, true, ""),
 
     // Entity
     ENTITY_REG_NAME         ("infoEntityRegistryName",      null, false, ""),
     LOOKING_AT_ENTITY       ("infoLookingAtEntity",         InfoLineTypes.LOOKING_AT_ENTITY, false, ""),
     LOOKING_AT_EFFECTS      ("infoLookingAtEffects",        InfoLineTypes.LOOKING_AT_EFFECTS, false, ""),
-    LOOKING_AT_PLAYER_EXP   ("infoLookingAtPlayerExp",      null, false, ""),
-    ZOMBIE_CONVERSION       ("infoZombieConversion",        null, false, ""),
+    LOOKING_AT_PLAYER_EXP   ("infoLookingAtPlayerExp",      InfoLineTypes.LOOKING_AT_PLAYER_EXP, false, ""),
+    ZOMBIE_CONVERSION       ("infoZombieConversion",        InfoLineTypes.ZOMBIE_CONVERSION, false, ""),
     HORSE_SPEED             ("infoHorseSpeed",              null, false, ""),
     HORSE_JUMP              ("infoHorseJump",               null, false, ""),
-    PANDA_GENE              ("infoPandaGene",               null, false, ""),
-    DOLPHIN_TREASURE        ("infoDolphinTreasure",         null, false, ""),
-    ENTITY_VARIANT          ("infoEntityVariant",            InfoLineTypes.ENTITY_VARIANT, false, ""),
+    PANDA_GENE              ("infoPandaGene",               InfoLineTypes.PANDA_GENE, false, ""),
+    DOLPHIN_TREASURE        ("infoDolphinTreasure",         InfoLineTypes.DOLPHIN_TREASURE, false, ""),
+    ENTITY_VARIANT          ("infoEntityVariant",           InfoLineTypes.ENTITY_VARIANT, false, ""),
     ;
 
     public static final ImmutableList<InfoToggle> VALUES = ImmutableList.copyOf(values());
@@ -445,7 +445,7 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
         }
         catch (Exception e)
         {
-            MiniHUD.logger.warn("Failed to read config value for {} from the JSON config", this.getName(), e);
+            MiniHUD.LOGGER.warn("Failed to read config value for {} from the JSON config", this.getName(), e);
         }
     }
 
@@ -460,12 +460,12 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
             }
             else
             {
-                MiniHUD.logger.warn("Failed to read config value for {} from the JSON config", this.getName());
+                MiniHUD.LOGGER.warn("Failed to read config value for {} from the JSON config", this.getName());
             }
         }
         catch (Exception e)
         {
-            MiniHUD.logger.warn("Failed to read config value for {} from the JSON config", this.getName(), e);
+            MiniHUD.LOGGER.warn("Failed to read config value for {} from the JSON config", this.getName(), e);
         }
     }
 

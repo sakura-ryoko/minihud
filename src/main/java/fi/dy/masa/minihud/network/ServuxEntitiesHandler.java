@@ -102,11 +102,11 @@ public abstract class ServuxEntitiesHandler<T extends CustomPayload> implements 
                     }
                     catch (Exception e)
                     {
-                        MiniHUD.logger.error("ServuxEntitiesHandler#decodeClientData(): Entity Data: error reading fullBuffer [{}]", e.getLocalizedMessage());
+                        MiniHUD.LOGGER.error("ServuxEntitiesHandler#decodeClientData(): Entity Data: error reading fullBuffer [{}]", e.getLocalizedMessage());
                     }
                 }
             }
-            default -> MiniHUD.logger.warn("ServuxEntitiesHandler#decodeClientData(): received unhandled packetType {} of size {} bytes.", packet.getPacketType(), packet.getTotalSize());
+            default -> MiniHUD.LOGGER.warn("ServuxEntitiesHandler#decodeClientData(): received unhandled packetType {} of size {} bytes.", packet.getPacketType(), packet.getTotalSize());
         }
     }
 
@@ -161,7 +161,7 @@ public abstract class ServuxEntitiesHandler<T extends CustomPayload> implements 
         {
             if (this.failures > MAX_FAILURES)
             {
-                MiniHUD.printDebug("ServuxEntitiesHandler#encodeClientData(): encountered [{}] sendPayload failures, cancelling any Servux join attempt(s)", MAX_FAILURES);
+                MiniHUD.debugLog("ServuxEntitiesHandler#encodeClientData(): encountered [{}] sendPayload failures, cancelling any Servux join attempt(s)", MAX_FAILURES);
                 this.servuxRegistered = false;
                 ServuxEntitiesHandler.INSTANCE.unregisterPlayReceiver();
                 EntitiesDataManager.getInstance().onPacketFailure();

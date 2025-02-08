@@ -106,7 +106,7 @@ public class HudDataManager
     {
         if (isLogout)
         {
-            MiniHUD.printDebug("HudDataStorage#reset() - log-out");
+            MiniHUD.debugLog("HudDataStorage#reset() - log-out");
             HANDLER.reset(this.getNetworkChannel());
             HANDLER.resetFailures(this.getNetworkChannel());
 
@@ -144,7 +144,7 @@ public class HudDataManager
 
     public void onWorldJoin()
     {
-        MiniHUD.printDebug("HudDataStorage#onWorldJoin()");
+        MiniHUD.debugLog("HudDataStorage#onWorldJoin()");
 
         if (DataStorage.getInstance().hasIntegratedServer() == false)
         {
@@ -203,7 +203,7 @@ public class HudDataManager
     {
         if (this.worldSeed != seed)
         {
-            MiniHUD.printDebug("HudDataStorage#setWorldSeed(): set world seed [{}] -> [{}]", this.worldSeed, seed);
+            MiniHUD.debugLog("HudDataStorage#setWorldSeed(): set world seed [{}] -> [{}]", this.worldSeed, seed);
         }
         this.worldSeed = seed;
         this.worldSeedValid = true;
@@ -214,7 +214,7 @@ public class HudDataManager
         if (!this.worldSpawn.equals(spawn))
         {
             OverlayRendererSpawnChunks.setNeedsUpdate();
-            MiniHUD.printDebug("HudDataStorage#setWorldSpawn(): set world spawn [{}] -> [{}]", this.worldSpawn.toShortString(), spawn.toShortString());
+            MiniHUD.debugLog("HudDataStorage#setWorldSpawn(): set world spawn [{}] -> [{}]", this.worldSpawn.toShortString(), spawn.toShortString());
         }
         this.worldSpawn = spawn;
         this.worldSpawnValid = true;
@@ -233,7 +233,7 @@ public class HudDataManager
                 }
 
                 OverlayRendererSpawnChunks.setNeedsUpdate();
-                MiniHUD.printDebug("HudDataStorage#setSpawnChunkRadius(): set spawn chunk radius [{}] -> [{}]", this.spawnChunkRadius, radius);
+                MiniHUD.debugLog("HudDataStorage#setSpawnChunkRadius(): set spawn chunk radius [{}] -> [{}]", this.spawnChunkRadius, radius);
             }
             this.spawnChunkRadius = radius;
             this.spawnChunkRadiusValid = true;
@@ -520,11 +520,11 @@ public class HudDataManager
         if (!this.servuxServer && !DataStorage.getInstance().hasIntegratedServer() &&
             this.shouldRegister)
         {
-            MiniHUD.printDebug("HudDataStorage#receiveMetadata(): received METADATA from Servux");
+            MiniHUD.debugLog("HudDataStorage#receiveMetadata(): received METADATA from Servux");
 
             if (data.getInt("version") != ServuxHudPacket.PROTOCOL_VERSION)
             {
-                MiniHUD.logger.warn("hudDataChannel: Mis-matched protocol version!");
+                MiniHUD.LOGGER.warn("hudDataChannel: Mis-matched protocol version!");
             }
 
             this.setServuxVersion(data.getString("servux"));
@@ -561,7 +561,7 @@ public class HudDataManager
 
             if (!this.hasInValidServux)
             {
-                MiniHUD.printDebug("HudDataManager#unregisterChannel(): for {}", this.servuxVersion != null ? this.servuxVersion : "<unknown>");
+                MiniHUD.debugLog("HudDataManager#unregisterChannel(): for {}", this.servuxVersion != null ? this.servuxVersion : "<unknown>");
 
                 HANDLER.unregisterPlayReceiver();
                 HANDLER.reset(HANDLER.getPayloadChannel());
@@ -586,7 +586,7 @@ public class HudDataManager
     {
         if (!DataStorage.getInstance().hasIntegratedServer())
         {
-            MiniHUD.printDebug("HudDataStorage#receiveSpawnMetadata(): from Servux");
+            MiniHUD.debugLog("HudDataStorage#receiveSpawnMetadata(): from Servux");
 
             this.setServuxVersion(data.getString("servux"));
             this.setWorldSpawn(new BlockPos(data.getInt("spawnPosX"), data.getInt("spawnPosY"), data.getInt("spawnPosZ")));
@@ -704,7 +704,7 @@ public class HudDataManager
                 }
                 catch (Exception e)
                 {
-                    MiniHUD.logger.error("receiveRecipeManager: index [{}], Exception reading packet, {}", i, e.getMessage());
+                    MiniHUD.LOGGER.error("receiveRecipeManager: index [{}], Exception reading packet, {}", i, e.getMessage());
                 }
             }
 
@@ -712,11 +712,11 @@ public class HudDataManager
             {
                 this.preparedRecipes = PreparedRecipes.of(recipes);
                 this.recipeCount = count;
-                MiniHUD.printDebug("HudDataStorage#receiveRecipeManager(): finished loading Recipe Manager: Read [{}] Recipes from Servux", count);
+                MiniHUD.debugLog("HudDataStorage#receiveRecipeManager(): finished loading Recipe Manager: Read [{}] Recipes from Servux", count);
             }
             else
             {
-                MiniHUD.logger.warn("receiveRecipeManager: failed to read Recipe Manager from Servux (Collection was empty!)");
+                MiniHUD.LOGGER.warn("receiveRecipeManager: failed to read Recipe Manager from Servux (Collection was empty!)");
             }
 
             if (Configs.Generic.HUD_DATA_SYNC.getBooleanValue())
@@ -763,7 +763,7 @@ public class HudDataManager
 
             if (DataStorage.getInstance().hasIntegratedServer() && this.hasStoredWorldSeed() && this.worldSeed != seedTmp)
             {
-                MiniHUD.printDebug("HudDataStorage#fromJson(): ignoring stale WorldSeed [{}], keeping [{}] as valid from the integrated server", seedTmp, this.worldSeed);
+                MiniHUD.debugLog("HudDataStorage#fromJson(): ignoring stale WorldSeed [{}], keeping [{}] as valid from the integrated server", seedTmp, this.worldSeed);
             }
             else
             {
@@ -776,7 +776,7 @@ public class HudDataManager
 
             if (DataStorage.getInstance().hasIntegratedServer() && this.isSpawnChunkRadiusKnown() && this.spawnChunkRadius != spawnRadiusTmp)
             {
-                MiniHUD.printDebug("HudDataStorage#fromJson(): ignoring stale Spawn Chunk Radius [{}], keeping [{}] as valid from the integrated server", spawnRadiusTmp, this.spawnChunkRadius);
+                MiniHUD.debugLog("HudDataStorage#fromJson(): ignoring stale Spawn Chunk Radius [{}], keeping [{}] as valid from the integrated server", spawnRadiusTmp, this.spawnChunkRadius);
             }
             else
             {
@@ -786,7 +786,7 @@ public class HudDataManager
             // Force RenderToggle OFF if SPAWN_CHUNK_RADIUS is set to 0
             if (this.getSpawnChunkRadius() == 0 && RendererToggle.OVERLAY_SPAWN_CHUNK_OVERLAY_REAL.getBooleanValue())
             {
-                MiniHUD.logger.warn("HudDataStorage#fromJson(): toggling feature OFF since SPAWN_CHUNK_RADIUS is set to 0");
+                MiniHUD.LOGGER.warn("HudDataStorage#fromJson(): toggling feature OFF since SPAWN_CHUNK_RADIUS is set to 0");
                 RendererToggle.OVERLAY_SPAWN_CHUNK_OVERLAY_REAL.setBooleanValue(false);
                 OverlayRendererSpawnChunks.setNeedsUpdate();
             }

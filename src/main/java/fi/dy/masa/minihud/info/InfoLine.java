@@ -4,6 +4,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.Entity;
@@ -70,6 +71,11 @@ public abstract class InfoLine
         return null;
     }
 
+    public @Nullable Entry parseBlockState(@Nonnull World world, @Nonnull BlockState state)
+    {
+        return null;
+    }
+
     public @Nullable Entry format(@Nonnull String str, Object... args)
     {
         return new Entry(str, args);
@@ -82,7 +88,7 @@ public abstract class InfoLine
         return ent;
     }
 
-    public record Context(@Nonnull World world, @Nullable Entity ent, @Nullable BlockEntity be, @Nullable Block block, NbtCompound nbt)
+    public record Context(@Nonnull World world, @Nullable Entity ent, @Nullable BlockEntity be, @Nullable Block block, @Nullable BlockState state, NbtCompound nbt)
     {
         public boolean hasEntity()
         {
@@ -112,6 +118,11 @@ public abstract class InfoLine
         public boolean hasBlock()
         {
             return this.block != null && this.block instanceof Block;
+        }
+
+        public boolean hasBlockState()
+        {
+            return this.state != null && this.state instanceof BlockState;
         }
 
         public boolean hasNbt()

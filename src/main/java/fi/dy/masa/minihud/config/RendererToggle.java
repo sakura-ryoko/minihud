@@ -403,7 +403,7 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
         }
         catch (Exception e)
         {
-            MiniHUD.logger.warn("Failed to read config value for {} from the JSON config", this.getName(), e);
+            MiniHUD.LOGGER.warn("Failed to read config value for {} from the JSON config", this.getName(), e);
         }
     }
 
@@ -418,12 +418,12 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
             }
             else
             {
-                MiniHUD.logger.warn("Failed to read config value for {} from the JSON config", this.getName());
+                MiniHUD.LOGGER.warn("Failed to read config value for {} from the JSON config", this.getName());
             }
         }
         catch (Exception e)
         {
-            MiniHUD.logger.warn("Failed to read config value for {} from the JSON config", this.getName(), e);
+            MiniHUD.LOGGER.warn("Failed to read config value for {} from the JSON config", this.getName(), e);
         }
     }
 
