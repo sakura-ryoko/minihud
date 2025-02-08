@@ -3,7 +3,6 @@ package fi.dy.masa.minihud.data;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nullable;
-import com.google.gson.JsonObject;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.mojang.datafixers.util.Either;
@@ -197,7 +196,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
     {
         if (isLogout)
         {
-            MiniHUD.printDebug("EntitiesDataStorage#reset() - log-out");
+            MiniHUD.debugLog("EntitiesDataStorage#reset() - log-out");
             HANDLER.reset(this.getNetworkChannel());
             HANDLER.resetFailures(this.getNetworkChannel());
             this.servuxServer = false;
@@ -205,7 +204,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
         }
         else
         {
-            MiniHUD.printDebug("EntitiesDataStorage#reset() - dimension change or log-in");
+            MiniHUD.debugLog("EntitiesDataStorage#reset() - dimension change or log-in");
             long now = System.currentTimeMillis();
             this.serverTickTime = now - (this.getCacheTimeout() + 5000L);
             this.tickCache(now);
@@ -239,7 +238,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
 
                 if (nowTime - pair.getLeft() > blockTimeout || pair.getLeft() > nowTime)
                 {
-                    MiniHUD.printDebug("entityCache: be at pos [{}] has timed out by [{}] ms", pos.toShortString(), blockTimeout);
+                    MiniHUD.debugLog("entityCache: be at pos [{}] has timed out by [{}] ms", pos.toShortString(), blockTimeout);
                     this.blockEntityCache.remove(pos);
                     //count++;
                 }
@@ -256,7 +255,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
 
                 if (nowTime - pair.getLeft() > entityTimeout || pair.getLeft() > nowTime)
                 {
-                    MiniHUD.printDebug("entityCache: enity Id [{}] has timed out by [{}] ms", entityId, entityTimeout);
+                    MiniHUD.debugLog("entityCache: enity Id [{}] has timed out by [{}] ms", entityId, entityTimeout);
                     this.entityCache.remove(entityId);
                     //count++;
                 }
@@ -324,7 +323,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
         if (ver != null && ver.isEmpty() == false)
         {
             this.servuxVersion = ver;
-            MiniHUD.printDebug("entityDataChannel: joining Servux version {}", ver);
+            MiniHUD.debugLog("entityDataChannel: joining Servux version {}", ver);
         }
         else
         {
@@ -405,13 +404,13 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
     {
         if (DataStorage.getInstance().hasIntegratedServer() == false)
         {
-            MiniHUD.printDebug("EntitiesDataStorage#receiveServuxMetadata(): received METADATA from Servux");
+            MiniHUD.debugLog("EntitiesDataStorage#receiveServuxMetadata(): received METADATA from Servux");
 
             if (Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue())
             {
                 if (data.getInt("version") != ServuxEntitiesPacket.PROTOCOL_VERSION)
                 {
-                    MiniHUD.logger.warn("entityDataChannel: Mis-matched protocol version!");
+                    MiniHUD.LOGGER.warn("entityDataChannel: Mis-matched protocol version!");
                 }
 
                 this.setServuxVersion(data.getString("servux"));
@@ -794,16 +793,5 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
             either.ifLeft(pos -> handleBlockEntityData(pos, nbt, null))
                     .ifRight(entityId -> handleEntityData(entityId, nbt));
         }
-    }
-
-    // TODO --> Only in case we need to save config settings in the future
-    public JsonObject toJson()
-    {
-        return new JsonObject();
-    }
-
-    public void fromJson(JsonObject obj)
-    {
-        // NO-OP
     }
 }

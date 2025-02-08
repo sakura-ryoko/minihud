@@ -117,18 +117,20 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
 
     InfoToggle(String name, boolean defaultValue, String defaultHotkey)
     {
-        this(name, defaultValue, false,
-                getNextDefaultLinePosition(),
-                defaultHotkey,
-                buildTranslateName(name, "comment"),
-                KeybindSettings.DEFAULT,
-                buildTranslateName(name, "name"),
-                buildTranslateName(name, "prettyName"));
+        this(name,
+             defaultValue, false,
+             getNextDefaultLinePosition(),
+             defaultHotkey,
+             buildTranslateName(name, "comment"),
+             KeybindSettings.DEFAULT,
+             buildTranslateName(name, "name"),
+             buildTranslateName(name, "prettyName"));
     }
 
     InfoToggle(String name, boolean defaultValue, boolean serverDataRequired, String defaultHotkey)
     {
-        this(name, defaultValue, serverDataRequired,
+        this(name,
+             defaultValue, serverDataRequired,
              getNextDefaultLinePosition(),
              defaultHotkey,
              buildTranslateName(name, "comment"),
@@ -139,18 +141,20 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
 
     InfoToggle(String name, boolean defaultValue, String defaultHotkey, KeybindSettings settings)
     {
-        this(name, defaultValue, false,
-                getNextDefaultLinePosition(),
-                defaultHotkey,
-                buildTranslateName(name, "comment"),
-                settings,
-                buildTranslateName(name, "name"),
-                buildTranslateName(name, "prettyName"));
+        this(name,
+             defaultValue, false,
+             getNextDefaultLinePosition(),
+             defaultHotkey,
+             buildTranslateName(name, "comment"),
+             settings,
+             buildTranslateName(name, "name"),
+             buildTranslateName(name, "prettyName"));
     }
 
     InfoToggle(String name, boolean defaultValue, boolean serverDataRequired, String defaultHotkey, KeybindSettings settings)
     {
-        this(name, defaultValue, serverDataRequired,
+        this(name,
+             defaultValue, serverDataRequired,
              getNextDefaultLinePosition(),
              defaultHotkey,
              buildTranslateName(name, "comment"),
@@ -161,18 +165,20 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
 
     InfoToggle(String name, boolean defaultValue, int linePosition, String defaultHotkey)
     {
-        this(name, defaultValue, false,
-                linePosition,
-                defaultHotkey,
-                buildTranslateName(name, "comment"),
-                KeybindSettings.DEFAULT,
-                buildTranslateName(name, "name"),
-                buildTranslateName(name, "prettyName"));
+        this(name,
+             defaultValue, false,
+             linePosition,
+             defaultHotkey,
+             buildTranslateName(name, "comment"),
+             KeybindSettings.DEFAULT,
+             buildTranslateName(name, "name"),
+             buildTranslateName(name, "prettyName"));
     }
 
     InfoToggle(String name, boolean defaultValue, boolean serverDataRequired, int linePosition, String defaultHotkey)
     {
-        this(name, defaultValue, serverDataRequired,
+        this(name,
+             defaultValue, serverDataRequired,
              linePosition,
              defaultHotkey,
              buildTranslateName(name, "comment"),
@@ -183,18 +189,20 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
 
     InfoToggle(String name, boolean defaultValue, int linePosition, String defaultHotkey, KeybindSettings settings)
     {
-        this(name, defaultValue, false,
-                linePosition,
-                defaultHotkey,
-                buildTranslateName(name, "comment"),
-                settings,
-                buildTranslateName(name, "name"),
-                buildTranslateName(name, "prettyName"));
+        this(name,
+             defaultValue, false,
+             linePosition,
+             defaultHotkey,
+             buildTranslateName(name, "comment"),
+             settings,
+             buildTranslateName(name, "name"),
+             buildTranslateName(name, "prettyName"));
     }
 
     InfoToggle(String name, boolean defaultValue, boolean serverDataRequired, int linePosition, String defaultHotkey, KeybindSettings settings)
     {
-        this(name, defaultValue, serverDataRequired,
+        this(name,
+             defaultValue, serverDataRequired,
              linePosition,
              defaultHotkey,
              buildTranslateName(name, "comment"),
@@ -416,7 +424,7 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
         }
         catch (Exception e)
         {
-            MiniHUD.logger.warn("Failed to read config value for {} from the JSON config", this.getName(), e);
+            MiniHUD.LOGGER.warn("Failed to read config value for {} from the JSON config", this.getName(), e);
         }
     }
 
@@ -431,12 +439,12 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
             }
             else
             {
-                MiniHUD.logger.warn("Failed to read config value for {} from the JSON config", this.getName());
+                MiniHUD.LOGGER.warn("Failed to read config value for {} from the JSON config", this.getName());
             }
         }
         catch (Exception e)
         {
-            MiniHUD.logger.warn("Failed to read config value for {} from the JSON config", this.getName(), e);
+            MiniHUD.LOGGER.warn("Failed to read config value for {} from the JSON config", this.getName(), e);
         }
     }
 

@@ -25,7 +25,7 @@ public class ThreadWorker implements Runnable
             }
             catch (InterruptedException e)
             {
-                MiniHUD.logger.debug("Stopping worker thread due to an interrupt");
+                MiniHUD.LOGGER.debug("Stopping worker thread due to an interrupt");
                 return;
             }
             catch (Throwable throwable)

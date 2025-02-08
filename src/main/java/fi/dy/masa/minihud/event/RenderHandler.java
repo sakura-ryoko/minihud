@@ -81,6 +81,7 @@ import fi.dy.masa.malilib.util.game.BlockUtils;
 import fi.dy.masa.malilib.util.nbt.NbtBlockUtils;
 import fi.dy.masa.malilib.util.nbt.NbtEntityUtils;
 import fi.dy.masa.malilib.util.nbt.NbtKeys;
+import fi.dy.masa.malilib.util.time.TimeFormat;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.config.RendererToggle;
@@ -463,9 +464,13 @@ public class RenderHandler implements IRenderer
         {
             try
             {
-                SimpleDateFormat sdf = new SimpleDateFormat(Configs.Generic.DATE_FORMAT_REAL.getStringValue());
+                /*
+                SimpleDateFormat sdf = new SimpleDateFormat(Configs.Generic.DATE_FORMAT.getStringValue());
                 this.date.setTime(System.currentTimeMillis());
                 this.addLine(sdf.format(this.date));
+                 */
+
+                this.addLine(MiscUtils.formatDateNow());
             }
             catch (Exception e)
             {
@@ -661,7 +666,7 @@ public class RenderHandler implements IRenderer
                 // 50 = 1000 (ms/s) / 20 (ticks/s)
                 this.addLineI18n("minihud.info_line.weather",
                                  StringUtils.translate("minihud.info_line.weather." + weatherType),
-                                 ", " + StringUtils.getDurationString(weatherTime * 50L)
+                                 ", " + MiscUtils.formatDuration(weatherTime * 50L)
                                  + " " + StringUtils.translate("minihud.info_line.remaining")
                 );
             }
