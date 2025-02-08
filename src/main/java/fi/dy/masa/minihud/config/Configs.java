@@ -376,7 +376,7 @@ public class Configs implements IConfigHandler
                     }
                 }
 
-                MiniHUD.debugLog("loadFromFile(): Successfully loaded config file '{}'.", configFile.toAbsolutePath());
+                //MiniHUD.debugLog("loadFromFile(): Successfully loaded config file '{}'.", configFile.toAbsolutePath());
             }
             else
             {
@@ -395,7 +395,7 @@ public class Configs implements IConfigHandler
         if (!Files.exists(dir))
         {
             FileUtils.createDirectoriesIfMissing(dir);
-            //ItemScroller.debugLog("saveToFile(): Creating directory '{}'.", dir.toAbsolutePath());
+            //MiniHUD.debugLog("saveToFile(): Creating directory '{}'.", dir.toAbsolutePath());
         }
 
         if (Files.isDirectory(dir))
