@@ -1,11 +1,14 @@
 package fi.dy.masa.minihud.event;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import javax.annotation.Nullable;
-import java.io.File;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
+
 import fi.dy.masa.malilib.interfaces.IWorldLoadListener;
 import fi.dy.masa.malilib.util.FileUtils;
 import fi.dy.masa.malilib.util.JsonUtils;
@@ -77,32 +80,31 @@ public class WorldLoadListener implements IWorldLoadListener
 
     private void writeDataPerDimension()
     {
-        File file = getCurrentStorageFile(false);
+        Path file = getCurrentStorageFile(false);
         JsonObject root = new JsonObject();
 
         root.add("data_storage", DataStorage.getInstance().toJson());
-        root.add("hud_data", HudDataManager.getInstance().toJson());
-        root.add("entities", EntitiesDataManager.getInstance().toJson());
         root.add("shapes", ShapeManager.INSTANCE.toJson());
 
-        JsonUtils.writeJsonToFile(root, file);
+        JsonUtils.writeJsonToFileAsPath(root, file);
     }
 
     private void writeDataGlobal()
     {
-        File file = getCurrentStorageFile(true);
+        Path file = getCurrentStorageFile(true);
         JsonObject root = new JsonObject();
 
         root.add("renderers", RenderContainer.INSTANCE.toJson());
+        root.add("hud_data", HudDataManager.getInstance().toJson());
 
-        JsonUtils.writeJsonToFile(root, file);
+        JsonUtils.writeJsonToFileAsPath(root, file);
     }
 
     private void readStoredDataPerDimension()
     {
         // Per-dimension file
-        File file = getCurrentStorageFile(false);
-        JsonElement element = JsonUtils.parseJsonFile(file);
+        Path file = getCurrentStorageFile(false);
+        JsonElement element = JsonUtils.parseJsonFileAsPath(file);
 
         if (element != null && element.isJsonObject())
         {
@@ -118,14 +120,10 @@ public class WorldLoadListener implements IWorldLoadListener
                 DataStorage.getInstance().fromJson(JsonUtils.getNestedObject(root, "data_storage", false));
             }
 
+            // Backwards compat
             if (JsonUtils.hasObject(root, "hud_data"))
             {
                 HudDataManager.getInstance().fromJson(JsonUtils.getNestedObject(root, "hud_data", false));
-            }
-
-            if (JsonUtils.hasObject(root, "entities"))
-            {
-                EntitiesDataManager.getInstance().fromJson(JsonUtils.getNestedObject(root, "entities", false));
             }
         }
     }
@@ -133,8 +131,8 @@ public class WorldLoadListener implements IWorldLoadListener
     private void readStoredDataGlobal()
     {
         // Global file
-        File file = getCurrentStorageFile(true);
-        JsonElement element = JsonUtils.parseJsonFile(file);
+        Path file = getCurrentStorageFile(true);
+        JsonElement element = JsonUtils.parseJsonFileAsPath(file);
 
         if (element != null && element.isJsonObject())
         {
@@ -144,23 +142,34 @@ public class WorldLoadListener implements IWorldLoadListener
             {
                 RenderContainer.INSTANCE.fromJson(JsonUtils.getNestedObject(root, "renderers", false));
             }
+
+            if (JsonUtils.hasObject(root, "hud_data"))
+            {
+                HudDataManager.getInstance().fromJson(JsonUtils.getNestedObject(root, "hud_data", false));
+            }
         }
     }
 
-    public static File getCurrentConfigDirectory()
+    public static Path getCurrentConfigDirectory()
     {
-        return new File(FileUtils.getConfigDirectory(), Reference.MOD_ID);
+        return FileUtils.getConfigDirectoryAsPath().resolve(Reference.MOD_ID);
     }
 
-    private static File getCurrentStorageFile(boolean globalData)
+    private static Path getCurrentStorageFile(boolean globalData)
     {
-        File dir = getCurrentConfigDirectory();
+        Path saveDir = getCurrentConfigDirectory();
 
-        if (dir.exists() == false && dir.mkdirs() == false)
+        if (!Files.exists(saveDir))
         {
-            MiniHUD.logger.warn("Failed to create the config directory '{}'", dir.getAbsolutePath());
+            FileUtils.createDirectoriesIfMissing(saveDir);
+            //MiniHUD.debugLog("getCurrentStorageFile(): Creating directory '{}'.", saveDir.toAbsolutePath());
         }
 
-        return new File(dir, StringUtils.getStorageFileName(globalData, "", ".json", Reference.MOD_ID + "_default"));
+        if (!Files.isDirectory(saveDir))
+        {
+            MiniHUD.LOGGER.warn("getCurrentStorageFile(): Failed to create the config directory '{}'", saveDir.toAbsolutePath());
+        }
+
+        return saveDir.resolve(StringUtils.getStorageFileName(globalData, "", ".json", Reference.MOD_ID + "_default"));
     }
 }

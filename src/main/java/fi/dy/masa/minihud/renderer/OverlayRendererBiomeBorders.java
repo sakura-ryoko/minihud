@@ -77,7 +77,7 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
     {
         synchronized (this.quads)
         {
-            MiniHUD.printDebug("Clearing Biome Border Overlay data...");
+            MiniHUD.debugLog("Clearing Biome Border Overlay data...");
 
             this.quads.clear();
             this.scheduledChunks.clear();

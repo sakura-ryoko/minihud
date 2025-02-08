@@ -127,7 +127,7 @@ public class DataStorage
     {
         if (isLogout)
         {
-            MiniHUD.printDebug("DataStorage#reset() - log-out");
+            MiniHUD.debugLog("DataStorage#reset() - log-out");
             /*
             this.worker.stopThread();
 
@@ -153,7 +153,7 @@ public class DataStorage
         }
         else
         {
-            MiniHUD.printDebug("DataStorage#reset() - dimension change or log-in");
+            MiniHUD.debugLog("DataStorage#reset() - dimension change or log-in");
         }
 
         this.mobCapData.clear();
@@ -257,7 +257,7 @@ public class DataStorage
 
     public void onWorldJoin()
     {
-        MiniHUD.printDebug("DataStorage#onWorldJoin()");
+        MiniHUD.debugLog("DataStorage#onWorldJoin()");
         OverlayRendererBeaconRange.INSTANCE.setNeedsUpdate();
         OverlayRendererConduitRange.INSTANCE.setNeedsUpdate();
         OverlayRendererSpawnChunks.setNeedsUpdate();
@@ -524,13 +524,13 @@ public class DataStorage
                     {
                         //this.setWorldSeed(Long.parseLong(str.substring(i1 + 1, i2)));
                         HudDataManager.getInstance().setWorldSeed(Long.parseLong(str));
-                        MiniHUD.logger.info("Received world seed from the vanilla /seed command: {}", HudDataManager.getInstance().worldSeed());
+                        MiniHUD.LOGGER.info("Received world seed from the vanilla /seed command: {}", HudDataManager.getInstance().worldSeed());
                         InfoUtils.printActionbarMessage("minihud.message.seed_set", HudDataManager.getInstance().worldSeed());
                     }
                 }
                 catch (Exception e)
                 {
-                    MiniHUD.logger.warn("Failed to read the world seed from '{}'", text.getArgs()[0]);
+                    MiniHUD.LOGGER.warn("Failed to read the world seed from '{}'", text.getArgs()[0]);
                 }
             }
             // The "/jed seed" command
@@ -539,12 +539,12 @@ public class DataStorage
                 try
                 {
                     HudDataManager.getInstance().setWorldSeed(Long.parseLong(text.getArgs()[1].toString()));
-                    MiniHUD.logger.info("Received world seed from the JED '/jed seed' command: {}", HudDataManager.getInstance().worldSeed());
+                    MiniHUD.LOGGER.info("Received world seed from the JED '/jed seed' command: {}", HudDataManager.getInstance().worldSeed());
                     InfoUtils.printActionbarMessage("minihud.message.seed_set", HudDataManager.getInstance().worldSeed());
                 }
                 catch (Exception e)
                 {
-                    MiniHUD.logger.warn("Failed to read the world seed from '{}'", text.getArgs()[1], e);
+                    MiniHUD.LOGGER.warn("Failed to read the world seed from '{}'", text.getArgs()[1], e);
                 }
             }
             else if ("commands.setworldspawn.success".equals(text.getKey()) && text.getArgs().length == 4)
@@ -560,12 +560,12 @@ public class DataStorage
                     HudDataManager.getInstance().setWorldSpawn(newSpawn);
 
                     String spawnStr = String.format("x: %d, y: %d, z: %d", newSpawn.getX(), newSpawn.getY(), newSpawn.getZ());
-                    MiniHUD.logger.info("Received world spawn from the vanilla /setworldspawn command: {}", spawnStr);
+                    MiniHUD.LOGGER.info("Received world spawn from the vanilla /setworldspawn command: {}", spawnStr);
                     InfoUtils.printActionbarMessage("minihud.message.spawn_set", spawnStr);
                 }
                 catch (Exception e)
                 {
-                    MiniHUD.logger.warn("Failed to read the world spawn point from '{}'", text.getArgs(), e);
+                    MiniHUD.LOGGER.warn("Failed to read the world spawn point from '{}'", text.getArgs(), e);
                 }
             }
             else if (("commands.gamerule.set".equals(text.getKey()) || "commands.gamerule.query".equals(text.getKey())) && text.getArgs().length == 2)
@@ -581,7 +581,7 @@ public class DataStorage
 
                         if (HudDataManager.getInstance().getSpawnChunkRadius() != value)
                         {
-                            MiniHUD.logger.info("Received spawn chunk radius from the vanilla /gamerule command: {}", HudDataManager.getInstance().getSpawnChunkRadius());
+                            MiniHUD.LOGGER.info("Received spawn chunk radius from the vanilla /gamerule command: {}", HudDataManager.getInstance().getSpawnChunkRadius());
                             HudDataManager.getInstance().setSpawnChunkRadius(value, true);
                         }
                         else
@@ -594,7 +594,7 @@ public class DataStorage
                 }
                 catch (Exception e)
                 {
-                    MiniHUD.logger.warn("Failed to read the spawn chunk radius from '{}'", text.getArgs(), e);
+                    MiniHUD.LOGGER.warn("Failed to read the spawn chunk radius from '{}'", text.getArgs(), e);
                 }
             }
         }
@@ -756,7 +756,7 @@ public class DataStorage
         {
             if (HANDLER.isPlayRegistered(this.getNetworkChannel()))
             {
-                MiniHUD.printDebug("DataStorage#registerStructureChannel(): sending STRUCTURES_REGISTER to Servux");
+                MiniHUD.debugLog("DataStorage#registerStructureChannel(): sending STRUCTURES_REGISTER to Servux");
 
                 NbtCompound nbt = new NbtCompound();
                 nbt.putString("version", Reference.MOD_STRING);
@@ -777,11 +777,11 @@ public class DataStorage
         if (this.servuxServer == false && this.hasIntegratedServer == false &&
             this.shouldRegisterStructureChannel)
         {
-            MiniHUD.printDebug("DataStorage#receiveServuxStrucutresMetadata(): received METADATA from Servux");
+            MiniHUD.debugLog("DataStorage#receiveServuxStrucutresMetadata(): received METADATA from Servux");
 
             if (data.getInt("version") != ServuxStructuresPacket.PROTOCOL_VERSION)
             {
-                MiniHUD.logger.warn("structureChannel: Mis-matched protocol version!");
+                MiniHUD.LOGGER.warn("structureChannel: Mis-matched protocol version!");
             }
             this.servuxTimeout = data.getInt("timeout");
             this.setServuxVersion(data.getString("servux"));
@@ -820,7 +820,7 @@ public class DataStorage
             this.servuxServer = false;
             if (this.hasInValidServux == false)
             {
-                MiniHUD.printDebug("DataStorage#unregisterStructureChannel(): for {}", this.servuxVersion != null ? this.servuxVersion : "<unknown>");
+                MiniHUD.debugLog("DataStorage#unregisterStructureChannel(): for {}", this.servuxVersion != null ? this.servuxVersion : "<unknown>");
 
                 HANDLER.encodeStructuresPacket(new ServuxStructuresPacket(ServuxStructuresPacket.Type.PACKET_C2S_STRUCTURES_UNREGISTER, new NbtCompound()));
                 HANDLER.reset(HANDLER.getPayloadChannel());
@@ -885,7 +885,7 @@ public class DataStorage
     {
         if (isServux == false)
         {
-            MiniHUD.printDebug("DataStorage#addOrUpdateStructuresFromServer(): Ignoring structure data when isServux is false");
+            MiniHUD.debugLog("DataStorage#addOrUpdateStructuresFromServer(): Ignoring structure data when isServux is false");
             //this.unregisterStructureChannel();
             return;
         }
@@ -917,7 +917,7 @@ public class DataStorage
                 }
             }
 
-            MiniHUD.printDebug("addOrUpdateStructuresFromServer: received {} structures // total size {} -> {}", count, oldCount, this.structures.size());
+            MiniHUD.debugLog("addOrUpdateStructuresFromServer: received {} structures // total size {} -> {}", count, oldCount, this.structures.size());
 
             this.structureRendererNeedsUpdate = true;
             this.hasStructureDataFromServer = true;
@@ -934,7 +934,7 @@ public class DataStorage
 
         if (countBefore != countAfter)
         {
-            MiniHUD.printDebug("removeExpiredStructures: from server: {} -> {} structures", countBefore, countAfter);
+            MiniHUD.debugLog("removeExpiredStructures: from server: {} -> {} structures", countBefore, countAfter);
         }
     }
 
@@ -986,7 +986,7 @@ public class DataStorage
             }
         }
 
-        MiniHUD.printDebug("addStructureDataFromGenerator: updated from the integrated server: {} -> {} structures", lastCount, this.structures.size());
+        MiniHUD.debugLog("addStructureDataFromGenerator: updated from the integrated server: {} -> {} structures", lastCount, this.structures.size());
         this.structureRendererNeedsUpdate = true;
     }
 

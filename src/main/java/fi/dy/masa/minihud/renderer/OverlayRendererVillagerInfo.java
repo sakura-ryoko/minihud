@@ -59,7 +59,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
         // Dimension change tick
         if (!isLogout)
         {
-            MiniHUD.printDebug("OverlayRendererVillagerInfo#reset() - dimension change or log-in");
+            MiniHUD.debugLog("OverlayRendererVillagerInfo#reset() - dimension change or log-in");
             long now = System.currentTimeMillis();
             this.lastTick =  - (this.getCacheTimeout() + 5000L);
             this.tickCache(now);
@@ -67,7 +67,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
         }
         else
         {
-            MiniHUD.printDebug("OverlayRendererVillagerInfo#reset() - log-out");
+            MiniHUD.debugLog("OverlayRendererVillagerInfo#reset() - log-out");
         }
 
         // Clear
@@ -115,7 +115,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
             {
                 if ((now - longPair.getLeft()) > timeout || longPair.getLeft() > now)
                 {
-                    MiniHUD.printDebug("villagerOverlayCache: entity Id [{}] has timed out by [{}] ms", integer, timeout);
+                    MiniHUD.debugLog("villagerOverlayCache: entity Id [{}] has timed out by [{}] ms", integer, timeout);
                     this.recentEntityData.remove(integer);
                 }
             }));
