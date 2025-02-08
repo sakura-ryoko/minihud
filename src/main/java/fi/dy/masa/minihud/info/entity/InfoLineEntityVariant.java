@@ -1,8 +1,9 @@
 package fi.dy.masa.minihud.info.entity;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 import net.minecraft.text.Text;
 import org.apache.commons.lang3.tuple.Pair;
@@ -40,7 +41,7 @@ public class InfoLineEntityVariant extends InfoLine
     }
 
     @Override
-    public @Nullable Entry parse(@Nonnull Context ctx)
+    public List<Entry> parse(@Nonnull Context ctx)
     {
         if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue() &&
             ctx.hasLiving() && ctx.hasNbt())
@@ -55,15 +56,17 @@ public class InfoLineEntityVariant extends InfoLine
     }
 
     @Override
-    public @Nullable Entry parseNbt(@Nonnull World world, @Nonnull EntityType<?> entityType, @Nonnull NbtCompound nbt)
+    public List<Entry> parseNbt(@Nonnull World world, @Nonnull EntityType<?> entityType, @Nonnull NbtCompound nbt)
     {
+        List<Entry> list = new ArrayList<>();
+
         if (entityType.equals(EntityType.AXOLOTL))
         {
             AxolotlEntity.Variant variant = NbtEntityUtils.getAxolotlVariantFromNbt(nbt);
 
             if (variant != null)
             {
-                return this.translate(VARIANT_KEY+".axolotl", variant.getId());
+                list.add(this.translate(VARIANT_KEY+".axolotl", variant.getId()));
             }
         }
         else if (entityType.equals(EntityType.CAT))
@@ -72,7 +75,7 @@ public class InfoLineEntityVariant extends InfoLine
 
             if (catPair.getLeft() != null)
             {
-                return this.translate(VARIANT_KEY+".cat", catPair.getLeft().getValue().getPath(), catPair.getRight().getName());
+                list.add(this.translate(VARIANT_KEY+".cat", catPair.getLeft().getValue().getPath(), catPair.getRight().getName()));
             }
         }
         else if (entityType.equals(EntityType.COW))
@@ -81,7 +84,7 @@ public class InfoLineEntityVariant extends InfoLine
 
             if (variant != null)
             {
-                return this.translate(VARIANT_KEY+".cow", variant.getValue().getPath());
+                list.add(this.translate(VARIANT_KEY+".cow", variant.getValue().getPath()));
             }
         }
         else if (entityType.equals(EntityType.CHICKEN))
@@ -90,7 +93,7 @@ public class InfoLineEntityVariant extends InfoLine
 
             if (variant != null)
             {
-                return this.translate(VARIANT_KEY+".chicken", variant.getValue().getPath());
+                list.add(this.translate(VARIANT_KEY+".chicken", variant.getValue().getPath()));
             }
         }
         else if (entityType.equals(EntityType.MOOSHROOM))
@@ -99,7 +102,7 @@ public class InfoLineEntityVariant extends InfoLine
 
             if (mooType != null)
             {
-                return this.translate(VARIANT_KEY + ".mooshroom", mooType.asString());
+                list.add(this.translate(VARIANT_KEY + ".mooshroom", mooType.asString()));
             }
         }
         else if (entityType.equals(EntityType.FOX))
@@ -108,7 +111,7 @@ public class InfoLineEntityVariant extends InfoLine
 
             if (foxType != null)
             {
-                return this.translate(VARIANT_KEY+".fox", foxType.asString());
+                list.add(this.translate(VARIANT_KEY+".fox", foxType.asString()));
             }
         }
         else if (entityType.equals(EntityType.FROG))
@@ -117,7 +120,7 @@ public class InfoLineEntityVariant extends InfoLine
 
             if (variant != null)
             {
-                return this.translate(VARIANT_KEY+".frog", variant.getValue().getPath());
+                list.add(this.translate(VARIANT_KEY+".frog", variant.getValue().getPath()));
             }
         }
         else if (entityType.equals(EntityType.HORSE))
@@ -126,7 +129,7 @@ public class InfoLineEntityVariant extends InfoLine
 
             if (horsePair.getLeft() != null)
             {
-                return this.translate(VARIANT_KEY+".horse", horsePair.getLeft().asString(), horsePair.getRight().name().toLowerCase());
+                list.add(this.translate(VARIANT_KEY+".horse", horsePair.getLeft().asString(), horsePair.getRight().name().toLowerCase()));
             }
         }
         else if (entityType.equals(EntityType.LLAMA) || entityType.equals(EntityType.TRADER_LLAMA))
@@ -135,7 +138,7 @@ public class InfoLineEntityVariant extends InfoLine
 
             if (llamaPair.getLeft() != null)
             {
-                return this.translate(VARIANT_KEY+".llama", llamaPair.getLeft().asString(), llamaPair.getRight());
+                list.add(this.translate(VARIANT_KEY+".llama", llamaPair.getLeft().asString(), llamaPair.getRight()));
             }
         }
         else if (entityType.equals(EntityType.PAINTING))
@@ -149,15 +152,15 @@ public class InfoLineEntityVariant extends InfoLine
 
                 if (title.isPresent() && author.isPresent())
                 {
-                    return this.translate(VARIANT_KEY+".painting.both", title.get().getString(), author.get().getString());
+                    list.add(this.translate(VARIANT_KEY+".painting.both", title.get().getString(), author.get().getString()));
                 }
                 else if (title.isPresent())
                 {
-                    return this.translate(VARIANT_KEY+".painting.title_only", title.get().getString());
+                    list.add(this.translate(VARIANT_KEY+".painting.title_only", title.get().getString()));
                 }
-                else if (author.isPresent())
+                else
                 {
-                    return this.translate(VARIANT_KEY+".painting.author_only", author.get().getString());
+                    author.ifPresent(text -> list.add(this.translate(VARIANT_KEY + ".painting.author_only", text.getString())));
                 }
             }
         }
@@ -167,7 +170,7 @@ public class InfoLineEntityVariant extends InfoLine
 
             if (variant != null)
             {
-                return this.translate(VARIANT_KEY+".parrot", variant.asString());
+                list.add(this.translate(VARIANT_KEY+".parrot", variant.asString()));
             }
         }
         else if (entityType.equals(EntityType.PIG))
@@ -176,7 +179,7 @@ public class InfoLineEntityVariant extends InfoLine
 
             if (variant != null)
             {
-                return this.translate(VARIANT_KEY+".pig", variant.getValue().getPath());
+                list.add(this.translate(VARIANT_KEY+".pig", variant.getValue().getPath()));
             }
         }
         else if (entityType.equals(EntityType.RABBIT))
@@ -185,7 +188,7 @@ public class InfoLineEntityVariant extends InfoLine
 
             if (rabbitType != null)
             {
-                return this.translate(VARIANT_KEY+".rabbit", rabbitType.asString());
+                list.add(this.translate(VARIANT_KEY+".rabbit", rabbitType.asString()));
             }
         }
         else if (entityType.equals(EntityType.SALMON))
@@ -194,7 +197,7 @@ public class InfoLineEntityVariant extends InfoLine
 
             if (salmonVariant != null)
             {
-                return this.translate(VARIANT_KEY+".salmon", salmonVariant.asString());
+                list.add(this.translate(VARIANT_KEY+".salmon", salmonVariant.asString()));
             }
         }
         else if (entityType.equals(EntityType.SHEEP))
@@ -203,7 +206,7 @@ public class InfoLineEntityVariant extends InfoLine
 
             if (color != null)
             {
-                return this.translate(VARIANT_KEY+".sheep", color.getName());
+                list.add(this.translate(VARIANT_KEY+".sheep", color.getName()));
             }
         }
         else if (entityType.equals(EntityType.TROPICAL_FISH))
@@ -212,7 +215,7 @@ public class InfoLineEntityVariant extends InfoLine
 
             if (variant != null)
             {
-                return this.translate(VARIANT_KEY+".tropical_fish", variant.asString());
+                list.add(this.translate(VARIANT_KEY+".tropical_fish", variant.asString()));
             }
         }
         else if (entityType.equals(EntityType.WOLF))
@@ -221,58 +224,33 @@ public class InfoLineEntityVariant extends InfoLine
 
             if (wolfPair.getLeft() != null)
             {
-                return this.translate(VARIANT_KEY+".wolf", wolfPair.getLeft().getValue().getPath(), wolfPair.getRight().getName());
+                list.add(this.translate(VARIANT_KEY+".wolf", wolfPair.getLeft().getValue().getPath(), wolfPair.getRight().getName()));
             }
         }
 
-        return null;
+        return list;
     }
 
     @Override
-    public @Nullable Entry parseEnt(@Nonnull World world, @Nonnull Entity ent)
+    public List<Entry> parseEnt(@Nonnull World world, @Nonnull Entity ent)
     {
+        List<Entry> list = new ArrayList<>();
+
         switch (ent)
         {
-            case AxolotlEntity axolotl ->
-            {
-                return this.translate(VARIANT_KEY + ".axolotl", axolotl.getVariant().name());
-            }
+            case AxolotlEntity axolotl -> list.add(this.translate(VARIANT_KEY + ".axolotl", axolotl.getVariant().name()));
             case CatEntity cat ->
             {
                 RegistryKey<CatVariant> variant = cat.getVariant().getKey().orElse(CatVariants.BLACK);
-                return this.translate(VARIANT_KEY + ".cat", variant.getValue().getPath(), cat.getCollarColor().getName());
+                list.add(this.translate(VARIANT_KEY + ".cat", variant.getValue().getPath(), cat.getCollarColor().getName()));
             }
-            case ChickenEntity chicken ->
-            {
-                RegistryKey<ChickenVariant> variant = chicken.getVariant().getKey().orElse(ChickenVariants.DEFAULT);
-                return this.translate(VARIANT_KEY + ".chicken", variant.getValue().getPath());
-            }
-            case CowEntity cow ->
-            {
-                RegistryKey<CowVariant> variant = cow.getVariant().getKey().orElse(CowVariants.DEFAULT);
-                return this.translate(VARIANT_KEY + ".cow", variant.getValue().getPath());
-            }
-            case MooshroomEntity mooshroom ->
-            {
-                return this.translate(VARIANT_KEY + ".mooshroom", mooshroom.getVariant().asString());
-            }
-            case FoxEntity fox ->
-            {
-                return this.translate(VARIANT_KEY + ".fox", fox.getVariant().asString());
-            }
-            case FrogEntity frog ->
-            {
-                RegistryKey<FrogVariant> variant = frog.getVariant().getKey().orElse(FrogVariants.TEMPERATE);
-                return this.translate(VARIANT_KEY + ".frog", variant.getValue().getPath());
-            }
-            case HorseEntity horse ->
-            {
-                return this.translate(VARIANT_KEY + ".horse", horse.getHorseColor().asString(), horse.getMarking().name().toLowerCase());
-            }
-            case LlamaEntity llama ->
-            {
-                return this.translate(VARIANT_KEY + ".llama", llama.getVariant().asString(), llama.getStrength());
-            }
+            case ChickenEntity chicken -> list.add(this.translate(VARIANT_KEY + ".chicken", chicken.getVariant().getKey().orElse(ChickenVariants.DEFAULT).getValue().getPath()));
+            case CowEntity cow -> list.add(this.translate(VARIANT_KEY + ".cow", cow.getVariant().getKey().orElse(CowVariants.DEFAULT).getValue().getPath()));
+            case MooshroomEntity mooshroom -> list.add(this.translate(VARIANT_KEY + ".mooshroom", mooshroom.getVariant().asString()));
+            case FoxEntity fox -> list.add(this.translate(VARIANT_KEY + ".fox", fox.getVariant().asString()));
+            case FrogEntity frog -> list.add(this.translate(VARIANT_KEY + ".frog", frog.getVariant().getKey().orElse(FrogVariants.TEMPERATE).getValue().getPath()));
+            case HorseEntity horse -> list.add(this.translate(VARIANT_KEY + ".horse", horse.getHorseColor().asString(), horse.getMarking().name().toLowerCase()));
+            case LlamaEntity llama -> list.add(this.translate(VARIANT_KEY + ".llama", llama.getVariant().asString(), llama.getStrength()));
             case PaintingEntity painting ->
             {
                 PaintingVariant paintingVariant = painting.getVariant().value();
@@ -284,54 +262,32 @@ public class InfoLineEntityVariant extends InfoLine
 
                     if (title.isPresent() && author.isPresent())
                     {
-                        return this.translate(VARIANT_KEY + ".painting.both", title.get().getString(), author.get().getString());
+                        list.add(this.translate(VARIANT_KEY + ".painting.both", title.get().getString(), author.get().getString()));
                     }
                     else if (title.isPresent())
                     {
-                        return this.translate(VARIANT_KEY + ".painting.title_only", title.get().getString());
+                        list.add(this.translate(VARIANT_KEY + ".painting.title_only", title.get().getString()));
                     }
-                    else if (author.isPresent())
+                    else
                     {
-                        return this.translate(VARIANT_KEY + ".painting.author_only", author.get().getString());
+                        author.ifPresent(text -> list.add(this.translate(VARIANT_KEY + ".painting.author_only", text.getString())));
                     }
                 }
             }
-            case ParrotEntity parrot ->
-            {
-                return this.translate(VARIANT_KEY + ".parrot", parrot.getVariant().asString());
-            }
-            case PigEntity pig ->
-            {
-                RegistryKey<PigVariant> pigVariant = pig.getVariant().getKey().orElse(PigVariants.DEFAULT);
-                return this.translate(VARIANT_KEY + ".pig", pigVariant.getValue().getPath());
-            }
-            case RabbitEntity rabbit ->
-            {
-                return this.translate(VARIANT_KEY + ".rabbit", rabbit.getVariant().asString());
-            }
-            case SalmonEntity salmon ->
-            {
-                return this.translate(VARIANT_KEY + ".salmon", salmon.getVariant().asString());
-            }
-            case SheepEntity sheep ->
-            {
-                return this.translate(VARIANT_KEY + ".sheep", sheep.getColor().getName());
-            }
-            case TropicalFishEntity fish ->
-            {
-                return this.translate(VARIANT_KEY + ".tropical_fish", fish.getVariety().asString());
-            }
+            case ParrotEntity parrot -> list.add(this.translate(VARIANT_KEY + ".parrot", parrot.getVariant().asString()));
+            case PigEntity pig -> list.add(this.translate(VARIANT_KEY + ".pig", pig.getVariant().getKey().orElse(PigVariants.DEFAULT).getValue().getPath()));
+            case RabbitEntity rabbit -> list.add(this.translate(VARIANT_KEY + ".rabbit", rabbit.getVariant().asString()));
+            case SalmonEntity salmon -> list.add(this.translate(VARIANT_KEY + ".salmon", salmon.getVariant().asString()));
+            case SheepEntity sheep -> list.add(this.translate(VARIANT_KEY + ".sheep", sheep.getColor().getName()));
+            case TropicalFishEntity fish -> list.add(this.translate(VARIANT_KEY + ".tropical_fish", fish.getVariety().asString()));
             case WolfEntity wolf ->
             {
                 Pair<RegistryKey<WolfVariant>, DyeColor> wolfPair = EntityUtils.getWolfVariantFromNbt(wolf);
-                return this.translate(VARIANT_KEY + ".wolf", wolfPair.getLeft().getValue().getPath(), wolfPair.getRight().getName());
+                list.add(this.translate(VARIANT_KEY + ".wolf", wolfPair.getLeft().getValue().getPath(), wolfPair.getRight().getName()));
             }
-            default ->
-            {
-                return null;
-            }
+            default -> {}
         }
 
-        return null;
+        return list;
     }
 }

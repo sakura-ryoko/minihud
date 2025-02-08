@@ -1,5 +1,6 @@
 package fi.dy.masa.minihud.info;
 
+import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -41,37 +42,37 @@ public abstract class InfoLine
 
     public DataStorage getData() { return DataStorage.getInstance(); }
 
-    public @Nullable Entry parse(@Nonnull Context ctx)
+    public List<Entry> parse(@Nonnull Context ctx)
     {
         return null;
     }
 
-    public @Nullable Entry parseNbt(@Nonnull World world, @Nonnull EntityType<?> entityType, @Nonnull NbtCompound nbt)
+    public List<Entry> parseNbt(@Nonnull World world, @Nonnull EntityType<?> entityType, @Nonnull NbtCompound nbt)
     {
         return null;
     }
 
-    public @Nullable Entry parseNbt(@Nonnull World world, @Nonnull BlockEntityType<?> beType, @Nonnull NbtCompound nbt)
+    public List<Entry> parseNbt(@Nonnull World world, @Nonnull BlockEntityType<?> beType, @Nonnull NbtCompound nbt)
     {
         return null;
     }
 
-    public @Nullable Entry parseEnt(@Nonnull World world, @Nonnull Entity ent)
+    public List<Entry> parseEnt(@Nonnull World world, @Nonnull Entity ent)
     {
         return null;
     }
 
-    public @Nullable Entry parseBlockEnt(@Nonnull World world, @Nonnull BlockEntity be)
+    public List<Entry> parseBlockEnt(@Nonnull World world, @Nonnull BlockEntity be)
     {
         return null;
     }
 
-    public @Nullable Entry parseBlock(@Nonnull World world, @Nonnull Block block)
+    public List<Entry> parseBlock(@Nonnull World world, @Nonnull Block block)
     {
         return null;
     }
 
-    public @Nullable Entry parseBlockState(@Nonnull World world, @Nonnull BlockState state)
+    public List<Entry> parseBlockState(@Nonnull World world, @Nonnull BlockState state)
     {
         return null;
     }

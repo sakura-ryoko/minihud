@@ -1,9 +1,9 @@
 package fi.dy.masa.minihud.info.entity;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import org.apache.commons.lang3.tuple.Pair;
 
 import net.minecraft.entity.Entity;
@@ -39,7 +39,7 @@ public class InfoLineZombieConversion extends InfoLine
     }
 
     @Override
-    public @Nullable Entry parse(@Nonnull Context ctx)
+    public List<Entry> parse(@Nonnull Context ctx)
     {
         if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue() &&
             ctx.hasNbt())
@@ -54,9 +54,10 @@ public class InfoLineZombieConversion extends InfoLine
     }
 
     @Override
-    public @Nullable Entry parseNbt(@Nonnull World world, @Nonnull EntityType<?> entityType, @Nonnull NbtCompound nbt)
+    public List<Entry> parseNbt(@Nonnull World world, @Nonnull EntityType<?> entityType, @Nonnull NbtCompound nbt)
     {
         String zombieType = entityType.getName().getString();
+        List<Entry> list = new ArrayList<>();
         int conversionTimer = -1;
 
         if (entityType.equals(EntityType.ZOMBIE_VILLAGER))
@@ -76,17 +77,19 @@ public class InfoLineZombieConversion extends InfoLine
 
         if (conversionTimer > 0)
         {
-            return this.translate(ZOMBIE_KEY,
-                             zombieType, MiscUtils.formatDuration((conversionTimer / 20) * 1000L));
+            list.add(this.translate(ZOMBIE_KEY,
+                                    zombieType,
+                                    MiscUtils.formatDuration((conversionTimer / 20) * 1000L)));
         }
 
-        return null;
+        return list;
     }
 
     @Override
-    public @Nullable Entry parseEnt(@Nonnull World world, @Nonnull Entity ent)
+    public List<Entry> parseEnt(@Nonnull World world, @Nonnull Entity ent)
     {
         String zombieType = ent.getType().getName().getString();
+        List<Entry> list = new ArrayList<>();
         int conversionTimer;
 
         switch (ent)
@@ -103,10 +106,11 @@ public class InfoLineZombieConversion extends InfoLine
 
         if (conversionTimer > 0)
         {
-            return this.translate(ZOMBIE_KEY,
-                             zombieType, MiscUtils.formatDuration((conversionTimer / 20) * 1000L));
+            list.add(this.translate(ZOMBIE_KEY,
+                                    zombieType,
+                                    MiscUtils.formatDuration((conversionTimer / 20) * 1000L)));
         }
 
-        return null;
+        return list;
     }
 }

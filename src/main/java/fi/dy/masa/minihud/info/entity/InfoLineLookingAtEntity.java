@@ -1,8 +1,9 @@
 package fi.dy.masa.minihud.info.entity;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import org.apache.commons.lang3.tuple.Pair;
 
 import net.minecraft.entity.Entity;
@@ -35,8 +36,10 @@ public class InfoLineLookingAtEntity extends InfoLine
     }
 
     @Override
-    public @Nullable Entry parse(@Nonnull Context ctx)
+    public List<Entry> parse(@Nonnull Context ctx)
     {
+        List<Entry> list = new ArrayList<>();
+
         if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue() &&
             ctx.ent() instanceof LivingEntity living && ctx.hasNbt())
         {
@@ -70,7 +73,7 @@ public class InfoLineLookingAtEntity extends InfoLine
                 entityLine = entityLine+ " [" + MiscUtils.formatDuration(untilGrown * 50L) + " " + StringUtils.translate(REMAINING_KEY) + "]";
             }
 
-            return this.format(entityLine);
+            list.add(this.format(entityLine));
         }
         else if (ctx.ent() instanceof LivingEntity living)
         {
@@ -94,13 +97,13 @@ public class InfoLineLookingAtEntity extends InfoLine
                 }
             }
 
-            return this.format(entityLine);
+            list.add(this.format(entityLine));
         }
         else if (ctx.ent() instanceof Entity ent)
         {
-            return this.translate(LOOKING_KEY, ent.getName().getString());
+            list.add(this.translate(LOOKING_KEY, ent.getName().getString()));
         }
 
-        return null;
+        return list;
     }
 }

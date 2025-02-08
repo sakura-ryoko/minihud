@@ -1,8 +1,8 @@
 package fi.dy.masa.minihud.info.entity;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import org.apache.commons.lang3.tuple.Triple;
 
 import net.minecraft.entity.Entity;
@@ -32,7 +32,7 @@ public class InfoLineLookingAtPlayerExp extends InfoLine
     }
 
     @Override
-    public @Nullable Entry parse(@Nonnull Context ctx)
+    public List<Entry> parse(@Nonnull Context ctx)
     {
         if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue() &&
             ctx.hasLiving() && ctx.hasNbt())
@@ -47,29 +47,33 @@ public class InfoLineLookingAtPlayerExp extends InfoLine
     }
 
     @Override
-    public @Nullable Entry parseNbt(@Nonnull World world, @Nonnull EntityType<?> entityType, @Nonnull NbtCompound nbt)
+    public List<Entry> parseNbt(@Nonnull World world, @Nonnull EntityType<?> entityType, @Nonnull NbtCompound nbt)
     {
+        List<Entry> list = new ArrayList<>();
+
         if (entityType.equals(EntityType.PLAYER))
         {
             Triple<Integer, Integer, Float> triple = NbtEntityUtils.getPlayerExpFromNbt(nbt);
 
             if (triple.getLeft() > 0)
             {
-                return this.translate(PLAYER_KEY, triple.getLeft(), triple.getRight(), 100 * triple.getMiddle());
+                list.add(this.translate(PLAYER_KEY, triple.getLeft(), triple.getRight(), 100 * triple.getMiddle()));
             }
         }
 
-        return null;
+        return list;
     }
 
     @Override
-    public @Nullable Entry parseEnt(@Nonnull World world, @Nonnull Entity ent)
+    public List<Entry> parseEnt(@Nonnull World world, @Nonnull Entity ent)
     {
+        List<Entry> list = new ArrayList<>();
+
         if (ent instanceof ServerPlayerEntity player)
         {
-            return this.translate(PLAYER_KEY, player.experienceLevel, 100 * player.experienceProgress, player.totalExperience);
+            list.add(this.translate(PLAYER_KEY, player.experienceLevel, 100 * player.experienceProgress, player.totalExperience));
         }
 
-        return null;
+        return list;
     }
 }

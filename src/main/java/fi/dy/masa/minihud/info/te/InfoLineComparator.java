@@ -1,7 +1,8 @@
 package fi.dy.masa.minihud.info.te;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
@@ -30,7 +31,7 @@ public class InfoLineComparator extends InfoLine
     }
 
     @Override
-    public @Nullable Entry parse(@Nonnull Context ctx)
+    public List<Entry> parse(@Nonnull Context ctx)
     {
         if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue() &&
             ctx.hasNbt())
@@ -46,32 +47,36 @@ public class InfoLineComparator extends InfoLine
     }
 
     @Override
-    public @Nullable Entry parseNbt(@Nonnull World world, @Nonnull BlockEntityType<?> beType, @Nonnull NbtCompound nbt)
+    public List<Entry> parseNbt(@Nonnull World world, @Nonnull BlockEntityType<?> beType, @Nonnull NbtCompound nbt)
     {
+        List<Entry> list = new ArrayList<>();
+
         if (beType.equals(BlockEntityType.COMPARATOR))
         {
             int output = NbtBlockUtils.getOutputSignalFromNbt(nbt);
 
             if (output > 0)
             {
-                return this.translate(COMPARATOR_KEY, output);
+                list.add(this.translate(COMPARATOR_KEY, output));
             }
         }
 
-        return null;
+        return list;
     }
 
     @Override
-    public @Nullable Entry parseBlockEnt(@Nonnull World world, @Nonnull BlockEntity be)
+    public List<Entry> parseBlockEnt(@Nonnull World world, @Nonnull BlockEntity be)
     {
+        List<Entry> list = new ArrayList<>();
+
         if (be instanceof ComparatorBlockEntity cbe)
         {
             if (cbe.getOutputSignal() > 0)
             {
-                return this.translate(COMPARATOR_KEY, cbe.getOutputSignal());
+                list.add(this.translate(COMPARATOR_KEY, cbe.getOutputSignal()));
             }
         }
 
-        return null;
+        return list;
     }
 }

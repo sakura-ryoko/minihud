@@ -1,8 +1,9 @@
 package fi.dy.masa.minihud.info.entity;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.commons.lang3.tuple.Triple;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -33,7 +34,7 @@ public class InfoLineDolphinTreasure extends InfoLine
     }
 
     @Override
-    public @Nullable Entry parse(@NotNull InfoLine.Context ctx)
+    public List<Entry> parse(@NotNull InfoLine.Context ctx)
     {
         if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue() &&
             ctx.hasNbt())
@@ -48,9 +49,10 @@ public class InfoLineDolphinTreasure extends InfoLine
     }
 
     @Override
-    public @Nullable Entry parseNbt(@NotNull World world, @NotNull EntityType<?> entityType, @NotNull NbtCompound nbt)
+    public List<Entry> parseNbt(@NotNull World world, @NotNull EntityType<?> entityType, @NotNull NbtCompound nbt)
     {
         Triple<BlockPos, Integer, Boolean> dolphinTriple = NbtEntityUtils.getDolphinDataFromNbt(nbt);
+        List<Entry> list = new ArrayList<>();
 
         if (dolphinTriple != null && entityType.equals(EntityType.DOLPHIN))
         {
@@ -71,13 +73,14 @@ public class InfoLineDolphinTreasure extends InfoLine
                 // Countdown until dry
                 if (hasTreasure)
                 {
-                    return this.translate(DOLPHIN_KEY+".drying",
-                                     treasure.toShortString(), MiscUtils.formatDuration((dryTime / 20) * 1000L));
+                    list.add(this.translate(DOLPHIN_KEY+".drying",
+                                            treasure.toShortString(),
+                                            MiscUtils.formatDuration((dryTime / 20) * 1000L)));
                 }
                 else
                 {
-                    return this.translate(DOLPHIN_KEY+".drying_no_treasure",
-                                     MiscUtils.formatDuration((dryTime / 20) * 1000L));
+                    list.add(this.translate(DOLPHIN_KEY+".drying_no_treasure",
+                                            MiscUtils.formatDuration((dryTime / 20) * 1000L)));
                 }
             }
             else if (dryTime < 0)
@@ -85,23 +88,26 @@ public class InfoLineDolphinTreasure extends InfoLine
                 // Drying Out and taking Damage
                 if (hasTreasure)
                 {
-                    return this.translate(DOLPHIN_KEY+".dying",
-                                     treasure.toShortString(), MiscUtils.formatDuration(((dryTime * (-1)) / 20) * 1000L));
+                    list.add(this.translate(DOLPHIN_KEY+".dying",
+                                            treasure.toShortString(),
+                                            MiscUtils.formatDuration(((dryTime * (-1)) / 20) * 1000L)));
                 }
                 else
                 {
-                    return this.translate(DOLPHIN_KEY+".dying_no_treasure",
-                                     MiscUtils.formatDuration(((dryTime * (-1)) / 20) * 1000L));
+                    list.add(this.translate(DOLPHIN_KEY+".dying_no_treasure",
+                                            MiscUtils.formatDuration(((dryTime * (-1)) / 20) * 1000L)));
                 }
             }
         }
 
-        return null;
+        return list;
     }
 
     @Override
-    public @Nullable Entry parseEnt(@NotNull World world, @NotNull Entity ent)
+    public List<Entry> parseEnt(@NotNull World world, @NotNull Entity ent)
     {
+        List<Entry> list = new ArrayList<>();
+
         if (ent instanceof DolphinEntity dolphin)
         {
             BlockPos treasure = dolphin.getTreasurePos();
@@ -113,7 +119,7 @@ public class InfoLineDolphinTreasure extends InfoLine
                 // Submerged
                 if (hasTreasure)
                 {
-                    return this.translate(DOLPHIN_KEY, treasure.toShortString());
+                    list.add(this.translate(DOLPHIN_KEY, treasure.toShortString()));
                 }
             }
             else if (dryTime > 0)
@@ -121,13 +127,14 @@ public class InfoLineDolphinTreasure extends InfoLine
                 // Countdown until dry
                 if (hasTreasure)
                 {
-                    return this.translate(DOLPHIN_KEY+".drying",
-                                     treasure.toShortString(), MiscUtils.formatDuration((dryTime / 20) * 1000L));
+                    list.add(this.translate(DOLPHIN_KEY+".drying",
+                                            treasure.toShortString(),
+                                            MiscUtils.formatDuration((dryTime / 20) * 1000L)));
                 }
                 else
                 {
-                    return this.translate(DOLPHIN_KEY+".drying_no_treasure",
-                                     MiscUtils.formatDuration((dryTime / 20) * 1000L));
+                    list.add(this.translate(DOLPHIN_KEY+".drying_no_treasure",
+                                            MiscUtils.formatDuration((dryTime / 20) * 1000L)));
                 }
             }
             else if (dryTime < 0)
@@ -135,17 +142,18 @@ public class InfoLineDolphinTreasure extends InfoLine
                 // Drying Out and taking Damage
                 if (hasTreasure)
                 {
-                    return this.translate(DOLPHIN_KEY+".dying",
-                                     treasure.toShortString(), MiscUtils.formatDuration(((dryTime * (-1)) / 20) * 1000L));
+                    list.add(this.translate(DOLPHIN_KEY+".dying",
+                                            treasure.toShortString(),
+                                            MiscUtils.formatDuration(((dryTime * (-1)) / 20) * 1000L)));
                 }
                 else
                 {
-                    return this.translate(DOLPHIN_KEY+".dying_no_treasure",
-                                     MiscUtils.formatDuration(((dryTime * (-1)) / 20) * 1000L));
+                    list.add(this.translate(DOLPHIN_KEY+".dying_no_treasure",
+                                            MiscUtils.formatDuration(((dryTime * (-1)) / 20) * 1000L)));
                 }
             }
         }
 
-        return null;
+        return list;
     }
 }

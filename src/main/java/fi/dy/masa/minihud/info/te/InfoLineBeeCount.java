@@ -1,9 +1,8 @@
 package fi.dy.masa.minihud.info.te;
 
+import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import org.apache.commons.lang3.tuple.Pair;
 
 import net.minecraft.block.entity.BeehiveBlockEntity;
@@ -34,7 +33,7 @@ public class InfoLineBeeCount extends InfoLine
     }
 
     @Override
-    public @Nullable Entry parse(@Nonnull Context ctx)
+    public List<Entry> parse(@Nonnull Context ctx)
     {
         if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue() &&
             ctx.hasNbt())
@@ -50,8 +49,10 @@ public class InfoLineBeeCount extends InfoLine
     }
 
     @Override
-    public @Nullable Entry parseNbt(@Nonnull World world, @Nonnull BlockEntityType<?> beType, @Nonnull NbtCompound nbt)
+    public List<Entry> parseNbt(@Nonnull World world, @Nonnull BlockEntityType<?> beType, @Nonnull NbtCompound nbt)
     {
+        List<Entry> list = new ArrayList<>();
+
         if (beType.equals(BlockEntityType.BEEHIVE))
         {
             Pair<List<BeehiveBlockEntity.BeeData>, BlockPos> bees = NbtBlockUtils.getBeesDataFromNbt(nbt);
@@ -59,25 +60,27 @@ public class InfoLineBeeCount extends InfoLine
             // This probably means no Server Data, so don't show the flower_pos
             if (bees.getRight().equals(BlockPos.ORIGIN))
             {
-                return this.translate(BEES_KEY, bees.getLeft().size());
+                list.add(this.translate(BEES_KEY, bees.getLeft().size()));
             }
             else
             {
-                return this.translate(BEES_KEY+".flower_pos", bees.getLeft().size(), bees.getRight().toShortString());
+                list.add(this.translate(BEES_KEY+".flower_pos", bees.getLeft().size(), bees.getRight().toShortString()));
             }
         }
 
-        return null;
+        return list;
     }
 
     @Override
-    public @Nullable Entry parseBlockEnt(@Nonnull World world, @Nonnull BlockEntity be)
+    public List<Entry> parseBlockEnt(@Nonnull World world, @Nonnull BlockEntity be)
     {
+        List<Entry> list = new ArrayList<>();
+
         if (be instanceof BeehiveBlockEntity bbe)
         {
-            return this.translate(BEES_KEY, bbe.getBeeCount());
+            list.add(this.translate(BEES_KEY, bbe.getBeeCount()));
         }
 
-        return null;
+        return list;
     }
 }

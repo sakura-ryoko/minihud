@@ -1,7 +1,8 @@
 package fi.dy.masa.minihud.info.state;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 import net.minecraft.block.BeehiveBlock;
 import net.minecraft.block.BlockState;
@@ -27,7 +28,7 @@ public class InfoLineHoneyLevel extends InfoLine
     }
 
     @Override
-    public @Nullable Entry parse(@Nonnull Context ctx)
+    public List<Entry> parse(@Nonnull Context ctx)
     {
         if (ctx.hasBlockState() && ctx.state() != null)
         {
@@ -38,13 +39,15 @@ public class InfoLineHoneyLevel extends InfoLine
     }
 
     @Override
-    public @Nullable Entry parseBlockState(@Nonnull World world, @Nonnull BlockState state)
+    public List<Entry> parseBlockState(@Nonnull World world, @Nonnull BlockState state)
     {
+        List<Entry> list = new ArrayList<>();
+
         if (state.getBlock() instanceof BeehiveBlock)
         {
-            return this.translate(HONEY_KEY, BeehiveBlockEntity.getHoneyLevel(state));
+            list.add(this.translate(HONEY_KEY, BeehiveBlockEntity.getHoneyLevel(state)));
         }
 
-        return null;
+        return list;
     }
 }

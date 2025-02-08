@@ -1,6 +1,5 @@
 package fi.dy.masa.minihud.event;
 
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
@@ -10,7 +9,6 @@ import javax.annotation.Nullable;
 import fi.dy.masa.minihud.info.InfoLine;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.lang3.tuple.Triple;
 import org.joml.Matrix4f;
 
 import net.minecraft.block.BeehiveBlock;
@@ -29,9 +27,6 @@ import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.mob.SkeletonEntity;
-import net.minecraft.entity.mob.ZombieEntity;
-import net.minecraft.entity.mob.ZombieVillagerEntity;
 import net.minecraft.entity.passive.*;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.EnderChestInventory;
@@ -40,7 +35,6 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.integrated.IntegratedServer;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.OptionalChunk;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;
@@ -68,10 +62,8 @@ import fi.dy.masa.malilib.util.InventoryUtils;
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.malilib.util.WorldUtils;
 import fi.dy.masa.malilib.util.game.BlockUtils;
-import fi.dy.masa.malilib.util.nbt.NbtBlockUtils;
 import fi.dy.masa.malilib.util.nbt.NbtEntityUtils;
 import fi.dy.masa.malilib.util.nbt.NbtKeys;
-import fi.dy.masa.malilib.util.time.TimeFormat;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.config.RendererToggle;
@@ -79,9 +71,6 @@ import fi.dy.masa.minihud.data.EntitiesDataManager;
 import fi.dy.masa.minihud.data.HudDataManager;
 import fi.dy.masa.minihud.data.MobCapDataHandler;
 import fi.dy.masa.minihud.mixin.*;
-import fi.dy.masa.minihud.mixin.entity.IMixinSkeletonEntity;
-import fi.dy.masa.minihud.mixin.entity.IMixinZombieEntity;
-import fi.dy.masa.minihud.mixin.entity.IMixinZombieVillagerEntity;
 import fi.dy.masa.minihud.renderer.InventoryOverlayHandler;
 import fi.dy.masa.minihud.renderer.OverlayRenderer;
 import fi.dy.masa.minihud.util.DataStorage;
@@ -404,21 +393,29 @@ public class RenderHandler implements IRenderer
         }
     }
 
-    private void processEntry(InfoLine.Entry result)
+    private void processEntries(List<InfoLine.Entry> list)
     {
-        if (result != null && !result.isEmpty())
+        if (list == null || list.isEmpty())
         {
-            if (result.isTranslated())
+            return;
+        }
+
+        for (InfoLine.Entry entry : list)
+        {
+            if (!entry.isEmpty())
             {
-                this.addLine(result.format());
-            }
-            else if (result.hasArgs())
-            {
-                this.addLineI18n(result.format(), result.args());
-            }
-            else
-            {
-                this.addLineI18n(result.format());
+                if (entry.isTranslated())
+                {
+                    this.addLine(entry.format());
+                }
+                else if (entry.hasArgs())
+                {
+                    this.addLineI18n(entry.format(), entry.args());
+                }
+                else
+                {
+                    this.addLineI18n(entry.format());
+                }
             }
         }
     }
@@ -907,8 +904,7 @@ public class RenderHandler implements IRenderer
             if (parser != null)
             {
                 InfoLine.Context ctx = new InfoLine.Context(bestWorld, null, pair.getLeft(), null, null, pair.getRight());
-                InfoLine.Entry result = parser.parse(ctx);
-                this.processEntry(result);
+                this.processEntries(parser.parse(ctx));
             }
         }
         else if (type == InfoToggle.COMPARATOR_OUTPUT)
@@ -927,8 +923,7 @@ public class RenderHandler implements IRenderer
             if (parser != null)
             {
                 InfoLine.Context ctx = new InfoLine.Context(bestWorld, null, pair.getLeft(), null, null, pair.getRight());
-                InfoLine.Entry result = parser.parse(ctx);
-                this.processEntry(result);
+                this.processEntries(parser.parse(ctx));
             }
         }
         else if (type == InfoToggle.HONEY_LEVEL)
@@ -939,8 +934,7 @@ public class RenderHandler implements IRenderer
             if (parser != null)
             {
                 InfoLine.Context ctx = new InfoLine.Context(world, null, null, null, this.getTargetedBlock(mc), null);
-                InfoLine.Entry result = parser.parse(ctx);
-                this.processEntry(result);
+                this.processEntries(parser.parse(ctx));
             }
         }
         else if (type == InfoToggle.FURNACE_XP)
@@ -959,8 +953,7 @@ public class RenderHandler implements IRenderer
             if (parser != null)
             {
                 InfoLine.Context ctx = new InfoLine.Context(bestWorld, null, pair.getLeft(), null, null, pair.getRight());
-                InfoLine.Entry result = parser.parse(ctx);
-                this.processEntry(result);
+                this.processEntries(parser.parse(ctx));
             }
         }
         else if (type == InfoToggle.HORSE_SPEED ||
@@ -1137,8 +1130,7 @@ public class RenderHandler implements IRenderer
             if (parser != null)
             {
                 InfoLine.Context ctx = new InfoLine.Context(world, pair.getLeft(), null, null, null, pair.getRight());
-                InfoLine.Entry result = parser.parse(ctx);
-                this.processEntry(result);
+                this.processEntries(parser.parse(ctx));
             }
         }
         else if (type == InfoToggle.PARTICLE_COUNT)
@@ -1275,8 +1267,7 @@ public class RenderHandler implements IRenderer
                 if (parser != null)
                 {
                     InfoLine.Context ctx = new InfoLine.Context(world, pair.getLeft(), null, null, null, pair.getRight());
-                    InfoLine.Entry result = parser.parse(ctx);
-                    this.processEntry(result);
+                    this.processEntries(parser.parse(ctx));
                 }
             }
         }
@@ -1297,8 +1288,7 @@ public class RenderHandler implements IRenderer
                 if (parser != null)
                 {
                     InfoLine.Context ctx = new InfoLine.Context(world, pair.getLeft(), null, null, null, pair.getRight());
-                    InfoLine.Entry result = parser.parse(ctx);
-                    this.processEntry(result);
+                    this.processEntries(parser.parse(ctx));
                 }
             }
         }
@@ -1319,8 +1309,7 @@ public class RenderHandler implements IRenderer
                 if (parser != null)
                 {
                     InfoLine.Context ctx = new InfoLine.Context(world, pair.getLeft(), null, null, null, pair.getRight());
-                    InfoLine.Entry result = parser.parse(ctx);
-                    this.processEntry(result);
+                    this.processEntries(parser.parse(ctx));
                 }
             }
         }
@@ -1341,8 +1330,7 @@ public class RenderHandler implements IRenderer
                 if (parser != null)
                 {
                     InfoLine.Context ctx = new InfoLine.Context(world, pair.getLeft(), null, null, null, pair.getRight());
-                    InfoLine.Entry result = parser.parse(ctx);
-                    this.processEntry(result);
+                    this.processEntries(parser.parse(ctx));
                 }
             }
         }
@@ -1363,8 +1351,7 @@ public class RenderHandler implements IRenderer
                 if (parser != null)
                 {
                     InfoLine.Context ctx = new InfoLine.Context(world, pair.getLeft(), null, null, null, pair.getRight());
-                    InfoLine.Entry result = parser.parse(ctx);
-                    this.processEntry(result);
+                    this.processEntries(parser.parse(ctx));
                 }
             }
         }
@@ -1410,8 +1397,7 @@ public class RenderHandler implements IRenderer
                 if (parser != null)
                 {
                     InfoLine.Context ctx = new InfoLine.Context(world, pair.getLeft(), null, null, null, pair.getRight());
-                    InfoLine.Entry result = parser.parse(ctx);
-                    this.processEntry(result);
+                    this.processEntries(parser.parse(ctx));
                 }
             }
         }

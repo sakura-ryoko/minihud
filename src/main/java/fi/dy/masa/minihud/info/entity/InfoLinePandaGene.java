@@ -1,8 +1,9 @@
 package fi.dy.masa.minihud.info.entity;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -32,7 +33,7 @@ public class InfoLinePandaGene extends InfoLine
     }
 
     @Override
-    public @Nullable Entry parse(@NotNull InfoLine.Context ctx)
+    public List<Entry> parse(@NotNull InfoLine.Context ctx)
     {
         if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue() &&
             ctx.hasLiving() && ctx.hasNbt())
@@ -47,45 +48,47 @@ public class InfoLinePandaGene extends InfoLine
     }
 
     @Override
-    public @Nullable Entry parseNbt(@NotNull World world, @NotNull EntityType<?> entityType, @NotNull NbtCompound nbt)
+    public List<Entry> parseNbt(@NotNull World world, @NotNull EntityType<?> entityType, @NotNull NbtCompound nbt)
     {
+        List<Entry> list = new ArrayList<>();
+
         if (entityType.equals(EntityType.PANDA))
         {
             Pair<PandaEntity.Gene, PandaEntity.Gene> genes = NbtEntityUtils.getPandaGenesFromNbt(nbt);
 
             if (genes.getLeft() != null && genes.getRight() != null)
             {
-                // FIXME Multi-Line entries
-                this.translate(PANDA_KEY+".main_gene",
-                                 StringUtils.translate(PANDA_KEY+".gene." + genes.getLeft().asString()),
-                                 genes.getLeft().isRecessive() ? StringUtils.translate(PANDA_KEY+".recessive_gene") : StringUtils.translate(PANDA_KEY+".dominant_gene")
-                );
-                return this.translate(PANDA_KEY+".hidden_gene",
-                                 StringUtils.translate(PANDA_KEY+".gene." + genes.getRight().asString()),
-                                 genes.getRight().isRecessive() ? StringUtils.translate(PANDA_KEY+".recessive_gene") : StringUtils.translate(PANDA_KEY+".dominant_gene")
-                );
+                list.add(this.translate(PANDA_KEY+".main_gene",
+                                        StringUtils.translate(PANDA_KEY+".gene." + genes.getLeft().asString()),
+                                        genes.getLeft().isRecessive() ? StringUtils.translate(PANDA_KEY+".recessive_gene") : StringUtils.translate(PANDA_KEY+".dominant_gene")
+                ));
+                list.add(this.translate(PANDA_KEY+".hidden_gene",
+                                        StringUtils.translate(PANDA_KEY+".gene." + genes.getRight().asString()),
+                                        genes.getRight().isRecessive() ? StringUtils.translate(PANDA_KEY+".recessive_gene") : StringUtils.translate(PANDA_KEY+".dominant_gene")
+                ));
             }
         }
 
-        return null;
+        return list;
     }
 
     @Override
-    public @Nullable Entry parseEnt(@NotNull World world, @NotNull Entity ent)
+    public List<Entry> parseEnt(@NotNull World world, @NotNull Entity ent)
     {
+        List<Entry> list = new ArrayList<>();
+
         if (ent instanceof PandaEntity panda)
         {
-            // FIXME Multi-Line entries
-            this.translate(PANDA_KEY+".main_gene",
-                             StringUtils.translate(PANDA_KEY+".gene." + panda.getMainGene().asString()),
-                             panda.getMainGene().isRecessive() ? StringUtils.translate(PANDA_KEY+".recessive_gene") : StringUtils.translate(PANDA_KEY+".dominant_gene")
-            );
-            return this.translate(PANDA_KEY+".hidden_gene",
-                             StringUtils.translate(PANDA_KEY+".gene." + panda.getHiddenGene().asString()),
-                             panda.getHiddenGene().isRecessive() ? StringUtils.translate(PANDA_KEY+".recessive_gene") : StringUtils.translate(PANDA_KEY+".dominant_gene")
-            );
+            list.add(this.translate(PANDA_KEY+".main_gene",
+                                    StringUtils.translate(PANDA_KEY+".gene." + panda.getMainGene().asString()),
+                                    panda.getMainGene().isRecessive() ? StringUtils.translate(PANDA_KEY+".recessive_gene") : StringUtils.translate(PANDA_KEY+".dominant_gene")
+            ));
+            list.add(this.translate(PANDA_KEY+".hidden_gene",
+                                    StringUtils.translate(PANDA_KEY+".gene." + panda.getHiddenGene().asString()),
+                                    panda.getHiddenGene().isRecessive() ? StringUtils.translate(PANDA_KEY+".recessive_gene") : StringUtils.translate(PANDA_KEY+".dominant_gene")
+            ));
         }
 
-        return null;
+        return list;
     }
 }

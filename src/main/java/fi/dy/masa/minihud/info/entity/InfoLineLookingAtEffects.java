@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -39,7 +38,7 @@ public class InfoLineLookingAtEffects extends InfoLine
     }
 
     @Override
-    public @Nullable Entry parse(@Nonnull InfoLine.Context ctx)
+    public List<Entry> parse(@Nonnull InfoLine.Context ctx)
     {
         if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue() &&
             ctx.hasLiving() && ctx.hasNbt())
@@ -54,16 +53,15 @@ public class InfoLineLookingAtEffects extends InfoLine
     }
 
     @Override
-    public @Nullable Entry parseNbt(@Nonnull World world, @Nonnull EntityType<?> entityType, @Nonnull NbtCompound nbt)
+    public List<Entry> parseNbt(@Nonnull World world, @Nonnull EntityType<?> entityType, @Nonnull NbtCompound nbt)
     {
         Map<RegistryEntry<StatusEffect>, StatusEffectInstance> effects = NbtEntityUtils.getActiveStatusEffectsFromNbt(nbt, world.getRegistryManager());
+        List<Entry> list = new ArrayList<>();
 
         if (effects == null || effects.isEmpty())
         {
-            return null;
+            return list;
         }
-
-        List<String> list = new ArrayList<>();
 
         for (RegistryEntry<StatusEffect> effectType : effects.keySet())
         {
@@ -71,54 +69,43 @@ public class InfoLineLookingAtEffects extends InfoLine
 
             if (effect.isInfinite() || effect.getDuration() > 0)
             {
-                list.add(StringUtils.translate(EFFECTS_KEY,
-                                      effectType.value().getName().getString(),
-                                      effect.getAmplifier() > 0 ? StringUtils.translate(EFFECTS_KEY+".amplifier", effect.getAmplifier() + 1) : "",
-                                      effect.isInfinite() ? StringUtils.translate(EFFECTS_KEY+".infinite") :
-                                      MiscUtils.formatDuration((effect.getDuration() / 20) * 1000L),
-                                      StringUtils.translate(REMAINING_KEY)
+                list.add(this.translate(EFFECTS_KEY,
+                                        effectType.value().getName().getString(),
+                                        effect.getAmplifier() > 0 ? StringUtils.translate(EFFECTS_KEY+".amplifier", effect.getAmplifier() + 1) : "",
+                                        effect.isInfinite() ? StringUtils.translate(EFFECTS_KEY+".infinite") :
+                                        MiscUtils.formatDuration((effect.getDuration() / 20) * 1000L),
+                                        StringUtils.translate(REMAINING_KEY)
                 ));
             }
         }
 
-        // FIXME Multiline Entries
-        if (!list.isEmpty())
-        {
-            return this.format(list.getFirst());
-        }
-
-        return null;
+        return list;
     }
 
     @Override
-    public @Nullable Entry parseEnt(@Nonnull World world, @Nonnull Entity ent)
+    public List<Entry> parseEnt(@Nonnull World world, @Nonnull Entity ent)
     {
+        List<Entry> list = new ArrayList<>();
+
         if (ent instanceof LivingEntity living)
         {
             Collection<StatusEffectInstance> effects = living.getStatusEffects();
-            List<String> list = new ArrayList<>();
 
             for (StatusEffectInstance effect : effects)
             {
                 if (effect.isInfinite() || effect.getDuration() > 0)
                 {
-                    list.add(StringUtils.translate(EFFECTS_KEY,
-                                          effect.getEffectType().value().getName().getString(),
-                                          effect.getAmplifier() > 0 ? StringUtils.translate(EFFECTS_KEY + ".amplifier", effect.getAmplifier() + 1) : "",
-                                          effect.isInfinite() ? StringUtils.translate(EFFECTS_KEY + ".infinite") :
-                                          MiscUtils.formatDuration((effect.getDuration() / 20) * 1000L),
-                                          StringUtils.translate(REMAINING_KEY)
+                    list.add(this.translate(EFFECTS_KEY,
+                                            effect.getEffectType().value().getName().getString(),
+                                            effect.getAmplifier() > 0 ? StringUtils.translate(EFFECTS_KEY + ".amplifier", effect.getAmplifier() + 1) : "",
+                                            effect.isInfinite() ? StringUtils.translate(EFFECTS_KEY + ".infinite") :
+                                            MiscUtils.formatDuration((effect.getDuration() / 20) * 1000L),
+                                            StringUtils.translate(REMAINING_KEY)
                     ));
                 }
             }
-
-            // FIXME Multiline Entries
-            if (!list.isEmpty())
-            {
-                return this.format(list.getFirst());
-            }
         }
 
-        return null;
+        return list;
     }
 }

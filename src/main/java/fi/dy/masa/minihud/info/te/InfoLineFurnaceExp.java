@@ -1,7 +1,8 @@
 package fi.dy.masa.minihud.info.te;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.block.entity.BlockEntity;
@@ -32,7 +33,7 @@ public class InfoLineFurnaceExp extends InfoLine
     }
 
     @Override
-    public @Nullable Entry parse(@Nonnull Context ctx)
+    public List<Entry> parse(@Nonnull Context ctx)
     {
         if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue() &&
             ctx.hasNbt())
@@ -48,8 +49,10 @@ public class InfoLineFurnaceExp extends InfoLine
     }
 
     @Override
-    public @Nullable Entry parseNbt(@Nonnull World world, @Nonnull BlockEntityType<?> beType, @Nonnull NbtCompound nbt)
+    public List<Entry> parseNbt(@Nonnull World world, @Nonnull BlockEntityType<?> beType, @Nonnull NbtCompound nbt)
     {
+        List<Entry> list = new ArrayList<>();
+
         if (beType.equals(BlockEntityType.FURNACE) ||
             beType.equals(BlockEntityType.BLAST_FURNACE) ||
             beType.equals(BlockEntityType.SMOKER))
@@ -60,7 +63,7 @@ public class InfoLineFurnaceExp extends InfoLine
 
                 if (exp > 0)
                 {
-                    return this.translate(FURNACE_KEY, exp);
+                    list.add(this.translate(FURNACE_KEY, exp));
                 }
             }
             else if (this.getHudData().hasServuxServer() && this.getHudData().hasRecipes())
@@ -69,17 +72,19 @@ public class InfoLineFurnaceExp extends InfoLine
 
                 if (exp > 0)
                 {
-                    return this.translate(FURNACE_KEY, exp);
+                    list.add(this.translate(FURNACE_KEY, exp));
                 }
             }
         }
 
-        return null;
+        return list;
     }
 
     @Override
-    public @Nullable Entry parseBlockEnt(@Nonnull World world, @Nonnull BlockEntity be)
+    public List<Entry> parseBlockEnt(@Nonnull World world, @Nonnull BlockEntity be)
     {
+        List<Entry> list = new ArrayList<>();
+
         if (be instanceof AbstractFurnaceBlockEntity furnace)
         {
             if (world instanceof ServerWorld serverWorld)
@@ -88,7 +93,7 @@ public class InfoLineFurnaceExp extends InfoLine
 
                 if (exp > 0)
                 {
-                    return this.translate(FURNACE_KEY, exp);
+                    list.add(this.translate(FURNACE_KEY, exp));
                 }
             }
             else if (this.getHudData().hasServuxServer() && this.getHudData().hasRecipes())
@@ -97,11 +102,11 @@ public class InfoLineFurnaceExp extends InfoLine
 
                 if (exp > 0)
                 {
-                    return this.translate(FURNACE_KEY, exp);
+                    list.add(this.translate(FURNACE_KEY, exp));
                 }
             }
         }
 
-        return null;
+        return list;
     }
 }
