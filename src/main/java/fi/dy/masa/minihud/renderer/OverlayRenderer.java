@@ -5,7 +5,6 @@ import org.joml.Matrix4f;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.ShaderProgramKeys;
 import net.minecraft.client.render.*;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.BlockItem;
@@ -14,6 +13,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.profiler.Profiler;
 
 import fi.dy.masa.malilib.render.RenderContext;
+import fi.dy.masa.malilib.render.shader.ShaderProgramKeysTemp;
 import fi.dy.masa.malilib.util.EntityUtils;
 import fi.dy.masa.malilib.util.data.Color4f;
 import fi.dy.masa.minihud.config.RendererToggle;
@@ -128,7 +128,7 @@ public class OverlayRenderer
             builtBuffer.close();
              */
 
-            ctx.drawWithShaders(buffer.end(), ShaderProgramKeys.POSITION_COLOR);
+            ctx.drawWithShaders(buffer.end(), ShaderProgramKeysTemp.POSITION_COLOR_LEGACY);
         }
         catch (Exception ignored) { }
 
@@ -146,7 +146,7 @@ public class OverlayRenderer
             BufferRenderer.drawWithGlobalProgram(builtBuffer);
             builtBuffer.close();
              */
-            ctx.drawWithShaders(buffer.end(), ShaderProgramKeys.POSITION_COLOR);
+            ctx.drawWithShaders(buffer.end(), ShaderProgramKeysTemp.POSITION_COLOR_LEGACY);
             ctx.close();
         }
         catch (Exception ignored) { }

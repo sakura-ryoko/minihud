@@ -220,7 +220,7 @@ public class InfoLineEntityVariant extends InfoLine
         }
         else if (entityType.equals(EntityType.WOLF))
         {
-            Pair<RegistryKey<WolfVariant>, DyeColor> wolfPair = NbtEntityUtils.getWolfVariantFromNbt(nbt);
+            Pair<RegistryKey<WolfVariant>, DyeColor> wolfPair = NbtEntityUtils.getWolfVariantFromNbt(nbt, world.getRegistryManager());
 
             if (wolfPair.getLeft() != null)
             {

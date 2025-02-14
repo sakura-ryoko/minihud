@@ -2,14 +2,13 @@ package fi.dy.masa.minihud.info.entity;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.lang3.tuple.Triple;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.passive.DolphinEntity;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import fi.dy.masa.malilib.util.nbt.NbtEntityUtils;
@@ -51,15 +50,14 @@ public class InfoLineDolphinTreasure extends InfoLine
     @Override
     public List<Entry> parseNbt(@NotNull World world, @NotNull EntityType<?> entityType, @NotNull NbtCompound nbt)
     {
-        Triple<BlockPos, Integer, Boolean> dolphinTriple = NbtEntityUtils.getDolphinDataFromNbt(nbt);
+        Pair<Integer, Boolean> dolphiPair = NbtEntityUtils.getDolphinDataFromNbt(nbt);
         List<Entry> list = new ArrayList<>();
 
-        if (dolphinTriple != null && entityType.equals(EntityType.DOLPHIN))
+        if (dolphiPair != null && entityType.equals(EntityType.DOLPHIN))
         {
-            BlockPos treasure = dolphinTriple.getLeft();
-            boolean hasTreasure = !treasure.equals(BlockPos.ORIGIN);
-            int dryTime = dolphinTriple.getMiddle();
+            int dryTime = dolphiPair.getLeft();
 
+            /*
             if (dryTime == 2400)
             {
                 // Submerged
@@ -68,35 +66,18 @@ public class InfoLineDolphinTreasure extends InfoLine
                     this.translate(DOLPHIN_KEY, treasure.toShortString());
                 }
             }
-            else if (dryTime > 0)
+            else
+             */
+            if (dryTime > 0)
             {
-                // Countdown until dry
-                if (hasTreasure)
-                {
-                    list.add(this.translate(DOLPHIN_KEY+".drying",
-                                            treasure.toShortString(),
-                                            MiscUtils.formatDuration((dryTime / 20) * 1000L)));
-                }
-                else
-                {
                     list.add(this.translate(DOLPHIN_KEY+".drying_no_treasure",
                                             MiscUtils.formatDuration((dryTime / 20) * 1000L)));
-                }
             }
             else if (dryTime < 0)
             {
                 // Drying Out and taking Damage
-                if (hasTreasure)
-                {
-                    list.add(this.translate(DOLPHIN_KEY+".dying",
-                                            treasure.toShortString(),
-                                            MiscUtils.formatDuration(((dryTime * (-1)) / 20) * 1000L)));
-                }
-                else
-                {
-                    list.add(this.translate(DOLPHIN_KEY+".dying_no_treasure",
-                                            MiscUtils.formatDuration(((dryTime * (-1)) / 20) * 1000L)));
-                }
+                list.add(this.translate(DOLPHIN_KEY+".dying_no_treasure",
+                                        MiscUtils.formatDuration(((dryTime * (-1)) / 20) * 1000L)));
             }
         }
 
@@ -110,10 +91,9 @@ public class InfoLineDolphinTreasure extends InfoLine
 
         if (ent instanceof DolphinEntity dolphin)
         {
-            BlockPos treasure = dolphin.getTreasurePos();
-            boolean hasTreasure = !treasure.equals(BlockPos.ORIGIN);
             int dryTime = dolphin.getMoistness();
 
+            /*
             if (dryTime == 2400)
             {
                 // Submerged
@@ -122,35 +102,18 @@ public class InfoLineDolphinTreasure extends InfoLine
                     list.add(this.translate(DOLPHIN_KEY, treasure.toShortString()));
                 }
             }
-            else if (dryTime > 0)
+            else
+             */
+            if (dryTime > 0)
             {
-                // Countdown until dry
-                if (hasTreasure)
-                {
-                    list.add(this.translate(DOLPHIN_KEY+".drying",
-                                            treasure.toShortString(),
-                                            MiscUtils.formatDuration((dryTime / 20) * 1000L)));
-                }
-                else
-                {
-                    list.add(this.translate(DOLPHIN_KEY+".drying_no_treasure",
-                                            MiscUtils.formatDuration((dryTime / 20) * 1000L)));
-                }
+                list.add(this.translate(DOLPHIN_KEY+".drying_no_treasure",
+                                        MiscUtils.formatDuration((dryTime / 20) * 1000L)));
             }
             else if (dryTime < 0)
             {
                 // Drying Out and taking Damage
-                if (hasTreasure)
-                {
-                    list.add(this.translate(DOLPHIN_KEY+".dying",
-                                            treasure.toShortString(),
-                                            MiscUtils.formatDuration(((dryTime * (-1)) / 20) * 1000L)));
-                }
-                else
-                {
-                    list.add(this.translate(DOLPHIN_KEY+".dying_no_treasure",
-                                            MiscUtils.formatDuration(((dryTime * (-1)) / 20) * 1000L)));
-                }
+                list.add(this.translate(DOLPHIN_KEY+".dying_no_treasure",
+                                        MiscUtils.formatDuration(((dryTime * (-1)) / 20) * 1000L)));
             }
         }
 
