@@ -35,7 +35,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.NameGenerator;
 import net.minecraft.util.Nameable;
 import net.minecraft.util.math.*;
-import net.minecraft.village.VillageGossipType;
+import net.minecraft.village.VillagerGossipType;
 import net.minecraft.village.raid.Raid;
 import net.minecraft.world.StructureWorldAccess;
 import net.minecraft.world.event.GameEvent;
@@ -483,9 +483,9 @@ public class DebugDataManager
                         {
                             String name = NameGenerator.name(gossipEntity);
 
-                            for (Object2IntMap.Entry<VillageGossipType> typeEntry : associatedGossip.object2IntEntrySet())
+                            for (Object2IntMap.Entry<VillagerGossipType> typeEntry : associatedGossip.object2IntEntrySet())
                             {
-                                Map.Entry<VillageGossipType, Integer> entry = (Map.Entry) typeEntry;
+                                Map.Entry<VillagerGossipType, Integer> entry = (Map.Entry) typeEntry;
                                 gossips.add(name + ": " + entry.getKey().asString() + " " + entry.getValue());
                             }
                         }
