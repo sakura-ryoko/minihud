@@ -351,7 +351,7 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
         for (Direction side : sides)
         {
             Biome adjBiome = biomes[x + side.getOffsetX()][y + side.getOffsetY()][z + side.getOffsetZ()];
-            int sideIndex = side.getId();
+            int sideIndex = side.getIndex();
             int stripStart = startPos[sideIndex];
             //if (stripX == 100 && stripY == 65 && stripZ < -80 && side == Direction.EAST)
             //System.out.printf("biome @ [%d, %d, %d]: %d, adj @ %s = %d, ss: %d\n", minCorner.getX() + x, minCorner.getY() + y, minCorner.getZ() + z, biomeMapping.getInt(biome), side, biomeMapping.getInt(adjBiome), stripStart);
@@ -414,7 +414,7 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
 
         for (Direction side : sides)
         {
-            int sideIndex = side.getId();
+            int sideIndex = side.getIndex();
             int stripStart = startPos[sideIndex];
 
             // There was a started strip for the side
@@ -460,7 +460,7 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
         for (EdgeStrip strip : stripList)
         {
             Direction side = strip.side;
-            int sideIndex = side.getId();
+            int sideIndex = side.getIndex();
             final long startPos = strip.startPosLong;
             int x = unpackX(startPos) & 0xF;
             int y = unpackY(startPos) & 0xF;

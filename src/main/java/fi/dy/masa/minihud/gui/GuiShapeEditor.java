@@ -285,7 +285,7 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
 
     private void addBoxSideToggleCheckbox(int x, int y, Direction side, ShapeBox shape)
     {
-        String sideName = StringUtils.translate("minihud.gui.name.box.box_side." + side.getName());
+        String sideName = StringUtils.translate("minihud.gui.name.box.box_side." + side.name());
         WidgetCheckBox cb = new WidgetCheckBox(x, y, MaLiLibIcons.MINUS, MaLiLibIcons.PLUS, this.capitalize(sideName), StringUtils.translate("minihud.gui.hover.shape.box.box_side", sideName));
         cb.setChecked(shape.isSideEnabled(side));
         cb.setListener((w) -> this.toggleSideEnabled(side, shape));
@@ -295,7 +295,7 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
     private void toggleSideEnabled(Direction side, ShapeBox shape)
     {
         int mask = shape.getEnabledSidesMask();
-        shape.setEnabledSidesMask(mask ^ (1 << side.getId()));
+        shape.setEnabledSidesMask(mask ^ (1 << side.getIndex()));
     }
 
 
@@ -418,7 +418,7 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
 
     public static Direction cycleDirection(Direction direction, boolean reverse)
     {
-        int index = direction.getId();
+        int index = direction.getIndex();
 
         if (reverse)
         {
@@ -429,7 +429,7 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
             index = index >= 5 ? 0 : index + 1;
         }
 
-        return Direction.byId(index);
+        return Direction.byIndex(index);
     }
 
     protected void setPositionFromCamera(Consumer<Vec3d> consumer)

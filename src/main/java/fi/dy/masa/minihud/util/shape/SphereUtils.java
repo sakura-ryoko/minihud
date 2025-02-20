@@ -400,7 +400,7 @@ public class SphereUtils
                                                   Direction side,
                                                   Long2ByteOpenHashMap handledPositions)
     {
-        byte sideMask = (byte) (1 << side.getId());
+        byte sideMask = (byte) (1 << side.getIndex());
         byte val = handledPositions.get(pos);
 
         if ((val & sideMask) != 0)
@@ -482,7 +482,7 @@ public class SphereUtils
         int x = BlockPos.unpackLongX(pos);
         int y = BlockPos.unpackLongY(pos);
         int z = BlockPos.unpackLongZ(pos);
-        long val = (1L << side.getId()) << 58;
+        long val = (1L << side.getIndex()) << 58;
         val |= (y & 0x3FFFL  ) << 44; // 14 bits for the y
         val |= (z & 0x3FFFFFL) << 22; // 22 bits for the z
         val |= (x & 0x3FFFFFL)      ; // 22 bits for the x

@@ -55,7 +55,7 @@ public class OverlayRenderer
 
         if (RendererToggle.OVERLAY_BEACON_RANGE.getBooleanValue())
         {
-            profiler.push(() -> "BeaconRangeHeldItem");
+            profiler.push("BeaconRangeHeldItem");
             renderBeaconBoxForPlayerIfHoldingItem(entity, mc);
             profiler.pop();
         }

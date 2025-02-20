@@ -3,9 +3,11 @@ package fi.dy.masa.minihud.event;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.info.InfoLine;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -244,6 +246,12 @@ public class RenderHandler implements IRenderer
                 RenderUtils.renderBundlePreview(stack, x, y, Configs.Generic.BUNDLE_DISPLAY_ROW_WIDTH.getIntegerValue(), Configs.Generic.BUNDLE_DISPLAY_BACKGROUND_COLOR.getBooleanValue(), drawContext);
             }
         }
+    }
+
+    @Override
+    public Supplier<String> getProfilerSectionSupplier()
+    {
+        return () -> Reference.MOD_ID+"_renderer";
     }
 
     @Override
@@ -862,17 +870,17 @@ public class RenderHandler implements IRenderer
         else if (type == InfoToggle.FACING)
         {
             Direction facing = entity.getHorizontalFacing();
-            String facingName = StringUtils.translate("minihud.info_line.facing." + facing.getName() + ".name");
+            String facingName = StringUtils.translate("minihud.info_line.facing." + facing.name() + ".name");
             String str;
 
-            if (facingName.contains("minihud.info_line.facing." + facing.getName() + ".name"))
+            if (facingName.contains("minihud.info_line.facing." + facing.name() + ".name"))
             {
                 facingName = facing.name();
                 str = StringUtils.translate("minihud.info_line.invalid_value");
             }
             else
             {
-                str = StringUtils.translate("minihud.info_line.facing." + facing.getName());
+                str = StringUtils.translate("minihud.info_line.facing." + facing.name());
             }
 
             this.addLineI18n("minihud.info_line.facing", facingName, str);

@@ -307,7 +307,7 @@ public class ShapeBox extends ShapeBase
 
     public static boolean isSideEnabled(Direction side, int enabledSidesMask)
     {
-        return (enabledSidesMask & (1 << side.getId())) != 0;
+        return (enabledSidesMask & (1 << side.getIndex())) != 0;
     }
 
     public static void renderBoxSideQuad(Box box, Direction side, Color4f color, BufferBuilder buffer)

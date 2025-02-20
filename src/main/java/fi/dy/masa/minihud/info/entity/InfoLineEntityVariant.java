@@ -75,7 +75,7 @@ public class InfoLineEntityVariant extends InfoLine
 
             if (catPair.getLeft() != null)
             {
-                list.add(this.translate(VARIANT_KEY+".cat", catPair.getLeft().getValue().getPath(), catPair.getRight().getName()));
+                list.add(this.translate(VARIANT_KEY+".cat", catPair.getLeft().getValue().getPath(), catPair.getRight().getId()));
             }
         }
         else if (entityType.equals(EntityType.COW))
@@ -206,7 +206,7 @@ public class InfoLineEntityVariant extends InfoLine
 
             if (color != null)
             {
-                list.add(this.translate(VARIANT_KEY+".sheep", color.getName()));
+                list.add(this.translate(VARIANT_KEY+".sheep", color.getId()));
             }
         }
         else if (entityType.equals(EntityType.TROPICAL_FISH))
@@ -221,10 +221,18 @@ public class InfoLineEntityVariant extends InfoLine
         else if (entityType.equals(EntityType.WOLF))
         {
             Pair<RegistryKey<WolfVariant>, DyeColor> wolfPair = NbtEntityUtils.getWolfVariantFromNbt(nbt, world.getRegistryManager());
+            RegistryKey<WolfSoundVariant> soundType = NbtEntityUtils.getWolfSoundTypeFromNbt(nbt, world.getRegistryManager());
 
             if (wolfPair.getLeft() != null)
             {
-                list.add(this.translate(VARIANT_KEY+".wolf", wolfPair.getLeft().getValue().getPath(), wolfPair.getRight().getName()));
+                if (soundType != null)
+                {
+                    list.add(this.translate(VARIANT_KEY + ".wolf.sound_type", wolfPair.getLeft().getValue().getPath(), soundType.getValue().getPath(), wolfPair.getRight().getId()));
+                }
+                else
+                {
+                    list.add(this.translate(VARIANT_KEY + ".wolf", wolfPair.getLeft().getValue().getPath(), wolfPair.getRight().getId()));
+                }
             }
         }
 
@@ -238,11 +246,11 @@ public class InfoLineEntityVariant extends InfoLine
 
         switch (ent)
         {
-            case AxolotlEntity axolotl -> list.add(this.translate(VARIANT_KEY + ".axolotl", axolotl.getVariant().name()));
+            case AxolotlEntity axolotl -> list.add(this.translate(VARIANT_KEY + ".axolotl", axolotl.getVariant().getId()));
             case CatEntity cat ->
             {
                 RegistryKey<CatVariant> variant = cat.getVariant().getKey().orElse(CatVariants.BLACK);
-                list.add(this.translate(VARIANT_KEY + ".cat", variant.getValue().getPath(), cat.getCollarColor().getName()));
+                list.add(this.translate(VARIANT_KEY + ".cat", variant.getValue().getPath(), cat.getCollarColor().getId()));
             }
             case ChickenEntity chicken -> list.add(this.translate(VARIANT_KEY + ".chicken", chicken.getVariant().getKey().orElse(ChickenVariants.DEFAULT).getValue().getPath()));
             case CowEntity cow -> list.add(this.translate(VARIANT_KEY + ".cow", cow.getVariant().getKey().orElse(CowVariants.DEFAULT).getValue().getPath()));
@@ -278,12 +286,21 @@ public class InfoLineEntityVariant extends InfoLine
             case PigEntity pig -> list.add(this.translate(VARIANT_KEY + ".pig", pig.getVariant().getKey().orElse(PigVariants.DEFAULT).getValue().getPath()));
             case RabbitEntity rabbit -> list.add(this.translate(VARIANT_KEY + ".rabbit", rabbit.getVariant().asString()));
             case SalmonEntity salmon -> list.add(this.translate(VARIANT_KEY + ".salmon", salmon.getVariant().asString()));
-            case SheepEntity sheep -> list.add(this.translate(VARIANT_KEY + ".sheep", sheep.getColor().getName()));
+            case SheepEntity sheep -> list.add(this.translate(VARIANT_KEY + ".sheep", sheep.getColor().getId()));
             case TropicalFishEntity fish -> list.add(this.translate(VARIANT_KEY + ".tropical_fish", fish.getVariety().asString()));
             case WolfEntity wolf ->
             {
-                Pair<RegistryKey<WolfVariant>, DyeColor> wolfPair = EntityUtils.getWolfVariantFromNbt(wolf);
-                list.add(this.translate(VARIANT_KEY + ".wolf", wolfPair.getLeft().getValue().getPath(), wolfPair.getRight().getName()));
+                Pair<RegistryKey<WolfVariant>, DyeColor> wolfPair = EntityUtils.getWolfVariantFromComponents(wolf);
+                RegistryKey<WolfSoundVariant> soundType = EntityUtils.getWolfSoundTypeFromComponents(wolf);
+
+                if (soundType != null)
+                {
+                    list.add(this.translate(VARIANT_KEY + ".wolf.sound_type", wolfPair.getLeft().getValue().getPath(), soundType.getValue().getPath(), wolfPair.getRight().getId()));
+                }
+                else
+                {
+                    list.add(this.translate(VARIANT_KEY + ".wolf", wolfPair.getLeft().getValue().getPath(), wolfPair.getRight().getId()));
+                }
             }
             default -> {}
         }
