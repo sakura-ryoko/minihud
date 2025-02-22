@@ -6,7 +6,7 @@ import java.util.List;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.FluidBlock;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.ShaderProgramLayers;
+import net.minecraft.client.gl.ShaderPipelines;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormats;
@@ -157,8 +157,8 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
     @Override
     public void allocateGlResources()
     {
-        this.allocateBuffer(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR, ShaderProgramLayers.GUI_TEXTURED_OVERLAY);
-        this.allocateBuffer(VertexFormat.DrawMode.DEBUG_LINES, VertexFormats.POSITION_COLOR, ShaderProgramLayers.DEBUG_LINE_STRIP);
+        this.allocateBuffer(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR, ShaderPipelines.GUI_TEXTURED_OVERLAY);
+        this.allocateBuffer(VertexFormat.DrawMode.DEBUG_LINES, VertexFormats.POSITION_COLOR, ShaderPipelines.DEBUG_LINE_STRIP);
     }
 
     private void renderLightLevels(Vec3d cameraPos, MinecraftClient mc)

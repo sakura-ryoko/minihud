@@ -1,6 +1,9 @@
 package fi.dy.masa.minihud.util;
 
 import com.google.common.collect.ImmutableList;
+
+import com.mojang.serialization.Codec;
+
 import fi.dy.masa.malilib.config.IConfigOptionListEntry;
 import fi.dy.masa.malilib.util.StringUtils;
 
@@ -28,6 +31,12 @@ public enum LightLevelRenderCondition implements IConfigOptionListEntry
     public boolean shouldRender(int blockLightLevel, int dimThreshold, int safeThreshold)
     {
         return this.condition.shouldRender(blockLightLevel, dimThreshold, safeThreshold);
+    }
+
+    @Override
+    public Codec<LightLevelRenderCondition> codec()
+    {
+        return null;
     }
 
     @Override

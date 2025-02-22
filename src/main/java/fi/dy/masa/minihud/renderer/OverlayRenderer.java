@@ -5,7 +5,7 @@ import org.joml.Matrix4f;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.ShaderProgramLayers;
+import net.minecraft.client.gl.ShaderPipelines;
 import net.minecraft.client.render.*;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.BlockItem;
@@ -128,7 +128,7 @@ public class OverlayRenderer
             builtBuffer.close();
              */
 
-            ctx.drawWithShaders(buffer.end(), ShaderProgramLayers.DEBUG_LINE_STRIP);
+            ctx.drawWithShaders(buffer.end(), ShaderPipelines.DEBUG_LINE_STRIP);
         }
         catch (Exception ignored) { }
 
@@ -146,7 +146,7 @@ public class OverlayRenderer
             BufferRenderer.drawWithGlobalProgram(builtBuffer);
             builtBuffer.close();
              */
-            ctx.drawWithShaders(buffer.end(), ShaderProgramLayers.DEBUG_LINE_STRIP);
+            ctx.drawWithShaders(buffer.end(), ShaderPipelines.DEBUG_LINE_STRIP);
             ctx.close();
         }
         catch (Exception ignored) { }

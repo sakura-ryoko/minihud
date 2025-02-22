@@ -1,5 +1,7 @@
 package fi.dy.masa.minihud.util;
 
+import com.mojang.serialization.Codec;
+
 import fi.dy.masa.malilib.config.IConfigOptionListEntry;
 import fi.dy.masa.malilib.util.StringUtils;
 
@@ -13,10 +15,16 @@ public enum LightLevelNumberMode implements IConfigOptionListEntry
     private final String configString;
     private final String translationKey;
 
-    private LightLevelNumberMode(String configString, String translationKey)
+    LightLevelNumberMode(String configString, String translationKey)
     {
         this.configString = configString;
         this.translationKey = translationKey;
+    }
+
+    @Override
+    public Codec<LightLevelNumberMode> codec()
+    {
+        return null;
     }
 
     @Override
