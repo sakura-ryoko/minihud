@@ -58,7 +58,7 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
     @Override
     public String getName()
     {
-        return "OverlayRendererBiomeBorders";
+        return "BiomeBorders";
     }
 
     public void setNeedsUpdate()

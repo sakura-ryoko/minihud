@@ -33,7 +33,7 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
     @Override
     public String getName()
     {
-        return "OverlayRendererSlimeChunks";
+        return "SlimeChunks";
     }
 
     public static void setNeedsUpdate()

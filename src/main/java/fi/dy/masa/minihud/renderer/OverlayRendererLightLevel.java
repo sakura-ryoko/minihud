@@ -55,7 +55,7 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
     @Override
     public String getName()
     {
-        return "OverlayRendererLightLevel";
+        return "LightLevel";
     }
 
     public static void setNeedsUpdate()
