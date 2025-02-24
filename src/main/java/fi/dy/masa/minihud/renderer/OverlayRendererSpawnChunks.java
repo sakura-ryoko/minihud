@@ -36,7 +36,7 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
     @Override
     public String getName()
     {
-        return "OverlayRendererSpawnChunks";
+        return "SpawnChunks";
     }
 
     public static void setNeedsUpdate()

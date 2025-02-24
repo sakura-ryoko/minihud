@@ -81,12 +81,14 @@ public abstract class BaseBlockRangeOverlay<T extends BlockEntity> extends Overl
     {
         return this.needsUpdate || this.lastUpdatePos == null ||
                Math.abs(cameraEntity.getX() - this.lastUpdatePos.getX()) > this.updateDistance ||
-               Math.abs(cameraEntity.getZ() - this.lastUpdatePos.getZ()) > this.updateDistance;
+               Math.abs(cameraEntity.getZ() - this.lastUpdatePos.getZ()) > this.updateDistance ||
+               Math.abs(cameraEntity.getY() - this.lastUpdatePos.getY()) > this.updateDistance;
     }
 
     @Override
     public void update(Vec3d cameraPos, Entity entity, MinecraftClient mc)
     {
+        if (mc.world == null) return;
         // This way creates a bit more visual lag when rebuilding the blockPositions,
         // but it makes the dynamic reallocation work as opposed to not working
         boolean blockPositionsInRange = this.fetchAllTargetBlockEntityPositions(mc.world, entity.getBlockPos(), mc);
@@ -159,7 +161,10 @@ public abstract class BaseBlockRangeOverlay<T extends BlockEntity> extends Overl
                     {
                         if (be.getType() == this.blockEntityType)
                         {
-                            this.blockPositions.add(be.getPos().asLong());
+                            synchronized (this.blockPositions)
+                            {
+                                this.blockPositions.add(be.getPos().asLong());
+                            }
                         }
                     }
                 }

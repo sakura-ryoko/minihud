@@ -30,7 +30,7 @@ public class OverlayRendererStructures extends OverlayRendererBase
     @Override
     public String getName()
     {
-        return "OverlayRendererStructures";
+        return "Structures";
     }
 
     @Override

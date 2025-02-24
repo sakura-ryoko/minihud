@@ -68,27 +68,30 @@ public class RenderContainer
     {
         //Vec3d cameraPos = mc.gameRenderer.getCamera().getPos();
 
+        profiler.push("renderContainer");
         this.update(camera.getPos(), entity, mc, profiler);
         this.draw(camera.getPos(), matrix4f, projMatrix, mc, profiler);
+        profiler.pop();
     }
 
     protected void update(Vec3d cameraPos, Entity entity, MinecraftClient mc, Profiler profiler)
     {
-        profiler.push(() -> "RenderContainer#update()");
+        profiler.swap("render_update");
+
         this.allocateResourcesIfNeeded();
         this.countActive = 0;
 
         for (OverlayRendererBase renderer : this.renderers)
         {
-            profiler.push(renderer::getName);
+            profiler.push("update_"+renderer.getName());
 
             if (renderer.shouldRender(mc))
             {
                 if (renderer.needsUpdate(entity, mc))
                 {
                     renderer.lastUpdatePos = PositionUtils.getEntityBlockPos(entity);
-                    renderer.setUpdatePosition(cameraPos);
                     renderer.update(cameraPos, entity, mc);
+                    renderer.setUpdatePosition(cameraPos);
                 }
 
                 ++this.countActive;
@@ -96,16 +99,14 @@ public class RenderContainer
 
             profiler.pop();
         }
-
-        profiler.pop();
     }
 
     protected void draw(Vec3d cameraPos, Matrix4f matrix4f, Matrix4f projMatrix, MinecraftClient mc, Profiler profiler)
     {
+        profiler.swap("render_draw");
+
         if (this.resourcesAllocated && this.countActive > 0)
         {
-            profiler.push(() -> "RenderContainer#draw()");
-
             RenderSystem.disableCull();
             RenderSystem.enableDepthTest();
             RenderSystem.depthMask(false);
@@ -119,7 +120,7 @@ public class RenderContainer
 
             for (IOverlayRenderer renderer : this.renderers)
             {
-                profiler.push(() -> renderer.getClass().getName());
+                profiler.push("draw_"+renderer.getName());
 
                 if (renderer.shouldRender(mc))
                 {
@@ -141,8 +142,6 @@ public class RenderContainer
             RenderSystem.enableDepthTest();
             RenderSystem.enableCull();
             RenderSystem.depthMask(true);
-
-            profiler.pop();
         }
     }
 
