@@ -55,7 +55,7 @@ public class OverlayRenderer
             mc.getProfiler().pop();
         }
 
-        RenderContainer.INSTANCE.render(entity, matrix4f, projMatrix, mc);
+        RenderContainer.INSTANCE.render(entity, matrix4f, projMatrix, mc, mc.getProfiler());
     }
 
 

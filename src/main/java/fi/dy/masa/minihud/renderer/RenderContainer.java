@@ -9,6 +9,8 @@ import fi.dy.masa.minihud.config.RendererToggle;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.profiler.Profiler;
+
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 
@@ -61,10 +63,9 @@ public class RenderContainer
         }
     }
 
-    public void render(Entity entity, Matrix4f matrix4f, Matrix4f projMatrix, MinecraftClient mc)
+    public void render(Entity entity, Matrix4f matrix4f, Matrix4f projMatrix, MinecraftClient mc, Profiler profiler)
     {
         Vec3d cameraPos = mc.gameRenderer.getCamera().getPos();
-        Profiler profiler = mc.getProfiler();
 
         profiler.push("renderContainer");
         this.update(cameraPos, entity, mc, profiler);
