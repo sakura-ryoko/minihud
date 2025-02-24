@@ -27,7 +27,7 @@ public class OverlayRendererSpawnableColumnHeights extends OverlayRendererBase
     @Override
     public String getName()
     {
-        return "OverlayRendererSpawnableColumnHeights";
+        return "SpawnableColumnHeights";
     }
 
     public static void markChunkChanged(int cx, int cz)

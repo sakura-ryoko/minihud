@@ -23,7 +23,7 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
     @Override
     public String getName()
     {
-        return "OverlayRendererBeaconRange";
+        return "BeaconRange";
     }
 
     @Override

@@ -211,7 +211,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
     @Override
     public String getName()
     {
-        return "Villager Info Overlay";
+        return "VillagerInfo";
     }
 
     @Override

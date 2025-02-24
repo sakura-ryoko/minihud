@@ -28,7 +28,7 @@ public class OverlayRendererRegion extends OverlayRendererBase
     @Override
     public String getName()
     {
-        return "OverlayRendererRegion";
+        return "Region";
     }
 
     @Override

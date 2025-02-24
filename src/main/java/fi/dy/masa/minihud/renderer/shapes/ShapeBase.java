@@ -46,7 +46,7 @@ public abstract class ShapeBase extends OverlayRendererBase implements IRangeCha
     @Override
     public String getName()
     {
-        return "shapes_"+this.displayName;
+        return "Shapes_"+this.displayName;
     }
 
     public ShapeType getType()
