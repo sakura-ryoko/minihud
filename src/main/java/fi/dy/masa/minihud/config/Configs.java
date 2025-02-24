@@ -71,6 +71,7 @@ public class Configs implements IConfigHandler
         public static final ConfigDouble        FONT_SCALE                          = new ConfigDouble("fontScale", 0.5, 0.01, 100.0).apply(GENERIC_KEY);
         public static final ConfigOptionList    HUD_ALIGNMENT                       = new ConfigOptionList("hudAlignment", HudAlignment.TOP_LEFT).apply(GENERIC_KEY);
         public static final ConfigBooleanHotkeyed HUD_DATA_SYNC                     = new ConfigBooleanHotkeyed("hudDataSync", false, "").apply(GENERIC_KEY);
+        public static final ConfigBooleanHotkeyed HUD_STATUS_EFFECTS_SHIFT          = new ConfigBooleanHotkeyed("hudStatusEffectsShift",true, "").apply(GENERIC_KEY);
         public static final ConfigBoolean       INFO_LINES_USES_NBT                 = new ConfigBoolean("infoLinesUsesNbt", true).apply(GENERIC_KEY);
         public static final ConfigHotkey        INVENTORY_PREVIEW                   = new ConfigHotkey("inventoryPreview", "LEFT_ALT", KeybindSettings.PRESS_ALLOWEXTRA).apply(GENERIC_KEY);
         public static final ConfigBoolean       INVENTORY_PREVIEW_ENABLED           = new ConfigBoolean("inventoryPreviewEnabled", false).apply(GENERIC_KEY);
@@ -215,6 +216,7 @@ public class Configs implements IConfigHandler
                 DURATION_FORMAT_TYPE,
                 DURATION_FORMAT_STRING,
                 FONT_SCALE,
+                HUD_STATUS_EFFECTS_SHIFT,
                 LIGHT_LEVEL_MARKER_SIZE,
                 LIGHT_LEVEL_NUMBER_OFFSET_BLOCK_X,
                 LIGHT_LEVEL_NUMBER_OFFSET_BLOCK_Y,
@@ -246,6 +248,7 @@ public class Configs implements IConfigHandler
         public static final List<IHotkey> HOTKEY_LIST = ImmutableList.of(
                 MAIN_RENDERING_TOGGLE,
                 HUD_DATA_SYNC,
+                HUD_STATUS_EFFECTS_SHIFT,
                 ENTITY_DATA_SYNC,
                 MOVE_SHAPE_TO_PLAYER,
                 OPEN_CONFIG_GUI,
