@@ -22,7 +22,7 @@ public class OverlayRendererBlockGrid extends OverlayRendererBase
     @Override
     public String getName()
     {
-        return "OverlayRendererBlockGrid";
+        return "BlockGrid";
     }
 
     @Override

@@ -34,7 +34,7 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
     @Override
     public String getName()
     {
-        return "OverlayRendererConduitRange";
+        return "ConduitRange";
     }
 
     @Override

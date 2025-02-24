@@ -32,7 +32,7 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
     @Override
     public String getName()
     {
-        return "OverlayRendererRandomTickableChunks";
+        return "RandomTickableChunks";
     }
 
     public static void setNeedsUpdate()
