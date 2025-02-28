@@ -73,6 +73,7 @@ import fi.dy.masa.minihud.data.EntitiesDataManager;
 import fi.dy.masa.minihud.data.HudDataManager;
 import fi.dy.masa.minihud.data.MobCapDataHandler;
 import fi.dy.masa.minihud.mixin.*;
+import fi.dy.masa.minihud.mixin.world.IMixinServerWorld;
 import fi.dy.masa.minihud.renderer.InventoryOverlayHandler;
 import fi.dy.masa.minihud.renderer.OverlayRenderer;
 import fi.dy.masa.minihud.util.DataStorage;

@@ -2,7 +2,7 @@ package fi.dy.masa.minihud.util;
 
 import fi.dy.masa.malilib.util.WorldUtils;
 import fi.dy.masa.minihud.mixin.entity.IMixinEntity;
-import fi.dy.masa.minihud.mixin.IMixinWorld;
+import fi.dy.masa.minihud.mixin.world.IMixinWorld;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.Leashable;

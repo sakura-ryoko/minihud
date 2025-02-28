@@ -1,4 +1,4 @@
-package fi.dy.masa.minihud.mixin;
+package fi.dy.masa.minihud.mixin.world;
 
 import java.util.Set;
 import java.util.UUID;

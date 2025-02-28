@@ -1,4 +1,4 @@
-package fi.dy.masa.minihud.mixin;
+package fi.dy.masa.minihud.mixin.world;
 
 import net.minecraft.recipe.PreparedRecipes;
 import net.minecraft.recipe.ServerRecipeManager;

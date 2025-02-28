@@ -35,7 +35,7 @@ import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.RendererToggle;
-import fi.dy.masa.minihud.mixin.IMixinServerRecipeManager;
+import fi.dy.masa.minihud.mixin.world.IMixinServerRecipeManager;
 import fi.dy.masa.minihud.network.ServuxHudHandler;
 import fi.dy.masa.minihud.network.ServuxHudPacket;
 import fi.dy.masa.minihud.renderer.OverlayRendererSpawnChunks;

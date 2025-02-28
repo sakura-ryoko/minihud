@@ -1,4 +1,4 @@
-package fi.dy.masa.minihud.mixin;
+package fi.dy.masa.minihud.mixin.world;
 
 import com.llamalad7.mixinextras.sugar.Local;
 
