@@ -87,6 +87,7 @@ import fi.dy.masa.minihud.mixin.entity.IMixinPassiveEntity;
 import fi.dy.masa.minihud.mixin.entity.IMixinSkeletonEntity;
 import fi.dy.masa.minihud.mixin.entity.IMixinZombieEntity;
 import fi.dy.masa.minihud.mixin.entity.IMixinZombieVillagerEntity;
+import fi.dy.masa.minihud.mixin.world.IMixinServerWorld;
 import fi.dy.masa.minihud.renderer.InventoryOverlayHandler;
 import fi.dy.masa.minihud.renderer.OverlayRenderer;
 import fi.dy.masa.minihud.util.DataStorage;
