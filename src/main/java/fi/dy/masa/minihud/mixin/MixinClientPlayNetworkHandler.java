@@ -9,6 +9,7 @@ import net.minecraft.network.packet.s2c.play.NbtQueryResponseS2CPacket;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.data.EntitiesDataManager;
 import fi.dy.masa.minihud.data.HudDataManager;
+import fi.dy.masa.minihud.mixin.world.IMixinChunkDeltaUpdateS2CPacket;
 import fi.dy.masa.minihud.util.DataStorage;
 import fi.dy.masa.minihud.util.NotificationUtils;
 

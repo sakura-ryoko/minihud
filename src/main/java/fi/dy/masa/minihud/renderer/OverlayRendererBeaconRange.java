@@ -8,7 +8,7 @@ import net.minecraft.world.World;
 import fi.dy.masa.malilib.util.Color4f;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.RendererToggle;
-import fi.dy.masa.minihud.mixin.IMixinBeaconBlockEntity;
+import fi.dy.masa.minihud.mixin.block.IMixinBeaconBlockEntity;
 
 public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBlockEntity>
 {
