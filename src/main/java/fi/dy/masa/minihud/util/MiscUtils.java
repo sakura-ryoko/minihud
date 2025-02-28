@@ -36,7 +36,7 @@ import fi.dy.masa.malilib.util.nbt.NbtBlockUtils;
 import fi.dy.masa.malilib.util.time.DurationFormat;
 import fi.dy.masa.malilib.util.time.TimeFormat;
 import fi.dy.masa.minihud.config.Configs;
-import fi.dy.masa.minihud.mixin.IMixinAbstractFurnaceBlockEntity;
+import fi.dy.masa.minihud.mixin.block.IMixinAbstractFurnaceBlockEntity;
 
 public class MiscUtils
 {

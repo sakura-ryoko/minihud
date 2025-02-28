@@ -1,4 +1,4 @@
-package fi.dy.masa.minihud.mixin;
+package fi.dy.masa.minihud.mixin.block;
 
 import java.util.List;
 import org.spongepowered.asm.mixin.Final;

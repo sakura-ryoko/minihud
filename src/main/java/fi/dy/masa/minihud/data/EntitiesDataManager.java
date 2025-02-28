@@ -247,9 +247,17 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
         this.lastOpCheck = System.currentTimeMillis();
     }
 
+    public long getCacheRefresh()
+    {
+        long result = (long) (MathHelper.clamp(Configs.Generic.ENTITY_DATA_SYNC_CACHE_REFRESH.getFloatValue(), 0.05f, 1.0f) * 1000L);
+        long clamp = (this.getCacheTimeout() / 2);
+
+        return Math.min(result, clamp);
+    }
+
     public long getCacheTimeout()
     {
-        return (long) (MathHelper.clamp(Configs.Generic.ENTITY_DATA_SYNC_CACHE_TIMEOUT.getFloatValue(), 0.15f, 25.0f) * 1000L);
+        return (long) (MathHelper.clamp(Configs.Generic.ENTITY_DATA_SYNC_CACHE_TIMEOUT.getFloatValue(), 0.25f, 15.0f) * 1000L);
     }
 
     private void tickCache(long nowTime)
@@ -460,9 +468,9 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
             if (!DataStorage.getInstance().hasIntegratedServer() &&
                 Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue())
             {
-                if (System.currentTimeMillis() - this.blockEntityCache.get(pos).getLeft() > (this.getCacheTimeout() / 4))
+                if (System.currentTimeMillis() - this.blockEntityCache.get(pos).getLeft() > this.getCacheRefresh())
                 {
-                    //MiniHUD.debugLog("requestBlockEntity: be at pos [{}] requeue at [{}] ms", pos.toShortString(), this.getCacheTimeout() / 4);
+                    //MiniHUD.debugLog("requestBlockEntity: be at pos [{}] requeue at [{}] ms", pos.toShortString(), this.getCacheRefresh());
                     this.pendingBlockEntitiesQueue.add(pos);
                 }
             }
@@ -505,9 +513,9 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
             if (!DataStorage.getInstance().hasIntegratedServer() &&
                 Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue())
             {
-                if (System.currentTimeMillis() - this.entityCache.get(entityId).getLeft() > (this.getCacheTimeout() / 4))
+                if (System.currentTimeMillis() - this.entityCache.get(entityId).getLeft() > this.getCacheRefresh())
                 {
-                    //MiniHUD.debugLog("requestEntity: entity Id [{}] requeue at [{}] ms", entityId, this.getCacheTimeout() / 4);
+                    //MiniHUD.debugLog("requestEntity: entity Id [{}] requeue at [{}] ms", entityId, this.getCacheRefresh());
                     this.pendingEntitiesQueue.add(entityId);
                 }
             }
