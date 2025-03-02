@@ -115,7 +115,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
             {
                 if ((now - longPair.getLeft()) > timeout || longPair.getLeft() > now)
                 {
-                    MiniHUD.debugLog("villagerOverlayCache: entity Id [{}] has timed out by [{}] ms", integer, timeout);
+                    //MiniHUD.debugLog("villagerOverlayCache: entity Id [{}] has timed out by [{}] ms", integer, timeout);
                     this.recentEntityData.remove(integer);
                 }
             }));
