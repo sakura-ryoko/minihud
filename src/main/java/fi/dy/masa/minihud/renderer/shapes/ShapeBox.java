@@ -12,6 +12,7 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
+import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.EntityUtils;
 import fi.dy.masa.malilib.util.JsonUtils;
 import fi.dy.masa.malilib.util.StringUtils;
@@ -166,68 +167,77 @@ public class ShapeBox extends ShapeBase
     {
         RenderObjectBase renderQuads = this.renderObjects.get(0);
         RenderObjectBase renderLines = this.renderObjects.get(1);
+        /*
         BUFFER_1 = TESSELLATOR_1.begin(renderQuads.getGlMode(), VertexFormats.POSITION_COLOR);
         BUFFER_2 = TESSELLATOR_2.begin(renderLines.getGlMode(), VertexFormats.POSITION_COLOR);
+         */
+
+        BufferBuilder builder1 = CONTEXT_1.startNoShader(VertexFormats.POSITION_COLOR, renderQuads.getGlMode());
+        BufferBuilder builder2 = CONTEXT_2.startNoShader(VertexFormats.POSITION_COLOR, renderLines.getGlMode());
+        CONTEXT_1.setShader(MaLiLibPipelines.POSITION_COLOR_SIMPLE);
+        CONTEXT_2.setShader(MaLiLibPipelines.POSITION_COLOR_SIMPLE);
 
         Box box = this.box.offset(-cameraPos.x, -cameraPos.y, -cameraPos.z);
 
-        this.renderBox(box);
+        this.renderBox(box, builder1, builder2);
 
-        renderQuads.uploadData(BUFFER_1);
-        renderLines.uploadData(BUFFER_2);
+        CONTEXT_1 = CONTEXT_1.setBuilder(builder1);
+        CONTEXT_2 = CONTEXT_2.setBuilder(builder2);
+        renderQuads.uploadData(builder1);
+        renderLines.uploadData(builder2);
 
         this.needsUpdate = false;
     }
 
-    protected void renderBox(Box box)
+    protected void renderBox(Box box, BufferBuilder builder1, BufferBuilder builder2)
     {
         for (Direction side : PositionUtils.ALL_DIRECTIONS)
         {
             if (isSideEnabled(side, this.enabledSidesMask))
             {
-                renderBoxSideQuad(box, side, this.color, BUFFER_1);
+                renderBoxSideQuad(box, side, this.color, builder1);
             }
         }
 
         Color4f color = Color4f.fromColor(this.color.intValue, 1f);
-        renderBoxEnabledEdgeLines(box, color, this.enabledSidesMask, BUFFER_2);
+        renderBoxEnabledEdgeLines(box, color, this.enabledSidesMask, builder2);
 
         if (this.gridEnabled)
         {
-            this.renderGridLines(box, color);
+            this.renderGridLines(box, color, builder2);
         }
     }
 
-    protected void renderGridLines(Box box, Color4f color)
+    protected void renderGridLines(Box box, Color4f color, BufferBuilder builder2)
     {
         if (isSideEnabled(Direction.DOWN, this.enabledSidesMask))
         {
-            this.renderGridLinesY(box, box.minY, color, BUFFER_2);
+            this.renderGridLinesY(box, box.minY, color, builder2);
         }
 
         if (isSideEnabled(Direction.UP, this.enabledSidesMask))
         {
-            this.renderGridLinesY(box, box.maxY, color, BUFFER_2);
+            this.renderGridLinesY(box, box.maxY, color, builder2);
         }
 
         if (isSideEnabled(Direction.NORTH, this.enabledSidesMask))
         {
-            this.renderGridLinesZ(box, box.minZ, color, BUFFER_2);
+            this.renderGridLinesZ(box, box.minZ, color, builder2);
         }
 
         if (isSideEnabled(Direction.SOUTH, this.enabledSidesMask))
         {
-            this.renderGridLinesZ(box, box.maxZ, color, BUFFER_2);
+            this.renderGridLinesZ(box, box.maxZ, color, builder2);
         }
 
         if (isSideEnabled(Direction.WEST, this.enabledSidesMask))
         {
-            this.renderGridLinesX(box, box.minX, color, BUFFER_2);
+            this.renderGridLinesX(box, box.minX, color, builder2);
         }
 
         if (isSideEnabled(Direction.EAST, this.enabledSidesMask))
         {
-            this.renderGridLinesX(box, box.maxX, color, BUFFER_2);
+            this.renderGridLinesX(box, box.maxX, color, builder2);
         }
     }
 

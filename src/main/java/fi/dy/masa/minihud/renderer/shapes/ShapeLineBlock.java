@@ -8,6 +8,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
@@ -15,6 +16,7 @@ import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 
+import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.*;
 import fi.dy.masa.malilib.util.position.PositionUtils;
 import fi.dy.masa.minihud.config.Configs;
@@ -164,19 +166,22 @@ public class ShapeLineBlock extends ShapeBlocky
         tracer.iterateAllPositions(this.getLinePositionCollector(positions));
 
         RenderObjectBase renderQuads = this.renderObjects.getFirst();
-        BUFFER_1 = TESSELLATOR_1.begin(renderQuads.getGlMode(), VertexFormats.POSITION_COLOR);
+        //BUFFER_1 = TESSELLATOR_1.begin(renderQuads.getGlMode(), VertexFormats.POSITION_COLOR);
+        BufferBuilder builder1 = CONTEXT_1.startNoShader(VertexFormats.POSITION_COLOR, renderQuads.getGlMode());
+        CONTEXT_1.setShader(MaLiLibPipelines.POSITION_COLOR_SIMPLE);
 
         if (this.getCombineQuads())
         {
             Long2ObjectOpenHashMap<SideQuad> strips = this.buildPositionsToStrips(positions, this.layerRange);
-            RenderUtils.renderQuads(strips.values(), this.color, expand, cameraPos, BUFFER_1);
+            RenderUtils.renderQuads(strips.values(), this.color, expand, cameraPos, builder1);
         }
         else
         {
-            RenderUtils.renderBlockPositions(positions, this.layerRange, this.color, expand, cameraPos, BUFFER_1);
+            RenderUtils.renderBlockPositions(positions, this.layerRange, this.color, expand, cameraPos, builder1);
         }
 
-        renderQuads.uploadData(BUFFER_1);
+        CONTEXT_1 = CONTEXT_1.setBuilder(builder1);
+        renderQuads.uploadData(builder1);
     }
 
     protected LongConsumer getLinePositionCollector(LongOpenHashSet positionsOut)

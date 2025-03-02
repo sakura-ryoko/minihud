@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
@@ -13,6 +14,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.World;
 
+import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.data.Color4f;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.RendererToggle;
@@ -102,8 +104,14 @@ public class OverlayRendererSpawnableColumnHeights extends OverlayRendererBase
 
         RenderObjectBase renderQuads = this.renderObjects.get(0);
         RenderObjectBase renderLines = this.renderObjects.get(1);
+        /*
         BUFFER_1 = TESSELLATOR_1.begin(renderQuads.getGlMode(), VertexFormats.POSITION_COLOR);
         BUFFER_2 = TESSELLATOR_2.begin(renderLines.getGlMode(), VertexFormats.POSITION_COLOR);
+         */
+        BufferBuilder builder1 = CONTEXT_1.startNoShader(VertexFormats.POSITION_COLOR, renderQuads.getGlMode());
+        BufferBuilder builder2 = CONTEXT_2.startNoShader(VertexFormats.POSITION_COLOR, renderLines.getGlMode());
+        CONTEXT_1.setShader(MaLiLibPipelines.POSITION_COLOR_SIMPLE);
+        CONTEXT_2.setShader(MaLiLibPipelines.POSITION_COLOR_SIMPLE);
 
         for (int x = xStart; x <= xEnd; ++x)
         {
@@ -119,15 +127,18 @@ public class OverlayRendererSpawnableColumnHeights extends OverlayRendererBase
                 final double minZ = z + 0.25 - cameraPos.z;
                 final double maxZ = minZ + 0.5;
 
-                fi.dy.masa.malilib.render.RenderUtils.drawBoxHorizontalSidesBatchedQuads((float) minX, (float) minY, (float) minZ, (float) maxX, (float) maxY, (float) maxZ, color, BUFFER_1);
-                fi.dy.masa.malilib.render.RenderUtils.drawBoxTopBatchedQuads((float) minX, (float) minZ, (float) maxX, (float) maxY, (float) maxZ, color, BUFFER_1);
+                fi.dy.masa.malilib.render.RenderUtils.drawBoxHorizontalSidesBatchedQuads((float) minX, (float) minY, (float) minZ, (float) maxX, (float) maxY, (float) maxZ, color, builder1);
+                fi.dy.masa.malilib.render.RenderUtils.drawBoxTopBatchedQuads((float) minX, (float) minZ, (float) maxX, (float) maxY, (float) maxZ, color, builder1);
 
-                fi.dy.masa.malilib.render.RenderUtils.drawBoxAllEdgesBatchedLines((float) minX, (float) minY, (float) minZ, (float) maxX, (float) maxY, (float) maxZ, color, BUFFER_2);
+                fi.dy.masa.malilib.render.RenderUtils.drawBoxAllEdgesBatchedLines((float) minX, (float) minY, (float) minZ, (float) maxX, (float) maxY, (float) maxZ, color, builder2);
             }
         }
 
-        renderQuads.uploadData(BUFFER_1);
-        renderLines.uploadData(BUFFER_2);
+        CONTEXT_1 = CONTEXT_1.setBuilder(builder1);
+        CONTEXT_2 = CONTEXT_2.setBuilder(builder2);
+
+        renderQuads.uploadData(builder1);
+        renderLines.uploadData(builder2);
 
         this.lastCheckTime = System.currentTimeMillis();
 

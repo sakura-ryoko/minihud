@@ -643,7 +643,7 @@ public class RenderUtils
                 horseInv.setStack(0, horseArmor != null && !horseArmor.isEmpty() ? horseArmor : ItemStack.EMPTY);
                 horseInv.setStack(1, inv.getStack(0));
 
-                InventoryOverlay.renderInventoryBackground(type, xInv, yInv, 1, 2, mc);
+                InventoryOverlay.renderInventoryBackground(type, xInv, yInv, 1, 2, mc, drawContext);
 
                 if (type == InventoryOverlay.InventoryRenderType.LLAMA)
                 {
@@ -659,7 +659,7 @@ public class RenderUtils
             }
             if (totalSlots > 0)
             {
-                InventoryOverlay.renderInventoryBackground(type, xInv, yInv, props.slotsPerRow, totalSlots, mc);
+                InventoryOverlay.renderInventoryBackground(type, xInv, yInv, props.slotsPerRow, totalSlots, mc, drawContext);
 
                 if (type == InventoryOverlay.InventoryRenderType.BREWING_STAND)
                 {
@@ -691,7 +691,7 @@ public class RenderUtils
             Inventory wolfInv = new SimpleInventory(2);
             ItemStack wolfArmor = ((WolfEntity) entityLivingBase).getBodyArmor();
             wolfInv.setStack(0, wolfArmor != null && !wolfArmor.isEmpty() ? wolfArmor : ItemStack.EMPTY);
-            InventoryOverlay.renderInventoryBackground(type, xInv, yInv, 1, 2, mc);
+            InventoryOverlay.renderInventoryBackground(type, xInv, yInv, 1, 2, mc, drawContext);
             InventoryOverlay.renderWolfArmorBackgroundSlots(wolfInv, xInv + props.slotOffsetX, yInv + props.slotOffsetY, drawContext);
             InventoryOverlay.renderInventoryStacks(type, wolfInv, xInv + props.slotOffsetX, yInv + props.slotOffsetY, 1, 0, 2, mc, drawContext);
         }

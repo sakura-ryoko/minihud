@@ -51,8 +51,8 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
         double maxY = this.getTopYOverTerrain(world, pos, range);
         double maxZ = z + range + 1;
 
-        fi.dy.masa.malilib.render.RenderUtils.drawBoxAllSidesBatchedQuads((float) minX, (float) minY, (float) minZ, (float) maxX, (float) maxY, (float) maxZ, color, BUFFER_1);
-        fi.dy.masa.malilib.render.RenderUtils.drawBoxAllEdgesBatchedLines((float) minX, (float) minY, (float) minZ, (float) maxX, (float) maxY, (float) maxZ, Color4f.fromColor(color.intValue, 1f), BUFFER_2);
+        fi.dy.masa.malilib.render.RenderUtils.drawBoxAllSidesBatchedQuads((float) minX, (float) minY, (float) minZ, (float) maxX, (float) maxY, (float) maxZ, color, CONTEXT_1.getBuilder());
+        fi.dy.masa.malilib.render.RenderUtils.drawBoxAllEdgesBatchedLines((float) minX, (float) minY, (float) minZ, (float) maxX, (float) maxY, (float) maxZ, Color4f.fromColor(color.intValue, 1f), CONTEXT_2.getBuilder());
     }
 
     public static Color4f getColorForLevel(int level)

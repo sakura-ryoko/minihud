@@ -129,7 +129,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
             return true;
         }
         else return (nbt.contains(NbtKeys.ZOMBIE_CONVERSION) &&
-                     nbt.getInt(NbtKeys.ZOMBIE_CONVERSION) > 0) ||
+                     nbt.getInt(NbtKeys.ZOMBIE_CONVERSION, -1) > 0) ||
                      nbt.contains(NbtKeys.CONVERSION_PLAYER);
     }
 

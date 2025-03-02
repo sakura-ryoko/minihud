@@ -26,16 +26,16 @@ public class EntityUtils
     // entity.readNbt(nbt);
     public static void loadNbtIntoEntity(Entity entity, NbtCompound nbt)
     {
-        entity.fallDistance = nbt.getFloat("FallDistance");
-        entity.setFireTicks(nbt.getShort("Fire"));
+        entity.fallDistance = nbt.getFloat("FallDistance", 0f);
+        entity.setFireTicks(nbt.getShort("Fire", (short) 0));
         if (nbt.contains("Air"))
         {
-            entity.setAir(nbt.getShort("Air"));
+            entity.setAir(nbt.getShort("Air", (short) 0));
         }
 
-        entity.setOnGround(nbt.getBoolean("OnGround"));
-        entity.setInvulnerable(nbt.getBoolean("Invulnerable"));
-        entity.setPortalCooldown(nbt.getInt("PortalCooldown"));
+        entity.setOnGround(nbt.getBoolean("OnGround", false));
+        entity.setInvulnerable(nbt.getBoolean("Invulnerable", false));
+        entity.setPortalCooldown(nbt.getInt("PortalCooldown", 0));
         /*
         if (nbt.containsUuid("UUID")) {
             entity.setUuid(nbt.getUuid("UUID"));
@@ -46,25 +46,25 @@ public class EntityUtils
             entity.setUuid(nbt.get("UUID", Uuids.CODEC).orElse(Util.NIL_UUID));
         }
 
-        if (nbt.contains("CustomName", NbtElement.STRING_TYPE)) {
-            String string = nbt.getString("CustomName");
+        if (nbt.contains("CustomName")) {
+            String string = nbt.getString("CustomName", "?");
             entity.setCustomName(Text.Serialization.fromJson(string, entity.getRegistryManager()));
         }
 
-        entity.setCustomNameVisible(nbt.getBoolean("CustomNameVisible"));
-        entity.setSilent(nbt.getBoolean("Silent"));
-        entity.setNoGravity(nbt.getBoolean("NoGravity"));
-        entity.setGlowing(nbt.getBoolean("Glowing"));
-        entity.setFrozenTicks(nbt.getInt("TicksFrozen"));
-        if (nbt.contains("Tags", NbtElement.LIST_TYPE))
+        entity.setCustomNameVisible(nbt.getBoolean("CustomNameVisible", false));
+        entity.setSilent(nbt.getBoolean("Silent", false));
+        entity.setNoGravity(nbt.getBoolean("NoGravity", false));
+        entity.setGlowing(nbt.getBoolean("Glowing", false));
+        entity.setFrozenTicks(nbt.getInt("TicksFrozen", 0));
+        if (nbt.contains("Tags"))
         {
             entity.getCommandTags().clear();
-            NbtList nbtList4 = nbt.getList("Tags", NbtElement.STRING_TYPE);
+            NbtList nbtList4 = nbt.getOrCreateList("Tags");
             int max = Math.min(nbtList4.size(), 1024);
 
             for(int i = 0; i < max; ++i)
             {
-                entity.getCommandTags().add(nbtList4.getString(i));
+                entity.getCommandTags().add(nbtList4.getString(i, "?"));
             }
         }
 

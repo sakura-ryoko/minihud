@@ -90,7 +90,7 @@ public abstract class ServuxStructuresHandler<T extends CustomPayload> implement
 
                         if (nbt != null)
                         {
-                            NbtList structures = nbt.getList("Structures", Constants.NBT.TAG_COMPOUND);
+                            NbtList structures = nbt.getOrCreateList("Structures");
                             //MiniHUD.printDebug("decodeStructuresPacket(): received Structures Data of size {} (in bytes) // structures [{}]", nbt.getSizeInBytes(), structures.size());
 
                             DataStorage.getInstance().addOrUpdateStructuresFromServer(structures, this.servuxRegistered);

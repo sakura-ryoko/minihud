@@ -30,6 +30,7 @@ import net.minecraft.world.chunk.light.LightingProvider;
 import fi.dy.masa.malilib.config.IConfigDouble;
 import fi.dy.masa.malilib.config.options.ConfigColor;
 import fi.dy.masa.malilib.gui.Message;
+import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.InfoUtils;
 import fi.dy.masa.malilib.util.WorldUtils;
 import fi.dy.masa.malilib.util.data.Color4f;
@@ -124,13 +125,22 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
             RenderObjectBase renderQuads = this.renderObjects.get(0);
             RenderObjectBase renderLines = this.renderObjects.get(1);
 
+            /*
             BUFFER_1 = TESSELLATOR_1.begin(renderQuads.getGlMode(), VertexFormats.POSITION_TEXTURE_COLOR);
             BUFFER_2 = TESSELLATOR_2.begin(renderLines.getGlMode(), VertexFormats.POSITION_COLOR);
+             */
+            BufferBuilder builder1 = CONTEXT_1.startNoShader(VertexFormats.POSITION_TEXTURE_COLOR, renderQuads.getGlMode());
+            BufferBuilder builder2 = CONTEXT_2.startNoShader(VertexFormats.POSITION_COLOR, renderLines.getGlMode());
+            CONTEXT_1.setShader(MaLiLibPipelines.POSITION_TEX_COLOR_SIMPLE);
+            CONTEXT_2.setShader(MaLiLibPipelines.POSITION_COLOR_SIMPLE);
 
-            this.renderLightLevels(cameraPos, mc);
+            this.renderLightLevels(cameraPos, mc, builder1, builder2);
 
-            renderQuads.uploadData(BUFFER_1);
-            renderLines.uploadData(BUFFER_2);
+            CONTEXT_1 = CONTEXT_1.setBuilder(builder1);
+            CONTEXT_2 = CONTEXT_2.setBuilder(builder2);
+
+            renderQuads.uploadData(builder1);
+            renderLines.uploadData(builder2);
         }
         else
         {
@@ -157,18 +167,18 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
     @Override
     public void allocateGlResources()
     {
-        this.allocateBuffer(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR, ShaderPipelines.GUI_TEXTURED_OVERLAY);
-        this.allocateBuffer(VertexFormat.DrawMode.DEBUG_LINES, VertexFormats.POSITION_COLOR, ShaderPipelines.DEBUG_LINE_STRIP);
+        // ShaderPipelines.GUI_TEXTURED_OVERLAY
+        // ShaderPipelines.DEBUG_LINE_STRIP
+        this.allocateBuffer(MaLiLibPipelines.POSITION_TEX_COLOR_SIMPLE);
+        this.allocateBuffer(MaLiLibPipelines.DEBUG_LINES_SIMPLE);
     }
 
-    private void renderLightLevels(Vec3d cameraPos, MinecraftClient mc)
+    private void renderLightLevels(Vec3d cameraPos, MinecraftClient mc, BufferBuilder bufferQuads, BufferBuilder bufferLines)
     {
         final int count = this.lightInfos.size();
 
         if (count > 0)
         {
-            BufferBuilder bufferQuads = BUFFER_1;
-            BufferBuilder bufferLines = BUFFER_2;
             Direction numberFacing = Configs.Generic.LIGHT_LEVEL_NUMBER_ROTATION.getBooleanValue() ? mc.player.getHorizontalFacing() : Direction.NORTH;
             LightLevelNumberMode numberMode = (LightLevelNumberMode) Configs.Generic.LIGHT_LEVEL_NUMBER_MODE.getOptionListValue();
             LightLevelMarkerMode markerMode = (LightLevelMarkerMode) Configs.Generic.LIGHT_LEVEL_MARKER_MODE.getOptionListValue();

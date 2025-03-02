@@ -72,10 +72,10 @@ public class StructureData
     @Nullable
     public static StructureData fromStructureStartTag(NbtCompound tag, long currentTime)
     {
-        if (tag.contains("id", Constants.NBT.TAG_STRING) &&
-            tag.contains("Children", Constants.NBT.TAG_LIST))
+        if (tag.contains("id") &&
+            tag.contains("Children"))
         {
-            StructureType type = StructureType.fromStructureId(tag.getString("id"));
+            StructureType type = StructureType.fromStructureId(tag.getString("id", "?"));
 
             if (type == StructureType.UNKNOWN && Configs.Generic.DEBUG_MESSAGES.getBooleanValue())
             {
@@ -83,13 +83,13 @@ public class StructureData
             }
 
             ImmutableList.Builder<IntBoundingBox> builder = ImmutableList.builder();
-            NbtList pieces = tag.getList("Children", Constants.NBT.TAG_COMPOUND);
+            NbtList pieces = tag.getOrCreateList("Children");
             final int count = pieces.size();
 
             for (int i = 0; i < count; ++i)
             {
-                NbtCompound pieceTag = pieces.getCompound(i);
-                builder.add(IntBoundingBox.fromArray(pieceTag.getIntArray("BB")));
+                NbtCompound pieceTag = pieces.getOrCreateCompound(i);
+                builder.add(IntBoundingBox.fromArray(pieceTag.getIntArray("BB").orElseThrow()));
             }
 
             return new StructureData(type, builder.build(), currentTime);

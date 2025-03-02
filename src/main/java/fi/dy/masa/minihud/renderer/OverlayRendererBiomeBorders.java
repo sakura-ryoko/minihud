@@ -12,6 +12,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.GlUsage;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.entity.Entity;
@@ -26,6 +27,7 @@ import net.minecraft.world.biome.source.BiomeAccess;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.WorldChunk;
 
+import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.SubChunkPos;
 import fi.dy.masa.malilib.util.data.Color4f;
 import fi.dy.masa.minihud.MiniHUD;
@@ -118,6 +120,13 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
         List<ColoredQuad> quads = this.getQuadsToRender(chunks);
         RenderObjectBase renderQuads = this.renderObjects.get(0);
         RenderObjectBase renderLines = this.renderObjects.get(1);
+
+        BufferBuilder builder1 = CONTEXT_1.startNoShader(VertexFormats.POSITION_COLOR, renderQuads.getGlMode());
+        BufferBuilder builder2 = CONTEXT_2.startNoShader(VertexFormats.POSITION_COLOR, renderLines.getGlMode());
+        CONTEXT_1.setShader(MaLiLibPipelines.POSITION_COLOR_SIMPLE);
+        CONTEXT_2.setShader(MaLiLibPipelines.POSITION_COLOR_SIMPLE);
+
+        /*
         BUFFER_1 = TESSELLATOR_1.begin(renderQuads.getGlMode(), VertexFormats.POSITION_COLOR);
         BUFFER_2 = TESSELLATOR_2.begin(renderLines.getGlMode(), VertexFormats.POSITION_COLOR);
 
@@ -125,6 +134,14 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
 
         renderQuads.uploadData(BUFFER_1);
         renderLines.uploadData(BUFFER_2);
+         */
+        this.renderQuads(quads, builder1, builder2, this.cameraPosition);
+
+        CONTEXT_1 = CONTEXT_1.setBuilder(builder1);
+        CONTEXT_2 = CONTEXT_2.setBuilder(builder2);
+
+        renderQuads.uploadData(builder1);
+        renderLines.uploadData(builder2);
 
         // All the quads need to have the same relative camera offset, so
         // we use an internal position that is only updated when all the quads are cleared

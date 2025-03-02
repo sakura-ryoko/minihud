@@ -6,6 +6,7 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.GlUsage;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.world.ClientChunkManager;
 import net.minecraft.client.world.ClientWorld;
@@ -17,6 +18,7 @@ import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.WorldChunk;
 
 import fi.dy.masa.malilib.config.IConfigBoolean;
+import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.WorldUtils;
 
 public abstract class BaseBlockRangeOverlay<T extends BlockEntity> extends OverlayRendererBase
@@ -133,14 +135,19 @@ public abstract class BaseBlockRangeOverlay<T extends BlockEntity> extends Overl
 
     protected void startBuffers()
     {
-        BUFFER_1 = TESSELLATOR_1.begin(this.renderObjects.get(0).getGlMode(), VertexFormats.POSITION_COLOR);
-        BUFFER_2 = TESSELLATOR_2.begin(this.renderObjects.get(1).getGlMode(), VertexFormats.POSITION_COLOR);
+//        BUFFER_1 = TESSELLATOR_1.begin(this.renderObjects.get(0).getGlMode(), VertexFormats.POSITION_COLOR);
+//        BUFFER_2 = TESSELLATOR_2.begin(this.renderObjects.get(1).getGlMode(), VertexFormats.POSITION_COLOR);
+
+        CONTEXT_1.startNoShader(() -> this.renderObjects.get(0).getClass().getName(), VertexFormats.POSITION_COLOR, this.renderObjects.get(0).getGlMode(), GlUsage.STATIC_WRITE);
+        CONTEXT_2.startNoShader(() -> this.renderObjects.get(1).getClass().getName(), VertexFormats.POSITION_COLOR, this.renderObjects.get(1).getGlMode(), GlUsage.STATIC_WRITE);
+        CONTEXT_1.setShader(MaLiLibPipelines.POSITION_COLOR_SIMPLE);
+        CONTEXT_2.setShader(MaLiLibPipelines.POSITION_COLOR_SIMPLE);
     }
 
     protected void uploadBuffers()
     {
-        this.renderObjects.get(0).uploadData(BUFFER_1);
-        this.renderObjects.get(1).uploadData(BUFFER_2);
+        this.renderObjects.get(0).uploadData(CONTEXT_1.getBuilder());
+        this.renderObjects.get(1).uploadData(CONTEXT_2.getBuilder());
     }
 
     protected boolean fetchAllTargetBlockEntityPositions(ClientWorld world, BlockPos centerPos, MinecraftClient mc)

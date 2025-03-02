@@ -10,6 +10,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
@@ -17,6 +18,7 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
+import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.JsonUtils;
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.malilib.util.position.PositionUtils;
@@ -64,7 +66,9 @@ public class ShapeCircle extends ShapeCircleBase
         double expand = 0;
 
         RenderObjectBase renderQuads = this.renderObjects.getFirst();
-        BUFFER_1 = TESSELLATOR_1.begin(renderQuads.getGlMode(), VertexFormats.POSITION_COLOR);
+        //BUFFER_1 = TESSELLATOR_1.begin(renderQuads.getGlMode(), VertexFormats.POSITION_COLOR);
+        BufferBuilder builder1 = CONTEXT_1.startNoShader(VertexFormats.POSITION_COLOR, renderQuads.getGlMode());
+        CONTEXT_1.setShader(MaLiLibPipelines.POSITION_COLOR_SIMPLE);
 
         if (this.getCombineQuads())
         {
@@ -83,7 +87,7 @@ public class ShapeCircle extends ShapeCircleBase
                     SphereUtils.buildSphereShellToStrips(positions, axis, test, this.renderType, this.layerRange);
             List<SideQuad> quads = buildStripsToQuadsForCircle(strips, this.mainAxis, this.height);
 
-            RenderUtils.renderQuads(quads, this.color, expand, cameraPos, BUFFER_1);
+            RenderUtils.renderQuads(quads, this.color, expand, cameraPos, builder1);
         }
         else
         {
@@ -110,10 +114,11 @@ public class ShapeCircle extends ShapeCircleBase
 
             Direction[] sides = this.getSides();
             RenderUtils.renderCircleBlockPositions(positions, sides, test, this.renderType, this.layerRange,
-                                                   this.color, expand, cameraPos, BUFFER_1);
+                                                   this.color, expand, cameraPos, builder1);
         }
 
-        renderQuads.uploadData(BUFFER_1);
+        CONTEXT_1.setBuilder(builder1);
+        renderQuads.uploadData(builder1);
     }
 
     protected Direction[] getSides()

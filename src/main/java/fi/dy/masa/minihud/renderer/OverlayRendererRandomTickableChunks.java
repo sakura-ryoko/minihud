@@ -6,6 +6,8 @@ import javax.annotation.Nullable;
 import com.google.gson.JsonObject;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.GlUsage;
+import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.ChunkPos;
@@ -13,6 +15,7 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
+import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.JsonUtils;
 import fi.dy.masa.malilib.util.data.Color4f;
 import fi.dy.masa.minihud.config.Configs;
@@ -93,18 +96,28 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
 
         RenderObjectBase renderQuads = this.renderObjects.get(0);
         RenderObjectBase renderLines = this.renderObjects.get(1);
+        /*
         BUFFER_1 = TESSELLATOR_1.begin(renderQuads.getGlMode(), VertexFormats.POSITION_COLOR);
         BUFFER_2 = TESSELLATOR_2.begin(renderLines.getGlMode(), VertexFormats.POSITION_COLOR);
+         */
+
+        BufferBuilder builder1 = CONTEXT_1.startNoShader(this::getName, VertexFormats.POSITION_COLOR, renderQuads.getGlMode(), GlUsage.STATIC_WRITE);
+        BufferBuilder builder2 = CONTEXT_2.startNoShader(this::getName, VertexFormats.POSITION_COLOR, renderLines.getGlMode(), GlUsage.STATIC_WRITE);
+        CONTEXT_1.setShader(MaLiLibPipelines.POSITION_COLOR_SIMPLE);
+        CONTEXT_2.setShader(MaLiLibPipelines.POSITION_COLOR_SIMPLE);
 
         Set<ChunkPos> chunks = this.getRandomTickableChunks(this.pos);
 
         for (ChunkPos pos : chunks)
         {
-            this.renderChunkEdgesIfApplicable(cameraPos, pos, chunks, entity.getEntityWorld(), color);
+            this.renderChunkEdgesIfApplicable(cameraPos, pos, chunks, entity.getEntityWorld(), color, builder1, builder2);
         }
 
-        renderQuads.uploadData(BUFFER_1);
-        renderLines.uploadData(BUFFER_2);
+        CONTEXT_1 = CONTEXT_1.setBuilder(builder1);
+        CONTEXT_2 = CONTEXT_2.setBuilder(builder2);
+
+        renderQuads.uploadData(builder1);
+        renderLines.uploadData(builder2);
 
         needsUpdate = false;
     }
@@ -134,7 +147,7 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
         return set;
     }
 
-    protected void renderChunkEdgesIfApplicable(Vec3d cameraPos, ChunkPos pos, Set<ChunkPos> chunks, World world, Color4f color)
+    protected void renderChunkEdgesIfApplicable(Vec3d cameraPos, ChunkPos pos, Set<ChunkPos> chunks, World world, Color4f color, BufferBuilder builder1, BufferBuilder builder2)
     {
         for (Direction side : HORIZONTALS)
         {
@@ -142,12 +155,12 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
 
             if (chunks.contains(posAdj) == false)
             {
-                this.renderChunkEdge(pos, side, cameraPos, color, world);
+                this.renderChunkEdge(pos, side, cameraPos, color, world, builder1, builder2);
             }
         }
     }
 
-    private void renderChunkEdge(ChunkPos pos, Direction side, Vec3d cameraPos, Color4f color, World world)
+    private void renderChunkEdge(ChunkPos pos, Direction side, Vec3d cameraPos, Color4f color, World world, BufferBuilder builder1, BufferBuilder builder2)
     {
         float minX, minZ, maxX, maxZ;
 
@@ -184,7 +197,7 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
         int minY = world != null ? world.getBottomY() : -64;
         int maxY = world != null ? world.getTopYInclusive() + 1 : 320;
 
-        RenderUtils.renderWallWithLines(minX, minY, minZ, maxX, maxY, maxZ, 16, 16, true, cameraPos, color, BUFFER_1, BUFFER_2);
+        RenderUtils.renderWallWithLines(minX, minY, minZ, maxX, maxY, maxZ, 16, 16, true, cameraPos, color, builder1, builder2);
     }
 
     @Override

@@ -5,12 +5,14 @@ import java.util.function.Consumer;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 
+import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.data.Color4f;
 import fi.dy.masa.malilib.util.position.PositionUtils;
 import fi.dy.masa.minihud.config.Configs;
@@ -59,20 +61,23 @@ public class ShapeSphereBlocky extends ShapeCircleBase
         SphereUtils.collectSpherePositions(positionConsumer, test, centerPos, (int) this.getTotalRadius());
 
         RenderObjectBase renderQuads = this.renderObjects.getFirst();
-        BUFFER_1 = TESSELLATOR_1.begin(renderQuads.getGlMode(), VertexFormats.POSITION_COLOR);
+        //BUFFER_1 = TESSELLATOR_1.begin(renderQuads.getGlMode(), VertexFormats.POSITION_COLOR);
+        BufferBuilder builder1 = CONTEXT_1.startNoShader(VertexFormats.POSITION_COLOR, renderQuads.getGlMode());
+        CONTEXT_1.setShader(MaLiLibPipelines.POSITION_COLOR_SIMPLE);
 
         if (this.getCombineQuads())
         {
             List<SideQuad> quads = SphereUtils.buildSphereShellToQuads(positions, this.mainAxis.getAxis(),
                                                                        test, this.renderType, this.layerRange);
-            RenderUtils.renderQuads(quads, this.color, expand, cameraPos, BUFFER_1);
+            RenderUtils.renderQuads(quads, this.color, expand, cameraPos, builder1);
         }
         else
         {
             RenderUtils.renderCircleBlockPositions(positions, PositionUtils.ALL_DIRECTIONS, test, this.renderType,
-                                                   this.layerRange, this.color, expand, cameraPos, BUFFER_1);
+                                                   this.layerRange, this.color, expand, cameraPos, builder1);
         }
 
-        renderQuads.uploadData(BUFFER_1);
+        CONTEXT_1 = CONTEXT_1.setBuilder(builder1);
+        renderQuads.uploadData(builder1);
     }
 }

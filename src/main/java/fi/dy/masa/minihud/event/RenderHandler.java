@@ -20,8 +20,10 @@ import net.minecraft.block.ChestBlock;
 import net.minecraft.block.entity.*;
 import net.minecraft.block.enums.ChestType;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.network.PlayerListEntry;
+import net.minecraft.client.render.BufferBuilderStorage;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.Fog;
 import net.minecraft.client.render.Frustum;
@@ -258,7 +260,7 @@ public class RenderHandler implements IRenderer
     }
 
     @Override
-    public void onRenderWorldPreWeather(Matrix4f posMatrix, Matrix4f projMatrix, Frustum frustum, Camera camera, Fog fog, Profiler profiler)
+    public void onRenderWorldPreWeather(Framebuffer fb, Matrix4f posMatrix, Matrix4f projMatrix, Frustum frustum, Camera camera, Fog fog, BufferBuilderStorage buffers, Profiler profiler)
     {
         if (Configs.Generic.MAIN_RENDERING_TOGGLE.getBooleanValue() &&
             this.mc.world != null && this.mc.player != null && this.mc.options.hudHidden == false)
@@ -1470,7 +1472,7 @@ public class RenderHandler implements IRenderer
                 // If `Fire == 0` instead of `-1` means it's ClientWorld; it's ridiculous, but it works.
                 case NbtKeys.FIRE ->
                 {
-                    int fire = nbt.getShort(NbtKeys.FIRE);
+                    int fire = nbt.getShort(NbtKeys.FIRE, (short) -1);
 
                     if (fire < 0 || fire > 0)
                     {
@@ -1480,7 +1482,7 @@ public class RenderHandler implements IRenderer
                 // If `Age == -1 or 1 instead of 0 or > 1 it's ClientWorld; it's ridiculous, but it works.
                 case NbtKeys.AGE ->
                 {
-                    int age = nbt.getInt(NbtKeys.AGE);
+                    int age = nbt.getInt(NbtKeys.AGE, -1);
 
                     if (age == 0 || age > 1)
                     {
@@ -1490,7 +1492,7 @@ public class RenderHandler implements IRenderer
                 // Has a Brain besides the default = ServerWorld
                 case NbtKeys.BRAIN ->
                 {
-                    NbtCompound tag = nbt.getCompound(NbtKeys.BRAIN);
+                    NbtCompound tag = nbt.getOrCreateCompound(NbtKeys.BRAIN);
 
                     if (!tag.isEmpty() && !tag.getCompound(NbtKeys.MEMORIES).isEmpty())
                     {
@@ -1501,21 +1503,21 @@ public class RenderHandler implements IRenderer
                 case NbtKeys.TRADE_RECIPES -> { return true; }
                 case NbtKeys.ZOMBIE_CONVERSION ->
                 {
-                    if (nbt.getInt(NbtKeys.ZOMBIE_CONVERSION) > 0)
+                    if (nbt.getInt(NbtKeys.ZOMBIE_CONVERSION, -1) > 0)
                     {
                         return true;
                     }
                 }
                 case NbtKeys.DROWNED_CONVERSION ->
                 {
-                    if (nbt.getInt(NbtKeys.DROWNED_CONVERSION) > 0)
+                    if (nbt.getInt(NbtKeys.DROWNED_CONVERSION, -1) > 0)
                     {
                         return true;
                     }
                 }
                 case NbtKeys.STRAY_CONVERSION ->
                 {
-                    if (nbt.getInt(NbtKeys.STRAY_CONVERSION) > 0)
+                    if (nbt.getInt(NbtKeys.STRAY_CONVERSION, -1) > 0)
                     {
                         return true;
                     }

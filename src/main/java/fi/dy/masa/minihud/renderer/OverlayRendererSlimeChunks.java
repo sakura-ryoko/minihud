@@ -4,6 +4,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.GlUsage;
+import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
@@ -11,6 +13,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
+import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.EntityUtils;
 import fi.dy.masa.malilib.util.JsonUtils;
 import fi.dy.masa.malilib.util.data.Color4f;
@@ -125,8 +128,15 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
 
             RenderObjectBase renderQuads = this.renderObjects.get(0);
             RenderObjectBase renderLines = this.renderObjects.get(1);
+            /*
             BUFFER_1 = TESSELLATOR_1.begin(renderQuads.getGlMode(), VertexFormats.POSITION_COLOR);
             BUFFER_2 = TESSELLATOR_2.begin(renderLines.getGlMode(), VertexFormats.POSITION_COLOR);
+             */
+            BufferBuilder builder1 = CONTEXT_1.startNoShader(this::getName, VertexFormats.POSITION_COLOR, renderQuads.getGlMode(), GlUsage.STATIC_WRITE);
+            BufferBuilder builder2 = CONTEXT_2.startNoShader(this::getName, VertexFormats.POSITION_COLOR, renderLines.getGlMode(), GlUsage.STATIC_WRITE);
+            CONTEXT_1.setShader(MaLiLibPipelines.POSITION_COLOR_SIMPLE);
+            CONTEXT_2.setShader(MaLiLibPipelines.POSITION_COLOR_SIMPLE);
+
             int minY = world != null ? world.getBottomY() : -64;
             int topY = (int) Math.floor(this.topY);
             int count = 0;
@@ -142,7 +152,7 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
                     {
                         pos1.set( cx << 4,       minY,  cz << 4      );
                         pos2.set((cx << 4) + 15, topY, (cz << 4) + 15);
-                        fi.dy.masa.malilib.render.RenderUtils.drawBoxWithEdgesBatched(pos1, pos2, cameraPos, colorLines, colorSides, BUFFER_1, BUFFER_2);
+                        fi.dy.masa.malilib.render.RenderUtils.drawBoxWithEdgesBatched(pos1, pos2, cameraPos, colorLines, colorSides, builder1, builder2);
                         count++;
                     }
                 }
@@ -150,8 +160,11 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
 
             if (count > 0)
             {
-                renderQuads.uploadData(BUFFER_1);
-                renderLines.uploadData(BUFFER_2);
+                CONTEXT_1 = CONTEXT_1.setBuilder(builder1);
+                CONTEXT_2 = CONTEXT_2.setBuilder(builder2);
+
+                renderQuads.uploadData(builder1);
+                renderLines.uploadData(builder2);
             }
             else
             {

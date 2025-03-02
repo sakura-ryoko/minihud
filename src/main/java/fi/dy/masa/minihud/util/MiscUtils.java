@@ -148,7 +148,7 @@ public class MiscUtils
         if (entityData != null)
         {
             NbtCompound tag = entityData.copyNbt();
-            int variantId = tag.getInt(AxolotlEntity.VARIANT_KEY);
+            int variantId = tag.getInt(AxolotlEntity.VARIANT_KEY, 0);
             AxolotlEntity.Variant variant = AxolotlEntity.Variant.byIndex(variantId);
             String variantName = variant.getId();
             MutableText labelText = Text.translatable("minihud.label.axolotl_tooltip.label");
@@ -195,9 +195,9 @@ public class MiscUtils
                         }
                     }
                 }
-                if (beeTag.contains("Age", Constants.NBT.TAG_INT))
+                if (beeTag.contains("Age"))
                 {
-                    beeAge = beeTag.getInt("Age");
+                    beeAge = beeTag.getInt("Age", 0);
                 }
                 if (beeAge + beeTicks < 0)
                 {

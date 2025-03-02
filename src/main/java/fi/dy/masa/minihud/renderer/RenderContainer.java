@@ -107,13 +107,15 @@ public class RenderContainer
 
         if (this.resourcesAllocated && this.countActive > 0)
         {
+            /*
             RenderSystem.disableCull();
             RenderSystem.enableDepthTest();
             RenderSystem.depthMask(false);
             RenderSystem.polygonOffset(-3f, -3f);
             RenderSystem.enablePolygonOffset();
+             */
 
-            RenderUtils.setupBlend();
+            RenderUtils.blend(true);
             RenderUtils.color(1f, 1f, 1f, 1f);
 
             Matrix4fStack matrix4fstack = RenderSystem.getModelViewStack();
@@ -135,13 +137,18 @@ public class RenderContainer
                 profiler.pop();
             }
 
+            /*
             RenderSystem.polygonOffset(0f, 0f);
             RenderSystem.disablePolygonOffset();
+             */
             RenderUtils.color(1f, 1f, 1f, 1f);
+            RenderUtils.blend(false);
+            /*
             RenderSystem.disableBlend();
             RenderSystem.enableDepthTest();
             RenderSystem.enableCull();
             RenderSystem.depthMask(true);
+             */
         }
     }
 

@@ -8,18 +8,21 @@ import net.minecraft.client.render.VertexFormat;
 
 public abstract class RenderObjectBase
 {
-    protected final VertexFormat.DrawMode glMode;
     protected final ShaderPipeline shader;
 
-    public RenderObjectBase(VertexFormat.DrawMode glMode, ShaderPipeline shader)
+    public RenderObjectBase(ShaderPipeline shader)
     {
-        this.glMode = glMode;
         this.shader = shader;
     }
 
     public VertexFormat.DrawMode getGlMode()
     {
-        return this.glMode;
+        return this.shader.getDrawMode();
+    }
+
+    public VertexFormat getFormat()
+    {
+        return this.shader.getFormat();
     }
 
     public ShaderPipeline getShader()

@@ -522,18 +522,18 @@ public class HudDataManager
         {
             MiniHUD.debugLog("HudDataStorage#receiveMetadata(): received METADATA from Servux");
 
-            if (data.getInt("version") != ServuxHudPacket.PROTOCOL_VERSION)
+            if (data.getInt("version", -1) != ServuxHudPacket.PROTOCOL_VERSION)
             {
                 MiniHUD.LOGGER.warn("hudDataChannel: Mis-matched protocol version!");
             }
 
-            this.setServuxVersion(data.getString("servux"));
-            this.setWorldSpawn(new BlockPos(data.getInt("spawnPosX"), data.getInt("spawnPosY"), data.getInt("spawnPosZ")));
-            this.setSpawnChunkRadius(data.getInt("spawnChunkRadius"), true);
+            this.setServuxVersion(data.getString("servux", "?"));
+            this.setWorldSpawn(new BlockPos(data.getInt("spawnPosX", 0), data.getInt("spawnPosY", 0), data.getInt("spawnPosZ", 0)));
+            this.setSpawnChunkRadius(data.getInt("spawnChunkRadius", 2), true);
 
-            if (data.contains("worldSeed", Constants.NBT.TAG_LONG))
+            if (data.contains("worldSeed"))
             {
-                this.setWorldSeed(data.getLong("worldSeed"));
+                this.setWorldSeed(data.getLong("worldSeed", -1L));
             }
 
             this.setIsServuxServer();
@@ -588,13 +588,13 @@ public class HudDataManager
         {
             MiniHUD.debugLog("HudDataStorage#receiveSpawnMetadata(): from Servux");
 
-            this.setServuxVersion(data.getString("servux"));
-            this.setWorldSpawn(new BlockPos(data.getInt("spawnPosX"), data.getInt("spawnPosY"), data.getInt("spawnPosZ")));
-            this.setSpawnChunkRadius(data.getInt("spawnChunkRadius"), true);
+            this.setServuxVersion(data.getString("servux", "?"));
+            this.setWorldSpawn(new BlockPos(data.getInt("spawnPosX", 0), data.getInt("spawnPosY", 0), data.getInt("spawnPosZ", 0)));
+            this.setSpawnChunkRadius(data.getInt("spawnChunkRadius", 2), true);
 
-            if (data.contains("worldSeed", Constants.NBT.TAG_LONG))
+            if (data.contains("worldSeed"))
             {
-                this.setWorldSeed(data.getLong("worldSeed"));
+                this.setWorldSeed(data.getLong("worldSeed", -1L));
             }
 
             if (Configs.Generic.HUD_DATA_SYNC.getBooleanValue())
@@ -618,25 +618,25 @@ public class HudDataManager
         {
             //MiniHUD.printDebug("HudDataStorage#receiveWeatherData(): from Servux");
 
-            if (data.contains("SetRaining", Constants.NBT.TAG_INT))
+            if (data.contains("SetRaining"))
             {
-                this.rainWeatherTimer = data.getInt("SetRaining");
+                this.rainWeatherTimer = data.getInt("SetRaining", -1);
             }
             if (data.contains("isRaining"))
             {
-                this.isRaining = data.getBoolean("isRaining");
+                this.isRaining = data.getBoolean("isRaining", false);
             }
-            if (data.contains("SetThundering", Constants.NBT.TAG_INT))
+            if (data.contains("SetThundering"))
             {
-                this.thunderWeatherTimer = data.getInt("SetThundering");
+                this.thunderWeatherTimer = data.getInt("SetThundering", -1);
             }
             if (data.contains("isThundering"))
             {
-                this.isThundering = data.getBoolean("isThundering");
+                this.isThundering = data.getBoolean("isThundering", false);
             }
-            if (data.contains("SetClear", Constants.NBT.TAG_INT))
+            if (data.contains("SetClear"))
             {
-                this.clearWeatherTimer = data.getInt("SetClear");
+                this.clearWeatherTimer = data.getInt("SetClear", -1);
             }
 
             if (!this.hasServuxServer() && DataStorage.getInstance().hasServuxServer())
@@ -677,7 +677,7 @@ public class HudDataManager
         if (!DataStorage.getInstance().hasIntegratedServer() && data.contains("RecipeManager"))
         {
             Collection<RecipeEntry<?>> recipes = new ArrayList<>();
-            NbtList list = data.getList("RecipeManager", Constants.NBT.TAG_COMPOUND);
+            NbtList list = data.getOrCreateList("RecipeManager");
             int count = 0;
 
             this.preparedRecipes = PreparedRecipes.EMPTY;
@@ -685,9 +685,9 @@ public class HudDataManager
 
             for (int i = 0; i < list.size(); i++)
             {
-                NbtCompound item = list.getCompound(i);
-                Identifier idReg = Identifier.tryParse(item.getString("id_reg"));
-                Identifier idValue = Identifier.tryParse(item.getString("id_value"));
+                NbtCompound item = list.getOrCreateCompound(i);
+                Identifier idReg = Identifier.tryParse(item.getString("id_reg", ""));
+                Identifier idValue = Identifier.tryParse(item.getString("id_value", ""));
 
                 if (idReg == null || idValue == null)
                 {
@@ -697,7 +697,7 @@ public class HudDataManager
                 try
                 {
                     RegistryKey<Recipe<?>> key = RegistryKey.of(RegistryKey.ofRegistry(idReg), idValue);
-                    Pair<Recipe<?>, NbtElement> pair = Recipe.CODEC.decode(DataStorage.getInstance().getWorldRegistryManager().getOps(NbtOps.INSTANCE), item.getCompound("recipe")).getOrThrow();
+                    Pair<Recipe<?>, NbtElement> pair = Recipe.CODEC.decode(DataStorage.getInstance().getWorldRegistryManager().getOps(NbtOps.INSTANCE), item.getOrCreateCompound("recipe")).getOrThrow();
                     RecipeEntry<?> entry = new RecipeEntry<>(key, pair.getFirst());
                     recipes.add(entry);
                     count++;

@@ -438,12 +438,12 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
 
             if (Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue())
             {
-                if (data.getInt("version") != ServuxEntitiesPacket.PROTOCOL_VERSION)
+                if (data.getInt("version", -1) != ServuxEntitiesPacket.PROTOCOL_VERSION)
                 {
                     MiniHUD.LOGGER.warn("entityDataChannel: Mis-matched protocol version!");
                 }
 
-                this.setServuxVersion(data.getString("servux"));
+                this.setServuxVersion(data.getString("servux", "?"));
                 this.setIsServuxServer();
 
                 return true;
@@ -734,7 +734,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
 
         if (blockEntity != null && (type == null || type.equals(BlockEntityType.getId(blockEntity.getType()))))
         {
-            if (!nbt.contains(NbtKeys.ID, Constants.NBT.TAG_STRING))
+            if (!nbt.contains(NbtKeys.ID))
             {
                 Identifier id = BlockEntityType.getId(blockEntity.getType());
 
@@ -764,7 +764,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
 
                 if (blockEntity2 != null)
                 {
-                    if (!nbt.contains(NbtKeys.ID, Constants.NBT.TAG_STRING))
+                    if (!nbt.contains(NbtKeys.ID))
                     {
                         Identifier id = BlockEntityType.getId(beType);
 
@@ -802,7 +802,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
 
         if (entity != null)
         {
-            if (!nbt.contains(NbtKeys.ID, Constants.NBT.TAG_STRING))
+            if (!nbt.contains(NbtKeys.ID))
             {
                 Identifier id = EntityType.getId(entity.getType());
 

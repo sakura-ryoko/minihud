@@ -13,6 +13,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 
+import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.data.Color4f;
 import fi.dy.masa.malilib.util.position.PositionUtils;
 import fi.dy.masa.minihud.MiniHUD;
@@ -148,8 +149,13 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
 
         RenderObjectBase renderQuads = this.renderObjects.get(0);
         RenderObjectBase renderLines = this.renderObjects.get(1);
+        /*
         BUFFER_1 = TESSELLATOR_1.begin(renderQuads.getGlMode(), VertexFormats.POSITION_COLOR);
         BUFFER_2 = TESSELLATOR_2.begin(renderLines.getGlMode(), VertexFormats.POSITION_COLOR);
+         */
+
+        BufferBuilder builder1 = CONTEXT_1.startShader(MaLiLibPipelines.POSITION_COLOR_SIMPLE);
+        BufferBuilder builder2 = CONTEXT_2.startShader(MaLiLibPipelines.POSITION_COLOR_SIMPLE);
 
         final Color4f colorEntity = this.isPlayerFollowing ?
                 Configs.Colors.SPAWN_PLAYER_ENTITY_OVERLAY_COLOR.getColor() :
@@ -164,31 +170,34 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
                 Configs.Colors.SPAWN_PLAYER_OUTER_OVERLAY_COLOR.getColor() :
                 Configs.Colors.SPAWN_REAL_OUTER_OVERLAY_COLOR.getColor();
 
-        fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(spawn, cameraPos, colorEntity, 0.001, BUFFER_2);
-        drawBlockBoundingBoxSidesBatchedQuads(spawn, cameraPos, colorEntity, 0.001, BUFFER_1);
+        fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(spawn, cameraPos, colorEntity, 0.001, builder2);
+        drawBlockBoundingBoxSidesBatchedQuads(spawn, cameraPos, colorEntity, 0.001, builder1);
 
         Pair<BlockPos, BlockPos> corners;
 
         if (brownEnabled)
         {
             corners = this.getSpawnChunkCorners(spawn, brown, mc.world);   // Org 22 (Brown / WorldGen Only)
-            RenderUtils.renderWallsWithLines(corners.getLeft(), corners.getRight(), cameraPos, 16, 16, true, colorOuter, BUFFER_1, BUFFER_2);
+            RenderUtils.renderWallsWithLines(corners.getLeft(), corners.getRight(), cameraPos, 16, 16, true, colorOuter, builder1, builder2);
         }
 
         corners = this.getSpawnChunkCorners(spawn, red, mc.world);     // Org 11 (Red / Mob Caps Only)
-        RenderUtils.renderWallsWithLines(corners.getLeft(), corners.getRight(), cameraPos, 16, 16, true, colorLazy, BUFFER_1, BUFFER_2);
+        RenderUtils.renderWallsWithLines(corners.getLeft(), corners.getRight(), cameraPos, 16, 16, true, colorLazy, builder1, builder2);
 
         if (yellowEnabled)
         {
             corners = this.getSpawnChunkCorners(spawn, yellow, mc.world);     // Org 10 (Yellow / Redstone Processing)
-            RenderUtils.renderWallsWithLines(corners.getLeft(), corners.getRight(), cameraPos, 16, 16, true, colorRedstone, BUFFER_1, BUFFER_2);
+            RenderUtils.renderWallsWithLines(corners.getLeft(), corners.getRight(), cameraPos, 16, 16, true, colorRedstone, builder1, builder2);
         }
 
         corners = this.getSpawnChunkCorners(spawn, green, mc.world);      // Org 9 (Green / Entity Processing)
-        RenderUtils.renderWallsWithLines(corners.getLeft(), corners.getRight(), cameraPos, 16, 16, true, colorEntity, BUFFER_1, BUFFER_2);
+        RenderUtils.renderWallsWithLines(corners.getLeft(), corners.getRight(), cameraPos, 16, 16, true, colorEntity, builder1, builder2);
 
-        renderQuads.uploadData(BUFFER_1);
-        renderLines.uploadData(BUFFER_2);
+        CONTEXT_1 = CONTEXT_1.setBuilder(builder1);
+        CONTEXT_2 = CONTEXT_2.setBuilder(builder2);
+
+        renderQuads.uploadData(builder1);
+        renderLines.uploadData(builder2);
 
         needsUpdate = false;
     }

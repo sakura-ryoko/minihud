@@ -8,6 +8,7 @@ import org.lwjgl.opengl.GL11;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.block.entity.ConduitBlockEntity;
+import net.minecraft.client.gl.GlUsage;
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.util.math.BlockPos;
@@ -15,6 +16,7 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
+import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.LayerRange;
 import fi.dy.masa.malilib.util.data.Color4f;
 import fi.dy.masa.malilib.util.position.PositionUtils;
@@ -42,19 +44,21 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
     @Override
     public void allocateGlResources()
     {
-        this.allocateBuffer(VertexFormat.DrawMode.QUADS);
+        this.allocateBuffer(MaLiLibPipelines.POSITION_COLOR_SIMPLE);
     }
 
     @Override
     protected void startBuffers()
     {
-        BUFFER_1 = TESSELLATOR_1.begin(this.renderObjects.getFirst().getGlMode(), VertexFormats.POSITION_COLOR);
+        //BUFFER_1 = TESSELLATOR_1.begin(this.renderObjects.getFirst().getGlMode(), VertexFormats.POSITION_COLOR);
+        CONTEXT_1.startNoShader(() -> this.renderObjects.getFirst().getClass().getName(), VertexFormats.POSITION_COLOR, this.renderObjects.getFirst().getGlMode(), GlUsage.STATIC_WRITE);
+        CONTEXT_1.setShader(MaLiLibPipelines.POSITION_COLOR_SIMPLE);
     }
 
     @Override
     protected void uploadBuffers()
     {
-        this.renderObjects.getFirst().uploadData(BUFFER_1);
+        this.renderObjects.getFirst().uploadData(CONTEXT_1.getBuilder());
     }
 
     @Override
@@ -65,11 +69,17 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
         this.renderObjects.getFirst().draw(matrix4f, projMatrix);
 
         // Render the lines as quads with glPolygonMode(GL_LINE)
+        /*
         RenderSystem.polygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
         RenderSystem.disableBlend();
+         */
+        fi.dy.masa.malilib.render.RenderUtils.blend(false);
         this.renderObjects.getFirst().draw(matrix4f, projMatrix);
+        /*
         RenderSystem.polygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
         RenderSystem.enableBlend();
+         */
+        fi.dy.masa.malilib.render.RenderUtils.blend(true);
 
         this.postRender();
     }
@@ -93,7 +103,7 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
 
         RenderUtils.renderCircleBlockPositions(positions, PositionUtils.ALL_DIRECTIONS,
                                                test, ShapeRenderType.OUTER_EDGE,
-                                               new LayerRange(null), color, 0, cameraPos, BUFFER_1);
+                                               new LayerRange(null), color, 0, cameraPos, CONTEXT_1.getBuilder());
     }
 
     protected SphereUtils.RingPositionTest getPositionTest(BlockPos centerPos, int range)

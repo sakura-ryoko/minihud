@@ -6,11 +6,13 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
+import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.IntBoundingBox;
 import fi.dy.masa.malilib.util.data.Color4f;
 import fi.dy.masa.minihud.config.RendererToggle;
@@ -80,13 +82,23 @@ public class OverlayRendererStructures extends OverlayRendererBase
 
             RenderObjectBase renderQuads = this.renderObjects.get(0);
             RenderObjectBase renderLines = this.renderObjects.get(1);
+            /*
             BUFFER_1 = TESSELLATOR_1.begin(renderQuads.getGlMode(), VertexFormats.POSITION_COLOR);
             BUFFER_2 = TESSELLATOR_2.begin(renderLines.getGlMode(), VertexFormats.POSITION_COLOR);
+             */
 
-            this.renderStructureBoxes(data, cameraPos);
+            BufferBuilder builder1 = CONTEXT_1.startNoShader(VertexFormats.POSITION_COLOR, renderQuads.getGlMode());
+            BufferBuilder builder2 = CONTEXT_2.startNoShader(VertexFormats.POSITION_COLOR, renderLines.getGlMode());
+            CONTEXT_1.setShader(MaLiLibPipelines.POSITION_COLOR_SIMPLE);
+            CONTEXT_2.setShader(MaLiLibPipelines.POSITION_COLOR_SIMPLE);
 
-            renderQuads.uploadData(BUFFER_1);
-            renderLines.uploadData(BUFFER_2);
+            this.renderStructureBoxes(data, cameraPos, builder1, builder2);
+
+            CONTEXT_1 = CONTEXT_1.setBuilder(builder1);
+            CONTEXT_2 = CONTEXT_2.setBuilder(builder2);
+
+            renderQuads.uploadData(builder1);
+            renderLines.uploadData(builder2);
 
             this.wasEmpty = false;
         }
@@ -97,20 +109,22 @@ public class OverlayRendererStructures extends OverlayRendererBase
         }
     }
 
-    private void renderStructureBoxes(List<StructureData> wrappedData, Vec3d cameraPos)
+    private void renderStructureBoxes(List<StructureData> wrappedData, Vec3d cameraPos,
+                                      BufferBuilder builder1, BufferBuilder builder2)
     {
         for (StructureData data : wrappedData)
         {
             StructureToggle toggle = data.getStructureType().getToggle();
             Color4f mainColor = toggle.getColorMain().getColor();
             Color4f componentColor = toggle.getColorComponents().getColor();
-            this.renderStructure(data, mainColor, componentColor, cameraPos);
+            this.renderStructure(data, mainColor, componentColor, cameraPos, builder1, builder2);
         }
     }
 
-    private void renderStructure(StructureData structure, Color4f mainColor, Color4f componentColor, Vec3d cameraPos)
+    private void renderStructure(StructureData structure, Color4f mainColor, Color4f componentColor, Vec3d cameraPos,
+                                 BufferBuilder builder1, BufferBuilder builder2)
     {
-        fi.dy.masa.malilib.render.RenderUtils.drawBox(structure.getBoundingBox(), cameraPos, mainColor, BUFFER_1, BUFFER_2);
+        fi.dy.masa.malilib.render.RenderUtils.drawBox(structure.getBoundingBox(), cameraPos, mainColor, builder1, builder2);
 
         ImmutableList<IntBoundingBox> components = structure.getComponents();
 
@@ -120,7 +134,7 @@ public class OverlayRendererStructures extends OverlayRendererBase
             {
                 for (IntBoundingBox bb : components)
                 {
-                    fi.dy.masa.malilib.render.RenderUtils.drawBox(bb, cameraPos, componentColor, BUFFER_1, BUFFER_2);
+                    fi.dy.masa.malilib.render.RenderUtils.drawBox(bb, cameraPos, componentColor, builder1, builder2);
                 }
             }
         }

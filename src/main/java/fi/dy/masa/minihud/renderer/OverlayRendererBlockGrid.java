@@ -12,6 +12,7 @@ import net.minecraft.world.Heightmap;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.WorldChunk;
 
+import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.data.Color4f;
 import fi.dy.masa.malilib.util.position.PositionUtils;
 import fi.dy.masa.minihud.config.Configs;
@@ -52,29 +53,32 @@ public class OverlayRendererBlockGrid extends OverlayRendererBase
         int radius = Configs.Generic.BLOCK_GRID_OVERLAY_RADIUS.getIntegerValue();
 
         RenderObjectBase renderLines = this.renderObjects.getFirst();
-        BUFFER_1 = TESSELLATOR_1.begin(renderLines.getGlMode(), VertexFormats.POSITION_COLOR);
+        //BUFFER_1 = TESSELLATOR_1.begin(renderLines.getGlMode(), VertexFormats.POSITION_COLOR);
+        BufferBuilder builder1 = CONTEXT_1.startNoShader(VertexFormats.POSITION_COLOR, renderLines.getGlMode());
+        CONTEXT_1.setShader(MaLiLibPipelines.DEBUG_LINES_SIMPLE);
         BlockGridMode mode = (BlockGridMode) Configs.Generic.BLOCK_GRID_OVERLAY_MODE.getOptionListValue();
 
         switch (mode)
         {
             case ALL:
-                this.renderLinesAll(cameraPos, this.lastUpdatePos, radius, color, BUFFER_1);
+                this.renderLinesAll(cameraPos, this.lastUpdatePos, radius, color, builder1);
                 break;
             case NON_AIR:
-                this.renderLinesNonAir(cameraPos, entity.getEntityWorld(), this.lastUpdatePos, radius, color, BUFFER_1);
+                this.renderLinesNonAir(cameraPos, entity.getEntityWorld(), this.lastUpdatePos, radius, color, builder1);
                 break;
             case ADJACENT:
-                this.renderLinesAdjacentToNonAir(cameraPos, entity.getEntityWorld(), this.lastUpdatePos, radius, color, BUFFER_1);
+                this.renderLinesAdjacentToNonAir(cameraPos, entity.getEntityWorld(), this.lastUpdatePos, radius, color, builder1);
                 break;
         }
 
-        renderLines.uploadData(BUFFER_1);
+        CONTEXT_1 = CONTEXT_1.setBuilder(builder1);
+        renderLines.uploadData(builder1);
     }
 
     @Override
     public void allocateGlResources()
     {
-        this.allocateBuffer(VertexFormat.DrawMode.DEBUG_LINES);
+        this.allocateBuffer(MaLiLibPipelines.DEBUG_LINES_SIMPLE);
     }
 
     protected void renderLinesAll(Vec3d cameraPos, BlockPos center, int radius, Color4f color, BufferBuilder buffer)

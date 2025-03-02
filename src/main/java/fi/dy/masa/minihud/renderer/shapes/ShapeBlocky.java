@@ -11,11 +11,14 @@ import org.lwjgl.opengl.GL11;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.VertexFormat;
+import net.minecraft.client.render.VertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 
+import fi.dy.masa.malilib.render.MaLiLibPipelines;
+import fi.dy.masa.malilib.render.RenderUtils;
 import fi.dy.masa.malilib.util.*;
 import fi.dy.masa.malilib.util.data.Color4f;
 
@@ -84,7 +87,7 @@ public abstract class ShapeBlocky extends ShapeBase
     @Override
     public void allocateGlResources()
     {
-        this.allocateBuffer(VertexFormat.DrawMode.QUADS);
+        this.allocateBuffer(MaLiLibPipelines.POSITION_COLOR_SIMPLE);
     }
 
     @Override
@@ -95,11 +98,17 @@ public abstract class ShapeBlocky extends ShapeBase
         this.renderObjects.get(0).draw(matrix4f, projMatrix);
 
         // Render the lines as quads with glPolygonMode(GL_LINE)
+        /*
         RenderSystem.polygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
         RenderSystem.disableBlend();
+         */
+        RenderUtils.blend(false);
         this.renderObjects.get(0).draw(matrix4f, projMatrix);
+        /*
         RenderSystem.polygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
         RenderSystem.enableBlend();
+         */
+        RenderUtils.blend(true);
 
         this.postRender();
     }

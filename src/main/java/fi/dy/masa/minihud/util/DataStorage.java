@@ -782,24 +782,24 @@ public class DataStorage
         {
             MiniHUD.debugLog("DataStorage#receiveServuxStrucutresMetadata(): received METADATA from Servux");
 
-            if (data.getInt("version") != ServuxStructuresPacket.PROTOCOL_VERSION)
+            if (data.getInt("version", -1) != ServuxStructuresPacket.PROTOCOL_VERSION)
             {
                 MiniHUD.LOGGER.warn("structureChannel: Mis-matched protocol version!");
             }
-            this.servuxTimeout = data.getInt("timeout");
-            this.setServuxVersion(data.getString("servux"));
+            this.servuxTimeout = data.getInt("timeout", 300);
+            this.setServuxVersion(data.getString("servux", "?"));
             // Backwards compat only
-            if (data.contains("spawnPosX", Constants.NBT.TAG_INT))
+            if (data.contains("spawnPosX"))
             {
-                HudDataManager.getInstance().setWorldSpawn(new BlockPos(data.getInt("spawnPosX"), data.getInt("spawnPosY"), data.getInt("spawnPosZ")));
+                HudDataManager.getInstance().setWorldSpawn(new BlockPos(data.getInt("spawnPosX", 0), data.getInt("spawnPosY", 0), data.getInt("spawnPosZ", 0)));
             }
-            if (data.contains("spawnChunkRadius", Constants.NBT.TAG_INT))
+            if (data.contains("spawnChunkRadius"))
             {
-                HudDataManager.getInstance().setSpawnChunkRadius(data.getInt("spawnChunkRadius"), true);
+                HudDataManager.getInstance().setSpawnChunkRadius(data.getInt("spawnChunkRadius", 2), true);
             }
-            if (data.contains("worldSeed", Constants.NBT.TAG_LONG))
+            if (data.contains("worldSeed"))
             {
-                HudDataManager.getInstance().setWorldSeed(data.getLong("worldSeed"));
+                HudDataManager.getInstance().setWorldSeed(data.getLong("worldSeed", -1L));
             }
             this.setIsServuxServer();
 
@@ -894,7 +894,7 @@ public class DataStorage
             return;
         }
 
-        if (structures.getHeldType() == Constants.NBT.TAG_COMPOUND)
+        if (structures.getType() == Constants.NBT.TAG_COMPOUND)
         {
             this.structureDataTimeout = this.servuxTimeout + 300;
 
@@ -906,7 +906,7 @@ public class DataStorage
 
             for (int i = 0; i < count; ++i)
             {
-                NbtCompound tag = structures.getCompound(i);
+                NbtCompound tag = structures.getOrCreateCompound(i);
                 StructureData data = StructureData.fromStructureStartTag(tag, currentTime);
 
                 if (data != null)
