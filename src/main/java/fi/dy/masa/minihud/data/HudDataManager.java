@@ -1,12 +1,24 @@
 package fi.dy.masa.minihud.data;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import javax.annotation.Nullable;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-
 import com.mojang.datafixers.util.Pair;
+import fi.dy.masa.malilib.config.options.ConfigBoolean;
+import fi.dy.masa.malilib.gui.GuiBase;
+import fi.dy.masa.malilib.network.ClientPlayHandler;
+import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
+import fi.dy.masa.malilib.util.InfoUtils;
+import fi.dy.masa.malilib.util.JsonUtils;
+import fi.dy.masa.malilib.util.StringUtils;
+import fi.dy.masa.minihud.MiniHUD;
+import fi.dy.masa.minihud.Reference;
+import fi.dy.masa.minihud.config.Configs;
+import fi.dy.masa.minihud.config.RendererToggle;
+import fi.dy.masa.minihud.mixin.world.IMixinServerRecipeManager;
+import fi.dy.masa.minihud.network.ServuxHudHandler;
+import fi.dy.masa.minihud.network.ServuxHudPacket;
+import fi.dy.masa.minihud.renderer.OverlayRendererSpawnChunks;
+import fi.dy.masa.minihud.util.DataStorage;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
@@ -23,23 +35,9 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-import fi.dy.masa.malilib.config.options.ConfigBoolean;
-import fi.dy.masa.malilib.gui.GuiBase;
-import fi.dy.masa.malilib.network.ClientPlayHandler;
-import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
-import fi.dy.masa.malilib.util.InfoUtils;
-import fi.dy.masa.malilib.util.JsonUtils;
-import fi.dy.masa.malilib.util.StringUtils;
-import fi.dy.masa.malilib.util.data.Constants;
-import fi.dy.masa.minihud.MiniHUD;
-import fi.dy.masa.minihud.Reference;
-import fi.dy.masa.minihud.config.Configs;
-import fi.dy.masa.minihud.config.RendererToggle;
-import fi.dy.masa.minihud.mixin.world.IMixinServerRecipeManager;
-import fi.dy.masa.minihud.network.ServuxHudHandler;
-import fi.dy.masa.minihud.network.ServuxHudPacket;
-import fi.dy.masa.minihud.renderer.OverlayRendererSpawnChunks;
-import fi.dy.masa.minihud.util.DataStorage;
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collection;
 
 public class HudDataManager
 {
@@ -677,7 +675,7 @@ public class HudDataManager
         if (!DataStorage.getInstance().hasIntegratedServer() && data.contains("RecipeManager"))
         {
             Collection<RecipeEntry<?>> recipes = new ArrayList<>();
-            NbtList list = data.getOrCreateList("RecipeManager");
+            NbtList list = data.getListOrEmpty("RecipeManager");
             int count = 0;
 
             this.preparedRecipes = PreparedRecipes.EMPTY;
@@ -697,7 +695,7 @@ public class HudDataManager
                 try
                 {
                     RegistryKey<Recipe<?>> key = RegistryKey.of(RegistryKey.ofRegistry(idReg), idValue);
-                    Pair<Recipe<?>, NbtElement> pair = Recipe.CODEC.decode(DataStorage.getInstance().getWorldRegistryManager().getOps(NbtOps.INSTANCE), item.getOrCreateCompound("recipe")).getOrThrow();
+                    Pair<Recipe<?>, NbtElement> pair = Recipe.CODEC.decode(DataStorage.getInstance().getWorldRegistryManager().getOps(NbtOps.INSTANCE), item.getCompoundOrEmpty("recipe")).getOrThrow();
                     RecipeEntry<?> entry = new RecipeEntry<>(key, pair.getFirst());
                     recipes.add(entry);
                     count++;

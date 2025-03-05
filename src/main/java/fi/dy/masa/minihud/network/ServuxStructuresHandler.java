@@ -1,5 +1,13 @@
 package fi.dy.masa.minihud.network;
 
+import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
+import fi.dy.masa.malilib.network.PacketSplitter;
+import fi.dy.masa.minihud.MiniHUD;
+import fi.dy.masa.minihud.data.HudDataManager;
+import fi.dy.masa.minihud.util.DataStorage;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
@@ -9,16 +17,6 @@ import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.random.Random;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-
-import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
-import fi.dy.masa.malilib.network.PacketSplitter;
-import fi.dy.masa.malilib.util.data.Constants;
-import fi.dy.masa.minihud.MiniHUD;
-import fi.dy.masa.minihud.data.HudDataManager;
-import fi.dy.masa.minihud.util.DataStorage;
 
 @Environment(EnvType.CLIENT)
 public abstract class ServuxStructuresHandler<T extends CustomPayload> implements IPluginClientPlayHandler<T>
@@ -90,7 +88,7 @@ public abstract class ServuxStructuresHandler<T extends CustomPayload> implement
 
                         if (nbt != null)
                         {
-                            NbtList structures = nbt.getOrCreateList("Structures");
+                            NbtList structures = nbt.getListOrEmpty("Structures");
                             //MiniHUD.printDebug("decodeStructuresPacket(): received Structures Data of size {} (in bytes) // structures [{}]", nbt.getSizeInBytes(), structures.size());
 
                             DataStorage.getInstance().addOrUpdateStructuresFromServer(structures, this.servuxRegistered);

@@ -1492,7 +1492,7 @@ public class RenderHandler implements IRenderer
                 // Has a Brain besides the default = ServerWorld
                 case NbtKeys.BRAIN ->
                 {
-                    NbtCompound tag = nbt.getOrCreateCompound(NbtKeys.BRAIN);
+                    NbtCompound tag = nbt.getCompoundOrEmpty(NbtKeys.BRAIN);
 
                     if (!tag.isEmpty() && !tag.getCompound(NbtKeys.MEMORIES).isEmpty())
                     {

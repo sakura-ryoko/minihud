@@ -8,7 +8,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.Leashable;
 import net.minecraft.entity.decoration.LeashKnotEntity;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.text.Text;
 import net.minecraft.util.Util;
@@ -59,7 +58,7 @@ public class EntityUtils
         if (nbt.contains("Tags"))
         {
             entity.getCommandTags().clear();
-            NbtList nbtList4 = nbt.getOrCreateList("Tags");
+            NbtList nbtList4 = nbt.getListOrEmpty("Tags");
             int max = Math.min(nbtList4.size(), 1024);
 
             for(int i = 0; i < max; ++i)
