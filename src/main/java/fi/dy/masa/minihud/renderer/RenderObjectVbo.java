@@ -10,6 +10,7 @@ import net.minecraft.client.render.VertexFormatElement;
 
 import fi.dy.masa.malilib.render.RenderContext;
 
+@Deprecated(forRemoval = true)
 public class RenderObjectVbo extends RenderObjectBase
 {
     protected RenderContext ctx;
@@ -18,7 +19,7 @@ public class RenderObjectVbo extends RenderObjectBase
 
     public RenderObjectVbo(ShaderPipeline shader)
     {
-        super(shader);
+//        super(shader);
 
 //        this.vertexBuffer = new VertexBuffer(GlUsage.STATIC_WRITE);
 //        this.format = format;

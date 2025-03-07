@@ -1,29 +1,25 @@
 package fi.dy.masa.minihud.renderer;
 
-import java.util.ArrayList;
-import java.util.List;
 import com.google.gson.JsonObject;
-import org.joml.Matrix4f;
-import org.joml.Matrix4fStack;
-
-import com.mojang.blaze3d.systems.RenderSystem;
+import fi.dy.masa.malilib.util.JsonUtils;
+import fi.dy.masa.malilib.util.position.PositionUtils;
+import fi.dy.masa.minihud.config.RendererToggle;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.Camera;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.profiler.Profiler;
+import org.joml.Matrix4f;
 
-import fi.dy.masa.malilib.render.RenderUtils;
-import fi.dy.masa.malilib.util.JsonUtils;
-import fi.dy.masa.malilib.util.position.PositionUtils;
-import fi.dy.masa.minihud.config.RendererToggle;
+import java.util.ArrayList;
+import java.util.List;
 
 public class RenderContainer
 {
     public static final RenderContainer INSTANCE = new RenderContainer();
 
     private final List<OverlayRendererBase> renderers = new ArrayList<>();
-    protected boolean resourcesAllocated;
+//    protected boolean resourcesAllocated;
     protected int countActive;
 
     private RenderContainer()
@@ -46,39 +42,39 @@ public class RenderContainer
 
     public void addRenderer(OverlayRendererBase renderer)
     {
-        if (this.resourcesAllocated)
-        {
-            renderer.allocateGlResources();
-        }
-
+//        if (this.resourcesAllocated)
+//        {
+//            renderer.allocateGlResources();
+//        }
+//
         this.renderers.add(renderer);
     }
 
     public void removeRenderer(OverlayRendererBase renderer)
     {
         this.renderers.remove(renderer);
-
-        if (this.resourcesAllocated)
-        {
-            renderer.deleteGlResources();
-        }
+//
+//        if (this.resourcesAllocated)
+//        {
+//            renderer.deleteGlResources();
+//        }
     }
 
-    public void render(Entity entity, Matrix4f matrix4f, Matrix4f projMatrix, MinecraftClient mc, Camera camera, Profiler profiler)
-    {
-        //Vec3d cameraPos = mc.gameRenderer.getCamera().getPos();
-
-        profiler.push("renderContainer");
-        this.update(camera.getPos(), entity, mc, profiler);
-        this.draw(camera.getPos(), matrix4f, projMatrix, mc, profiler);
-        profiler.pop();
-    }
+//    public void render(Entity entity, Matrix4f matrix4f, Matrix4f projMatrix, MinecraftClient mc, Camera camera, Profiler profiler)
+//    {
+//        //Vec3d cameraPos = mc.gameRenderer.getCamera().getPos();
+//
+//        profiler.push("renderContainer");
+//        this.update(camera.getPos(), entity, mc, profiler);
+//        this.draw(camera.getPos(), matrix4f, projMatrix, mc, profiler);
+//        profiler.pop();
+//    }
 
     protected void update(Vec3d cameraPos, Entity entity, MinecraftClient mc, Profiler profiler)
     {
         profiler.swap("render_update");
 
-        this.allocateResourcesIfNeeded();
+//        this.allocateResourcesIfNeeded();
         this.countActive = 0;
 
         for (OverlayRendererBase renderer : this.renderers)
@@ -101,91 +97,116 @@ public class RenderContainer
         }
     }
 
-    protected void draw(Vec3d cameraPos, Matrix4f matrix4f, Matrix4f projMatrix, MinecraftClient mc, Profiler profiler)
+    protected void render(Camera camera, Matrix4f posMatrix, Matrix4f projMatrix, MinecraftClient mc, Profiler profiler)
     {
-        profiler.swap("render_draw");
+        profiler.swap("render");
 
-        if (this.resourcesAllocated && this.countActive > 0)
+        for (OverlayRendererBase renderer : this.renderers)
         {
-            /*
-            RenderSystem.disableCull();
-            RenderSystem.enableDepthTest();
-            RenderSystem.depthMask(false);
-            RenderSystem.polygonOffset(-3f, -3f);
-            RenderSystem.enablePolygonOffset();
-             */
+            profiler.push("render_"+renderer.getName());
 
-            RenderUtils.blend(true);
-            RenderUtils.color(1f, 1f, 1f, 1f);
-
-            Matrix4fStack matrix4fstack = RenderSystem.getModelViewStack();
-
-            for (IOverlayRenderer renderer : this.renderers)
+            if (renderer.shouldRender(mc) && renderer.hasData())
             {
-                profiler.push("draw_"+renderer.getName());
-
-                if (renderer.shouldRender(mc))
-                {
-                    Vec3d updatePos = renderer.getUpdatePosition();
-
-                    matrix4fstack.pushMatrix();
-                    matrix4fstack.translate((float) (updatePos.x - cameraPos.x), (float) (updatePos.y - cameraPos.y), (float) (updatePos.z - cameraPos.z));
-                    renderer.draw(matrix4fstack.get(matrix4f), projMatrix);
-                    matrix4fstack.popMatrix();
-                }
-
-                profiler.pop();
+                renderer.render(camera, posMatrix, projMatrix, mc, profiler);
             }
 
-            /*
-            RenderSystem.polygonOffset(0f, 0f);
-            RenderSystem.disablePolygonOffset();
-             */
-            RenderUtils.color(1f, 1f, 1f, 1f);
-            RenderUtils.blend(false);
-            /*
-            RenderSystem.disableBlend();
-            RenderSystem.enableDepthTest();
-            RenderSystem.enableCull();
-            RenderSystem.depthMask(true);
-             */
+            profiler.pop();
         }
     }
 
-    protected void allocateResourcesIfNeeded()
+    protected void reset()
     {
-        if (this.resourcesAllocated == false)
+        for (OverlayRendererBase renderer : this.renderers)
         {
-            this.deleteGlResources();
-            this.allocateGlResources();
+            renderer.reset();
         }
     }
 
-    protected void allocateGlResources()
-    {
-        if (this.resourcesAllocated == false)
-        {
-            for (OverlayRendererBase renderer : this.renderers)
-            {
-                renderer.allocateGlResources();
-            }
+//    protected void draw(Vec3d cameraPos, Matrix4f matrix4f, Matrix4f projMatrix, MinecraftClient mc, Profiler profiler)
+//    {
+//        profiler.swap("render_draw");
+//
+//        if (this.resourcesAllocated && this.countActive > 0)
+//        {
+//            /*
+//            RenderSystem.disableCull();
+//            RenderSystem.enableDepthTest();
+//            RenderSystem.depthMask(false);
+//            RenderSystem.polygonOffset(-3f, -3f);
+//            RenderSystem.enablePolygonOffset();
+//             */
+//
+//            RenderUtils.blend(true);
+//            RenderUtils.color(1f, 1f, 1f, 1f);
+//
+//            Matrix4fStack matrix4fstack = RenderSystem.getModelViewStack();
+//
+//            for (IOverlayRenderer renderer : this.renderers)
+//            {
+//                profiler.push("draw_"+renderer.getName());
+//
+//                if (renderer.shouldRender(mc))
+//                {
+//                    Vec3d updatePos = renderer.getUpdatePosition();
+//
+//                    matrix4fstack.pushMatrix();
+//                    matrix4fstack.translate((float) (updatePos.x - cameraPos.x), (float) (updatePos.y - cameraPos.y), (float) (updatePos.z - cameraPos.z));
+//                    renderer.draw(matrix4fstack.get(matrix4f), projMatrix);
+//                    matrix4fstack.popMatrix();
+//                }
+//
+//                profiler.pop();
+//            }
+//
+//            /*
+//            RenderSystem.polygonOffset(0f, 0f);
+//            RenderSystem.disablePolygonOffset();
+//             */
+//            RenderUtils.color(1f, 1f, 1f, 1f);
+//            RenderUtils.blend(false);
+//            /*
+//            RenderSystem.disableBlend();
+//            RenderSystem.enableDepthTest();
+//            RenderSystem.enableCull();
+//            RenderSystem.depthMask(true);
+//             */
+//        }
+//    }
 
-            this.resourcesAllocated = true;
-        }
-    }
-
-    protected void deleteGlResources()
-    {
-        if (this.resourcesAllocated)
-        {
-            for (OverlayRendererBase renderer : this.renderers)
-            {
-                renderer.deleteGlResources();
-            }
-
-            this.resourcesAllocated = false;
-        }
-    }
+//    protected void allocateResourcesIfNeeded()
+//    {
+//        if (this.resourcesAllocated == false)
+//        {
+//            this.deleteGlResources();
+//            this.allocateGlResources();
+//        }
+//    }
+//
+//    protected void allocateGlResources()
+//    {
+//        if (this.resourcesAllocated == false)
+//        {
+//            for (OverlayRendererBase renderer : this.renderers)
+//            {
+//                renderer.allocateGlResources();
+//            }
+//
+//            this.resourcesAllocated = true;
+//        }
+//    }
+//
+//    protected void deleteGlResources()
+//    {
+//        if (this.resourcesAllocated)
+//        {
+//            for (OverlayRendererBase renderer : this.renderers)
+//            {
+//                renderer.deleteGlResources();
+//            }
+//
+//            this.resourcesAllocated = false;
+//        }
+//    }
 
     public JsonObject toJson()
     {

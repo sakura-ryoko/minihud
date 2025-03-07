@@ -1,34 +1,12 @@
 package fi.dy.masa.minihud.renderer;
 
+import net.minecraft.client.render.BufferBuilder;
 import org.joml.Matrix4f;
 
-import net.minecraft.client.gl.ShaderPipeline;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.VertexFormat;
-
+@Deprecated(forRemoval = true)
 public abstract class RenderObjectBase
 {
-    protected final ShaderPipeline shader;
-
-    public RenderObjectBase(ShaderPipeline shader)
-    {
-        this.shader = shader;
-    }
-
-    public VertexFormat.DrawMode getGlMode()
-    {
-        return this.shader.getDrawMode();
-    }
-
-    public VertexFormat getFormat()
-    {
-        return this.shader.getFormat();
-    }
-
-    public ShaderPipeline getShader()
-    {
-        return this.shader;
-    }
+    public RenderObjectBase() {}
 
     public abstract void uploadData(BufferBuilder buffer);
 

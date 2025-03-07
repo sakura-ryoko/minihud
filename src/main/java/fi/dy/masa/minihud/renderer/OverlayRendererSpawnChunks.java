@@ -1,19 +1,8 @@
 package fi.dy.masa.minihud.renderer;
 
-import javax.annotation.Nullable;
-import org.apache.commons.lang3.tuple.Pair;
-
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.VertexFormats;
-import net.minecraft.entity.Entity;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.GameRules;
-import net.minecraft.world.World;
-
+import com.mojang.blaze3d.systems.RenderSystem;
 import fi.dy.masa.malilib.render.MaLiLibPipelines;
+import fi.dy.masa.malilib.render.RenderContext;
 import fi.dy.masa.malilib.util.data.Color4f;
 import fi.dy.masa.malilib.util.position.PositionUtils;
 import fi.dy.masa.minihud.MiniHUD;
@@ -22,18 +11,52 @@ import fi.dy.masa.minihud.config.RendererToggle;
 import fi.dy.masa.minihud.data.HudDataManager;
 import fi.dy.masa.minihud.util.DataStorage;
 import fi.dy.masa.minihud.util.MiscUtils;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.GlUsage;
+import net.minecraft.client.gl.ShaderPipelines;
+import net.minecraft.client.render.BufferBuilder;
+import net.minecraft.client.render.Camera;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.entity.Entity;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.profiler.Profiler;
+import net.minecraft.world.GameRules;
+import net.minecraft.world.World;
+import org.apache.commons.lang3.tuple.Pair;
+import org.joml.Matrix4f;
+import org.joml.Matrix4fStack;
 
-public class OverlayRendererSpawnChunks extends OverlayRendererBase
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
+
+public class OverlayRendererSpawnChunks extends OverlayRendererBase implements AutoCloseable
 {
     protected static boolean needsUpdate = true;
 
     protected final RendererToggle toggle;
     protected final boolean isPlayerFollowing;
 
+    protected List<Box> boxesBrown;
+    protected List<Box> boxesRed;
+    protected List<Box> boxesYellow;
+    protected List<Box> boxesGreen;
+    protected BlockPos center;
+    private boolean hasData;
+
     public OverlayRendererSpawnChunks(RendererToggle toggle)
     {
         this.toggle = toggle;
         this.isPlayerFollowing = toggle == RendererToggle.OVERLAY_SPAWN_CHUNK_OVERLAY_PLAYER;
+        this.boxesBrown = new ArrayList<>();
+        this.boxesRed = new ArrayList<>();
+        this.boxesYellow = new ArrayList<>();
+        this.boxesGreen = new ArrayList<>();
+        this.center = BlockPos.ORIGIN;
+        this.hasData = false;
     }
 
     @Override
@@ -85,6 +108,11 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
     @Override
     public void update(Vec3d cameraPos, Entity entity, MinecraftClient mc)
     {
+        if (mc.world == null || mc.player == null)
+        {
+            return;
+        }
+
         // Use the client player, to allow looking from the camera perspective
         entity = this.isPlayerFollowing ? mc.player : entity;
 
@@ -147,16 +175,65 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
             yellowEnabled = Configs.Generic.SPAWN_REAL_REDSTONE_OVERLAY_ENABLED.getBooleanValue();
         }
 
-        RenderObjectBase renderQuads = this.renderObjects.get(0);
-        RenderObjectBase renderLines = this.renderObjects.get(1);
-        /*
-        BUFFER_1 = TESSELLATOR_1.begin(renderQuads.getGlMode(), VertexFormats.POSITION_COLOR);
-        BUFFER_2 = TESSELLATOR_2.begin(renderLines.getGlMode(), VertexFormats.POSITION_COLOR);
-         */
+//        RenderObjectBase renderQuads = this.renderObjects.get(0);
+//        RenderObjectBase renderLines = this.renderObjects.get(1);
 
-        BufferBuilder builder1 = CONTEXT_1.startShader(MaLiLibPipelines.POSITION_COLOR_SIMPLE);
-        BufferBuilder builder2 = CONTEXT_2.startShader(MaLiLibPipelines.POSITION_COLOR_SIMPLE);
+        Pair<BlockPos, BlockPos> corners;
 
+        if (brownEnabled)
+        {
+            corners = this.getSpawnChunkCorners(spawn, brown, mc.world);   // Org 22 (Brown / WorldGen Only)
+            this.boxesBrown = RenderUtils.calculateBoxes(corners.getLeft(), corners.getRight());
+        }
+
+        corners = this.getSpawnChunkCorners(spawn, red, mc.world);     // Org 11 (Red / Mob Caps Only)
+        this.boxesRed = RenderUtils.calculateBoxes(corners.getLeft(), corners.getRight());
+
+        if (yellowEnabled)
+        {
+            corners = this.getSpawnChunkCorners(spawn, yellow, mc.world);     // Org 10 (Yellow / Redstone Processing)
+            this.boxesYellow = RenderUtils.calculateBoxes(corners.getLeft(), corners.getRight());
+        }
+
+        corners = this.getSpawnChunkCorners(spawn, green, mc.world);      // Org 9 (Green / Entity Processing)
+        this.boxesGreen = RenderUtils.calculateBoxes(corners.getLeft(), corners.getRight());
+
+        this.hasData = true;
+        needsUpdate = false;
+    }
+
+    @Override
+    public boolean hasData()
+    {
+        return this.hasData;
+    }
+
+    @Override
+    public void render(Camera camera, Matrix4f matrix4f, Matrix4f projMatrix, MinecraftClient mc, Profiler profiler)
+    {
+        profiler.push("spawn_chunk_radius");
+        if (this.hasData && !this.boxesGreen.isEmpty() && this.center != null)
+        {
+            this.renderQuads(camera, matrix4f, projMatrix, mc, profiler);
+            this.renderOutlines(camera, matrix4f, projMatrix, mc, profiler);
+            this.boxesBrown.clear();
+            this.boxesRed.clear();
+            this.boxesYellow.clear();
+            this.boxesGreen.clear();
+            this.center = null;
+            this.hasData = false;
+        }
+        profiler.pop();
+    }
+
+    private void renderQuads(Camera camera, Matrix4f matrix4f, Matrix4f projMatrix, MinecraftClient mc, Profiler profiler)
+    {
+        if (mc.world == null || mc.player == null)
+        {
+            return;
+        }
+
+        profiler.push("quads");
         final Color4f colorEntity = this.isPlayerFollowing ?
                 Configs.Colors.SPAWN_PLAYER_ENTITY_OVERLAY_COLOR.getColor() :
                 Configs.Colors.SPAWN_REAL_ENTITY_OVERLAY_COLOR.getColor();
@@ -170,36 +247,136 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
                 Configs.Colors.SPAWN_PLAYER_OUTER_OVERLAY_COLOR.getColor() :
                 Configs.Colors.SPAWN_REAL_OUTER_OVERLAY_COLOR.getColor();
 
-        fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(spawn, cameraPos, colorEntity, 0.001, builder2);
-        drawBlockBoundingBoxSidesBatchedQuads(spawn, cameraPos, colorEntity, 0.001, builder1);
+        Vec3d cameraPos = camera.getPos();
 
-        Pair<BlockPos, BlockPos> corners;
+        RenderContext ctx = new RenderContext(() -> "Spawn Chunk Quads", MaLiLibPipelines.POSITION_COLOR_SIMPLE, GlUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.getBuilder();
+        Matrix4fStack matrix4fstack = RenderSystem.getModelViewStack();
+        Vec3d updatePos = this.getUpdatePosition();
 
-        if (brownEnabled)
+        this.preRender();
+        matrix4fstack.pushMatrix();
+        matrix4fstack.translate((float) (updatePos.x - cameraPos.x), (float) (updatePos.y - cameraPos.y), (float) (updatePos.z - cameraPos.z));
+        fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxSidesBatchedQuads(this.center, cameraPos, colorEntity, 0.001, builder);
+
+        for (Box entry : this.boxesBrown)
         {
-            corners = this.getSpawnChunkCorners(spawn, brown, mc.world);   // Org 22 (Brown / WorldGen Only)
-            RenderUtils.renderWallsWithLines(corners.getLeft(), corners.getRight(), cameraPos, 16, 16, true, colorOuter, builder1, builder2);
+            RenderUtils.renderWallQuads(entry, cameraPos, colorOuter, builder);
+        }
+        for (Box entry : this.boxesRed)
+        {
+            RenderUtils.renderWallQuads(entry, cameraPos, colorLazy, builder);
+        }
+        for (Box entry : this.boxesYellow)
+        {
+            RenderUtils.renderWallQuads(entry, cameraPos, colorRedstone, builder);
+        }
+        for (Box entry : this.boxesGreen)
+        {
+            RenderUtils.renderWallQuads(entry, cameraPos, colorEntity, builder);
         }
 
-        corners = this.getSpawnChunkCorners(spawn, red, mc.world);     // Org 11 (Red / Mob Caps Only)
-        RenderUtils.renderWallsWithLines(corners.getLeft(), corners.getRight(), cameraPos, 16, 16, true, colorLazy, builder1, builder2);
-
-        if (yellowEnabled)
+        try
         {
-            corners = this.getSpawnChunkCorners(spawn, yellow, mc.world);     // Org 10 (Yellow / Redstone Processing)
-            RenderUtils.renderWallsWithLines(corners.getLeft(), corners.getRight(), cameraPos, 16, 16, true, colorRedstone, builder1, builder2);
+            ctx.drawColor(builder.endNullable());
+            ctx.close();
+        }
+        catch (Exception err)
+        {
+            MiniHUD.LOGGER.error("OverlayRendererSpawnChunks#renderQuads(): Exception; {}", err.getMessage());
         }
 
-        corners = this.getSpawnChunkCorners(spawn, green, mc.world);      // Org 9 (Green / Entity Processing)
-        RenderUtils.renderWallsWithLines(corners.getLeft(), corners.getRight(), cameraPos, 16, 16, true, colorEntity, builder1, builder2);
+        this.postRender();
+        matrix4fstack.popMatrix();
+        profiler.pop();
+    }
 
-        CONTEXT_1 = CONTEXT_1.setBuilder(builder1);
-        CONTEXT_2 = CONTEXT_2.setBuilder(builder2);
+    private void renderOutlines(Camera camera, Matrix4f matrix4f, Matrix4f projMatrix, MinecraftClient mc, Profiler profiler)
+    {
+        if (mc.world == null || mc.player == null)
+        {
+            return;
+        }
 
-        renderQuads.uploadData(builder1);
-        renderLines.uploadData(builder2);
+        profiler.push("outlines");
+        final Color4f colorEntity = this.isPlayerFollowing ?
+                Configs.Colors.SPAWN_PLAYER_ENTITY_OVERLAY_COLOR.getColor() :
+                Configs.Colors.SPAWN_REAL_ENTITY_OVERLAY_COLOR.getColor();
+        final Color4f colorRedstone = this.isPlayerFollowing ?
+                Configs.Colors.SPAWN_PLAYER_REDSTONE_OVERLAY_COLOR.getColor() :
+                Configs.Colors.SPAWN_REAL_REDSTONE_OVERLAY_COLOR.getColor();
+        final Color4f colorLazy = this.isPlayerFollowing ?
+                Configs.Colors.SPAWN_PLAYER_LAZY_OVERLAY_COLOR.getColor() :
+                Configs.Colors.SPAWN_REAL_LAZY_OVERLAY_COLOR.getColor();
+        final Color4f colorOuter = this.isPlayerFollowing ?
+                Configs.Colors.SPAWN_PLAYER_OUTER_OVERLAY_COLOR.getColor() :
+                Configs.Colors.SPAWN_REAL_OUTER_OVERLAY_COLOR.getColor();
 
-        needsUpdate = false;
+        Vec3d cameraPos = camera.getPos();
+
+        RenderContext ctx = new RenderContext(() -> "Spawn Chunk Lines", ShaderPipelines.LINES, GlUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.getBuilder();
+        MatrixStack matrices = new MatrixStack();
+        Matrix4fStack matrix4fstack = RenderSystem.getModelViewStack();
+        Vec3d updatePos = this.getUpdatePosition();
+
+        this.preRender();
+        matrices.push();
+        matrix4fstack.pushMatrix();
+        matrix4fstack.translate((float) (updatePos.x - cameraPos.x), (float) (updatePos.y - cameraPos.y), (float) (updatePos.z - cameraPos.z));
+        fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(this.center, cameraPos, colorEntity, 0.001, builder, matrices);
+
+        MatrixStack.Entry e = matrices.peek();
+
+        for (Box entry : this.boxesBrown)
+        {
+            RenderUtils.renderWallOutlines(entry, 16, 16, true, cameraPos, colorOuter, builder, e);
+        }
+        for (Box entry : this.boxesRed)
+        {
+            RenderUtils.renderWallOutlines(entry, 16, 16, true, cameraPos, colorLazy, builder, e);
+        }
+        for (Box entry : this.boxesYellow)
+        {
+            RenderUtils.renderWallOutlines(entry, 16, 16, true, cameraPos, colorRedstone, builder, e);
+        }
+        for (Box entry : this.boxesGreen)
+        {
+            RenderUtils.renderWallOutlines(entry, 16, 16, true, cameraPos, colorEntity, builder, e);
+        }
+
+        try
+        {
+            ctx.drawColor(builder.endNullable());
+            ctx.close();
+        }
+        catch (Exception err)
+        {
+            MiniHUD.LOGGER.error("OverlayRendererSpawnChunks#renderOutlines(): Exception; {}", err.getMessage());
+        }
+
+        this.postRender();
+        matrices.pop();
+        matrix4fstack.popMatrix();
+
+        profiler.pop();
+    }
+
+    @Override
+    public void reset()
+    {
+        this.boxesBrown.clear();
+        this.boxesRed.clear();
+        this.boxesYellow.clear();
+        this.boxesGreen.clear();
+        this.center = BlockPos.ORIGIN;
+        this.hasData = false;
+    }
+
+    @Override
+    public void close()
+    {
+        this.reset();
     }
 
     protected Pair<BlockPos, BlockPos> getSpawnChunkCorners(BlockPos worldSpawn, int chunkRange, World world)
@@ -268,15 +445,15 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase
     /**
      * Assumes a BufferBuilder in GL_QUADS mode has been initialized
      */
-    public static void drawBlockBoundingBoxSidesBatchedQuads(BlockPos pos, Vec3d cameraPos, Color4f color, double expand, BufferBuilder buffer)
-    {
-        float minX = (float) (pos.getX() - cameraPos.x - expand);
-        float minY = (float) (pos.getY() - cameraPos.y - expand);
-        float minZ = (float) (pos.getZ() - cameraPos.z - expand);
-        float maxX = (float) (pos.getX() - cameraPos.x + expand + 1);
-        float maxY = (float) (pos.getY() - cameraPos.y + expand + 1);
-        float maxZ = (float) (pos.getZ() - cameraPos.z + expand + 1);
-
-        fi.dy.masa.malilib.render.RenderUtils.drawBoxAllSidesBatchedQuads(minX, minY, minZ, maxX, maxY, maxZ, color, buffer);
-    }
+//    public static void drawBlockBoundingBoxSidesBatchedQuads(BlockPos pos, Vec3d cameraPos, Color4f color, double expand, BufferBuilder buffer)
+//    {
+//        float minX = (float) (pos.getX() - cameraPos.x - expand);
+//        float minY = (float) (pos.getY() - cameraPos.y - expand);
+//        float minZ = (float) (pos.getZ() - cameraPos.z - expand);
+//        float maxX = (float) (pos.getX() - cameraPos.x + expand + 1);
+//        float maxY = (float) (pos.getY() - cameraPos.y + expand + 1);
+//        float maxZ = (float) (pos.getZ() - cameraPos.z + expand + 1);
+//
+//        fi.dy.masa.malilib.render.RenderUtils.drawBoxAllSidesBatchedQuads(minX, minY, minZ, maxX, maxY, maxZ, color, buffer);
+//    }
 }
