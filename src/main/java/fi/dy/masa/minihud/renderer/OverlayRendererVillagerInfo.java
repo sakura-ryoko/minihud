@@ -44,8 +44,7 @@ import org.joml.Matrix4f;
 
 public class OverlayRendererVillagerInfo extends OverlayRendererBase implements IClientTickHandler
 {
-    private static final OverlayRendererVillagerInfo INSTANCE = new OverlayRendererVillagerInfo();
-    public static OverlayRendererVillagerInfo getInstance() { return INSTANCE; }
+    public static final OverlayRendererVillagerInfo INSTANCE = new OverlayRendererVillagerInfo();
 
     // Mini Secondary Cache so villagers' data doesn't ... `Flash`
     private final ConcurrentHashMap<Integer, Pair<Long, Pair<Entity, NbtCompound>>> recentEntityData;
@@ -398,7 +397,6 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
     public void reset()
     {
         super.reset();
-        this.reset(false);
     }
 
     private void renderAtEntity(List<String> texts, Entity entity, Entity targetEntity)

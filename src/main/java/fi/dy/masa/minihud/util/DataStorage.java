@@ -172,10 +172,10 @@ public class DataStorage
         this.servuxTimeout = -1;
 
         ShapeManager.INSTANCE.clear();
-        OverlayRendererBeaconRange.INSTANCE.clear();
-        OverlayRendererConduitRange.INSTANCE.clear();
-        OverlayRendererBiomeBorders.INSTANCE.clear();
-        OverlayRendererLightLevel.reset();
+        OverlayRendererBeaconRange.INSTANCE.reset();
+        OverlayRendererConduitRange.INSTANCE.reset();
+        OverlayRendererBiomeBorders.INSTANCE.reset();
+        OverlayRendererLightLevel.INSTANCE.reset();
     }
 
     public void clearTasks()
@@ -263,7 +263,8 @@ public class DataStorage
         MiniHUD.debugLog("DataStorage#onWorldJoin()");
         OverlayRendererBeaconRange.INSTANCE.setNeedsUpdate();
         OverlayRendererConduitRange.INSTANCE.setNeedsUpdate();
-        OverlayRendererSpawnChunks.setNeedsUpdate();
+        OverlayRendererSpawnChunks.INSTANCE_REAL.setNeedsUpdate();
+        OverlayRendererSpawnChunks.INSTANCE_PLAYER.setNeedsUpdate();
 
         if (this.hasIntegratedServer == false)
         {
@@ -316,7 +317,8 @@ public class DataStorage
         {
             if (this.simulationDistance != distance)
             {
-                OverlayRendererSpawnChunks.setNeedsUpdate();
+                OverlayRendererSpawnChunks.INSTANCE_REAL.setNeedsUpdate();
+                OverlayRendererSpawnChunks.INSTANCE_PLAYER.setNeedsUpdate();
             }
             this.simulationDistance = distance;
             //MiniHUD.printDebug("DataStorage#setSimulationDistance(): set to: [{}]", distance);
@@ -402,8 +404,8 @@ public class DataStorage
 
             if (Math.abs(pos.x - (chunkX << 4) - 8) <= 48D || Math.abs(pos.z - (chunkZ << 4) - 8) <= 48D)
             {
-                OverlayRendererSpawnableColumnHeights.markChunkChanged(chunkX, chunkZ);
-                OverlayRendererLightLevel.setNeedsUpdate();
+                OverlayRendererSpawnableColumnHeights.INSTANCE.markChunkChanged(chunkX, chunkZ);
+                OverlayRendererLightLevel.INSTANCE.setNeedsUpdate();
             }
         }
     }
@@ -906,7 +908,7 @@ public class DataStorage
 
             for (int i = 0; i < count; ++i)
             {
-                NbtCompound tag = structures.getOrCreateCompound(i);
+                NbtCompound tag = structures.getCompoundOrEmpty(i);
                 StructureData data = StructureData.fromStructureStartTag(tag, currentTime);
 
                 if (data != null)

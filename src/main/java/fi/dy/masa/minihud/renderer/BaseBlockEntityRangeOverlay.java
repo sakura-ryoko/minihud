@@ -108,8 +108,6 @@ public abstract class BaseBlockEntityRangeOverlay<T extends BlockEntity> extends
         {
             Vec3d cameraPos = camera.getPos();
             this.renderBlockRanges(this.world, cameraPos, mc, profiler);
-            this.clear();
-            this.hasData = false;
         }
     }
 

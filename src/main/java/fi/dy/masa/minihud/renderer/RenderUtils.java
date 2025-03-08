@@ -643,6 +643,30 @@ public class RenderUtils
         }
     }
 
+    public static void drawBoxAllSidesBatchedQuads(Box bb, Color4f color, BufferBuilder buffer)
+    {
+        float minX = (float) bb.minX;
+        float minY = (float) bb.minY;
+        float minZ = (float) bb.minZ;
+        float maxX = (float) bb.maxX;
+        float maxY = (float) bb.maxY;
+        float maxZ = (float) bb.maxZ;
+
+        fi.dy.masa.malilib.render.RenderUtils.drawBoxAllSidesBatchedQuads(minX, minY, minZ, maxX, maxY, maxZ, color, buffer);
+    }
+
+    public static void drawBoxAllEdgesBatchedLines(Box bb, Color4f color, BufferBuilder buffer, MatrixStack matrices)
+    {
+        float minX = (float) bb.minX;
+        float minY = (float) bb.minY;
+        float minZ = (float) bb.minZ;
+        float maxX = (float) bb.maxX;
+        float maxY = (float) bb.maxY;
+        float maxZ = (float) bb.maxZ;
+
+        fi.dy.masa.malilib.render.RenderUtils.drawBoxAllEdgesBatchedLines(minX, minY, minZ, maxX, maxY, maxZ, color, buffer, matrices.peek());
+    }
+
     // OG Method (Works)
     public static void renderInventoryOverlay(MinecraftClient mc, DrawContext drawContext)
     {

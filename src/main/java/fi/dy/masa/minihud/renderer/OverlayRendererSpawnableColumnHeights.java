@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 
@@ -14,7 +13,6 @@ import net.minecraft.client.gl.GlUsage;
 import net.minecraft.client.gl.ShaderPipelines;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.Camera;
-import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.*;
@@ -31,8 +29,9 @@ import fi.dy.masa.minihud.config.RendererToggle;
 
 public class OverlayRendererSpawnableColumnHeights extends OverlayRendererBase
 {
-    private static final Set<Long> DIRTY_CHUNKS = new HashSet<>();
+    public static final OverlayRendererSpawnableColumnHeights INSTANCE = new OverlayRendererSpawnableColumnHeights();
 
+    private final Set<Long> DIRTY_CHUNKS = new HashSet<>();
     private final BlockPos.Mutable posMutable = new BlockPos.Mutable();
     private long lastCheckTime;
     private final List<Box> boxes;
@@ -48,13 +47,13 @@ public class OverlayRendererSpawnableColumnHeights extends OverlayRendererBase
         return "SpawnableColumnHeights";
     }
 
-    public static void markChunkChanged(int cx, int cz)
+    public void markChunkChanged(int cx, int cz)
     {
         if (RendererToggle.OVERLAY_SPAWNABLE_COLUMN_HEIGHTS.getBooleanValue())
         {
-            synchronized (DIRTY_CHUNKS)
+            synchronized (this.DIRTY_CHUNKS)
             {
-                DIRTY_CHUNKS.add(ChunkPos.toLong(cx, cz));
+                this.DIRTY_CHUNKS.add(ChunkPos.toLong(cx, cz));
             }
         }
     }
@@ -86,13 +85,13 @@ public class OverlayRendererSpawnableColumnHeights extends OverlayRendererBase
             final int xEnd = (((int) entity.getX() + radius) >> 4);
             final int zEnd = (((int) entity.getZ() + radius) >> 4);
 
-            synchronized (DIRTY_CHUNKS)
+            synchronized (this.DIRTY_CHUNKS)
             {
                 for (int cx = xStart; cx <= xEnd; ++cx)
                 {
                     for (int cz = zStart; cz <= zEnd; ++cz)
                     {
-                        if (DIRTY_CHUNKS.contains(ChunkPos.toLong(cx, cz)))
+                        if (this.DIRTY_CHUNKS.contains(ChunkPos.toLong(cx, cz)))
                         {
                             return true;
                         }
@@ -115,9 +114,9 @@ public class OverlayRendererSpawnableColumnHeights extends OverlayRendererBase
         this.calculateChunks(cameraPos, entity, mc);
         this.lastCheckTime = System.currentTimeMillis();
 
-        synchronized (DIRTY_CHUNKS)
+        synchronized (this.DIRTY_CHUNKS)
         {
-            DIRTY_CHUNKS.clear();
+            this.DIRTY_CHUNKS.clear();
         }
     }
 
@@ -134,7 +133,6 @@ public class OverlayRendererSpawnableColumnHeights extends OverlayRendererBase
         {
             this.renderQuads(camera, matrix4f, projMatrix, mc, profiler);
             this.renderOutlines(camera, matrix4f, projMatrix, mc, profiler);
-            this.boxes.clear();
         }
     }
 
@@ -264,9 +262,9 @@ public class OverlayRendererSpawnableColumnHeights extends OverlayRendererBase
         super.reset();
         this.boxes.clear();
         this.lastCheckTime = -1;
-        synchronized (DIRTY_CHUNKS)
+        synchronized (this.DIRTY_CHUNKS)
         {
-            DIRTY_CHUNKS.clear();
+            this.DIRTY_CHUNKS.clear();
         }
     }
 }

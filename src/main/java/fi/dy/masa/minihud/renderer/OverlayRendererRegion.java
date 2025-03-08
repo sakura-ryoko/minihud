@@ -9,7 +9,6 @@ import net.minecraft.client.gl.GlUsage;
 import net.minecraft.client.gl.ShaderPipelines;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.Camera;
-import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
@@ -28,7 +27,8 @@ import fi.dy.masa.minihud.config.RendererToggle;
 
 public class OverlayRendererRegion extends OverlayRendererBase
 {
-    protected static boolean needsUpdate = true;
+    public static final OverlayRendererRegion INSTANCE = new OverlayRendererRegion();
+    protected boolean needsUpdate = true;
     private Box box;
     private boolean hasData;
 
@@ -38,9 +38,9 @@ public class OverlayRendererRegion extends OverlayRendererBase
         this.hasData = false;
     }
 
-    public static void setNeedsUpdate()
+    public void setNeedsUpdate()
     {
-        needsUpdate = true;
+        this.needsUpdate = true;
     }
 
     @Override
@@ -58,7 +58,7 @@ public class OverlayRendererRegion extends OverlayRendererBase
     @Override
     public boolean needsUpdate(Entity entity, MinecraftClient mc)
     {
-        if (needsUpdate)
+        if (this.needsUpdate)
         {
             return true;
         }
@@ -75,7 +75,7 @@ public class OverlayRendererRegion extends OverlayRendererBase
     public void update(Vec3d cameraPos, Entity entity, MinecraftClient mc)
     {
         this.calculateRegions(entity);
-        needsUpdate = false;
+        this.needsUpdate = false;
     }
 
     private void calculateRegions(Entity entity)
@@ -104,8 +104,6 @@ public class OverlayRendererRegion extends OverlayRendererBase
         {
             this.renderQuads(camera, matrix4f, projMatrix, mc, profiler);
             this.renderOutlines(camera, matrix4f, projMatrix, mc, profiler);
-            this.box = null;
-            this.hasData = false;
         }
     }
 

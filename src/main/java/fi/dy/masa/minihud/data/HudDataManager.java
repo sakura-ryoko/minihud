@@ -211,7 +211,7 @@ public class HudDataManager
     {
         if (!this.worldSpawn.equals(spawn))
         {
-            OverlayRendererSpawnChunks.setNeedsUpdate();
+            OverlayRendererSpawnChunks.INSTANCE_REAL.setNeedsUpdate();
             MiniHUD.debugLog("HudDataStorage#setWorldSpawn(): set world spawn [{}] -> [{}]", this.worldSpawn.toShortString(), spawn.toShortString());
         }
         this.worldSpawn = spawn;
@@ -230,7 +230,7 @@ public class HudDataManager
                     InfoUtils.printActionbarMessage(StringUtils.translate("minihud.message.spawn_chunk_radius_set", strRadius));
                 }
 
-                OverlayRendererSpawnChunks.setNeedsUpdate();
+                OverlayRendererSpawnChunks.INSTANCE_REAL.setNeedsUpdate();
                 MiniHUD.debugLog("HudDataStorage#setSpawnChunkRadius(): set spawn chunk radius [{}] -> [{}]", this.spawnChunkRadius, radius);
             }
             this.spawnChunkRadius = radius;
@@ -248,7 +248,7 @@ public class HudDataManager
         if (!this.worldSpawnValid)
         {
             this.setWorldSpawn(spawn);
-            OverlayRendererSpawnChunks.setNeedsUpdate();
+            OverlayRendererSpawnChunks.INSTANCE_REAL.setNeedsUpdate();
         }
     }
 
@@ -257,7 +257,7 @@ public class HudDataManager
         if (!this.spawnChunkRadiusValid)
         {
             this.setSpawnChunkRadius(radius, true);
-            OverlayRendererSpawnChunks.setNeedsUpdate();
+            OverlayRendererSpawnChunks.INSTANCE_REAL.setNeedsUpdate();
         }
     }
 
@@ -683,7 +683,7 @@ public class HudDataManager
 
             for (int i = 0; i < list.size(); i++)
             {
-                NbtCompound item = list.getOrCreateCompound(i);
+                NbtCompound item = list.getCompoundOrEmpty(i);
                 Identifier idReg = Identifier.tryParse(item.getString("id_reg", ""));
                 Identifier idValue = Identifier.tryParse(item.getString("id_value", ""));
 
@@ -786,7 +786,7 @@ public class HudDataManager
             {
                 MiniHUD.LOGGER.warn("HudDataStorage#fromJson(): toggling feature OFF since SPAWN_CHUNK_RADIUS is set to 0");
                 RendererToggle.OVERLAY_SPAWN_CHUNK_OVERLAY_REAL.setBooleanValue(false);
-                OverlayRendererSpawnChunks.setNeedsUpdate();
+                OverlayRendererSpawnChunks.INSTANCE_REAL.setNeedsUpdate();
             }
         }
     }

@@ -3,7 +3,7 @@ package fi.dy.masa.minihud.renderer;
 import net.minecraft.client.render.BufferBuilder;
 import org.joml.Matrix4f;
 
-@Deprecated(forRemoval = true)
+@Deprecated
 public abstract class RenderObjectBase
 {
     public RenderObjectBase() {}

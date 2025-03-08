@@ -34,9 +34,12 @@ import fi.dy.masa.minihud.config.RendererToggle;
 
 public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
 {
-    protected static boolean needsUpdate = true;
-    @Nullable public static Vec3d newPos;
+    public static final OverlayRendererRandomTickableChunks INSTANCE_FIXED = new OverlayRendererRandomTickableChunks(RendererToggle.OVERLAY_RANDOM_TICKS_FIXED);
+    public static final OverlayRendererRandomTickableChunks INSTANCE_PLAYER = new OverlayRendererRandomTickableChunks(RendererToggle.OVERLAY_RANDOM_TICKS_PLAYER);
+
     private static final Direction[] HORIZONTALS = new Direction[] { Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST };
+    protected boolean needsUpdate = true;
+    @Nullable public Vec3d newPos;
 
     protected RendererToggle toggle;
     protected Vec3d pos = Vec3d.ZERO;
@@ -61,9 +64,14 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
         return "RandomTickableChunks";
     }
 
-    public static void setNeedsUpdate()
+    public void setNeedsUpdate()
     {
-        needsUpdate = true;
+        this.needsUpdate = true;
+    }
+
+    public void setNewPos(@Nullable Vec3d pos)
+    {
+        this.newPos = pos;
     }
 
     @Override
@@ -75,7 +83,7 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
     @Override
     public boolean needsUpdate(Entity entity, MinecraftClient mc)
     {
-        if (needsUpdate)
+        if (this.needsUpdate)
         {
             return true;
         }
@@ -113,7 +121,7 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
             this.calculateChunkEdgesIfApplicable(pos, chunks, entity.getEntityWorld());
         }
 
-        needsUpdate = false;
+        this.needsUpdate = false;
     }
 
     @Override
@@ -129,8 +137,6 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
         {
             this.renderQuads(camera, matrix4f, projMatrix, mc, profiler);
             this.renderOutlines(camera, matrix4f, projMatrix, mc, profiler);
-            this.boxes.clear();
-            this.hasData = false;
         }
     }
 

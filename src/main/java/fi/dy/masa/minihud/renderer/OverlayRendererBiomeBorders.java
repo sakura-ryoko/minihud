@@ -19,7 +19,6 @@ import net.minecraft.client.gl.GlUsage;
 import net.minecraft.client.gl.ShaderPipelines;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.Camera;
-import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.registry.Registry;
@@ -157,8 +156,6 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
             //long pre = System.nanoTime();
             this.renderQuads(camera.getPos(), profiler);
             this.renderOutlines(camera.getPos(), profiler);
-            this.renderQuads.clear();
-            this.hasData = false;
             //long post = System.nanoTime(); System.out.printf("renderQuads: %.6fs\n", ((double) post - (double) pre) / 1000000000D);
         }
     }

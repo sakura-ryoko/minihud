@@ -35,10 +35,11 @@ import java.util.List;
 
 public class OverlayRendererSpawnChunks extends OverlayRendererBase implements AutoCloseable
 {
-    protected static boolean needsUpdate = true;
-
+    public static final OverlayRendererSpawnChunks INSTANCE_PLAYER = new OverlayRendererSpawnChunks(RendererToggle.OVERLAY_SPAWN_CHUNK_OVERLAY_PLAYER);
+    public static final OverlayRendererSpawnChunks INSTANCE_REAL = new OverlayRendererSpawnChunks(RendererToggle.OVERLAY_SPAWN_CHUNK_OVERLAY_REAL);
     protected final RendererToggle toggle;
     protected final boolean isPlayerFollowing;
+    protected boolean needsUpdate = true;
 
     protected List<Box> boxesBrown;
     protected List<Box> boxesRed;
@@ -65,9 +66,9 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
         return "SpawnChunks";
     }
 
-    public static void setNeedsUpdate()
+    public void setNeedsUpdate()
     {
-        needsUpdate = true;
+        this.needsUpdate = true;
     }
 
     @Override
@@ -82,7 +83,7 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
     @Override
     public boolean needsUpdate(Entity entity, MinecraftClient mc)
     {
-        if (needsUpdate)
+        if (this.needsUpdate)
         {
             return true;
         }
@@ -113,11 +114,12 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
             return;
         }
 
+        MiniHUD.LOGGER.error("SpawnChunks: UPDATE -->");
+
         // Use the client player, to allow looking from the camera perspective
         entity = this.isPlayerFollowing ? mc.player : entity;
 
         HudDataManager data = HudDataManager.getInstance();
-        BlockPos spawn;
         int spawnChunkRadius;
         int red;
         int yellow;                 // Redstone Processing border
@@ -129,7 +131,7 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
         if (this.isPlayerFollowing)
         {
             // OVERLAY_SPAWN_CHUNK_OVERLAY_PLAYER
-            spawn = PositionUtils.getEntityBlockPos(entity);
+            this.center = PositionUtils.getEntityBlockPos(entity);
             spawnChunkRadius = getSimulationDistance();
 
             red = spawnChunkRadius + 1;
@@ -143,7 +145,7 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
         else
         {
             // OVERLAY_SPAWN_CHUNK_OVERLAY_REAL
-            spawn = data.getWorldSpawn();
+            this.center = data.getWorldSpawn();
             spawnChunkRadius = data.getSpawnChunkRadius();
 
             if (spawnChunkRadius < 0)
@@ -161,7 +163,7 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
                 MiniHUD.LOGGER.warn("overlaySpawnChunkReal: toggling feature OFF since SPAWN_CHUNK_RADIUS is set to 0 (Nothing to render)");
 
                 RendererToggle.OVERLAY_SPAWN_CHUNK_OVERLAY_REAL.setBooleanValue(false);
-                needsUpdate = false;
+                this.needsUpdate = false;
 
                 return;
             }
@@ -175,52 +177,45 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
             yellowEnabled = Configs.Generic.SPAWN_REAL_REDSTONE_OVERLAY_ENABLED.getBooleanValue();
         }
 
-//        RenderObjectBase renderQuads = this.renderObjects.get(0);
-//        RenderObjectBase renderLines = this.renderObjects.get(1);
-
         Pair<BlockPos, BlockPos> corners;
 
         if (brownEnabled)
         {
-            corners = this.getSpawnChunkCorners(spawn, brown, mc.world);   // Org 22 (Brown / WorldGen Only)
+            corners = this.getSpawnChunkCorners(this.center, brown, mc.world);   // Org 22 (Brown / WorldGen Only)
             this.boxesBrown = RenderUtils.calculateBoxes(corners.getLeft(), corners.getRight());
         }
 
-        corners = this.getSpawnChunkCorners(spawn, red, mc.world);     // Org 11 (Red / Mob Caps Only)
+        corners = this.getSpawnChunkCorners(this.center, red, mc.world);     // Org 11 (Red / Mob Caps Only)
         this.boxesRed = RenderUtils.calculateBoxes(corners.getLeft(), corners.getRight());
 
         if (yellowEnabled)
         {
-            corners = this.getSpawnChunkCorners(spawn, yellow, mc.world);     // Org 10 (Yellow / Redstone Processing)
+            corners = this.getSpawnChunkCorners(this.center, yellow, mc.world);     // Org 10 (Yellow / Redstone Processing)
             this.boxesYellow = RenderUtils.calculateBoxes(corners.getLeft(), corners.getRight());
         }
 
-        corners = this.getSpawnChunkCorners(spawn, green, mc.world);      // Org 9 (Green / Entity Processing)
+        corners = this.getSpawnChunkCorners(this.center, green, mc.world);      // Org 9 (Green / Entity Processing)
         this.boxesGreen = RenderUtils.calculateBoxes(corners.getLeft(), corners.getRight());
 
         this.hasData = true;
-        needsUpdate = false;
+        this.needsUpdate = false;
     }
 
     @Override
     public boolean hasData()
     {
-        return this.hasData;
+        return this.hasData && !this.boxesGreen.isEmpty() && this.center != null;
     }
 
     @Override
     public void render(Camera camera, Matrix4f matrix4f, Matrix4f projMatrix, MinecraftClient mc, Profiler profiler)
     {
-        if (this.hasData && !this.boxesGreen.isEmpty() && this.center != null)
+        MiniHUD.LOGGER.error("SpawnChunks: RENDER hasData() --> [{}]", this.hasData());
+
+        if (this.hasData())
         {
             this.renderQuads(camera, matrix4f, projMatrix, mc, profiler);
             this.renderOutlines(camera, matrix4f, projMatrix, mc, profiler);
-            this.boxesBrown.clear();
-            this.boxesRed.clear();
-            this.boxesYellow.clear();
-            this.boxesGreen.clear();
-            this.center = null;
-            this.hasData = false;
         }
     }
 
@@ -368,7 +363,7 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
         this.boxesRed.clear();
         this.boxesYellow.clear();
         this.boxesGreen.clear();
-        this.center = BlockPos.ORIGIN;
+        this.center = null;
         this.hasData = false;
     }
 

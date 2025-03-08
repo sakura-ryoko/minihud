@@ -11,7 +11,6 @@ import fi.dy.masa.malilib.render.RenderUtils;
 
 public abstract class OverlayRendererBase implements IOverlayRenderer
 {
-    //protected final List<RenderObjectBase> renderObjects = new ArrayList<>();
     protected boolean renderThrough;
     protected boolean useCulling;
     protected float glLineWidth;
@@ -82,49 +81,6 @@ public abstract class OverlayRendererBase implements IOverlayRenderer
 //        this.postRender();
 //    }
 //
-//    @Override
-//    public void deleteGlResources()
-//    {
-//        for (RenderObjectBase obj : this.renderObjects)
-//        {
-//            obj.deleteGlResources();
-//        }
-//
-//        this.renderObjects.clear();
-//    }
-//
-    /**
-     * Allocates a new VBO or display list, adds it to the list, and returns it
-     * @param glMode
-     * @return
-     */
-    /*
-    protected RenderObjectBase allocateBuffer(VertexFormat.DrawMode glMode)
-    {
-        // ShaderPipelines.DEBUG_LINE_STRIP
-        return this.allocateBuffer(glMode, VertexFormats.POSITION_COLOR, MaLiLibPipelines.POSITION_COLOR_SIMPLE);
-    }
-     */
-
-    /**
-     * Allocates a new VBO or display list, adds it to the list, and returns it
-     * @param shader
-     * @return
-     */
-//    protected RenderObjectBase allocateBuffer(ShaderPipeline shader)
-//    {
-//        RenderObjectBase obj = new RenderObjectVbo(shader);
-//        this.renderObjects.add(obj);
-//        return obj;
-//    }
-//
-//    @Override
-//    public void allocateGlResources()
-//    {
-//        //ShaderPipelines.DEBUG_LINE_STRIP
-//        this.allocateBuffer(MaLiLibPipelines.POSITION_COLOR_SIMPLE);
-//        this.allocateBuffer(MaLiLibPipelines.DEBUG_LINES_SIMPLE);
-//    }
 
     public void setRenderThrough(boolean renderThrough)
     {

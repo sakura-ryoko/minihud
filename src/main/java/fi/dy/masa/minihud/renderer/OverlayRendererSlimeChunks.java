@@ -35,8 +35,9 @@ import fi.dy.masa.minihud.util.MiscUtils;
 
 public class OverlayRendererSlimeChunks extends OverlayRendererBase
 {
-    public static double overlayTopY;
-    protected static boolean needsUpdate = true;
+    public static final OverlayRendererSlimeChunks INSTANCE = new OverlayRendererSlimeChunks();
+    public double overlayTopY;
+    protected boolean needsUpdate = true;
 
     protected boolean wasSeedKnown;
     protected long seed;
@@ -60,12 +61,22 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
         return "SlimeChunks";
     }
 
-    public static void setNeedsUpdate()
+    public void setNeedsUpdate()
     {
-        needsUpdate = true;
+        this.needsUpdate = true;
     }
 
-    public static void onEnabled()
+    public void setOverlayTopY(double y)
+    {
+        this.overlayTopY = y;
+    }
+
+    public void incrementOverlayTopY(double y)
+    {
+        this.overlayTopY += y;
+    }
+
+    public void onEnabled()
     {
         if (Configs.Generic.SLIME_CHUNK_TOP_TO_PLAYER.getBooleanValue())
         {
@@ -73,15 +84,15 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
 
             if (entity != null)
             {
-                overlayTopY = entity.getY();
+                this.overlayTopY = entity.getY();
             }
         }
         else
         {
-            overlayTopY = 40;
+            this.overlayTopY = 40;
         }
 
-        setNeedsUpdate();
+        this.setNeedsUpdate();
     }
 
     @Override
@@ -95,7 +106,7 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
     @Override
     public boolean needsUpdate(Entity entity, MinecraftClient mc)
     {
-        if (needsUpdate)
+        if (this.needsUpdate)
         {
             return true;
         }
@@ -104,7 +115,7 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
         boolean isSeedKnown = HudDataManager.getInstance().isWorldSeedKnown(world);
         long seed = HudDataManager.getInstance().getWorldSeed(world);
 
-        if (this.topY != overlayTopY || this.wasSeedKnown != isSeedKnown || this.seed != seed)
+        if (this.topY != this.overlayTopY || this.wasSeedKnown != isSeedKnown || this.seed != seed)
         {
             return true;
         }
@@ -124,7 +135,7 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
 //            RenderObjectBase renderLines = this.renderObjects.get(1);
 
         this.calculateChunks(entity, mc);
-        needsUpdate = false;
+        this.needsUpdate = false;
     }
 
     private void calculateChunks(Entity entity, MinecraftClient mc)
@@ -136,7 +147,7 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
         BlockPos.Mutable pos1 = new BlockPos.Mutable();
         BlockPos.Mutable pos2 = new BlockPos.Mutable();
 
-        this.topY = overlayTopY;
+        this.topY = this.overlayTopY;
         this.wasSeedKnown = data.isWorldSeedKnown(world);
         this.seed = data.getWorldSeed(world);
         this.hasData = false;
@@ -192,7 +203,6 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
         {
             this.renderQuads(camera, matrix4f, projMatrix, mc, profiler);
             this.renderOutlines(camera, matrix4f, projMatrix, mc, profiler);
-            this.slimeChunks.clear();
         }
     }
 
@@ -316,13 +326,13 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
     public JsonObject toJson()
     {
         JsonObject obj = new JsonObject();
-        obj.add("y_top", new JsonPrimitive(overlayTopY));
+        obj.add("y_top", new JsonPrimitive(this.overlayTopY));
         return obj;
     }
 
     @Override
     public void fromJson(JsonObject obj)
     {
-        overlayTopY = JsonUtils.getFloat(obj, "y_top");
+        this.overlayTopY = JsonUtils.getFloat(obj, "y_top");
     }
 }

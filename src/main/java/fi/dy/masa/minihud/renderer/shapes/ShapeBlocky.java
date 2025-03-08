@@ -5,32 +5,27 @@ import java.util.function.Consumer;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import org.joml.Matrix4f;
-import org.lwjgl.opengl.GL11;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.VertexFormat;
-import net.minecraft.client.render.VertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 
-import fi.dy.masa.malilib.render.MaLiLibPipelines;
-import fi.dy.masa.malilib.render.RenderUtils;
 import fi.dy.masa.malilib.util.*;
 import fi.dy.masa.malilib.util.data.Color4f;
 
 public abstract class ShapeBlocky extends ShapeBase
 {
-    private BlockSnap snap = BlockSnap.CENTER;
-    protected Box renderPerimeter = ShapeBox.DEFAULT_BOX;
+    private BlockSnap snap;
+    protected Box renderPerimeter;
     private boolean combineQuads;
 
     public ShapeBlocky(ShapeType type, Color4f color)
     {
         super(type, color);
+        this.snap = BlockSnap.CENTER;
+        this.renderPerimeter = ShapeBox.DEFAULT_BOX;
     }
 
     public BlockSnap getBlockSnap()
@@ -84,34 +79,34 @@ public abstract class ShapeBlocky extends ShapeBase
         return super.shouldRender(mc) && entity != null && this.renderPerimeter.contains(entity.getPos());
     }
 
-    @Override
-    public void allocateGlResources()
-    {
-        this.allocateBuffer(MaLiLibPipelines.POSITION_COLOR_SIMPLE);
-    }
+//    @Override
+//    public void allocateGlResources()
+//    {
+//        this.allocateBuffer(MaLiLibPipelines.POSITION_COLOR_SIMPLE);
+//    }
 
-    @Override
-    public void draw(Matrix4f matrix4f, Matrix4f projMatrix)
-    {
-        this.preRender();
-
-        this.renderObjects.get(0).draw(matrix4f, projMatrix);
-
-        // Render the lines as quads with glPolygonMode(GL_LINE)
-        /*
-        RenderSystem.polygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
-        RenderSystem.disableBlend();
-         */
-        RenderUtils.blend(false);
-        this.renderObjects.get(0).draw(matrix4f, projMatrix);
-        /*
-        RenderSystem.polygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
-        RenderSystem.enableBlend();
-         */
-        RenderUtils.blend(true);
-
-        this.postRender();
-    }
+//    @Override
+//    public void draw(Matrix4f matrix4f, Matrix4f projMatrix)
+//    {
+//        this.preRender();
+//
+//        this.renderObjects.get(0).draw(matrix4f, projMatrix);
+//
+//        // Render the lines as quads with glPolygonMode(GL_LINE)
+//        /*
+//        RenderSystem.polygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
+//        RenderSystem.disableBlend();
+//         */
+//        RenderUtils.blend(false);
+//        this.renderObjects.get(0).draw(matrix4f, projMatrix);
+//        /*
+//        RenderSystem.polygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
+//        RenderSystem.enableBlend();
+//         */
+//        RenderUtils.blend(true);
+//
+//        this.postRender();
+//    }
 
     @Override
     public List<String> getWidgetHoverLines()

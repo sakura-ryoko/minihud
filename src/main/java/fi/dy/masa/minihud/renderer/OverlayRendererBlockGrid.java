@@ -32,6 +32,7 @@ import fi.dy.masa.minihud.util.BlockGridMode;
 
 public class OverlayRendererBlockGrid extends OverlayRendererBase
 {
+    public static final OverlayRendererBlockGrid INSTANCE = new OverlayRendererBlockGrid();
     private final List<BlockPos> positions;
     private boolean hasData;
 
@@ -104,8 +105,6 @@ public class OverlayRendererBlockGrid extends OverlayRendererBase
         if (this.hasData())
         {
             this.renderOutlines(camera, matrix4f, projMatrix, mc, profiler);
-            this.positions.clear();
-            this.hasData = false;
         }
     }
 

@@ -6,21 +6,27 @@ import com.google.gson.JsonObject;
 import it.unimi.dsi.fastutil.longs.Long2ByteOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import org.joml.Matrix4f;
+import org.joml.Matrix4fStack;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.GlUsage;
 import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.VertexFormats;
+import net.minecraft.client.render.Camera;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.profiler.Profiler;
 
 import fi.dy.masa.malilib.render.MaLiLibPipelines;
+import fi.dy.masa.malilib.render.RenderContext;
 import fi.dy.masa.malilib.util.*;
 import fi.dy.masa.malilib.util.position.PositionUtils;
+import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
-import fi.dy.masa.minihud.renderer.RenderObjectBase;
 import fi.dy.masa.minihud.renderer.RenderUtils;
 import fi.dy.masa.minihud.util.RayTracer;
 import fi.dy.masa.minihud.util.shape.SphereUtils;
@@ -32,11 +38,14 @@ public class ShapeLineBlock extends ShapeBlocky
     protected Vec3d effectiveStartPos = Vec3d.ZERO;
     protected Vec3d effectiveEndPos = Vec3d.ZERO;
 
+    private boolean hasData;
+
     public ShapeLineBlock()
     {
         super(ShapeType.BLOCK_LINE, Configs.Colors.SHAPE_LINE_BLOCKY.getColor());
 
         this.setBlockSnap(BlockSnap.CENTER);
+        this.hasData = false;
     }
 
     public Vec3d getStartPos()
@@ -82,8 +91,66 @@ public class ShapeLineBlock extends ShapeBlocky
     @Override
     public void update(Vec3d cameraPos, Entity entity, MinecraftClient mc)
     {
-        this.renderLineShape(cameraPos);
+        this.hasData = true;
         this.needsUpdate = false;
+    }
+
+    @Override
+    public boolean hasData()
+    {
+        return this.hasData;
+    }
+
+    @Override
+    public void render(Camera camera, Matrix4f matrix4f, Matrix4f projMatrix, MinecraftClient mc, Profiler profiler)
+    {
+        if (this.hasData())
+        {
+            this.renderQuads(camera, matrix4f, projMatrix, mc, profiler);
+        }
+    }
+
+    private void renderQuads(Camera camera, Matrix4f matrix4f, Matrix4f projMatrix, MinecraftClient mc, Profiler profiler)
+    {
+        if (mc.world == null || mc.player == null)
+        {
+            return;
+        }
+
+        profiler.push("line_block_quads");
+        Vec3d cameraPos = camera.getPos();
+
+        RenderContext ctx = new RenderContext(() -> "Line Block Quads", MaLiLibPipelines.POSITION_COLOR_SIMPLE, GlUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.getBuilder();
+        Matrix4fStack matrix4fstack = RenderSystem.getModelViewStack();
+        Vec3d updatePos = this.getUpdatePosition();
+
+        this.preRender();
+        matrix4fstack.pushMatrix();
+        matrix4fstack.translate((float) (updatePos.x - cameraPos.x), (float) (updatePos.y - cameraPos.y), (float) (updatePos.z - cameraPos.z));
+
+        this.renderLineShape(cameraPos, builder);
+
+        try
+        {
+            ctx.drawColor(builder.endNullable());
+            ctx.close();
+        }
+        catch (Exception err)
+        {
+            MiniHUD.LOGGER.error("ShapeLineBlock#renderQuads(): Exception; {}", err.getMessage());
+        }
+
+        this.postRender();
+        matrix4fstack.popMatrix();
+        profiler.pop();
+    }
+
+    @Override
+    public void reset()
+    {
+        super.reset();
+        this.hasData = false;
     }
 
     @Override
@@ -150,7 +217,7 @@ public class ShapeLineBlock extends ShapeBlocky
         this.setNeedsUpdate();
     }
 
-    protected void renderLineShape(Vec3d cameraPos)
+    protected void renderLineShape(Vec3d cameraPos, BufferBuilder builder)
     {
         final double maxDist = 30000;
 
@@ -165,23 +232,15 @@ public class ShapeLineBlock extends ShapeBlocky
 
         tracer.iterateAllPositions(this.getLinePositionCollector(positions));
 
-        RenderObjectBase renderQuads = this.renderObjects.getFirst();
-        //BUFFER_1 = TESSELLATOR_1.begin(renderQuads.getGlMode(), VertexFormats.POSITION_COLOR);
-        BufferBuilder builder1 = CONTEXT_1.startNoShader(VertexFormats.POSITION_COLOR, renderQuads.getGlMode());
-        CONTEXT_1.setShader(MaLiLibPipelines.POSITION_COLOR_SIMPLE);
-
         if (this.getCombineQuads())
         {
             Long2ObjectOpenHashMap<SideQuad> strips = this.buildPositionsToStrips(positions, this.layerRange);
-            RenderUtils.renderQuads(strips.values(), this.color, expand, cameraPos, builder1);
+            RenderUtils.renderQuads(strips.values(), this.color, expand, cameraPos, builder);
         }
         else
         {
-            RenderUtils.renderBlockPositions(positions, this.layerRange, this.color, expand, cameraPos, builder1);
+            RenderUtils.renderBlockPositions(positions, this.layerRange, this.color, expand, cameraPos, builder);
         }
-
-        CONTEXT_1 = CONTEXT_1.setBuilder(builder1);
-        renderQuads.uploadData(builder1);
     }
 
     protected LongConsumer getLinePositionCollector(LongOpenHashSet positionsOut)

@@ -60,19 +60,4 @@ public interface IOverlayRenderer
      * Reset renderer's internal data
      */
     void reset();
-
-    /**
-     * Draw the buffer contents to screen
-     */
-    //void draw(Matrix4f matrix4f, Matrix4f projMatrix);
-
-    /**
-     * Allocates the OpenGL resources according to the current Video settings
-     */
-    //void allocateGlResources();
-
-    /**
-     * Removes the OpenGL buffer allocations etc.
-     */
-    //void deleteGlResources();
 }

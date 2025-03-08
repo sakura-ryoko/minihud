@@ -126,7 +126,6 @@ public class OverlayRendererStructures extends OverlayRendererBase
         {
             this.renderStructureMain(camera, matrix4f, projMatrix, mc, profiler);
             this.renderStructureComponents(camera, matrix4f, projMatrix, mc, profiler);
-            this.structures.clear();
         }
     }
 

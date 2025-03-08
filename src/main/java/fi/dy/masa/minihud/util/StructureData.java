@@ -87,7 +87,7 @@ public class StructureData
 
             for (int i = 0; i < count; ++i)
             {
-                NbtCompound pieceTag = pieces.getOrCreateCompound(i);
+                NbtCompound pieceTag = pieces.getCompoundOrEmpty(i);
                 builder.add(IntBoundingBox.fromArray(pieceTag.getIntArray("BB").orElseThrow()));
             }
 

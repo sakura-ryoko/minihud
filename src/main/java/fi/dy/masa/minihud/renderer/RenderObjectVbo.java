@@ -10,7 +10,7 @@ import net.minecraft.client.render.VertexFormatElement;
 
 import fi.dy.masa.malilib.render.RenderContext;
 
-@Deprecated(forRemoval = true)
+@Deprecated
 public class RenderObjectVbo extends RenderObjectBase
 {
     protected RenderContext ctx;
