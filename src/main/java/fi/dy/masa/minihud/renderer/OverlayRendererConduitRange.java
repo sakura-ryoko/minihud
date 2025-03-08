@@ -2,7 +2,6 @@ package fi.dy.masa.minihud.renderer;
 
 import java.util.function.Consumer;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -10,7 +9,6 @@ import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.block.entity.ConduitBlockEntity;
 import net.minecraft.client.gl.GlUsage;
 import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.VertexFormats;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
@@ -29,7 +27,7 @@ import fi.dy.masa.minihud.util.ConduitExtra;
 import fi.dy.masa.minihud.util.ShapeRenderType;
 import fi.dy.masa.minihud.util.shape.SphereUtils;
 
-public class OverlayRendererConduitRange extends BaseBlockEntityRangeOverlay<ConduitBlockEntity>
+public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBlockEntity>
 {
     public static final OverlayRendererConduitRange INSTANCE = new OverlayRendererConduitRange();
 

@@ -22,7 +22,7 @@ import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.RendererToggle;
 import fi.dy.masa.minihud.mixin.block.IMixinBeaconBlockEntity;
 
-public class OverlayRendererBeaconRange extends BaseBlockEntityRangeOverlay<BeaconBlockEntity>
+public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBlockEntity>
 {
     public static final OverlayRendererBeaconRange INSTANCE = new OverlayRendererBeaconRange();
 

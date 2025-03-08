@@ -21,7 +21,7 @@ import net.minecraft.world.chunk.WorldChunk;
 import fi.dy.masa.malilib.config.IConfigBoolean;
 import fi.dy.masa.malilib.util.WorldUtils;
 
-public abstract class BaseBlockEntityRangeOverlay<T extends BlockEntity> extends OverlayRendererBase
+public abstract class BaseBlockRangeOverlay<T extends BlockEntity> extends OverlayRendererBase
 {
     protected final IConfigBoolean renderToggleConfig;
     protected final LongOpenHashSet blockPositions;
@@ -32,9 +32,9 @@ public abstract class BaseBlockEntityRangeOverlay<T extends BlockEntity> extends
     protected boolean hasData;
     protected int updateDistance = 48;
 
-    protected BaseBlockEntityRangeOverlay(IConfigBoolean renderToggleConfig,
-                                          BlockEntityType<T> blockEntityType,
-                                          Class<T> blockEntityClass)
+    protected BaseBlockRangeOverlay(IConfigBoolean renderToggleConfig,
+                                    BlockEntityType<T> blockEntityType,
+                                    Class<T> blockEntityClass)
     {
         this.renderToggleConfig = renderToggleConfig;
         this.blockEntityType = blockEntityType;
