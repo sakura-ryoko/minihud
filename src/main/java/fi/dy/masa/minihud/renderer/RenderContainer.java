@@ -80,6 +80,7 @@ public class RenderContainer
         }
     }
 
+    // FIXME
     protected void render(Camera camera, Matrix4f posMatrix, Matrix4f projMatrix, MinecraftClient mc, Profiler profiler)
     {
         profiler.swap("render");
@@ -102,11 +103,12 @@ public class RenderContainer
         }
     }
 
-    protected void reset()
+    // FIXME
+    protected void draw(Camera camera, Matrix4f posMatrix, Matrix4f projMatrix, MinecraftClient mc, Profiler profiler)
     {
         for (OverlayRendererBase renderer : this.renderers)
         {
-            renderer.reset();
+            renderer.draw(camera, posMatrix, projMatrix, mc, profiler);
         }
     }
 
@@ -160,6 +162,14 @@ public class RenderContainer
 //             */
 //        }
 //    }
+
+    protected void reset()
+    {
+        for (OverlayRendererBase renderer : this.renderers)
+        {
+            renderer.reset();
+        }
+    }
 
     public JsonObject toJson()
     {

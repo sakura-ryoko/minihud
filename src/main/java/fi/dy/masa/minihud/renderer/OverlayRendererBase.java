@@ -2,15 +2,20 @@ package fi.dy.masa.minihud.renderer;
 
 import javax.annotation.Nullable;
 import com.google.gson.JsonObject;
+import org.joml.Matrix4f;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.render.Camera;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.profiler.Profiler;
 
 import fi.dy.masa.malilib.render.RenderUtils;
 
 public abstract class OverlayRendererBase implements IOverlayRenderer
 {
+    // TODO -- ADD GPU BUFFERS HERE
     protected boolean renderThrough;
     protected boolean useCulling;
     protected float glLineWidth;
@@ -68,19 +73,10 @@ public abstract class OverlayRendererBase implements IOverlayRenderer
         this.updateCameraPos = Vec3d.ZERO;
     }
 
-//    @Override
-//    public void draw(Matrix4f matrix4f, Matrix4f projMatrix)
-//    {
-//        this.preRender();
-//
-//        for (RenderObjectBase obj : this.renderObjects)
-//        {
-//            obj.draw(matrix4f, projMatrix);
-//        }
-//
-//        this.postRender();
-//    }
-//
+    @Override
+    public void draw(Camera camera, Matrix4f posMatrix, Matrix4f projMatrix, MinecraftClient mc, Profiler profiler)
+    {
+    }
 
     public void setRenderThrough(boolean renderThrough)
     {

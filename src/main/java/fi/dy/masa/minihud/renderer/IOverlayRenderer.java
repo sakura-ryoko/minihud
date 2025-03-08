@@ -52,9 +52,15 @@ public interface IOverlayRenderer
     boolean hasData();
 
     /**
-     * Render contents to screen
+     * Render contents to Buffers
      */
     void render(Camera camera, Matrix4f matrix4f, Matrix4f projMatrix, MinecraftClient mc, Profiler profiler);
+    //void render(Camera camera, MinecraftClient mc, Profiler profiler);
+
+    /**
+     * Draw Render buffers to Screen
+     */
+    void draw(Camera camera, Matrix4f matrix4f, Matrix4f projMatrix, MinecraftClient mc, Profiler profiler);
 
     /**
      * Reset renderer's internal data
