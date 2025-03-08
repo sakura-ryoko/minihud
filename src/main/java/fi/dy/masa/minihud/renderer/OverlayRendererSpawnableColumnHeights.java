@@ -1,21 +1,31 @@
 package fi.dy.masa.minihud.renderer;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+import org.joml.Matrix4f;
+import org.joml.Matrix4fStack;
+
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.GlUsage;
+import net.minecraft.client.gl.ShaderPipelines;
 import net.minecraft.client.render.BufferBuilder;
+import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.VertexFormats;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.*;
+import net.minecraft.util.profiler.Profiler;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.World;
 
 import fi.dy.masa.malilib.render.MaLiLibPipelines;
+import fi.dy.masa.malilib.render.RenderContext;
 import fi.dy.masa.malilib.util.data.Color4f;
+import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.RendererToggle;
 
@@ -25,6 +35,12 @@ public class OverlayRendererSpawnableColumnHeights extends OverlayRendererBase
 
     private final BlockPos.Mutable posMutable = new BlockPos.Mutable();
     private long lastCheckTime;
+    private final List<Box> boxes;
+
+    protected OverlayRendererSpawnableColumnHeights()
+    {
+        this.boxes = new ArrayList<>();
+    }
 
     @Override
     public String getName()
@@ -93,25 +109,135 @@ public class OverlayRendererSpawnableColumnHeights extends OverlayRendererBase
     @Override
     public void update(Vec3d cameraPos, Entity entity, MinecraftClient mc)
     {
-        final Color4f color = Configs.Colors.SPAWNABLE_COLUMNS_OVERLAY_COLOR.getColor();
-        final int radius = MathHelper.clamp(Configs.Generic.SPAWNABLE_COLUMNS_OVERLAY_RADIUS.getIntegerValue(), 0, 128);
+//        RenderObjectBase renderQuads = this.renderObjects.get(0);
+//        RenderObjectBase renderLines = this.renderObjects.get(1);
 
+        this.calculateChunks(cameraPos, entity, mc);
+        this.lastCheckTime = System.currentTimeMillis();
+
+        synchronized (DIRTY_CHUNKS)
+        {
+            DIRTY_CHUNKS.clear();
+        }
+    }
+
+    @Override
+    public boolean hasData()
+    {
+        return !this.boxes.isEmpty();
+    }
+
+    @Override
+    public void render(Camera camera, Matrix4f matrix4f, Matrix4f projMatrix, MinecraftClient mc, Profiler profiler)
+    {
+        if (this.hasData())
+        {
+            this.renderQuads(camera, matrix4f, projMatrix, mc, profiler);
+            this.renderOutlines(camera, matrix4f, projMatrix, mc, profiler);
+            this.boxes.clear();
+        }
+    }
+
+    private void renderQuads(Camera camera, Matrix4f matrix4f, Matrix4f projMatrix, MinecraftClient mc, Profiler profiler)
+    {
+        if (mc.world == null || mc.player == null)
+        {
+            return;
+        }
+
+        final Color4f color = Configs.Colors.SPAWNABLE_COLUMNS_OVERLAY_COLOR.getColor();
+
+        profiler.push("column_quads");
+        RenderContext ctx = new RenderContext(() -> "SpawnableColumn Quads", MaLiLibPipelines.POSITION_COLOR_SIMPLE, GlUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.getBuilder();
+
+        Matrix4fStack matrix4fstack = RenderSystem.getModelViewStack();
+        Vec3d updatePos = this.getUpdatePosition();
+        Vec3d cameraPos = camera.getPos();
+
+        this.preRender();
+        matrix4fstack.pushMatrix();
+        matrix4fstack.translate((float) (updatePos.x - cameraPos.x), (float) (updatePos.y - cameraPos.y), (float) (updatePos.z - cameraPos.z));
+
+        for (Box bb : this.boxes)
+        {
+            fi.dy.masa.malilib.render.RenderUtils.drawBoxHorizontalSidesBatchedQuads((float) bb.minX, (float) bb.minY, (float) bb.minZ, (float) bb.maxX, (float) bb.maxY, (float) bb.maxZ, color, builder);
+            fi.dy.masa.malilib.render.RenderUtils.drawBoxTopBatchedQuads((float) bb.minX, (float) bb.minZ, (float) bb.maxX, (float) bb.maxY, (float) bb.maxZ, color, builder);
+        }
+
+        try
+        {
+            ctx.drawColor(builder.endNullable());
+            ctx.close();
+        }
+        catch (Exception err)
+        {
+            MiniHUD.LOGGER.error("OverlayRendererSpawnableColumnHeights#renderQuads(): Exception; {}", err.getMessage());
+        }
+
+        this.postRender();
+        matrix4fstack.popMatrix();
+        profiler.pop();
+    }
+
+    private void renderOutlines(Camera camera, Matrix4f matrix4f, Matrix4f projMatrix, MinecraftClient mc, Profiler profiler)
+    {
+        if (mc.world == null || mc.player == null)
+        {
+            return;
+        }
+
+        final Color4f color = Configs.Colors.SPAWNABLE_COLUMNS_OVERLAY_COLOR.getColor();
+        profiler.push("column_outlines");
+        RenderContext ctx = new RenderContext(() -> "SpawnableColumn Outlines", ShaderPipelines.LINES, GlUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.getBuilder();
+
+        Matrix4fStack matrix4fstack = RenderSystem.getModelViewStack();
+        MatrixStack matrices = new MatrixStack();
+        Vec3d updatePos = this.getUpdatePosition();
+        Vec3d cameraPos = camera.getPos();
+
+        this.preRender();
+        matrices.push();
+        matrix4fstack.pushMatrix();
+        matrix4fstack.translate((float) (updatePos.x - cameraPos.x), (float) (updatePos.y - cameraPos.y), (float) (updatePos.z - cameraPos.z));
+
+        MatrixStack.Entry e = matrices.peek();
+
+        for (Box bb : this.boxes)
+        {
+            fi.dy.masa.malilib.render.RenderUtils.drawBoxAllEdgesBatchedLines((float) bb.minX, (float) bb.minY, (float) bb.minZ, (float) bb.maxX, (float) bb.maxY, (float) bb.maxZ, color, builder, e);
+        }
+
+        try
+        {
+            ctx.drawColor(builder.endNullable());
+            ctx.close();
+        }
+        catch (Exception err)
+        {
+            MiniHUD.LOGGER.error("OverlayRendererSpawnableColumnHeights#renderOutlines(): Exception; {}", err.getMessage());
+        }
+
+        this.postRender();
+        matrices.pop();
+        matrix4fstack.popMatrix();
+
+        profiler.pop();
+    }
+
+    private void calculateChunks(Vec3d cameraPos, Entity entity, MinecraftClient mc)
+    {
+        if (mc.world == null) return;
+
+        final int radius = MathHelper.clamp(Configs.Generic.SPAWNABLE_COLUMNS_OVERLAY_RADIUS.getIntegerValue(), 0, 128);
         final int xStart = (int) entity.getX() - radius;
         final int zStart = (int) entity.getZ() - radius;
         final int xEnd = (int) entity.getX() + radius;
         final int zEnd = (int) entity.getZ() + radius;
         final World world = mc.world;
 
-        RenderObjectBase renderQuads = this.renderObjects.get(0);
-        RenderObjectBase renderLines = this.renderObjects.get(1);
-        /*
-        BUFFER_1 = TESSELLATOR_1.begin(renderQuads.getGlMode(), VertexFormats.POSITION_COLOR);
-        BUFFER_2 = TESSELLATOR_2.begin(renderLines.getGlMode(), VertexFormats.POSITION_COLOR);
-         */
-        BufferBuilder builder1 = CONTEXT_1.startNoShader(VertexFormats.POSITION_COLOR, renderQuads.getGlMode());
-        BufferBuilder builder2 = CONTEXT_2.startNoShader(VertexFormats.POSITION_COLOR, renderLines.getGlMode());
-        CONTEXT_1.setShader(MaLiLibPipelines.POSITION_COLOR_SIMPLE);
-        CONTEXT_2.setShader(MaLiLibPipelines.POSITION_COLOR_SIMPLE);
+        this.boxes.clear();
 
         for (int x = xStart; x <= xEnd; ++x)
         {
@@ -127,21 +253,17 @@ public class OverlayRendererSpawnableColumnHeights extends OverlayRendererBase
                 final double minZ = z + 0.25 - cameraPos.z;
                 final double maxZ = minZ + 0.5;
 
-                fi.dy.masa.malilib.render.RenderUtils.drawBoxHorizontalSidesBatchedQuads((float) minX, (float) minY, (float) minZ, (float) maxX, (float) maxY, (float) maxZ, color, builder1);
-                fi.dy.masa.malilib.render.RenderUtils.drawBoxTopBatchedQuads((float) minX, (float) minZ, (float) maxX, (float) maxY, (float) maxZ, color, builder1);
-
-                fi.dy.masa.malilib.render.RenderUtils.drawBoxAllEdgesBatchedLines((float) minX, (float) minY, (float) minZ, (float) maxX, (float) maxY, (float) maxZ, color, builder2);
+                this.boxes.add(new Box(minX, minY, minZ, maxX, maxY, maxZ));
             }
         }
+    }
 
-        CONTEXT_1 = CONTEXT_1.setBuilder(builder1);
-        CONTEXT_2 = CONTEXT_2.setBuilder(builder2);
-
-        renderQuads.uploadData(builder1);
-        renderLines.uploadData(builder2);
-
-        this.lastCheckTime = System.currentTimeMillis();
-
+    @Override
+    public void reset()
+    {
+        super.reset();
+        this.boxes.clear();
+        this.lastCheckTime = -1;
         synchronized (DIRTY_CHUNKS)
         {
             DIRTY_CHUNKS.clear();

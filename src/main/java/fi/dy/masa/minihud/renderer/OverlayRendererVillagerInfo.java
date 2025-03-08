@@ -51,7 +51,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
     private final ConcurrentHashMap<Integer, Pair<Long, Pair<Entity, NbtCompound>>> recentEntityData;
     private long lastTick;
 
-    public OverlayRendererVillagerInfo()
+    protected OverlayRendererVillagerInfo()
     {
         this.recentEntityData = new ConcurrentHashMap<>();
         this.lastTick = System.currentTimeMillis();
@@ -397,6 +397,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
     @Override
     public void reset()
     {
+        super.reset();
         this.reset(false);
     }
 

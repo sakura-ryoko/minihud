@@ -32,8 +32,6 @@ import org.joml.Matrix4fStack;
 public class OverlayRendererStructures extends OverlayRendererBase
 {
     public static final OverlayRendererStructures INSTANCE = new OverlayRendererStructures();
-    //private boolean wasEmpty = true;
-
     private List<StructureData> structures;
 
     private OverlayRendererStructures()
@@ -50,7 +48,7 @@ public class OverlayRendererStructures extends OverlayRendererBase
     @Override
     public boolean shouldRender(MinecraftClient mc)
     {
-        if (RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue() == false)
+        if (!RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue())
         {
             return false;
         }
@@ -245,6 +243,7 @@ public class OverlayRendererStructures extends OverlayRendererBase
     @Override
     public void reset()
     {
+        super.reset();
         this.structures.clear();
     }
 
@@ -286,7 +285,7 @@ public class OverlayRendererStructures extends OverlayRendererBase
 
         for (StructureType type : structures.keySet())
         {
-            if (type.isEnabled() == false)
+            if (!type.isEnabled())
             {
                 continue;
             }

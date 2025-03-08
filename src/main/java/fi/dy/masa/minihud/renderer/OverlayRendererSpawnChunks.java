@@ -47,7 +47,7 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
     protected BlockPos center;
     private boolean hasData;
 
-    public OverlayRendererSpawnChunks(RendererToggle toggle)
+    protected OverlayRendererSpawnChunks(RendererToggle toggle)
     {
         this.toggle = toggle;
         this.isPlayerFollowing = toggle == RendererToggle.OVERLAY_SPAWN_CHUNK_OVERLAY_PLAYER;
@@ -211,7 +211,6 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
     @Override
     public void render(Camera camera, Matrix4f matrix4f, Matrix4f projMatrix, MinecraftClient mc, Profiler profiler)
     {
-        profiler.push("spawn_chunk_radius");
         if (this.hasData && !this.boxesGreen.isEmpty() && this.center != null)
         {
             this.renderQuads(camera, matrix4f, projMatrix, mc, profiler);
@@ -223,7 +222,6 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
             this.center = null;
             this.hasData = false;
         }
-        profiler.pop();
     }
 
     private void renderQuads(Camera camera, Matrix4f matrix4f, Matrix4f projMatrix, MinecraftClient mc, Profiler profiler)
@@ -233,7 +231,7 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
             return;
         }
 
-        profiler.push("quads");
+        profiler.push("spawn_chunk_quads");
         final Color4f colorEntity = this.isPlayerFollowing ?
                 Configs.Colors.SPAWN_PLAYER_ENTITY_OVERLAY_COLOR.getColor() :
                 Configs.Colors.SPAWN_REAL_ENTITY_OVERLAY_COLOR.getColor();
@@ -298,7 +296,7 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
             return;
         }
 
-        profiler.push("outlines");
+        profiler.push("spawn_chunk_outlines");
         final Color4f colorEntity = this.isPlayerFollowing ?
                 Configs.Colors.SPAWN_PLAYER_ENTITY_OVERLAY_COLOR.getColor() :
                 Configs.Colors.SPAWN_REAL_ENTITY_OVERLAY_COLOR.getColor();
@@ -365,6 +363,7 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
     @Override
     public void reset()
     {
+        super.reset();
         this.boxesBrown.clear();
         this.boxesRed.clear();
         this.boxesYellow.clear();

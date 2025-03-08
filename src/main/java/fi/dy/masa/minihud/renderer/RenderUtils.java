@@ -557,7 +557,8 @@ public class RenderUtils
                                               double inset,
                                               Color4f color,
                                               Vec3d cameraPos,
-                                              BufferBuilder buffer)
+                                              BufferBuilder buffer,
+                                              MatrixStack.Entry e)
     {
         float minX = (float) (minPos.getX() - cameraPos.x);
         float minY = (float) (minPos.getY() - cameraPos.y);
@@ -596,25 +597,25 @@ public class RenderUtils
         if (side.getAxis() == Direction.Axis.Y)
         {
             // Line at the "start" end of the quad
-            buffer.vertex(minX, minY, minZ).color(color.r, color.g, color.b, 1f);
-            buffer.vertex(minX, maxY, maxZ).color(color.r, color.g, color.b, 1f);
+            buffer.vertex(e, minX, minY, minZ).color(color.r, color.g, color.b, 1f).normal(e, 0.0f, 0.0f, 0.0f);
+            buffer.vertex(e, minX, maxY, maxZ).color(color.r, color.g, color.b, 1f).normal(e, 0.0f, 0.0f, 0.0f);
 
             for (float z = minZ; z < maxZ + 0.5; z += 1.0F)
             {
-                buffer.vertex(minX, minY, z).color(color.r, color.g, color.b, 1f);
-                buffer.vertex(maxX, maxY, z).color(color.r, color.g, color.b, 1f);
+                buffer.vertex(e, minX, minY, z).color(color.r, color.g, color.b, 1f).normal(e, 0.0f, 0.0f, 0.0f);
+                buffer.vertex(e, maxX, maxY, z).color(color.r, color.g, color.b, 1f).normal(e, 0.0f, 0.0f, 0.0f);
             }
         }
         else
         {
             // Vertical line at the "start" end of the quad
-            buffer.vertex(minX, minY, minZ).color(color.r, color.g, color.b, 1f);
-            buffer.vertex(minX, maxY, minZ).color(color.r, color.g, color.b, 1f);
+            buffer.vertex(e, minX, minY, minZ).color(color.r, color.g, color.b, 1f).normal(e, 0.0f, 0.0f, 0.0f);
+            buffer.vertex(e, minX, maxY, minZ).color(color.r, color.g, color.b, 1f).normal(e, 0.0f, 0.0f, 0.0f);
 
             for (float y = minY; y < maxY + 0.5; y += 1.0F)
             {
-                buffer.vertex(minX, y, minZ).color(color.r, color.g, color.b, 1f);
-                buffer.vertex(maxX, y, maxZ).color(color.r, color.g, color.b, 1f);
+                buffer.vertex(e, minX, y, minZ).color(color.r, color.g, color.b, 1f).normal(e, 0.0f, 0.0f, 0.0f);
+                buffer.vertex(e, maxX, y, maxZ).color(color.r, color.g, color.b, 1f).normal(e, 0.0f, 0.0f, 0.0f);
             }
         }
     }

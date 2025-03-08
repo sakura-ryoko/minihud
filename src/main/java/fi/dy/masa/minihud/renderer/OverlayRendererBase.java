@@ -1,23 +1,29 @@
 package fi.dy.masa.minihud.renderer;
 
+import javax.annotation.Nullable;
 import com.google.gson.JsonObject;
+
 import com.mojang.blaze3d.systems.RenderSystem;
-import fi.dy.masa.malilib.render.RenderUtils;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
-import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
+import fi.dy.masa.malilib.render.RenderUtils;
 
 public abstract class OverlayRendererBase implements IOverlayRenderer
 {
-    protected final List<RenderObjectBase> renderObjects = new ArrayList<>();
+    //protected final List<RenderObjectBase> renderObjects = new ArrayList<>();
     protected boolean renderThrough;
     protected boolean useCulling;
-    protected float glLineWidth = 1f;
-    @Nullable protected BlockPos lastUpdatePos = BlockPos.ORIGIN;
-    private Vec3d updateCameraPos = Vec3d.ZERO;
+    protected float glLineWidth;
+    @Nullable protected BlockPos lastUpdatePos;
+    private Vec3d updateCameraPos;
+
+    public OverlayRendererBase()
+    {
+        this.glLineWidth = 1f;
+        this.lastUpdatePos = BlockPos.ORIGIN;
+        this.updateCameraPos = Vec3d.ZERO;
+    }
 
     @Override
     public final Vec3d getUpdatePosition()
@@ -53,6 +59,14 @@ public abstract class OverlayRendererBase implements IOverlayRenderer
         }
 
         RenderUtils.culling(true);
+    }
+
+    @Override
+    public void reset()
+    {
+        this.glLineWidth = 1f;
+        this.lastUpdatePos = BlockPos.ORIGIN;
+        this.updateCameraPos = Vec3d.ZERO;
     }
 
 //    @Override
