@@ -4,28 +4,23 @@ import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
-import org.joml.Matrix4f;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gl.*;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.BuiltBuffer;
-import net.minecraft.client.render.RenderPass;
-import net.minecraft.client.render.VertexFormat;
-import net.minecraft.client.texture.AbstractTexture;
-import net.minecraft.client.texture.DrawableTexture;
-import net.minecraft.client.texture.TextureManager;
+import net.minecraft.client.render.*;
+import net.minecraft.client.texture.*;
 import net.minecraft.client.util.BufferAllocator;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.TriState;
-import net.minecraft.util.Util;
 import net.minecraft.util.math.ColorHelper;
 
 import fi.dy.masa.malilib.mixin.render.IMixinBufferBuilder;
 import fi.dy.masa.malilib.render.RenderUtils;
+import fi.dy.masa.minihud.MiniHUD;
 
 /**
- * This was primarily copied from RenderContext
+ * This was primarily copied from RenderContext, but this way
+ * the RenderContainer has full control from within MiniHUD.
  */
 public class RenderObjectVbo
 {
@@ -38,6 +33,7 @@ public class RenderObjectVbo
     private BufferBuilder builder;
     private VertexFormat format;
     private VertexFormat.DrawMode drawMode;
+    private ResourceTexture texture;
     private boolean started;
     private int bufferIndex;
 
@@ -53,6 +49,7 @@ public class RenderObjectVbo
         this.usage = usage;
         this.gpuBuffer = null;
         this.bufferIndex = -1;
+        this.texture = null;
         this.started = true;
     }
 
@@ -69,6 +66,7 @@ public class RenderObjectVbo
         this.usage = usage;
         this.gpuBuffer = null;
         this.bufferIndex = -1;
+        this.texture = null;
         this.started = true;
         return this.builder;
     }
@@ -100,6 +98,8 @@ public class RenderObjectVbo
 
     public void upload(BuiltBuffer meshData, GlBufferTarget target)
     {
+        this.ensureSafeNoBuffer();
+
         if (RenderSystem.isOnRenderThread() && meshData != null)
         {
             int expectedSize = meshData.getBuffer().remaining();
@@ -110,27 +110,72 @@ public class RenderObjectVbo
             }
 
             this.gpuBuffer = RenderSystem.getDevice().createBuffer(this.name, target, this.usage, expectedSize);
-            RenderSystem.getDevice().getResourceManager().copyDataInto(this.gpuBuffer, meshData.getBuffer(), 0);
+
+            RenderSystem.getDevice()
+                        .getResourceManager()
+                        .copyDataInto(this.gpuBuffer, meshData.getBuffer(), 0);
+
             this.bufferIndex = meshData.getDrawParameters().indexCount();
         }
+    }
+
+    public void bindTexture(Identifier id) throws RuntimeException
+    {
+        this.ensureSafeNoBuffer();
+        this.texture = new ResourceTexture(id);
+        RenderUtils.tex().registerTexture(id, this.texture);
+
+        try (TextureContents contents = this.texture.loadContents(RenderUtils.mc().getResourceManager()))
+        {
+            NativeImage image = contents.image();
+            MiniHUD.LOGGER.warn("NativeImage Id [{}] //  Width [{}], Height [{}] // Format: [{}]", image.imageId(), image.getWidth(), image.getHeight(), image.getFormat().name());
+        }
+        catch (Exception err)
+        {
+            MiniHUD.LOGGER.error("bindTexture exception; {}", err.getMessage());
+            throw new RuntimeException(err);
+        }
+
+        this.texture.setFilter(TriState.FALSE, false);
+        RenderSystem.setShaderTexture(0, this.texture.getGlTexture());
+    }
+
+    public void unbindTexture(@Nullable Identifier id)
+    {
+        if (id != null)
+        {
+            RenderUtils.tex().destroyTexture(id);
+        }
+
+        RenderSystem.setShaderTexture(0, null);
     }
 
     public void draw(BuiltBuffer meshData)
             throws RuntimeException
     {
-        this.draw(null, GlBufferTarget.VERTICES, -1, meshData, new float[]{0.0F, 0.0F, 0.0F}, false);
+        this.draw(null, GlBufferTarget.VERTICES, -1, meshData, new float[]{0.0F, 0.0F, 0.0F}, false, 0.0f, false);
     }
 
     public void draw(int color, BuiltBuffer meshData)
             throws RuntimeException
     {
-        this.draw(null, GlBufferTarget.VERTICES, color, meshData, new float[]{0.0F, 0.0F, 0.0F}, false);
+        this.draw(null, GlBufferTarget.VERTICES, color, meshData, new float[]{0.0F, 0.0F, 0.0F}, false, 0.0f, false);
     }
 
     public void draw(@Nullable Framebuffer otherFb, GlBufferTarget target, int color, BuiltBuffer meshData, float[] offset, boolean useOffset)
             throws RuntimeException
     {
+        this.draw(otherFb, target, color, meshData, new float[]{0.0F, 0.0F, 0.0F}, false, 0.0f, false);
+    }
+
+    public void draw(@Nullable Framebuffer otherFb, GlBufferTarget target,
+                     int color, BuiltBuffer meshData,
+                     float[] offset, boolean useOffset,
+                     float lineWidth, boolean setLineWidth)
+            throws RuntimeException
+    {
         this.ensureSafeNoBuffer();
+
         if (RenderSystem.isOnRenderThread())
         {
             if (meshData == null)
@@ -148,19 +193,31 @@ public class RenderObjectVbo
             if (this.bufferIndex > 0)
             {
                 float[] rgba = new float[]{ColorHelper.getRedFloat(color), ColorHelper.getGreenFloat(color), ColorHelper.getBlueFloat(color), ColorHelper.getAlphaFloat(color)};
+
                 RenderSystem.setShaderColor(rgba[0], rgba[1], rgba[2], rgba[3]);
-                this.drawInternal(otherFb, offset, useOffset);
+                this.drawInternal(otherFb, offset, useOffset, lineWidth, setLineWidth);
                 RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             }
-
-            this.started = false;
         }
     }
 
-    private void drawInternal(@Nullable Framebuffer otherFb, float[] offset, boolean useOffset)
+    public void drawPost(@Nullable Framebuffer otherFb, int color, float[] offset, boolean useOffset, float lineWidth, boolean setLineWidth)
+            throws RuntimeException
+    {
+        if (this.bufferIndex > 0)
+        {
+            float[] rgba = new float[]{ColorHelper.getRedFloat(color), ColorHelper.getGreenFloat(color), ColorHelper.getBlueFloat(color), ColorHelper.getAlphaFloat(color)};
+            RenderSystem.setShaderColor(rgba[0], rgba[1], rgba[2], rgba[3]);
+            this.drawInternal(otherFb, offset, useOffset, lineWidth, setLineWidth);
+            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+        }
+    }
+
+    private void drawInternal(@Nullable Framebuffer otherFb, float[] offset, boolean useOffset, float lineWidth, boolean setLineWidth)
             throws RuntimeException
     {
         this.ensureSafeNoBuffer();
+
         if (RenderSystem.isOnRenderThread())
         {
             if (useOffset)
@@ -171,125 +228,45 @@ public class RenderObjectVbo
             Framebuffer mainFb = RenderUtils.fb();
             DrawableTexture texture1;
             DrawableTexture texture2;
+
             if (otherFb != null)
             {
                 texture1 = otherFb.getColorAttachment();
-                texture2 = otherFb.getDepthAttachment();
+                texture2 = otherFb.useDepthAttachment ? otherFb.getDepthAttachment() : null;
             }
             else
             {
                 texture1 = mainFb.getColorAttachment();
-                texture2 = mainFb.getDepthAttachment();
+                texture2 = mainFb.useDepthAttachment ? mainFb.getDepthAttachment() : null;
             }
 
-            try (RenderPass pass = RenderSystem.getDevice().getResourceManager().newRenderPass(texture1, OptionalInt.empty(), texture2, OptionalDouble.empty()))
+            try (RenderPass pass = RenderSystem.getDevice()
+                                               .getResourceManager()
+                                               .createRenderPass(texture1, OptionalInt.empty(),
+                                                                 texture2, OptionalDouble.empty()))
             {
                 pass.bindShader(this.shader);
+
+                for (int i = 0; i < 12; i++)
+                {
+                    DrawableTexture drawableTexture = RenderSystem.getShaderTexture(i);
+
+                    if (drawableTexture != null)
+                    {
+                        pass.setUniform("Sampler"+i, drawableTexture);
+                    }
+                }
+
+                if (setLineWidth)
+                {
+                    float width = lineWidth > 0.0f ? lineWidth : RenderSystem.getShaderLineWidth();
+                    pass.setUniform("LineWidth", width);
+                }
+
                 pass.setIndexBuffer(this.shapeIndex.getIndexBuffer(this.bufferIndex), this.shapeIndex.getIndexType());
                 pass.setVertexBuffer(0, this.gpuBuffer);
                 pass.drawObjects(0, this.bufferIndex);
             }
-
-            if (useOffset)
-            {
-                RenderSystem.resetModelOffset();
-            }
-
-            this.started = false;
-        }
-    }
-
-    public AbstractTexture bindTexture(Identifier id)
-    {
-        TextureManager manager = RenderUtils.tex();
-        manager.registerTexture(id);
-        return manager.getTexture(id);
-    }
-
-    public void unbindTexture(Identifier id)
-    {
-        RenderUtils.tex().destroyTexture(id);
-    }
-
-    public void drawTex(@Nullable Framebuffer otherFb, Identifier texture, GlBufferTarget target, int color, BuiltBuffer meshData, float[] offset, boolean useOffset, ShaderPipeline shader)
-            throws RuntimeException
-    {
-        if (offset.length != 3)
-        {
-            throw new RuntimeException("Offset needs to be a size of 3.");
-        }
-        else
-        {
-            this.ensureSafeNoBuffer();
-
-            if (RenderSystem.isOnRenderThread())
-            {
-                if (meshData == null)
-                {
-                    this.bufferIndex = 0;
-                }
-                else
-                {
-                    if (this.bufferIndex < 1)
-                    {
-                        this.upload(meshData, target);
-                    }
-                }
-
-                if (bufferIndex > 0)
-                {
-                    float[] rgba = new float[]{ColorHelper.getRedFloat(color), ColorHelper.getGreenFloat(color), ColorHelper.getBlueFloat(color), ColorHelper.getAlphaFloat(color)};
-                    float time = (float) (Util.getMeasuringTimeMs() % 3000L) / 3000.0F;
-                    RenderSystem.setShaderColor(rgba[0], rgba[1], rgba[2], rgba[3]);
-                    this.drawTexInternal(otherFb, texture, time, offset, useOffset);
-                    RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-                }
-
-                this.started = false;
-            }
-        }
-    }
-
-    private void drawTexInternal(@Nullable Framebuffer otherFb, Identifier texture, float time, float[] offset, boolean useOffset)
-    {
-        this.ensureSafeNoBuffer();
-
-        if (RenderSystem.isOnRenderThread())
-        {
-            RenderSystem.setTextureMatrix((new Matrix4f()).translation(time, time, 0.0F));
-
-            if (useOffset)
-            {
-                RenderSystem.setModelOffset(offset[0], offset[1], offset[2]);
-            }
-
-            AbstractTexture tex = this.bindTexture(texture);
-            tex.setFilter(TriState.FALSE, false);
-            Framebuffer mainFb = RenderUtils.fb();
-            DrawableTexture texture1;
-            DrawableTexture texture2;
-
-            if (otherFb != null)
-            {
-                texture1 = otherFb.getColorAttachment();
-                texture2 = otherFb.getDepthAttachment();
-            }
-            else
-            {
-                texture1 = mainFb.getColorAttachment();
-                texture2 = mainFb.getDepthAttachment();
-            }
-
-            try (RenderPass pass = RenderSystem.getDevice().getResourceManager().newRenderPass(texture1, OptionalInt.empty(), texture2, OptionalDouble.empty()))
-            {
-                pass.bindShader(this.shader);
-                pass.setIndexBuffer(this.shapeIndex.getIndexBuffer(4), this.shapeIndex.getIndexType());
-                pass.setSamplerUniform("Sampler0", tex.getGlTexture());
-                pass.setVertexBuffer(0, this.gpuBuffer);
-                pass.drawObjects(0, this.bufferIndex);
-            }
-
-            RenderSystem.resetTextureMatrix();
 
             if (useOffset)
             {
@@ -300,6 +277,13 @@ public class RenderObjectVbo
 
     public void reset()
     {
+        if (this.texture != null)
+        {
+            this.unbindTexture(null);
+            this.texture.close();
+            this.texture = null;
+        }
+
         if (this.gpuBuffer != null)
         {
             this.gpuBuffer.close();
@@ -372,9 +356,20 @@ public class RenderObjectVbo
     private void ensureSafeNoBuffer() throws RuntimeException
     {
         this.ensureSafeNoShader();
+
         if (this.shader == null)
         {
             throw new RuntimeException("Shader Pipeline not valid!");
+        }
+    }
+
+    private void ensureSafeTexture()
+    {
+        this.ensureSafeNoBuffer();
+
+        if (this.texture == null)
+        {
+            throw new RuntimeException("A Texture Object is expected to be bound");
         }
     }
 }

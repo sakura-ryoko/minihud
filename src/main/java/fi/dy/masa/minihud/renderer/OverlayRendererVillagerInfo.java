@@ -4,8 +4,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nullable;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import net.minecraft.client.render.Camera;
-import net.minecraft.util.profiler.Profiler;
 import org.apache.commons.lang3.tuple.Pair;
 
 import net.minecraft.client.MinecraftClient;
@@ -22,6 +20,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.EnchantmentTags;
 import net.minecraft.util.math.*;
+import net.minecraft.util.profiler.Profiler;
 import net.minecraft.village.TradeOffer;
 import net.minecraft.village.TradeOfferList;
 import net.minecraft.village.VillagerProfession;
@@ -40,7 +39,6 @@ import fi.dy.masa.minihud.config.RendererToggle;
 import fi.dy.masa.minihud.data.EntitiesDataManager;
 import fi.dy.masa.minihud.mixin.entity.IMixinZombieVillagerEntity;
 import fi.dy.masa.minihud.util.EntityUtils;
-import org.joml.Matrix4f;
 
 public class OverlayRendererVillagerInfo extends OverlayRendererBase implements IClientTickHandler
 {
@@ -229,7 +227,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
     }
 
     @Override
-    public void update(Vec3d cameraPos, Entity entity, MinecraftClient mc)
+    public void update(Vec3d cameraPos, Entity entity, MinecraftClient mc, Profiler profiler)
     {
         Box box = entity.getBoundingBox().expand(30, 10, 30);
         World world = WorldUtils.getBestWorld(mc);
@@ -388,7 +386,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
     }
 
     @Override
-    public void render(Camera camera, Matrix4f matrix4f, Matrix4f projMatrix, MinecraftClient mc, Profiler profiler)
+    public void render(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
     {
         // NO-OP
     }

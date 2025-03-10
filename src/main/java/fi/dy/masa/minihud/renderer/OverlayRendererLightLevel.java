@@ -2,17 +2,14 @@ package fi.dy.masa.minihud.renderer;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.joml.Matrix4f;
-import org.joml.Matrix4fStack;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.FluidBlock;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.GlBufferTarget;
 import net.minecraft.client.gl.GlUsage;
 import net.minecraft.client.gl.ShaderPipelines;
 import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.Camera;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -36,7 +33,6 @@ import fi.dy.masa.malilib.config.IConfigDouble;
 import fi.dy.masa.malilib.config.options.ConfigColor;
 import fi.dy.masa.malilib.gui.Message;
 import fi.dy.masa.malilib.render.MaLiLibPipelines;
-import fi.dy.masa.malilib.render.RenderContext;
 import fi.dy.masa.malilib.util.InfoUtils;
 import fi.dy.masa.malilib.util.WorldUtils;
 import fi.dy.masa.malilib.util.data.Color4f;
@@ -53,6 +49,7 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
 {
     public static final OverlayRendererLightLevel INSTANCE = new OverlayRendererLightLevel();
     private static final Identifier TEXTURE_NUMBERS = Identifier.of(Reference.MOD_ID, "textures/misc/light_level_numbers.png");
+    private static final Identifier TEXTURE_NUMBERS2 = Identifier.of(Reference.MOD_ID, "textures/misc/light_level_numbers");
 
     private final List<LightLevelInfo> lightInfos;
     private BlockPos.Mutable mutablePos;
@@ -98,7 +95,7 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
     }
 
     @Override
-    public void update(Vec3d cameraPos, Entity entity, MinecraftClient mc)
+    public void update(Vec3d cameraPos, Entity entity, MinecraftClient mc, Profiler profiler)
     {
         if (mc.world == null)
         {
@@ -108,12 +105,15 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
 
         BlockPos pos = PositionUtils.getEntityBlockPos(entity);
         this.hasData = this.updateLightLevels(mc.world, pos);
+        this.renderThrough = Configs.Generic.LIGHT_LEVEL_RENDER_THROUGH.getBooleanValue();
 
-//        if (this.hasData())
-//        {
+        if (this.hasData())
+        {
 //            long pre = System.nanoTime();
 //            System.out.printf("LL markers: %d, time: %.3f s\n", this.lightInfos.size(), (double) (System.nanoTime() - pre) / 1000000000D);
-//        }
+
+            this.render(cameraPos, mc, profiler);
+        }
 
         this.lastUpdatePos = pos;
         this.lastDirection = entity.getHorizontalFacing();
@@ -127,16 +127,14 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
     }
 
     @Override
-    public void render(Camera camera, Matrix4f matrix4f, Matrix4f projMatrix, MinecraftClient mc, Profiler profiler)
+    public void render(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
     {
-        if (this.hasData())
-        {
-            this.renderTexQuads(camera, matrix4f, projMatrix, mc, profiler);
-            this.renderOutlines(camera, matrix4f, projMatrix, mc, profiler);
-        }
+        this.allocateBuffers();
+        this.renderTexQuads(cameraPos, mc, profiler);
+        this.renderOutlines(cameraPos, mc, profiler);
     }
 
-    private void renderTexQuads(Camera camera, Matrix4f matrix4f, Matrix4f projMatrix, MinecraftClient mc, Profiler profiler)
+    private void renderTexQuads(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
     {
         if (mc.world == null || mc.player == null)
         {
@@ -149,18 +147,22 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
         Direction numberFacing = Configs.Generic.LIGHT_LEVEL_NUMBER_ROTATION.getBooleanValue() ? mc.player.getHorizontalFacing() : Direction.NORTH;
         boolean useColoredNumbers = Configs.Generic.LIGHT_LEVEL_COLORED_NUMBERS.getBooleanValue();
         LightLevelNumberMode numberMode = (LightLevelNumberMode) Configs.Generic.LIGHT_LEVEL_NUMBER_MODE.getOptionListValue();
-        Vec3d cameraPos = camera.getPos();
 
-        RenderContext ctx = new RenderContext(() -> "Light Level Quads", MaLiLibPipelines.POSITION_TEX_COLOR_SIMPLE, GlUsage.STATIC_WRITE);
-        BufferBuilder builder = ctx.getBuilder();
-        Matrix4fStack matrix4fstack = RenderSystem.getModelViewStack();
-        Vec3d updatePos = this.getUpdatePosition();
+        RenderObjectVbo ctx = this.renderObjects.getFirst();
+        BufferBuilder builder = ctx.start(() -> "Light Level Quads", this.renderThrough ? MaLiLibPipelines.POSITION_TEX_COLOR_SIMPLE : MaLiLibPipelines.POSITION_TEX_COLOR_LESSER_DEPTH, GlUsage.STATIC_WRITE);
+        MatrixStack matrices = new MatrixStack();
 
-        this.preRender();
-        // fixme
-        // fi.dy.masa.malilib.render.RenderUtils.bindTexture(TEXTURE_NUMBERS);
-        matrix4fstack.pushMatrix();
-        matrix4fstack.translate((float) (updatePos.x - cameraPos.x), (float) (updatePos.y - cameraPos.y), (float) (updatePos.z - cameraPos.z));
+        try
+        {
+            ctx.bindTexture(TEXTURE_NUMBERS);
+        }
+        catch (Exception err)
+        {
+            MiniHUD.LOGGER.error("bindTexture Exception: {}", err.getMessage());
+        }
+
+        matrices.push();
+//        fi.dy.masa.malilib.render.RenderUtils.bindTexture(TEXTURE_NUMBERS);
 
         if (numberMode == LightLevelNumberMode.BLOCK || numberMode == LightLevelNumberMode.BOTH)
         {
@@ -186,20 +188,18 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
 
         try
         {
-            ctx.drawColorSample(TEXTURE_NUMBERS, builder.endNullable());
-            ctx.close();
+            ctx.upload(builder.endNullable(), GlBufferTarget.VERTICES);
         }
         catch (Exception err)
         {
             MiniHUD.LOGGER.error("OverlayRendererLightLevel#renderQuads(): Exception; {}", err.getMessage());
         }
 
-        this.postRender();
-        matrix4fstack.popMatrix();
+        matrices.pop();
         profiler.pop();
     }
 
-    private void renderOutlines(Camera camera, Matrix4f matrix4f, Matrix4f projMatrix, MinecraftClient mc, Profiler profiler)
+    private void renderOutlines(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
     {
         if (mc.world == null || mc.player == null)
         {
@@ -210,41 +210,33 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
         int safeThreshold = Configs.Generic.LIGHT_LEVEL_THRESHOLD_SAFE.getIntegerValue();
         int dimThreshold = Configs.Generic.LIGHT_LEVEL_THRESHOLD_DIM.getIntegerValue();
         LightLevelMarkerMode markerMode = (LightLevelMarkerMode) Configs.Generic.LIGHT_LEVEL_MARKER_MODE.getOptionListValue();
-        Vec3d cameraPos = camera.getPos();
 
-        RenderContext ctx = new RenderContext(() -> "Light Level Lines", ShaderPipelines.LINES, GlUsage.STATIC_WRITE);
-        BufferBuilder builder = ctx.getBuilder();
+        RenderObjectVbo ctx = this.renderObjects.get(1);
+        BufferBuilder builder = ctx.start(() -> "Light Level Lines", ShaderPipelines.LINES, GlUsage.STATIC_WRITE);
         MatrixStack matrices = new MatrixStack();
-        Matrix4fStack matrix4fstack = RenderSystem.getModelViewStack();
-        Vec3d updatePos = this.getUpdatePosition();
 
-        this.preRender();
         matrices.push();
-        matrix4fstack.pushMatrix();
-        matrix4fstack.translate((float) (updatePos.x - cameraPos.x), (float) (updatePos.y - cameraPos.y), (float) (updatePos.z - cameraPos.z));
+        MatrixStack.Entry e = matrices.peek();
 
         if (markerMode == LightLevelMarkerMode.SQUARE)
         {
-            this.renderMarkers(this::renderLightLevelSquare, cameraPos, safeThreshold, dimThreshold, builder, matrices.peek());
+            this.renderMarkers(this::renderLightLevelSquare, cameraPos, safeThreshold, dimThreshold, builder, e);
         }
         else if (markerMode == LightLevelMarkerMode.CROSS)
         {
-            this.renderMarkers(this::renderLightLevelCross, cameraPos, safeThreshold, dimThreshold, builder, matrices.peek());
+            this.renderMarkers(this::renderLightLevelCross, cameraPos, safeThreshold, dimThreshold, builder, e);
         }
 
         try
         {
-            ctx.drawColor(builder.endNullable());
-            ctx.close();
+            ctx.upload(builder.endNullable(), GlBufferTarget.VERTICES);
         }
         catch (Exception err)
         {
             MiniHUD.LOGGER.error("OverlayRendererLightLevel#renderOutlines(): Exception; {}", err.getMessage());
         }
 
-        this.postRender();
         matrices.pop();
-        matrix4fstack.popMatrix();
         profiler.pop();
     }
 

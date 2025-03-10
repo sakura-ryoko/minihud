@@ -44,7 +44,6 @@ public class OverlayRenderer
             }
         }
 
-        RenderContainer.INSTANCE.updateIfNeeded(camera.getPos(), entity, mc, profiler);
-        RenderContainer.INSTANCE.render(camera, matrix4f, projMatrix, mc, profiler);
+        RenderContainer.INSTANCE.render(entity, matrix4f, projMatrix, mc, camera, frustum, fog, profiler);
     }
 }

@@ -2,12 +2,10 @@ package fi.dy.masa.minihud.renderer;
 
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import org.joml.Matrix4f;
 
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.Camera;
 import net.minecraft.client.world.ClientChunkManager;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
@@ -84,13 +82,18 @@ public abstract class BaseBlockRangeOverlay<T extends BlockEntity> extends Overl
     }
 
     @Override
-    public void update(Vec3d cameraPos, Entity entity, MinecraftClient mc)
+    public void update(Vec3d cameraPos, Entity entity, MinecraftClient mc, Profiler profiler)
     {
         if (mc.world == null) return;
 
         this.hasData = this.fetchAllTargetBlockEntityPositions(mc.world, entity.getBlockPos(), mc);
         this.world = entity.getEntityWorld();
         //MiniHUD.printDebug("BaseBlockRangeOverlay#update(): wasEmpty: {} // beInRange: {}", this.wasEmpty, beInRange);
+
+        if (this.hasData())
+        {
+            this.render(cameraPos, mc, profiler);
+        }
 
         this.needsUpdate = false;
     }
@@ -102,13 +105,10 @@ public abstract class BaseBlockRangeOverlay<T extends BlockEntity> extends Overl
     }
 
     @Override
-    public void render(Camera camera, Matrix4f matrix4f, Matrix4f projMatrix, MinecraftClient mc, Profiler profiler)
+    public void render(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
     {
-        if (this.hasData())
-        {
-            Vec3d cameraPos = camera.getPos();
-            this.renderBlockRanges(this.world, cameraPos, mc, profiler);
-        }
+        this.allocateBuffers();
+        this.renderBlockRanges(this.world, cameraPos, mc, profiler);
     }
 
     private void clear()

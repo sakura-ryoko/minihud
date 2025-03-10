@@ -6,15 +6,12 @@ import java.util.List;
 import java.util.Set;
 import javax.annotation.Nullable;
 import com.google.gson.JsonObject;
-import org.joml.Matrix4f;
-import org.joml.Matrix4fStack;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.GlBufferTarget;
 import net.minecraft.client.gl.GlUsage;
 import net.minecraft.client.gl.ShaderPipelines;
 import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.Camera;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Box;
@@ -24,8 +21,6 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.profiler.Profiler;
 import net.minecraft.world.World;
 
-import fi.dy.masa.malilib.render.MaLiLibPipelines;
-import fi.dy.masa.malilib.render.RenderContext;
 import fi.dy.masa.malilib.util.JsonUtils;
 import fi.dy.masa.malilib.util.data.Color4f;
 import fi.dy.masa.minihud.MiniHUD;
@@ -54,6 +49,8 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
     protected OverlayRendererRandomTickableChunks(RendererToggle toggle)
     {
         this.toggle = toggle;
+        this.useCulling = true;
+        this.renderThrough = false;
         this.boxes = new ArrayList<>();
         this.hasData = false;
     }
@@ -102,7 +99,7 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
     }
 
     @Override
-    public void update(Vec3d cameraPos, Entity entity, MinecraftClient mc)
+    public void update(Vec3d cameraPos, Entity entity, MinecraftClient mc, Profiler profiler)
     {
         if (this.toggle == RendererToggle.OVERLAY_RANDOM_TICKS_PLAYER)
         {
@@ -121,6 +118,11 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
             this.calculateChunkEdgesIfApplicable(pos, chunks, entity.getEntityWorld());
         }
 
+        if (this.hasData())
+        {
+            this.render(cameraPos, mc, profiler);
+        }
+
         this.needsUpdate = false;
     }
 
@@ -131,16 +133,14 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
     }
 
     @Override
-    public void render(Camera camera, Matrix4f matrix4f, Matrix4f projMatrix, MinecraftClient mc, Profiler profiler)
+    public void render(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
     {
-        if (this.hasData() && !this.boxes.isEmpty())
-        {
-            this.renderQuads(camera, matrix4f, projMatrix, mc, profiler);
-            this.renderOutlines(camera, matrix4f, projMatrix, mc, profiler);
-        }
+        this.allocateBuffers();
+        this.renderQuads(cameraPos, mc, profiler);
+        this.renderOutlines(cameraPos, mc, profiler);
     }
 
-    private void renderQuads(Camera camera, Matrix4f matrix4f, Matrix4f projMatrix, MinecraftClient mc, Profiler profiler)
+    private void renderQuads(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
     {
         if (mc.world == null || mc.player == null)
         {
@@ -152,38 +152,32 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
                               Configs.Colors.RANDOM_TICKS_PLAYER_OVERLAY_COLOR.getColor() :
                               Configs.Colors.RANDOM_TICKS_FIXED_OVERLAY_COLOR.getColor();
 
-        Vec3d cameraPos = camera.getPos();
+        RenderObjectVbo ctx = this.renderObjects.getFirst();
+        BufferBuilder builder = ctx.start(() -> "RandomTick Quads", ShaderPipelines.DEBUG_QUADS, GlUsage.STATIC_WRITE);
+        MatrixStack matrices = new MatrixStack();
 
-        RenderContext ctx = new RenderContext(() -> "RandomTick Quads", MaLiLibPipelines.POSITION_COLOR_SIMPLE, GlUsage.STATIC_WRITE);
-        BufferBuilder builder = ctx.getBuilder();
-        Matrix4fStack matrix4fstack = RenderSystem.getModelViewStack();
-        Vec3d updatePos = this.getUpdatePosition();
-
-        this.preRender();
-        matrix4fstack.pushMatrix();
-        matrix4fstack.translate((float) (updatePos.x - cameraPos.x), (float) (updatePos.y - cameraPos.y), (float) (updatePos.z - cameraPos.z));
+        matrices.push();
+        MatrixStack.Entry e = matrices.peek();
 
         for (Box bb : this.boxes)
         {
-            RenderUtils.renderWallQuads(bb, cameraPos, color, builder);
+            RenderUtils.renderWallQuads(bb, cameraPos, color, builder, e);
         }
 
         try
         {
-            ctx.drawColor(builder.endNullable());
-            ctx.close();
+            ctx.upload(builder.endNullable(), GlBufferTarget.VERTICES);
         }
         catch (Exception err)
         {
             MiniHUD.LOGGER.error("OverlayRendererRandomTickableChunks#renderQuads(): Exception; {}", err.getMessage());
         }
 
-        this.postRender();
-        matrix4fstack.popMatrix();
+        matrices.pop();
         profiler.pop();
     }
 
-    private void renderOutlines(Camera camera, Matrix4f matrix4f, Matrix4f projMatrix, MinecraftClient mc, Profiler profiler)
+    private void renderOutlines(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
     {
         if (mc.world == null || mc.player == null)
         {
@@ -194,19 +188,13 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
         final Color4f color = this.toggle == RendererToggle.OVERLAY_RANDOM_TICKS_PLAYER ?
                               Configs.Colors.RANDOM_TICKS_PLAYER_OVERLAY_COLOR.getColor() :
                               Configs.Colors.RANDOM_TICKS_FIXED_OVERLAY_COLOR.getColor();
-        Vec3d cameraPos = camera.getPos();
 
-        RenderContext ctx = new RenderContext(() -> "RandomTick Lines", ShaderPipelines.LINES, GlUsage.STATIC_WRITE);
-        BufferBuilder builder = ctx.getBuilder();
+        RenderObjectVbo ctx = this.renderObjects.get(1);
+        BufferBuilder builder = ctx.start(() -> "RandomTick Lines", ShaderPipelines.LINES, GlUsage.STATIC_WRITE);
         MatrixStack matrices = new MatrixStack();
-        Matrix4fStack matrix4fstack = RenderSystem.getModelViewStack();
-        Vec3d updatePos = this.getUpdatePosition();
 
-        this.preRender();
+
         matrices.push();
-        matrix4fstack.pushMatrix();
-        matrix4fstack.translate((float) (updatePos.x - cameraPos.x), (float) (updatePos.y - cameraPos.y), (float) (updatePos.z - cameraPos.z));
-
         MatrixStack.Entry e = matrices.peek();
 
         for (Box bb : this.boxes)
@@ -216,17 +204,14 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
 
         try
         {
-            ctx.drawColor(builder.endNullable());
-            ctx.close();
+            ctx.upload(builder.endNullable(), GlBufferTarget.VERTICES);
         }
         catch (Exception err)
         {
             MiniHUD.LOGGER.error("OverlayRendererRandomTickableChunks#renderOutlines(): Exception; {}", err.getMessage());
         }
 
-        this.postRender();
         matrices.pop();
-        matrix4fstack.popMatrix();
         profiler.pop();
     }
 

@@ -80,12 +80,6 @@ public abstract class ShapeBlocky extends ShapeBase
     }
 
 //    @Override
-//    public void allocateGlResources()
-//    {
-//        this.allocateBuffer(MaLiLibPipelines.POSITION_COLOR_SIMPLE);
-//    }
-
-//    @Override
 //    public void draw(Matrix4f matrix4f, Matrix4f projMatrix)
 //    {
 //        this.preRender();

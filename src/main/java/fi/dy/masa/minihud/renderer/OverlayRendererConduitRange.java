@@ -2,13 +2,13 @@ package fi.dy.masa.minihud.renderer;
 
 import java.util.function.Consumer;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import org.joml.Matrix4fStack;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.block.entity.ConduitBlockEntity;
+import net.minecraft.client.gl.GlBufferTarget;
 import net.minecraft.client.gl.GlUsage;
 import net.minecraft.client.render.BufferBuilder;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
@@ -16,7 +16,6 @@ import net.minecraft.util.profiler.Profiler;
 import net.minecraft.world.World;
 
 import fi.dy.masa.malilib.render.MaLiLibPipelines;
-import fi.dy.masa.malilib.render.RenderContext;
 import fi.dy.masa.malilib.util.LayerRange;
 import fi.dy.masa.malilib.util.data.Color4f;
 import fi.dy.masa.malilib.util.position.PositionUtils;
@@ -34,6 +33,8 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
     public OverlayRendererConduitRange()
     {
         super(RendererToggle.OVERLAY_CONDUIT_RANGE, BlockEntityType.CONDUIT, ConduitBlockEntity.class);
+        this.useCulling = true;
+        this.renderThrough = false;
     }
 
     @Override
@@ -43,9 +44,16 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
     }
 
     @Override
+    protected void allocateBuffers()
+    {
+        this.clearBuffers();
+        this.renderObjects.add(new RenderObjectVbo(() -> this.getName()+" Quads", MaLiLibPipelines.POSITION_COLOR_LESSER_DEPTH, GlUsage.STATIC_WRITE));
+    }
+
+    @Override
     protected void renderBlockRange(World world, BlockPos pos, ConduitBlockEntity be, Vec3d cameraPos, Profiler profiler)
     {
-        if (be.isActive() == false)
+        if (!be.isActive())
         {
             return;
         }
@@ -54,14 +62,11 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
         Color4f color = Configs.Colors.CONDUIT_RANGE_OVERLAY_COLOR.getColor();
 
         profiler.push("conduit_quads");
-        RenderContext ctx = new RenderContext(() -> "Conduit Quads", MaLiLibPipelines.POSITION_COLOR_SIMPLE, GlUsage.STATIC_WRITE);
-        BufferBuilder builder = ctx.getBuilder();
-        Matrix4fStack matrix4fstack = RenderSystem.getModelViewStack();
-        Vec3d updatePos = this.getUpdatePosition();
+        RenderObjectVbo ctx = this.renderObjects.getFirst();
+        BufferBuilder builder = ctx.start(() -> "Conduit Quads", MaLiLibPipelines.POSITION_COLOR_LESSER_DEPTH, GlUsage.STATIC_WRITE);
+        MatrixStack matrices = new MatrixStack();
 
-        this.preRender();
-        matrix4fstack.pushMatrix();
-        matrix4fstack.translate((float) (updatePos.x - cameraPos.x), (float) (updatePos.y - cameraPos.y), (float) (updatePos.z - cameraPos.z));
+        matrices.push();
 
         LongOpenHashSet positions = new LongOpenHashSet();
         Consumer<BlockPos.Mutable> positionCollector = (p) -> positions.add(p.asLong());
@@ -74,16 +79,14 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
 
         try
         {
-            ctx.drawColor(builder.endNullable());
-            ctx.close();
+            ctx.upload(builder.endNullable(), GlBufferTarget.VERTICES);
         }
         catch (Exception err)
         {
             MiniHUD.LOGGER.error("OverlayRendererConduitRange#renderBlockRange(): Exception; {}", err.getMessage());
         }
 
-        this.postRender();
-        matrix4fstack.popMatrix();
+        matrices.pop();
         profiler.pop();
     }
 

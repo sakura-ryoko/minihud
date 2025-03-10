@@ -1,10 +1,8 @@
 package fi.dy.masa.minihud.renderer;
 
-import org.joml.Matrix4fStack;
-
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.block.entity.BeaconBlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.client.gl.GlBufferTarget;
 import net.minecraft.client.gl.GlUsage;
 import net.minecraft.client.gl.ShaderPipelines;
 import net.minecraft.client.render.BufferBuilder;
@@ -15,7 +13,6 @@ import net.minecraft.util.profiler.Profiler;
 import net.minecraft.world.World;
 
 import fi.dy.masa.malilib.render.MaLiLibPipelines;
-import fi.dy.masa.malilib.render.RenderContext;
 import fi.dy.masa.malilib.util.data.Color4f;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
@@ -29,6 +26,8 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
     public OverlayRendererBeaconRange()
     {
         super(RendererToggle.OVERLAY_BEACON_RANGE, BlockEntityType.BEACON, BeaconBlockEntity.class);
+        this.useCulling = true;
+        this.renderThrough = false;
     }
 
     @Override
@@ -64,29 +63,24 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
         double maxZ = z + range + 1;
 
         profiler.push("beacon_quads");
-        RenderContext ctx = new RenderContext(() -> "Beacon Quads", MaLiLibPipelines.POSITION_COLOR_SIMPLE, GlUsage.STATIC_WRITE);
-        BufferBuilder builder = ctx.getBuilder();
-        Matrix4fStack matrix4fstack = RenderSystem.getModelViewStack();
-        Vec3d updatePos = this.getUpdatePosition();
+        RenderObjectVbo ctx = this.renderObjects.getFirst();
+        BufferBuilder builder = ctx.start(() -> "Beacon Quads", MaLiLibPipelines.POSITION_COLOR_LESSER_DEPTH, GlUsage.STATIC_WRITE);
+        MatrixStack matrices = new MatrixStack();
 
-        this.preRender();
-        matrix4fstack.pushMatrix();
-        matrix4fstack.translate((float) (updatePos.x - cameraPos.x), (float) (updatePos.y - cameraPos.y), (float) (updatePos.z - cameraPos.z));
+        matrices.push();
 
         fi.dy.masa.malilib.render.RenderUtils.drawBoxAllSidesBatchedQuads((float) minX, (float) minY, (float) minZ, (float) maxX, (float) maxY, (float) maxZ, color, builder);
 
         try
         {
-            ctx.drawColor(builder.endNullable());
-            ctx.close();
+            ctx.upload(builder.endNullable(), GlBufferTarget.VERTICES);
         }
         catch (Exception err)
         {
             MiniHUD.LOGGER.error("OverlayRendererBeaconRange#renderQuads(): Exception; {}", err.getMessage());
         }
 
-        this.postRender();
-        matrix4fstack.popMatrix();
+        matrices.pop();
         profiler.pop();
     }
 
@@ -105,33 +99,24 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
         double maxZ = z + range + 1;
 
         profiler.push("beacon_outlines");
-        RenderContext ctx = new RenderContext(() -> "Beacon Outlines", ShaderPipelines.LINES, GlUsage.STATIC_WRITE);
-        BufferBuilder builder = ctx.getBuilder();
+        RenderObjectVbo ctx = this.renderObjects.get(1);
+        BufferBuilder builder = ctx.start(() -> "Beacon Lines", ShaderPipelines.LINES, GlUsage.STATIC_WRITE);
         MatrixStack matrices = new MatrixStack();
-        Matrix4fStack matrix4fstack = RenderSystem.getModelViewStack();
-        Vec3d updatePos = this.getUpdatePosition();
 
-        this.preRender();
         matrices.push();
-        matrix4fstack.pushMatrix();
-        matrix4fstack.translate((float) (updatePos.x - cameraPos.x), (float) (updatePos.y - cameraPos.y), (float) (updatePos.z - cameraPos.z));
-
         MatrixStack.Entry e = matrices.peek();
 
         fi.dy.masa.malilib.render.RenderUtils.drawBoxAllEdgesBatchedLines((float) minX, (float) minY, (float) minZ, (float) maxX, (float) maxY, (float) maxZ, Color4f.fromColor(color.intValue, 1f), builder, e);
 
         try
         {
-            ctx.drawColor(builder.endNullable());
-            ctx.close();
+            ctx.upload(builder.endNullable(), GlBufferTarget.VERTICES);
         }
         catch (Exception err)
         {
             MiniHUD.LOGGER.error("OverlayRendererBeaconRange#renderOutlines(): Exception; {}", err.getMessage());
         }
 
-        this.postRender();
-        matrix4fstack.popMatrix();
         matrices.pop();
         profiler.pop();
     }

@@ -8,14 +8,13 @@ import com.google.gson.JsonPrimitive;
 import it.unimi.dsi.fastutil.longs.Long2ByteOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import org.joml.Matrix4f;
-import org.joml.Matrix4fStack;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.GlBufferTarget;
 import net.minecraft.client.gl.GlUsage;
+import net.minecraft.client.gl.ShaderPipelines;
 import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.Camera;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -23,13 +22,12 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.profiler.Profiler;
 
-import fi.dy.masa.malilib.render.MaLiLibPipelines;
-import fi.dy.masa.malilib.render.RenderContext;
 import fi.dy.masa.malilib.util.JsonUtils;
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.malilib.util.position.PositionUtils;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
+import fi.dy.masa.minihud.renderer.RenderObjectVbo;
 import fi.dy.masa.minihud.renderer.RenderUtils;
 import fi.dy.masa.minihud.util.ShapeRenderType;
 import fi.dy.masa.minihud.util.shape.SphereUtils;
@@ -43,12 +41,15 @@ public class ShapeCircle extends ShapeCircleBase
     {
         super(ShapeType.CIRCLE, Configs.Colors.SHAPE_CIRCLE.getColor(), 16);
         this.hasData = false;
+        this.useCulling = true;
+        this.renderThrough = false;
     }
 
     @Override
-    public void update(Vec3d cameraPos, Entity entity, MinecraftClient mc)
+    public void update(Vec3d cameraPos, Entity entity, MinecraftClient mc, Profiler profiler)
     {
         this.hasData = true;
+        this.render(cameraPos, mc, profiler);
         this.needsUpdate = false;
     }
 
@@ -59,15 +60,20 @@ public class ShapeCircle extends ShapeCircleBase
     }
 
     @Override
-    public void render(Camera camera, Matrix4f matrix4f, Matrix4f projMatrix, MinecraftClient mc, Profiler profiler)
+    protected void allocateBuffers()
     {
-        if (this.hasData())
-        {
-            this.renderQuads(camera, matrix4f, projMatrix, mc, profiler);
-        }
+        this.clearBuffers();
+        this.renderObjects.add(new RenderObjectVbo(() -> this.getName()+" Quads", ShaderPipelines.DEBUG_QUADS, GlUsage.STATIC_WRITE));
     }
 
-    private void renderQuads(Camera camera, Matrix4f matrix4f, Matrix4f projMatrix, MinecraftClient mc, Profiler profiler)
+    @Override
+    public void render(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
+    {
+        this.allocateBuffers();
+        this.renderQuads(cameraPos, mc, profiler);
+    }
+
+    private void renderQuads(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
     {
         if (mc.world == null || mc.player == null)
         {
@@ -75,31 +81,23 @@ public class ShapeCircle extends ShapeCircleBase
         }
 
         profiler.push("circle_quads");
-        Vec3d cameraPos = camera.getPos();
+        RenderObjectVbo ctx = this.renderObjects.getFirst();
+        BufferBuilder builder = ctx.start(() -> "Circle Quads", ShaderPipelines.DEBUG_QUADS, GlUsage.STATIC_WRITE);
+        MatrixStack matrices = new MatrixStack();
 
-        RenderContext ctx = new RenderContext(() -> "Circle Quads", MaLiLibPipelines.POSITION_COLOR_SIMPLE, GlUsage.STATIC_WRITE);
-        BufferBuilder builder = ctx.getBuilder();
-        Matrix4fStack matrix4fstack = RenderSystem.getModelViewStack();
-        Vec3d updatePos = this.getUpdatePosition();
-
-        this.preRender();
-        matrix4fstack.pushMatrix();
-        matrix4fstack.translate((float) (updatePos.x - cameraPos.x), (float) (updatePos.y - cameraPos.y), (float) (updatePos.z - cameraPos.z));
-
+        matrices.push();
         this.renderCircleShape(cameraPos, builder);
 
         try
         {
-            ctx.drawColor(builder.endNullable());
-            ctx.close();
+            ctx.upload(builder.endNullable(), GlBufferTarget.VERTICES);
         }
         catch (Exception err)
         {
             MiniHUD.LOGGER.error("ShapeCircle#renderQuads(): Exception; {}", err.getMessage());
         }
 
-        this.postRender();
-        matrix4fstack.popMatrix();
+        matrices.pop();
         profiler.pop();
     }
 

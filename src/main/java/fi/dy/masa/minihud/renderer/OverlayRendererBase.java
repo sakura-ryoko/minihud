@@ -1,21 +1,24 @@
 package fi.dy.masa.minihud.renderer;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.annotation.Nullable;
 import com.google.gson.JsonObject;
-import org.joml.Matrix4f;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.Camera;
+import net.minecraft.client.gl.GlUsage;
+import net.minecraft.client.gl.ShaderPipeline;
+import net.minecraft.client.gl.ShaderPipelines;
+import net.minecraft.client.render.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.profiler.Profiler;
 
+import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.render.RenderUtils;
 
 public abstract class OverlayRendererBase implements IOverlayRenderer
 {
-    // TODO -- ADD GPU BUFFERS HERE
+    protected final List<RenderObjectVbo> renderObjects = new ArrayList<>();
     protected boolean renderThrough;
     protected boolean useCulling;
     protected float glLineWidth;
@@ -24,9 +27,32 @@ public abstract class OverlayRendererBase implements IOverlayRenderer
 
     public OverlayRendererBase()
     {
-        this.glLineWidth = 1f;
+        this.glLineWidth = 1.0f;
         this.lastUpdatePos = BlockPos.ORIGIN;
         this.updateCameraPos = Vec3d.ZERO;
+        this.renderThrough = false;
+        this.useCulling = false;
+    }
+
+    protected void clearBuffers()
+    {
+        if (!this.renderObjects.isEmpty())
+        {
+            this.resetBuffers();
+            this.renderObjects.clear();
+        }
+    }
+
+    protected void allocateBuffers()
+    {
+        this.clearBuffers();
+        this.renderObjects.add(new RenderObjectVbo(() -> this.getName()+" Quads", MaLiLibPipelines.POSITION_COLOR_SIMPLE, GlUsage.STATIC_WRITE));
+        this.renderObjects.add(new RenderObjectVbo(() -> this.getName()+" Lines", ShaderPipelines.LINES, GlUsage.STATIC_WRITE));
+    }
+
+    protected void resetBuffers()
+    {
+        this.renderObjects.forEach(RenderObjectVbo::reset);
     }
 
     @Override
@@ -41,6 +67,11 @@ public abstract class OverlayRendererBase implements IOverlayRenderer
         this.updateCameraPos = cameraPosition;
     }
 
+    protected ShaderPipeline getRenderThrough()
+    {
+        return this.renderThrough ? MaLiLibPipelines.POSITION_COLOR_SIMPLE : MaLiLibPipelines.POSITION_COLOR_LESSER_DEPTH;
+    }
+
     protected void preRender()
     {
         RenderSystem.lineWidth(this.glLineWidth);
@@ -48,10 +79,13 @@ public abstract class OverlayRendererBase implements IOverlayRenderer
         if (this.renderThrough)
         {
             RenderUtils.depthTest(false);
-            //RenderSystem.depthMask(false);
+            RenderUtils.depthMask(false);
         }
 
-        RenderUtils.culling(this.useCulling);
+        if (this.useCulling)
+        {
+            RenderUtils.culling(true);
+        }
     }
 
     protected void postRender()
@@ -59,23 +93,35 @@ public abstract class OverlayRendererBase implements IOverlayRenderer
         if (this.renderThrough)
         {
             RenderUtils.depthTest(true);
-            //RenderSystem.depthMask(true);
+            RenderUtils.depthMask(true);
         }
 
-        RenderUtils.culling(true);
+        if (this.useCulling)
+        {
+            RenderUtils.culling(false);
+        }
+    }
+
+    @Override
+    public void draw()
+    {
+        this.preRender();
+
+        for (RenderObjectVbo obj : this.renderObjects)
+        {
+            obj.drawPost(null, -1, new float[]{0.0F, 0.0F, 0.0F}, false, this.glLineWidth, (obj.getFormat() == VertexFormats.LINES));
+        }
+
+        this.postRender();
     }
 
     @Override
     public void reset()
     {
+        this.resetBuffers();
         this.glLineWidth = 1f;
         this.lastUpdatePos = BlockPos.ORIGIN;
         this.updateCameraPos = Vec3d.ZERO;
-    }
-
-    @Override
-    public void draw(Camera camera, Matrix4f posMatrix, Matrix4f projMatrix, MinecraftClient mc, Profiler profiler)
-    {
     }
 
     public void setRenderThrough(boolean renderThrough)

@@ -10,15 +10,12 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-import org.joml.Matrix4f;
-import org.joml.Matrix4fStack;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.GlBufferTarget;
 import net.minecraft.client.gl.GlUsage;
 import net.minecraft.client.gl.ShaderPipelines;
 import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.Camera;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.registry.Registry;
@@ -33,8 +30,6 @@ import net.minecraft.world.biome.source.BiomeAccess;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.WorldChunk;
 
-import fi.dy.masa.malilib.render.MaLiLibPipelines;
-import fi.dy.masa.malilib.render.RenderContext;
 import fi.dy.masa.malilib.util.SubChunkPos;
 import fi.dy.masa.malilib.util.data.Color4f;
 import fi.dy.masa.minihud.MiniHUD;
@@ -62,9 +57,10 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
 
     private OverlayRendererBiomeBorders()
     {
-        this.useCulling = true;
         this.renderQuads = new ArrayList<>();
         this.hasData = false;
+        this.useCulling = true;
+        this.renderThrough = false;
     }
 
     @Override
@@ -122,9 +118,9 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
     }
 
     @Override
-    public void update(Vec3d cameraPos, Entity cameraEntity, MinecraftClient mc)
+    public void update(Vec3d cameraPos, Entity entity, MinecraftClient mc, Profiler profiler)
     {
-        List<SubChunkPos> chunks = this.getSubChunksWithinRange(cameraEntity, mc);
+        List<SubChunkPos> chunks = this.getSubChunksWithinRange(mc.getCameraEntity(), mc);
         BlockPos cameraBlockPos = BlockPos.ofFloored(cameraPos);
         this.scheduleTasksForMissingChunks(chunks, cameraBlockPos, mc.world);
 
@@ -133,6 +129,7 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
         if (!this.renderQuads.isEmpty())
         {
             this.hasData = true;
+            this.render(cameraPos, mc, profiler);
         }
 
         // All the quads need to have the same relative camera offset, so
@@ -149,30 +146,25 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
     }
 
     @Override
-    public void render(Camera camera, Matrix4f matrix4f, Matrix4f projMatrix, MinecraftClient mc, Profiler profiler)
+    public void render(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
     {
-        if (this.hasData())
-        {
-            //long pre = System.nanoTime();
-            this.renderQuads(camera.getPos(), profiler);
-            this.renderOutlines(camera.getPos(), profiler);
-            //long post = System.nanoTime(); System.out.printf("renderQuads: %.6fs\n", ((double) post - (double) pre) / 1000000000D);
-        }
+        this.allocateBuffers();
+        //long pre = System.nanoTime();
+        this.renderQuads(cameraPos, mc, profiler);
+        this.renderOutlines(cameraPos, mc, profiler);
+        //long post = System.nanoTime(); System.out.printf("renderQuads: %.6fs\n", ((double) post - (double) pre) / 1000000000D);
     }
 
-    private void renderQuads(Vec3d cameraPos, Profiler profiler)
+    private void renderQuads(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
     {
         double inset = 0.0001;
 
         profiler.push("biome_quads");
-        RenderContext ctx = new RenderContext(() -> "Biome Quads", MaLiLibPipelines.POSITION_COLOR_SIMPLE, GlUsage.STATIC_WRITE);
-        BufferBuilder builder = ctx.getBuilder();
-        Matrix4fStack matrix4fstack = RenderSystem.getModelViewStack();
-        Vec3d updatePos = this.getUpdatePosition();
+        RenderObjectVbo ctx = this.renderObjects.getFirst();
+        BufferBuilder builder = ctx.start(() -> "Biome Quads", ShaderPipelines.DEBUG_QUADS, GlUsage.STATIC_WRITE);
+        MatrixStack matrices = new MatrixStack();
 
-        this.preRender();
-        matrix4fstack.pushMatrix();
-        matrix4fstack.translate((float) (updatePos.x - cameraPos.x), (float) (updatePos.y - cameraPos.y), (float) (updatePos.z - cameraPos.z));
+        matrices.push();
 
         for (ColoredQuad quad : this.renderQuads)
         {
@@ -182,35 +174,27 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
 
         try
         {
-            ctx.drawColor(builder.endNullable());
-            ctx.close();
+            ctx.upload(builder.endNullable(), GlBufferTarget.VERTICES);
         }
         catch (Exception err)
         {
             MiniHUD.LOGGER.error("OverlayRendererBiomeBorders#renderQuads(): Exception; {}", err.getMessage());
         }
 
-        this.postRender();
-        matrix4fstack.popMatrix();
+        matrices.pop();
         profiler.pop();
     }
 
-    private void renderOutlines(Vec3d cameraPos, Profiler profiler)
+    private void renderOutlines(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
     {
         double inset = 0.0001;
 
         profiler.push("biome_outlines");
-        RenderContext ctx = new RenderContext(() -> "Biome Lines", ShaderPipelines.LINES, GlUsage.STATIC_WRITE);
-        BufferBuilder builder = ctx.getBuilder();
+        RenderObjectVbo ctx = this.renderObjects.get(1);
+        BufferBuilder builder = ctx.start(() -> "Biome Lines", ShaderPipelines.LINES, GlUsage.STATIC_WRITE);
         MatrixStack matrices = new MatrixStack();
-        Matrix4fStack matrix4fstack = RenderSystem.getModelViewStack();
-        Vec3d updatePos = this.getUpdatePosition();
 
-        this.preRender();
         matrices.push();
-        matrix4fstack.pushMatrix();
-        matrix4fstack.translate((float) (updatePos.x - cameraPos.x), (float) (updatePos.y - cameraPos.y), (float) (updatePos.z - cameraPos.z));
-
         MatrixStack.Entry e = matrices.peek();
 
         for (ColoredQuad quad : this.renderQuads)
@@ -221,17 +205,14 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
 
         try
         {
-            ctx.drawColor(builder.endNullable());
-            ctx.close();
+            ctx.upload(builder.endNullable(), GlBufferTarget.VERTICES);
         }
         catch (Exception err)
         {
             MiniHUD.LOGGER.error("OverlayRendererBiomeBorders#renderOutlines(): Exception; {}", err.getMessage());
         }
 
-        this.postRender();
         matrices.pop();
-        matrix4fstack.popMatrix();
         profiler.pop();
     }
 

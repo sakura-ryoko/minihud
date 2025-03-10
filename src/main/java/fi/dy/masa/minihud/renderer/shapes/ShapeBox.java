@@ -2,15 +2,12 @@ package fi.dy.masa.minihud.renderer.shapes;
 
 import java.util.List;
 import com.google.gson.JsonObject;
-import org.joml.Matrix4f;
-import org.joml.Matrix4fStack;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.GlBufferTarget;
 import net.minecraft.client.gl.GlUsage;
 import net.minecraft.client.gl.ShaderPipelines;
 import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.Camera;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Box;
@@ -20,7 +17,6 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.profiler.Profiler;
 
 import fi.dy.masa.malilib.render.MaLiLibPipelines;
-import fi.dy.masa.malilib.render.RenderContext;
 import fi.dy.masa.malilib.util.EntityUtils;
 import fi.dy.masa.malilib.util.JsonUtils;
 import fi.dy.masa.malilib.util.StringUtils;
@@ -28,6 +24,7 @@ import fi.dy.masa.malilib.util.data.Color4f;
 import fi.dy.masa.malilib.util.position.PositionUtils;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
+import fi.dy.masa.minihud.renderer.RenderObjectVbo;
 
 public class ShapeBox extends ShapeBase
 {
@@ -63,6 +60,8 @@ public class ShapeBox extends ShapeBase
         this.gridEndOffset = Vec3d.ZERO;
         this.renderBox = null;
         this.hasData = false;
+        this.useCulling = true;
+        this.renderThrough = false;
     }
 
     public Box getBox()
@@ -186,10 +185,11 @@ public class ShapeBox extends ShapeBase
     }
 
     @Override
-    public void update(Vec3d cameraPos, Entity entity, MinecraftClient mc)
+    public void update(Vec3d cameraPos, Entity entity, MinecraftClient mc, Profiler profiler)
     {
         this.renderBox = this.box.offset(-cameraPos.x, -cameraPos.y, -cameraPos.z);
         this.hasData = true;
+        this.render(cameraPos, mc, profiler);
         this.needsUpdate = false;
     }
 
@@ -200,13 +200,11 @@ public class ShapeBox extends ShapeBase
     }
 
     @Override
-    public void render(Camera camera, Matrix4f matrix4f, Matrix4f projMatrix, MinecraftClient mc, Profiler profiler)
+    public void render(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
     {
-        if (this.hasData())
-        {
-            this.renderBoxQuads(camera, matrix4f, projMatrix, mc, profiler);
-            this.renderBoxOutlines(camera, matrix4f, projMatrix, mc, profiler);
-        }
+        this.allocateBuffers();
+        this.renderBoxQuads(cameraPos, mc, profiler);
+        this.renderBoxOutlines(cameraPos, mc, profiler);
     }
 
     @Override
@@ -217,7 +215,7 @@ public class ShapeBox extends ShapeBase
         this.hasData = false;
     }
 
-    protected void renderBoxQuads(Camera camera, Matrix4f matrix4f, Matrix4f projMatrix, MinecraftClient mc, Profiler profiler)
+    protected void renderBoxQuads(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
     {
         if (mc.world == null || mc.player == null)
         {
@@ -225,16 +223,11 @@ public class ShapeBox extends ShapeBase
         }
 
         profiler.push("box_quads");
-        Vec3d cameraPos = camera.getPos();
+        RenderObjectVbo ctx = this.renderObjects.getFirst();
+        BufferBuilder builder = ctx.start(() -> "Box Quads", MaLiLibPipelines.POSITION_COLOR_LESSER_DEPTH, GlUsage.STATIC_WRITE);
+        MatrixStack matrices = new MatrixStack();
 
-        RenderContext ctx = new RenderContext(() -> "Box Quads", MaLiLibPipelines.POSITION_COLOR_SIMPLE, GlUsage.STATIC_WRITE);
-        BufferBuilder builder = ctx.getBuilder();
-        Matrix4fStack matrix4fstack = RenderSystem.getModelViewStack();
-        Vec3d updatePos = this.getUpdatePosition();
-
-        this.preRender();
-        matrix4fstack.pushMatrix();
-        matrix4fstack.translate((float) (updatePos.x - cameraPos.x), (float) (updatePos.y - cameraPos.y), (float) (updatePos.z - cameraPos.z));
+        matrices.push();
 
         for (Direction side : PositionUtils.ALL_DIRECTIONS)
         {
@@ -246,20 +239,18 @@ public class ShapeBox extends ShapeBase
 
         try
         {
-            ctx.drawColor(builder.endNullable());
-            ctx.close();
+            ctx.upload(builder.endNullable(), GlBufferTarget.VERTICES);
         }
         catch (Exception err)
         {
             MiniHUD.LOGGER.error("ShapeBox#renderBoxQuads(): Exception; {}", err.getMessage());
         }
 
-        this.postRender();
-        matrix4fstack.popMatrix();
+        matrices.pop();
         profiler.pop();
     }
 
-    protected void renderBoxOutlines(Camera camera, Matrix4f matrix4f, Matrix4f projMatrix, MinecraftClient mc, Profiler profiler)
+    protected void renderBoxOutlines(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
     {
         if (mc.world == null || mc.player == null)
         {
@@ -268,20 +259,14 @@ public class ShapeBox extends ShapeBase
 
         profiler.push("box_outlines");
         Color4f color = Color4f.fromColor(this.color.intValue, 1f);
-        Vec3d cameraPos = camera.getPos();
 
-        RenderContext ctx = new RenderContext(() -> "Region Lines", ShaderPipelines.LINES, GlUsage.STATIC_WRITE);
-        BufferBuilder builder = ctx.getBuilder();
+        RenderObjectVbo ctx = this.renderObjects.get(1);
+        BufferBuilder builder = ctx.start(() -> "Box Lines", ShaderPipelines.LINES, GlUsage.STATIC_WRITE);
         MatrixStack matrices = new MatrixStack();
-        Matrix4fStack matrix4fstack = RenderSystem.getModelViewStack();
-        Vec3d updatePos = this.getUpdatePosition();
 
-        this.preRender();
         matrices.push();
-        matrix4fstack.pushMatrix();
-        matrix4fstack.translate((float) (updatePos.x - cameraPos.x), (float) (updatePos.y - cameraPos.y), (float) (updatePos.z - cameraPos.z));
-
         MatrixStack.Entry e = matrices.peek();
+
         this.renderBoxEnabledEdgeLines(this.renderBox, color, this.enabledSidesMask, builder, e);
 
         if (this.gridEnabled)
@@ -291,17 +276,14 @@ public class ShapeBox extends ShapeBase
 
         try
         {
-            ctx.drawColor(builder.endNullable());
-            ctx.close();
+            ctx.upload(builder.endNullable(), GlBufferTarget.VERTICES);
         }
         catch (Exception err)
         {
             MiniHUD.LOGGER.error("OverlayRendererRegion#renderOutlines(): Exception; {}", err.getMessage());
         }
 
-        this.postRender();
         matrices.pop();
-        matrix4fstack.popMatrix();
         profiler.pop();
     }
 

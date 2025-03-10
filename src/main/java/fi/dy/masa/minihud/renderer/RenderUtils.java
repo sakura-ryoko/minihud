@@ -1,8 +1,10 @@
 package fi.dy.masa.minihud.renderer;
 
-import java.util.*;
-
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import org.joml.Matrix4f;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.CrafterBlock;
@@ -29,10 +31,7 @@ import net.minecraft.world.World;
 
 import fi.dy.masa.malilib.mixin.entity.IMixinAbstractHorseEntity;
 import fi.dy.masa.malilib.render.InventoryOverlay;
-import fi.dy.masa.malilib.util.EntityUtils;
-import fi.dy.masa.malilib.util.GuiUtils;
-import fi.dy.masa.malilib.util.LayerRange;
-import fi.dy.masa.malilib.util.WorldUtils;
+import fi.dy.masa.malilib.util.*;
 import fi.dy.masa.malilib.util.data.Color4f;
 import fi.dy.masa.malilib.util.game.BlockUtils;
 import fi.dy.masa.malilib.util.position.PositionUtils;
@@ -168,80 +167,18 @@ public class RenderUtils
 //        }
 //    }
 
-    public static List<Box> calculateBoxes(
-            BlockPos posStart,
-            BlockPos posEnd)
-    {
-        Entity entity = EntityUtils.getCameraEntity();
-        final int boxMinX = Math.min(posStart.getX(), posEnd.getX());
-        final int boxMinZ = Math.min(posStart.getZ(), posEnd.getZ());
-        final int boxMaxX = Math.max(posStart.getX(), posEnd.getX());
-        final int boxMaxZ = Math.max(posStart.getZ(), posEnd.getZ());
-
-        final int centerX = (int) Math.floor(entity.getX());
-        final int centerZ = (int) Math.floor(entity.getZ());
-        final int maxDist = MinecraftClient.getInstance().options.getViewDistance().getValue() * 32; // double the view distance in blocks
-        final int rangeMinX = centerX - maxDist;
-        final int rangeMinZ = centerZ - maxDist;
-        final int rangeMaxX = centerX + maxDist;
-        final int rangeMaxZ = centerZ + maxDist;
-        final double minY = Math.min(posStart.getY(), posEnd.getY());
-        final double maxY = Math.max(posStart.getY(), posEnd.getY()) + 1;
-        double minX, minZ, maxX, maxZ;
-
-        List<Box> boxes = new ArrayList<>();
-
-        // The sides of the box along the x-axis can be at least partially inside the range
-        if (rangeMinX <= boxMaxX && rangeMaxX >= boxMinX)
-        {
-            minX = Math.max(boxMinX, rangeMinX);
-            maxX = Math.min(boxMaxX, rangeMaxX) + 1;
-
-            if (rangeMinZ <= boxMinZ && rangeMaxZ >= boxMinZ)
-            {
-                minZ = maxZ = boxMinZ;
-                boxes.add(new Box(minX, minY, minZ, maxX, maxY, maxZ));
-            }
-
-            if (rangeMinZ <= boxMaxZ && rangeMaxZ >= boxMaxZ)
-            {
-                minZ = maxZ = boxMaxZ + 1;
-                boxes.add(new Box(minX, minY, minZ, maxX, maxY, maxZ));
-            }
-        }
-
-        // The sides of the box along the z-axis can be at least partially inside the range
-        if (rangeMinZ <= boxMaxZ && rangeMaxZ >= boxMinZ)
-        {
-            minZ = Math.max(boxMinZ, rangeMinZ);
-            maxZ = Math.min(boxMaxZ, rangeMaxZ) + 1;
-
-            if (rangeMinX <= boxMinX && rangeMaxX >= boxMinX)
-            {
-                minX = maxX = boxMinX;
-                boxes.add(new Box(minX, minY, minZ, maxX, maxY, maxZ));
-            }
-
-            if (rangeMinX <= boxMaxX && rangeMaxX >= boxMaxX)
-            {
-                minX = maxX = boxMaxX + 1;
-                boxes.add(new Box(minX, minY, minZ, maxX, maxY, maxZ));
-            }
-        }
-
-        return boxes;
-    }
-
-    public static void renderWallQuads(Box box, Vec3d cameraPos, Color4f color, BufferBuilder bufferQuads)
+    public static void renderWallQuads(Box box, Vec3d cameraPos, Color4f color, BufferBuilder bufferQuads, MatrixStack.Entry entry)
     {
         double cx = cameraPos.x;
         double cy = cameraPos.y;
         double cz = cameraPos.z;
 
-        bufferQuads.vertex((float) (box.minX - cx), (float) (box.maxY - cy), (float) (box.minZ - cz)).color(color.r, color.g, color.b, color.a);
-        bufferQuads.vertex((float) (box.minX - cx), (float) (box.minY - cy), (float) (box.minZ - cz)).color(color.r, color.g, color.b, color.a);
-        bufferQuads.vertex((float) (box.maxX - cx), (float) (box.minY - cy), (float) (box.maxZ - cz)).color(color.r, color.g, color.b, color.a);
-        bufferQuads.vertex((float) (box.maxX - cx), (float) (box.maxY - cy), (float) (box.maxZ - cz)).color(color.r, color.g, color.b, color.a);
+        Matrix4f x = entry.getPositionMatrix();
+
+        bufferQuads.vertex(x, (float) (box.minX - cx), (float) (box.maxY - cy), (float) (box.minZ - cz)).color(color.r, color.g, color.b, color.a);
+        bufferQuads.vertex(x, (float) (box.minX - cx), (float) (box.minY - cy), (float) (box.minZ - cz)).color(color.r, color.g, color.b, color.a);
+        bufferQuads.vertex(x, (float) (box.maxX - cx), (float) (box.minY - cy), (float) (box.maxZ - cz)).color(color.r, color.g, color.b, color.a);
+        bufferQuads.vertex(x, (float) (box.maxX - cx), (float) (box.maxY - cy), (float) (box.maxZ - cz)).color(color.r, color.g, color.b, color.a);
     }
 
     public static void renderWallOutlines(
@@ -294,6 +231,18 @@ public class RenderUtils
                 }
             }
         }
+    }
+
+    public static void drawBoxNoOutlines(IntBoundingBox bb, Vec3d cameraPos, Color4f color, BufferBuilder bufferQuads, MatrixStack.Entry e)
+    {
+        float minX = (float) (bb.minX - cameraPos.x);
+        float minY = (float) (bb.minY - cameraPos.y);
+        float minZ = (float) (bb.minZ - cameraPos.z);
+        float maxX = (float) (bb.maxX + 1 - cameraPos.x);
+        float maxY = (float) (bb.maxY + 1 - cameraPos.y);
+        float maxZ = (float) (bb.maxZ + 1 - cameraPos.z);
+
+        fi.dy.masa.malilib.render.RenderUtils.drawBoxAllSidesBatchedQuads(minX, minY, minZ, maxX, maxY, maxZ, color, bufferQuads);
     }
 
     /**

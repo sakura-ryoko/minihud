@@ -4,13 +4,18 @@ import java.util.ArrayList;
 import java.util.List;
 import com.google.gson.JsonObject;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fStack;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.Camera;
+import net.minecraft.client.render.Fog;
+import net.minecraft.client.render.Frustum;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.profiler.Profiler;
 
+import fi.dy.masa.malilib.render.RenderUtils;
 import fi.dy.masa.malilib.util.JsonUtils;
 import fi.dy.masa.malilib.util.position.PositionUtils;
 
@@ -49,7 +54,16 @@ public class RenderContainer
         this.renderers.remove(renderer);
     }
 
-    protected void updateIfNeeded(Vec3d cameraPos, Entity entity, MinecraftClient mc, Profiler profiler)
+    public void render(Entity entity, Matrix4f posMatrix, Matrix4f projMatrix, MinecraftClient mc, Camera camera, Frustum frustum, Fog fog, Profiler profiler)
+    {
+        profiler.push("render_container");
+        this.update(camera.getPos(), entity, mc, profiler);
+//        this.draw(camera.getPos(), posMatrix, projMatrix, mc, frustum, fog, profiler);
+        this.draw(camera.getPos(), profiler);
+        profiler.pop();
+    }
+
+    protected void update(Vec3d cameraPos, Entity entity, MinecraftClient mc, Profiler profiler)
     {
         profiler.swap("render_update");
 
@@ -65,7 +79,7 @@ public class RenderContainer
                 {
 //                    MiniHUD.LOGGER.error("Container: renderer [{}] needs update!", renderer.getName());
                     renderer.lastUpdatePos = PositionUtils.getEntityBlockPos(entity);
-                    renderer.update(cameraPos, entity, mc);
+                    renderer.update(cameraPos, entity, mc, profiler);
                     renderer.setUpdatePosition(cameraPos);
                 }
 
@@ -80,88 +94,53 @@ public class RenderContainer
         }
     }
 
-    // FIXME
-    protected void render(Camera camera, Matrix4f posMatrix, Matrix4f projMatrix, MinecraftClient mc, Profiler profiler)
+    protected void draw(Vec3d cameraPos, Profiler profiler)
     {
-        profiler.swap("render");
+        profiler.swap("render_draw");
 
-        for (OverlayRendererBase renderer : this.renderers)
+        if (this.countActive > 0)
         {
-            profiler.push("render_"+renderer.getName());
-
-            if (renderer.hasData())
-            {
-//                MiniHUD.LOGGER.error("Container: render [{}] execute!", renderer.getName());
-                renderer.render(camera, posMatrix, projMatrix, mc, profiler);
-            }
-            else
-            {
-                renderer.reset();
-            }
-
-            profiler.pop();
-        }
-    }
-
-    // FIXME
-    protected void draw(Camera camera, Matrix4f posMatrix, Matrix4f projMatrix, MinecraftClient mc, Profiler profiler)
-    {
-        for (OverlayRendererBase renderer : this.renderers)
-        {
-            renderer.draw(camera, posMatrix, projMatrix, mc, profiler);
-        }
-    }
-
-//    protected void draw(Vec3d cameraPos, Matrix4f matrix4f, Matrix4f projMatrix, MinecraftClient mc, Profiler profiler)
-//    {
-//        profiler.swap("render_draw");
-//
-//        if (this.resourcesAllocated && this.countActive > 0)
-//        {
-//            /*
-//            RenderSystem.disableCull();
-//            RenderSystem.enableDepthTest();
-//            RenderSystem.depthMask(false);
-//            RenderSystem.polygonOffset(-3f, -3f);
-//            RenderSystem.enablePolygonOffset();
-//             */
-//
-//            RenderUtils.blend(true);
+//            RenderUtils.culling(false);
+//            RenderUtils.depthTest(true);
+//            RenderUtils.depthMask(false);
+            RenderUtils.polygonOffset(-3f, -3f);
+            RenderUtils.polygonOffset(true);
+            RenderUtils.blend(true);
 //            RenderUtils.color(1f, 1f, 1f, 1f);
-//
-//            Matrix4fStack matrix4fstack = RenderSystem.getModelViewStack();
-//
-//            for (IOverlayRenderer renderer : this.renderers)
-//            {
-//                profiler.push("draw_"+renderer.getName());
-//
+
+            Matrix4fStack matrix4fstack = RenderSystem.getModelViewStack();
+
+            for (IOverlayRenderer renderer : this.renderers)
+            {
+                profiler.push("draw_"+renderer.getName());
+
 //                if (renderer.shouldRender(mc))
-//                {
-//                    Vec3d updatePos = renderer.getUpdatePosition();
-//
-//                    matrix4fstack.pushMatrix();
-//                    matrix4fstack.translate((float) (updatePos.x - cameraPos.x), (float) (updatePos.y - cameraPos.y), (float) (updatePos.z - cameraPos.z));
-//                    renderer.draw(matrix4fstack.get(matrix4f), projMatrix);
-//                    matrix4fstack.popMatrix();
-//                }
-//
-//                profiler.pop();
-//            }
-//
-//            /*
-//            RenderSystem.polygonOffset(0f, 0f);
-//            RenderSystem.disablePolygonOffset();
-//             */
+                if (renderer.hasData())
+                {
+                    Vec3d updatePos = renderer.getUpdatePosition();
+
+                    matrix4fstack.pushMatrix();
+                    matrix4fstack.translate((float) (updatePos.x - cameraPos.x), (float) (updatePos.y - cameraPos.y), (float) (updatePos.z - cameraPos.z));
+                    renderer.draw();
+                    matrix4fstack.popMatrix();
+                }
+                else
+                {
+                    renderer.reset();
+                }
+
+                profiler.pop();
+            }
+
+            RenderUtils.polygonOffset(0f, 0f);
+            RenderUtils.polygonOffset(false);
 //            RenderUtils.color(1f, 1f, 1f, 1f);
-//            RenderUtils.blend(false);
-//            /*
-//            RenderSystem.disableBlend();
-//            RenderSystem.enableDepthTest();
-//            RenderSystem.enableCull();
-//            RenderSystem.depthMask(true);
-//             */
-//        }
-//    }
+            RenderUtils.blend(false);
+//            RenderUtils.depthTest(true);
+//            RenderUtils.culling(true);
+//            RenderUtils.depthMask(true);
+        }
+    }
 
     protected void reset()
     {

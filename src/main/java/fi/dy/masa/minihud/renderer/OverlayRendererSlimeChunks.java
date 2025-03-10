@@ -4,26 +4,21 @@ import java.util.ArrayList;
 import java.util.List;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import org.apache.commons.lang3.tuple.Pair;
-import org.joml.Matrix4f;
-import org.joml.Matrix4fStack;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.GlBufferTarget;
 import net.minecraft.client.gl.GlUsage;
 import net.minecraft.client.gl.ShaderPipelines;
 import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.Camera;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.profiler.Profiler;
 import net.minecraft.world.World;
 
-import fi.dy.masa.malilib.render.MaLiLibPipelines;
-import fi.dy.masa.malilib.render.RenderContext;
 import fi.dy.masa.malilib.util.EntityUtils;
 import fi.dy.masa.malilib.util.JsonUtils;
 import fi.dy.masa.malilib.util.data.Color4f;
@@ -43,7 +38,7 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
     protected long seed;
     protected double topY;
 
-    private final List<Pair<BlockPos, BlockPos>> slimeChunks;
+    private final List<Box> slimeChunks;
     private boolean hasData;
 
     protected OverlayRendererSlimeChunks()
@@ -52,6 +47,8 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
         this.wasSeedKnown = false;
         this.seed = -1L;
         this.topY = 40;
+        this.renderThrough = false;
+        this.useCulling = true;
         this.hasData = false;
     }
 
@@ -129,13 +126,125 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
     }
 
     @Override
-    public void update(Vec3d cameraPos, Entity entity, MinecraftClient mc)
+    public void update(Vec3d cameraPos, Entity entity, MinecraftClient mc, Profiler profiler)
     {
-//            RenderObjectBase renderQuads = this.renderObjects.get(0);
-//            RenderObjectBase renderLines = this.renderObjects.get(1);
-
         this.calculateChunks(entity, mc);
+
+        if (this.hasData())
+        {
+            this.render(cameraPos, mc, profiler);
+        }
+
+//        System.out.printf("SlimeChunk count - %d\n", this.slimeChunks.size());
+
         this.needsUpdate = false;
+    }
+
+    @Override
+    public boolean hasData()
+    {
+        return this.hasData && !this.slimeChunks.isEmpty();
+    }
+
+    @Override
+    public void render(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
+    {
+        this.allocateBuffers();
+        this.renderQuads(cameraPos, mc, profiler);
+        this.renderOutlines(cameraPos, mc, profiler);
+    }
+
+    private void renderQuads(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
+    {
+        if (mc.world == null || mc.player == null)
+        {
+            return;
+        }
+
+        final Color4f colorSides = Configs.Colors.SLIME_CHUNKS_OVERLAY_COLOR.getColor();
+        profiler.push("slime_chunk_quads");
+        RenderObjectVbo ctx = this.renderObjects.getFirst();
+        BufferBuilder builder = ctx.start(() -> "SlimeChunks Quads", ShaderPipelines.DEBUG_QUADS, GlUsage.STATIC_WRITE);
+        // MaLiLibPipelines.POSITION_COLOR_LESSER_DEPTH
+        MatrixStack matrices = new MatrixStack();
+
+        matrices.push();
+
+        for (Box bb : this.slimeChunks)
+        {
+            float x1 = (float)(bb.minX - cameraPos.x);
+            float y1 = (float)(bb.minY - cameraPos.y);
+            float z1 = (float)(bb.minZ - cameraPos.z);
+            float x2 = (float)(bb.maxX - cameraPos.x);
+            float y2 = (float)(bb.maxY - cameraPos.y);
+            float z2 = (float)(bb.maxZ - cameraPos.z);
+
+            fi.dy.masa.malilib.render.RenderUtils.drawBoxAllSidesBatchedQuads(x1, y1, z1, x2, y2, z2, colorSides, builder);
+        }
+
+        try
+        {
+            ctx.upload(builder.endNullable(), GlBufferTarget.VERTICES);
+        }
+        catch (Exception err)
+        {
+            MiniHUD.LOGGER.error("OverlayRendererSlimeChunks#renderQuads(): Exception; {}", err.getMessage());
+        }
+
+        matrices.pop();
+        profiler.pop();
+    }
+
+    private void renderOutlines(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
+    {
+        if (mc.world == null || mc.player == null)
+        {
+            return;
+        }
+
+        final Color4f colorLines = Color4f.fromColor(Configs.Colors.SLIME_CHUNKS_OVERLAY_COLOR.getColor().getIntValue(), 1.0F);
+        profiler.push("slime_chunk_outlines");
+        RenderObjectVbo ctx = this.renderObjects.get(1);
+        BufferBuilder builder = ctx.start(() -> "SlimeChunks Outlines", ShaderPipelines.LINES, GlUsage.STATIC_WRITE);
+        MatrixStack matrices = new MatrixStack();
+
+        matrices.push();
+        MatrixStack.Entry e = matrices.peek();
+
+        for (Box bb : this.slimeChunks)
+        {
+            float x1 = (float)(bb.minX - cameraPos.x);
+            float y1 = (float)(bb.minY - cameraPos.y);
+            float z1 = (float)(bb.minZ - cameraPos.z);
+            float x2 = (float)(bb.maxX - cameraPos.x);
+            float y2 = (float)(bb.maxY - cameraPos.y);
+            float z2 = (float)(bb.maxZ - cameraPos.z);
+
+            fi.dy.masa.malilib.render.RenderUtils.drawBoxAllEdgesBatchedLines(x1, y1, z1, x2, y2, z2, colorLines, builder, e);
+        }
+
+        try
+        {
+            ctx.upload(builder.endNullable(), GlBufferTarget.VERTICES);
+        }
+        catch (Exception err)
+        {
+            MiniHUD.LOGGER.error("OverlayRendererSlimeChunks#renderOutlines(): Exception; {}", err.getMessage());
+        }
+
+        matrices.pop();
+        profiler.pop();
+    }
+
+    @Override
+    public void reset()
+    {
+        super.reset();
+        this.slimeChunks.clear();
+        this.wasSeedKnown = false;
+        this.seed = -1L;
+        this.topY = 40;
+        this.hasData = false;
     }
 
     private void calculateChunks(Entity entity, MinecraftClient mc)
@@ -151,6 +260,7 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
         this.wasSeedKnown = data.isWorldSeedKnown(world);
         this.seed = data.getWorldSeed(world);
         this.hasData = false;
+//        this.slimeChunks.clear();
 
         if (this.wasSeedKnown)
         {
@@ -177,7 +287,13 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
                         pos1.set( cx << 4,       minY,  cz << 4      );
                         pos2.set((cx << 4) + 15, topY, (cz << 4) + 15);
 
-                        this.slimeChunks.add(Pair.of(pos1, pos2));
+                        Box bb = Box.enclosing(pos1, pos2);
+
+                        if (!this.slimeChunks.contains(bb))
+                        {
+                            this.slimeChunks.add(bb);
+                        }
+
                         count++;
                     }
                 }
@@ -188,132 +304,6 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
                 this.hasData = true;
             }
         }
-    }
-
-    @Override
-    public boolean hasData()
-    {
-        return this.wasSeedKnown && this.hasData && !this.slimeChunks.isEmpty();
-    }
-
-    @Override
-    public void render(Camera camera, Matrix4f matrix4f, Matrix4f projMatrix, MinecraftClient mc, Profiler profiler)
-    {
-        if (this.hasData())
-        {
-            this.renderQuads(camera, matrix4f, projMatrix, mc, profiler);
-            this.renderOutlines(camera, matrix4f, projMatrix, mc, profiler);
-        }
-    }
-
-    private void renderQuads(Camera camera, Matrix4f matrix4f, Matrix4f projMatrix, MinecraftClient mc, Profiler profiler)
-    {
-        if (mc.world == null || mc.player == null)
-        {
-            return;
-        }
-
-        final Color4f colorSides = Configs.Colors.SLIME_CHUNKS_OVERLAY_COLOR.getColor();
-        profiler.push("slime_chunk_quads");
-        RenderContext ctx = new RenderContext(() -> "SlimeChunks Quads", MaLiLibPipelines.POSITION_COLOR_SIMPLE, GlUsage.STATIC_WRITE);
-        BufferBuilder builder = ctx.getBuilder();
-
-        Matrix4fStack matrix4fstack = RenderSystem.getModelViewStack();
-        Vec3d updatePos = this.getUpdatePosition();
-        Vec3d cameraPos = camera.getPos();
-
-        this.preRender();
-        matrix4fstack.pushMatrix();
-        matrix4fstack.translate((float) (updatePos.x - cameraPos.x), (float) (updatePos.y - cameraPos.y), (float) (updatePos.z - cameraPos.z));
-
-        for (Pair<BlockPos, BlockPos> pair : this.slimeChunks)
-        {
-            float x1 = (float)((double)pair.getLeft().getX() - cameraPos.x);
-            float y1 = (float)((double)pair.getLeft().getY() - cameraPos.y);
-            float z1 = (float)((double)pair.getLeft().getZ() - cameraPos.z);
-            float x2 = (float)((double)(pair.getRight().getX() + 1) - cameraPos.x);
-            float y2 = (float)((double)(pair.getRight().getY() + 1) - cameraPos.y);
-            float z2 = (float)((double)(pair.getRight().getZ() + 1) - cameraPos.z);
-
-            fi.dy.masa.malilib.render.RenderUtils.drawBoxAllSidesBatchedQuads(x1, y1, z1, x2, y2, z2, colorSides, builder);
-        }
-
-        try
-        {
-            ctx.drawColor(builder.endNullable());
-            ctx.close();
-        }
-        catch (Exception err)
-        {
-            MiniHUD.LOGGER.error("OverlayRendererSlimeChunks#renderQuads(): Exception; {}", err.getMessage());
-        }
-
-        this.postRender();
-        matrix4fstack.popMatrix();
-        profiler.pop();
-    }
-
-    private void renderOutlines(Camera camera, Matrix4f matrix4f, Matrix4f projMatrix, MinecraftClient mc, Profiler profiler)
-    {
-        if (mc.world == null || mc.player == null)
-        {
-            return;
-        }
-
-        final Color4f colorLines = Color4f.fromColor(Configs.Colors.SLIME_CHUNKS_OVERLAY_COLOR.getColor().getIntValue(), 1.0F);
-        profiler.push("slime_chunk_outlines");
-        RenderContext ctx = new RenderContext(() -> "SlimeChunks Outlines", ShaderPipelines.LINES, GlUsage.STATIC_WRITE);
-        BufferBuilder builder = ctx.getBuilder();
-
-        Matrix4fStack matrix4fstack = RenderSystem.getModelViewStack();
-        MatrixStack matrices = new MatrixStack();
-        Vec3d updatePos = this.getUpdatePosition();
-        Vec3d cameraPos = camera.getPos();
-
-        this.preRender();
-        matrices.push();
-        matrix4fstack.pushMatrix();
-        matrix4fstack.translate((float) (updatePos.x - cameraPos.x), (float) (updatePos.y - cameraPos.y), (float) (updatePos.z - cameraPos.z));
-
-        MatrixStack.Entry e = matrices.peek();
-
-        for (Pair<BlockPos, BlockPos> pair : this.slimeChunks)
-        {
-            float x1 = (float)((double)pair.getLeft().getX() - cameraPos.x);
-            float y1 = (float)((double)pair.getLeft().getY() - cameraPos.y);
-            float z1 = (float)((double)pair.getLeft().getZ() - cameraPos.z);
-            float x2 = (float)((double)(pair.getRight().getX() + 1) - cameraPos.x);
-            float y2 = (float)((double)(pair.getRight().getY() + 1) - cameraPos.y);
-            float z2 = (float)((double)(pair.getRight().getZ() + 1) - cameraPos.z);
-
-            fi.dy.masa.malilib.render.RenderUtils.drawBoxAllEdgesBatchedLines(x1, y1, z1, x2, y2, z2, colorLines, builder, e);
-        }
-
-        try
-        {
-            ctx.drawColor(builder.endNullable());
-            ctx.close();
-        }
-        catch (Exception err)
-        {
-            MiniHUD.LOGGER.error("OverlayRendererSlimeChunks#renderOutlines(): Exception; {}", err.getMessage());
-        }
-
-        this.postRender();
-        matrices.pop();
-        matrix4fstack.popMatrix();
-        profiler.pop();
-    }
-
-    @Override
-    public void reset()
-    {
-        super.reset();
-        this.slimeChunks.clear();
-        this.wasSeedKnown = false;
-        this.seed = -1L;
-        this.topY = 40;
-        this.hasData = false;
     }
 
     @Override
