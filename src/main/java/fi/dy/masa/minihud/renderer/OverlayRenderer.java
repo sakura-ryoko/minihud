@@ -20,7 +20,7 @@ public class OverlayRenderer
         loginTime = System.currentTimeMillis();
     }
 
-    public static void renderOverlays(Matrix4f matrix4f, Matrix4f projMatrix, MinecraftClient mc, Frustum frustum, Camera camera, Fog fog, Profiler profiler)
+    public static void renderOverlays(Matrix4f posMatrix, Matrix4f projMatrix, MinecraftClient mc, Frustum frustum, Camera camera, Fog fog, Profiler profiler)
     {
         Entity entity = EntityUtils.getCameraEntity();
 
@@ -44,6 +44,6 @@ public class OverlayRenderer
             }
         }
 
-        RenderContainer.INSTANCE.render(entity, matrix4f, projMatrix, mc, camera, frustum, fog, profiler);
+        RenderContainer.INSTANCE.render(entity, posMatrix, projMatrix, mc, camera, frustum, fog, profiler);
     }
 }

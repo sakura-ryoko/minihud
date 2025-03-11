@@ -3,6 +3,8 @@ package fi.dy.masa.minihud.renderer;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.joml.Matrix4f;
+
 import net.minecraft.block.BlockState;
 import net.minecraft.block.FluidBlock;
 import net.minecraft.client.MinecraftClient;
@@ -148,6 +150,7 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
         boolean useColoredNumbers = Configs.Generic.LIGHT_LEVEL_COLORED_NUMBERS.getBooleanValue();
         LightLevelNumberMode numberMode = (LightLevelNumberMode) Configs.Generic.LIGHT_LEVEL_NUMBER_MODE.getOptionListValue();
 
+        // this.renderThrough ? MaLiLibPipelines.POSITION_TEX_COLOR_SIMPLE : MaLiLibPipelines.POSITION_TEX_COLOR_LESSER_DEPTH
         RenderObjectVbo ctx = this.renderObjects.getFirst();
         BufferBuilder builder = ctx.start(() -> "Light Level Quads", this.renderThrough ? MaLiLibPipelines.POSITION_TEX_COLOR_SIMPLE : MaLiLibPipelines.POSITION_TEX_COLOR_LESSER_DEPTH, GlUsage.STATIC_WRITE);
         MatrixStack matrices = new MatrixStack();
@@ -159,10 +162,13 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
         catch (Exception err)
         {
             MiniHUD.LOGGER.error("bindTexture Exception: {}", err.getMessage());
+            return;
         }
 
         matrices.push();
 //        fi.dy.masa.malilib.render.RenderUtils.bindTexture(TEXTURE_NUMBERS);
+
+        MatrixStack.Entry e = matrices.peek();
 
         if (numberMode == LightLevelNumberMode.BLOCK || numberMode == LightLevelNumberMode.BOTH)
         {
@@ -172,7 +178,7 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
                                Configs.Colors.LIGHT_LEVEL_NUMBER_BLOCK_LIT,
                                Configs.Colors.LIGHT_LEVEL_NUMBER_BLOCK_DIM,
                                Configs.Colors.LIGHT_LEVEL_NUMBER_BLOCK_DARK,
-                               useColoredNumbers, safeThreshold, dimThreshold, numberFacing, builder);
+                               useColoredNumbers, safeThreshold, dimThreshold, numberFacing, builder, e);
         }
 
         if (numberMode == LightLevelNumberMode.SKY || numberMode == LightLevelNumberMode.BOTH)
@@ -183,7 +189,7 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
                                Configs.Colors.LIGHT_LEVEL_NUMBER_SKY_LIT,
                                Configs.Colors.LIGHT_LEVEL_NUMBER_SKY_DIM,
                                Configs.Colors.LIGHT_LEVEL_NUMBER_SKY_DARK,
-                               useColoredNumbers, safeThreshold, dimThreshold, numberFacing, builder);
+                               useColoredNumbers, safeThreshold, dimThreshold, numberFacing, builder, e);
         }
 
         try
@@ -262,7 +268,8 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
                                int safeThreshold,
                                int dimThreshold,
                                Direction numberFacing,
-                               BufferBuilder buffer)
+                               BufferBuilder buffer,
+                               MatrixStack.Entry e)
     {
         double ox = cfgOffX.getDoubleValue();
         double oz = cfgOffZ.getDoubleValue();
@@ -293,7 +300,7 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
         }
 
         this.renderLightLevelNumbers(tmpX + cameraPos.x, cameraPos.y - offsetY, tmpZ + cameraPos.z, numberFacing,
-                                     safeThreshold, dimThreshold, mode, colorLit, colorDim, colorDark, buffer);
+                                     safeThreshold, dimThreshold, mode, colorLit, colorDim, colorDark, buffer, e);
     }
 
     private void renderMarkers(IMarkerRenderer renderer,
@@ -352,7 +359,8 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
                                          Color4f colorLit,
                                          Color4f colorDim,
                                          Color4f colorDark,
-                                         BufferBuilder buffer)
+                                         BufferBuilder buffer,
+                                         MatrixStack.Entry e)
     {
         LightLevelRenderCondition condition = (LightLevelRenderCondition) Configs.Generic.LIGHT_LEVEL_NUMBER_CONDITION.getOptionListValue();
         boolean autoHeight = Configs.Generic.LIGHT_LEVEL_AUTO_HEIGHT.getBooleanValue();
@@ -381,46 +389,48 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
                     color = colorDim;
                 }
 
-                this.renderLightLevelTextureColor((float) x, (float) y, (float) z, facing, lightLevel, color, buffer);
+                this.renderLightLevelTextureColor((float) x, (float) y, (float) z, facing, lightLevel, color, buffer, e);
             }
         }
     }
 
-    private void renderLightLevelTextureColor(float x, float y, float z, Direction facing, int lightLevel, Color4f color, BufferBuilder buffer)
+    private void renderLightLevelTextureColor(float x, float y, float z, Direction facing, int lightLevel, Color4f color, BufferBuilder buffer, MatrixStack.Entry e)
     {
         float w = 0.25f;
         float u = (lightLevel & 0x3) * w;
         float v = (lightLevel >> 2) * w;
         y += 0.005F;
 
+        Matrix4f m = e.getPositionMatrix();
+
         switch (facing)
         {
             case NORTH:
-                buffer.vertex(x, y, z).texture(u    , v    ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(x, y, z + 1).texture(u    , v + w).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(x + 1, y, z + 1).texture(u + w, v + w).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(x + 1, y, z).texture(u + w, v    ).color(color.r, color.g, color.b, color.a);
+                buffer.vertex(m, x, y, z).texture(u    , v    ).color(color.r, color.g, color.b, color.a);
+                buffer.vertex(m, x, y, z + 1).texture(u    , v + w).color(color.r, color.g, color.b, color.a);
+                buffer.vertex(m, x + 1, y, z + 1).texture(u + w, v + w).color(color.r, color.g, color.b, color.a);
+                buffer.vertex(m, x + 1, y, z).texture(u + w, v    ).color(color.r, color.g, color.b, color.a);
                 break;
 
             case SOUTH:
-                buffer.vertex(x + 1, y, z + 1).texture(u    , v    ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(x + 1, y, z    ).texture(u    , v + w).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(x    , y, z    ).texture(u + w, v + w).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(x    , y, z + 1).texture(u + w, v    ).color(color.r, color.g, color.b, color.a);
+                buffer.vertex(m, x + 1, y, z + 1).texture(u    , v    ).color(color.r, color.g, color.b, color.a);
+                buffer.vertex(m, x + 1, y, z    ).texture(u    , v + w).color(color.r, color.g, color.b, color.a);
+                buffer.vertex(m, x    , y, z    ).texture(u + w, v + w).color(color.r, color.g, color.b, color.a);
+                buffer.vertex(m, x    , y, z + 1).texture(u + w, v    ).color(color.r, color.g, color.b, color.a);
                 break;
 
             case EAST:
-                buffer.vertex(x + 1, y, z    ).texture(u    , v    ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(x    , y, z    ).texture(u    , v + w).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(x    , y, z + 1).texture(u + w, v + w).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(x + 1, y, z + 1).texture(u + w, v    ).color(color.r, color.g, color.b, color.a);
+                buffer.vertex(m, x + 1, y, z    ).texture(u    , v    ).color(color.r, color.g, color.b, color.a);
+                buffer.vertex(m, x    , y, z    ).texture(u    , v + w).color(color.r, color.g, color.b, color.a);
+                buffer.vertex(m, x    , y, z + 1).texture(u + w, v + w).color(color.r, color.g, color.b, color.a);
+                buffer.vertex(m, x + 1, y, z + 1).texture(u + w, v    ).color(color.r, color.g, color.b, color.a);
                 break;
 
             case WEST:
-                buffer.vertex(x    , y, z + 1).texture(u    , v    ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(x + 1, y, z + 1).texture(u    , v + w).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(x + 1, y, z    ).texture(u + w, v + w).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(x    , y, z    ).texture(u + w, v    ).color(color.r, color.g, color.b, color.a);
+                buffer.vertex(m, x    , y, z + 1).texture(u    , v    ).color(color.r, color.g, color.b, color.a);
+                buffer.vertex(m, x + 1, y, z + 1).texture(u    , v + w).color(color.r, color.g, color.b, color.a);
+                buffer.vertex(m, x + 1, y, z    ).texture(u + w, v + w).color(color.r, color.g, color.b, color.a);
+                buffer.vertex(m, x    , y, z    ).texture(u + w, v    ).color(color.r, color.g, color.b, color.a);
                 break;
 
             default:

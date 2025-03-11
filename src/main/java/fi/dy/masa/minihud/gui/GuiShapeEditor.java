@@ -285,7 +285,7 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
 
     private void addBoxSideToggleCheckbox(int x, int y, Direction side, ShapeBox shape)
     {
-        String sideName = StringUtils.translate("minihud.gui.name.box.box_side." + side.name());
+        String sideName = StringUtils.translate("minihud.gui.name.box.box_side." + side.name().toLowerCase());
         WidgetCheckBox cb = new WidgetCheckBox(x, y, MaLiLibIcons.MINUS, MaLiLibIcons.PLUS, this.capitalize(sideName), StringUtils.translate("minihud.gui.hover.shape.box.box_side", sideName));
         cb.setChecked(shape.isSideEnabled(side));
         cb.setListener((w) -> this.toggleSideEnabled(side, shape));

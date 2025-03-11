@@ -61,7 +61,6 @@ public class ShapeBox extends ShapeBase
         this.renderBox = null;
         this.hasData = false;
         this.useCulling = true;
-        this.renderThrough = false;
     }
 
     public Box getBox()
@@ -189,6 +188,8 @@ public class ShapeBox extends ShapeBase
     {
         this.renderBox = this.box.offset(-cameraPos.x, -cameraPos.y, -cameraPos.z);
         this.hasData = true;
+        this.renderThrough = Configs.Generic.SHAPE_RENDER_THROUGH.getBooleanValue();
+//        this.colorLines = Color4f.fromColor(this.color.intValue, 1f);
         this.render(cameraPos, mc, profiler);
         this.needsUpdate = false;
     }
@@ -224,7 +225,7 @@ public class ShapeBox extends ShapeBase
 
         profiler.push("box_quads");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "Box Quads", MaLiLibPipelines.POSITION_COLOR_LESSER_DEPTH, GlUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.start(() -> "Box Quads", this.renderThrough ? MaLiLibPipelines.POSITION_COLOR_SIMPLE : MaLiLibPipelines.POSITION_COLOR_LESSER_DEPTH, GlUsage.STATIC_WRITE);
         MatrixStack matrices = new MatrixStack();
 
         matrices.push();

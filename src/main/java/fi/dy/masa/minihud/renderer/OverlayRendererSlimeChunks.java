@@ -19,6 +19,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.profiler.Profiler;
 import net.minecraft.world.World;
 
+import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.EntityUtils;
 import fi.dy.masa.malilib.util.JsonUtils;
 import fi.dy.masa.malilib.util.data.Color4f;
@@ -47,7 +48,6 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
         this.wasSeedKnown = false;
         this.seed = -1L;
         this.topY = 40;
-        this.renderThrough = false;
         this.useCulling = true;
         this.hasData = false;
     }
@@ -130,6 +130,8 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
     {
         this.calculateChunks(entity, mc);
 
+        this.renderThrough = Configs.Generic.SLIME_CHUNK_RENDER_THROUGH.getBooleanValue();
+
         if (this.hasData())
         {
             this.render(cameraPos, mc, profiler);
@@ -164,7 +166,7 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
         final Color4f colorSides = Configs.Colors.SLIME_CHUNKS_OVERLAY_COLOR.getColor();
         profiler.push("slime_chunk_quads");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "SlimeChunks Quads", ShaderPipelines.DEBUG_QUADS, GlUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.start(() -> "SlimeChunks Quads", this.renderThrough ? MaLiLibPipelines.POSITION_COLOR_SIMPLE : MaLiLibPipelines.POSITION_COLOR_LESSER_DEPTH, GlUsage.STATIC_WRITE);
         // MaLiLibPipelines.POSITION_COLOR_LESSER_DEPTH
         MatrixStack matrices = new MatrixStack();
 

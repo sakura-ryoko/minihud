@@ -1,9 +1,6 @@
 package fi.dy.masa.minihud.renderer;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import javax.annotation.Nullable;
 import com.google.gson.JsonObject;
 
@@ -21,6 +18,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.profiler.Profiler;
 import net.minecraft.world.World;
 
+import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.JsonUtils;
 import fi.dy.masa.malilib.util.data.Color4f;
 import fi.dy.masa.minihud.MiniHUD;
@@ -43,7 +41,8 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
     protected double maxX;
     protected double maxZ;
 
-    private final List<Box> boxes;
+    private HashMap<ChunkPos, List<Box>> chunkMap;
+    private Entity cameraEntity;
     private boolean hasData;
 
     protected OverlayRendererRandomTickableChunks(RendererToggle toggle)
@@ -51,7 +50,8 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
         this.toggle = toggle;
         this.useCulling = true;
         this.renderThrough = false;
-        this.boxes = new ArrayList<>();
+        this.chunkMap = new HashMap<>();
+        this.cameraEntity = null;
         this.hasData = false;
     }
 
@@ -87,7 +87,7 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
 
         if (this.toggle == RendererToggle.OVERLAY_RANDOM_TICKS_FIXED)
         {
-            return newPos != null;
+            return this.newPos != null;
         }
         // Player-following renderer
         else if (this.toggle == RendererToggle.OVERLAY_RANDOM_TICKS_PLAYER)
@@ -105,17 +105,42 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
         {
             this.pos = entity.getPos();
         }
-        else if (newPos != null)
+        else if (this.newPos != null)
         {
-            this.pos = newPos;
-            newPos = null;
+            this.pos = this.newPos;
+            this.newPos = null;
         }
 
+        this.chunkMap.clear();
         Set<ChunkPos> chunks = this.getRandomTickableChunks(this.pos);
+        this.cameraEntity = entity;
 
         for (ChunkPos pos : chunks)
         {
-            this.calculateChunkEdgesIfApplicable(pos, chunks, entity.getEntityWorld());
+//            this.calculateChunkEdgesIfApplicable(pos, chunks, entity.getEntityWorld());
+
+            List<Box> boxes = new ArrayList<>();
+
+            for (Direction side : HORIZONTALS)
+            {
+                ChunkPos posAdj = new ChunkPos(pos.x + side.getOffsetX(), pos.z + side.getOffsetZ());
+
+                if (!chunks.contains(posAdj))
+                {
+                    Box bb = this.calculateChunkEdge(pos, side, entity.getEntityWorld());
+
+                    if (bb != null)
+                    {
+                        boxes.add(bb);
+                    }
+                }
+            }
+
+            if (!boxes.isEmpty())
+            {
+                this.chunkMap.put(pos, boxes);
+                this.hasData = true;
+            }
         }
 
         if (this.hasData())
@@ -129,7 +154,7 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
     @Override
     public boolean hasData()
     {
-        return this.hasData && !this.boxes.isEmpty();
+        return this.hasData && !this.chunkMap.isEmpty() && this.cameraEntity != null;
     }
 
     @Override
@@ -153,16 +178,20 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
                               Configs.Colors.RANDOM_TICKS_FIXED_OVERLAY_COLOR.getColor();
 
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "RandomTick Quads", ShaderPipelines.DEBUG_QUADS, GlUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.start(() -> "RandomTick Quads", MaLiLibPipelines.POSITION_COLOR_LESSER_DEPTH, GlUsage.STATIC_WRITE);
         MatrixStack matrices = new MatrixStack();
 
         matrices.push();
         MatrixStack.Entry e = matrices.peek();
 
-        for (Box bb : this.boxes)
-        {
-            RenderUtils.renderWallQuads(bb, cameraPos, color, builder, e);
-        }
+        this.chunkMap.forEach(
+                (pos, boxes) ->
+                {
+                    for (Box bb : boxes)
+                    {
+                        RenderUtils.renderWallQuads(bb, cameraPos, color, builder, e);
+                    }
+                });
 
         try
         {
@@ -197,10 +226,14 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
         matrices.push();
         MatrixStack.Entry e = matrices.peek();
 
-        for (Box bb : this.boxes)
-        {
-            RenderUtils.renderWallOutlines(bb, 16, 16, true, cameraPos, color, builder, e);
-        }
+        this.chunkMap.forEach(
+                (pos, boxes) ->
+                {
+                    for (Box bb : boxes)
+                    {
+                        RenderUtils.renderWallOutlines(bb, 16, 16, true, cameraPos, color, builder, e);
+                    }
+                });
 
         try
         {
@@ -219,7 +252,8 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
     public void reset()
     {
         super.reset();
-        this.boxes.clear();
+        this.chunkMap.clear();
+        this.cameraEntity = null;
         this.hasData = false;
     }
 
@@ -245,23 +279,28 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
             }
         }
 
+        if (!set.isEmpty())
+        {
+            this.hasData = true;
+        }
+
         return set;
     }
 
-    protected void calculateChunkEdgesIfApplicable(ChunkPos pos, Set<ChunkPos> chunks, World world)
-    {
-        for (Direction side : HORIZONTALS)
-        {
-            ChunkPos posAdj = new ChunkPos(pos.x + side.getOffsetX(), pos.z + side.getOffsetZ());
+//    protected void calculateChunkEdgesIfApplicable(ChunkPos pos, Set<ChunkPos> chunks, World world)
+//    {
+//        for (Direction side : HORIZONTALS)
+//        {
+//            ChunkPos posAdj = new ChunkPos(pos.x + side.getOffsetX(), pos.z + side.getOffsetZ());
+//
+//            if (!chunks.contains(posAdj))
+//            {
+//                this.calculateChunkEdge(pos, side, world);
+//            }
+//        }
+//    }
 
-            if (!chunks.contains(posAdj))
-            {
-                this.calculateChunkEdge(pos, side, world);
-            }
-        }
-    }
-
-    private void calculateChunkEdge(ChunkPos pos, Direction side, World world)
+    private @Nullable Box calculateChunkEdge(ChunkPos pos, Direction side, World world)
     {
         float minX, minZ, maxX, maxZ;
 
@@ -292,14 +331,13 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
                 maxZ = (float) ((double) (pos.z << 4) + 16.0);
                 break;
             default:
-                return;
+                return null;
         }
 
         int minY = world != null ? world.getBottomY() : -64;
         int maxY = world != null ? world.getTopYInclusive() + 1 : 320;
 
-        this.boxes.add(new Box(minX, minY, minZ, maxX, maxY, maxZ));
-        this.hasData = true;
+        return new Box(minX, minY, minZ, maxX, maxY, maxZ);
     }
 
     @Override

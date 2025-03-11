@@ -45,9 +45,18 @@ public abstract class OverlayRendererBase implements IOverlayRenderer
 
     protected void allocateBuffers()
     {
+        this.allocateBuffers(true);
+    }
+
+    protected void allocateBuffers(boolean useOutlines)
+    {
         this.clearBuffers();
         this.renderObjects.add(new RenderObjectVbo(() -> this.getName()+" Quads", MaLiLibPipelines.POSITION_COLOR_SIMPLE, GlUsage.STATIC_WRITE));
-        this.renderObjects.add(new RenderObjectVbo(() -> this.getName()+" Lines", ShaderPipelines.LINES, GlUsage.STATIC_WRITE));
+
+        if (useOutlines)
+        {
+            this.renderObjects.add(new RenderObjectVbo(() -> this.getName() + " Lines", ShaderPipelines.LINES, GlUsage.STATIC_WRITE));
+        }
     }
 
     protected void resetBuffers()

@@ -110,12 +110,15 @@ public class Configs implements IConfigHandler
         public static final ConfigInteger       SERVER_NBT_REQUEST_RATE             = new ConfigInteger("serverNbtRequestRate", 2).apply(GENERIC_KEY);
         public static final ConfigHotkey        SET_DISTANCE_REFERENCE_POINT        = new ConfigHotkey("setDistanceReferencePoint", "").apply(GENERIC_KEY);
         public static final ConfigHotkey        SHAPE_EDITOR                        = new ConfigHotkey("shapeEditor", "").apply(GENERIC_KEY);
+        public static final ConfigBoolean       SHAPE_RENDER_OUTLINES               = new ConfigBoolean("shapeRenderOutlines", false).apply(GENERIC_KEY);
+        public static final ConfigBoolean       SHAPE_RENDER_THROUGH                = new ConfigBoolean("shapeRenderThrough", false).apply(GENERIC_KEY);
         public static final ConfigBoolean       SHULKER_BOX_PREVIEW                 = new ConfigBoolean("shulkerBoxPreview", false).apply(GENERIC_KEY);
         public static final ConfigBoolean       SHULKER_DISPLAY_BACKGROUND_COLOR    = new ConfigBoolean("shulkerDisplayBgColor", true).apply(GENERIC_KEY);
         public static final ConfigBoolean       SHULKER_DISPLAY_ENDER_CHEST         = new ConfigBoolean("shulkerDisplayEnderChest", false).apply(GENERIC_KEY);
         public static final ConfigBoolean       SHULKER_DISPLAY_REQUIRE_SHIFT       = new ConfigBoolean("shulkerDisplayRequireShift", true).apply(GENERIC_KEY);
         public static final ConfigBoolean       SLIME_CHUNK_TOP_TO_PLAYER           = new ConfigBoolean("slimeChunkTopToPlayer", true).apply(GENERIC_KEY);
         public static final ConfigInteger       SLIME_CHUNK_OVERLAY_RADIUS          = new ConfigInteger("slimeChunkOverlayRadius", -1, -1, 40).apply(GENERIC_KEY);
+        public static final ConfigBoolean       SLIME_CHUNK_RENDER_THROUGH          = new ConfigBoolean("slimeChunkRenderThrough", false).apply(GENERIC_KEY);
         public static final ConfigBoolean       SORT_LINES_BY_LENGTH                = new ConfigBoolean("sortLinesByLength", false).apply(GENERIC_KEY);
         public static final ConfigBoolean       SORT_LINES_REVERSED                 = new ConfigBoolean("sortLinesReversed", false).apply(GENERIC_KEY);
         public static final ConfigBoolean       SPAWN_PLAYER_OUTER_OVERLAY_ENABLED  = new ConfigBoolean("spawnPlayerOuterOverlayEnabled", false).apply(GENERIC_KEY);
@@ -180,6 +183,7 @@ public class Configs implements IConfigHandler
                 SHULKER_DISPLAY_BACKGROUND_COLOR,
                 SHULKER_DISPLAY_ENDER_CHEST,
                 SHULKER_DISPLAY_REQUIRE_SHIFT,
+                SLIME_CHUNK_RENDER_THROUGH,
                 SLIME_CHUNK_TOP_TO_PLAYER,
                 SORT_LINES_BY_LENGTH,
                 SORT_LINES_REVERSED,
@@ -199,6 +203,8 @@ public class Configs implements IConfigHandler
                 SERVER_NBT_REQUEST_RATE,
                 SET_DISTANCE_REFERENCE_POINT,
                 SHAPE_EDITOR,
+                SHAPE_RENDER_OUTLINES,
+                SHAPE_RENDER_THROUGH,
 
                 BLOCK_GRID_OVERLAY_MODE,
                 LIGHT_LEVEL_MARKER_CONDITION,

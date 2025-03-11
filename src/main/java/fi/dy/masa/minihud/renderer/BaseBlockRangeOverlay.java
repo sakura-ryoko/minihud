@@ -107,7 +107,6 @@ public abstract class BaseBlockRangeOverlay<T extends BlockEntity> extends Overl
     @Override
     public void render(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
     {
-        this.allocateBuffers();
         this.renderBlockRanges(this.world, cameraPos, mc, profiler);
     }
 
@@ -190,7 +189,7 @@ public abstract class BaseBlockRangeOverlay<T extends BlockEntity> extends Overl
             }
 
             T castBe = this.blockEntityClass.cast(be);
-            this.renderBlockRange(world, mutablePos, castBe, cameraPos, profiler);
+            this.renderBlockRange(world, mutablePos, castBe, cameraPos, mc, profiler);
         }
 
         profiler.pop();
@@ -226,5 +225,5 @@ public abstract class BaseBlockRangeOverlay<T extends BlockEntity> extends Overl
         return maxY + 4;
     }
 
-    protected abstract void renderBlockRange(World world, BlockPos pos, T be, Vec3d cameraPos, Profiler profiler);
+    protected abstract void renderBlockRange(World world, BlockPos pos, T be, Vec3d cameraPos, MinecraftClient mc, Profiler profiler);
 }

@@ -30,6 +30,7 @@ import net.minecraft.world.biome.source.BiomeAccess;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.WorldChunk;
 
+import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.SubChunkPos;
 import fi.dy.masa.malilib.util.data.Color4f;
 import fi.dy.masa.minihud.MiniHUD;
@@ -161,7 +162,7 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
 
         profiler.push("biome_quads");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "Biome Quads", ShaderPipelines.DEBUG_QUADS, GlUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.start(() -> "Biome Quads", MaLiLibPipelines.POSITION_COLOR_LESSER_DEPTH, GlUsage.STATIC_WRITE);
         MatrixStack matrices = new MatrixStack();
 
         matrices.push();
@@ -169,7 +170,7 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
         for (ColoredQuad quad : this.renderQuads)
         {
             Color4f color = this.getColor(quad.biomeId);
-            RenderUtils.renderInsetQuad(quad.start, quad.width, quad.height, quad.side, inset, color, cameraPos, builder);
+            RenderUtils.renderInsetQuad(quad.start, quad.width, quad.height, quad.side, inset, color, cameraPos, builder, matrices.peek());
         }
 
         try

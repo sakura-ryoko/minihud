@@ -2,6 +2,7 @@ package fi.dy.masa.minihud.renderer;
 
 import net.minecraft.block.entity.BeaconBlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.GlBufferTarget;
 import net.minecraft.client.gl.GlUsage;
 import net.minecraft.client.gl.ShaderPipelines;
@@ -26,8 +27,7 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
     public OverlayRendererBeaconRange()
     {
         super(RendererToggle.OVERLAY_BEACON_RANGE, BlockEntityType.BEACON, BeaconBlockEntity.class);
-        this.useCulling = true;
-        this.renderThrough = false;
+        this.useCulling = false;
     }
 
     @Override
@@ -37,19 +37,26 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
     }
 
     @Override
-    protected void renderBlockRange(World world, BlockPos pos, BeaconBlockEntity be, Vec3d cameraPos, Profiler profiler)
+    protected void renderBlockRange(World world, BlockPos pos, BeaconBlockEntity be, Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
     {
         int level = ((IMixinBeaconBlockEntity) be).minihud_getLevel();
 
         if (level >= 1 && level <= 4)
         {
-            this.renderQuads(world, pos, level, cameraPos, getColorForLevel(level), profiler);
-            this.renderOutlines(world, pos, level, cameraPos, getColorForLevel(level), profiler);
+            this.renderThrough = false;
+            this.allocateBuffers();
+            this.renderQuads(world, pos, level, cameraPos, getColorForLevel(level), mc, profiler);
+            this.renderOutlines(world, pos, level, cameraPos, getColorForLevel(level), mc, profiler);
         }
     }
 
-    private void renderQuads(World world, BlockPos pos, int level, Vec3d cameraPos, Color4f color, Profiler profiler)
+    private void renderQuads(World world, BlockPos pos, int level, Vec3d cameraPos, Color4f color, MinecraftClient mc, Profiler profiler)
     {
+        if (mc.world == null || mc.player == null)
+        {
+            return;
+        }
+
         double x = pos.getX() - cameraPos.x;
         double y = pos.getY() - cameraPos.y;
         double z = pos.getZ() - cameraPos.z;
@@ -84,8 +91,13 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
         profiler.pop();
     }
 
-    private void renderOutlines(World world, BlockPos pos, int level, Vec3d cameraPos, Color4f color, Profiler profiler)
+    private void renderOutlines(World world, BlockPos pos, int level, Vec3d cameraPos, Color4f color, MinecraftClient mc, Profiler profiler)
     {
+        if (mc.world == null || mc.player == null || !Configs.Generic.SHAPE_RENDER_OUTLINES.getBooleanValue())
+        {
+            return;
+        }
+
         double x = pos.getX() - cameraPos.x;
         double y = pos.getY() - cameraPos.y;
         double z = pos.getZ() - cameraPos.z;

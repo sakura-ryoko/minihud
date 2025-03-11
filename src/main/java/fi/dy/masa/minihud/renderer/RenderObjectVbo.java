@@ -7,11 +7,14 @@ import javax.annotation.Nullable;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gl.*;
-import net.minecraft.client.render.*;
-import net.minecraft.client.texture.*;
+import net.minecraft.client.render.BufferBuilder;
+import net.minecraft.client.render.BuiltBuffer;
+import net.minecraft.client.render.VertexFormat;
+import net.minecraft.client.texture.DrawableTexture;
+import net.minecraft.client.texture.ResourceTexture;
+import net.minecraft.client.texture.TextureContents;
 import net.minecraft.client.util.BufferAllocator;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.TriState;
 import net.minecraft.util.math.ColorHelper;
 
 import fi.dy.masa.malilib.mixin.render.IMixinBufferBuilder;
@@ -127,8 +130,9 @@ public class RenderObjectVbo
 
         try (TextureContents contents = this.texture.loadContents(RenderUtils.mc().getResourceManager()))
         {
-            NativeImage image = contents.image();
-            MiniHUD.LOGGER.warn("NativeImage Id [{}] //  Width [{}], Height [{}] // Format: [{}]", image.imageId(), image.getWidth(), image.getHeight(), image.getFormat().name());
+//            NativeImage image = contents.image();
+//            MiniHUD.LOGGER.warn("NativeImage Id [{}] //  Width [{}], Height [{}] // Format: [{}]", image.imageId(), image.getWidth(), image.getHeight(), image.getFormat().name());
+            RenderSystem.getDevice().getResourceManager().copyImage(this.texture.getGlTexture(), contents.image());
         }
         catch (Exception err)
         {
@@ -136,7 +140,8 @@ public class RenderObjectVbo
             throw new RuntimeException(err);
         }
 
-        this.texture.setFilter(TriState.FALSE, false);
+        this.texture.setFilter(false, false);
+        this.texture.setClamp(true);
         RenderSystem.setShaderTexture(0, this.texture.getGlTexture());
     }
 

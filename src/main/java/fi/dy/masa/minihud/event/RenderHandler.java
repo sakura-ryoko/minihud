@@ -193,6 +193,26 @@ public class RenderHandler implements IRenderer
     }
 
     @Override
+    public void onRenderWorldPreWeather(Framebuffer fb, Matrix4f posMatrix, Matrix4f projMatrix, Frustum frustum, Camera camera, Fog fog, BufferBuilderStorage buffers, Profiler profiler)
+    {
+//        if (Configs.Generic.MAIN_RENDERING_TOGGLE.getBooleanValue() &&
+//            this.mc.world != null && this.mc.player != null && this.mc.options.hudHidden == false)
+//        {
+//            OverlayRenderer.renderOverlays(posMatrix, projMatrix, this.mc, frustum, camera, fog, profiler);
+//        }
+    }
+
+    @Override
+    public void onRenderWorldLastAdvanced(Framebuffer fb, Matrix4f posMatrix, Matrix4f projMatrix, Frustum frustum, Camera camera, Fog fog, BufferBuilderStorage buffers, Profiler profiler)
+    {
+        if (Configs.Generic.MAIN_RENDERING_TOGGLE.getBooleanValue() &&
+            this.mc.world != null && this.mc.player != null && this.mc.options.hudHidden == false)
+        {
+            OverlayRenderer.renderOverlays(posMatrix, projMatrix, this.mc, frustum, camera, fog, profiler);
+        }
+    }
+
+    @Override
     public void onRenderTooltipLast(DrawContext drawContext, ItemStack stack, int x, int y)
     {
         Item item = stack.getItem();
@@ -257,16 +277,6 @@ public class RenderHandler implements IRenderer
     public Supplier<String> getProfilerSectionSupplier()
     {
         return () -> Reference.MOD_ID+"_renderer";
-    }
-
-    @Override
-    public void onRenderWorldPreWeather(Framebuffer fb, Matrix4f posMatrix, Matrix4f projMatrix, Frustum frustum, Camera camera, Fog fog, BufferBuilderStorage buffers, Profiler profiler)
-    {
-        if (Configs.Generic.MAIN_RENDERING_TOGGLE.getBooleanValue() &&
-            this.mc.world != null && this.mc.player != null && this.mc.options.hudHidden == false)
-        {
-            OverlayRenderer.renderOverlays(posMatrix, projMatrix, this.mc, frustum, camera, fog, profiler);
-        }
     }
 
     @Override
@@ -875,17 +885,17 @@ public class RenderHandler implements IRenderer
         else if (type == InfoToggle.FACING)
         {
             Direction facing = entity.getHorizontalFacing();
-            String facingName = StringUtils.translate("minihud.info_line.facing." + facing.name() + ".name");
+            String facingName = StringUtils.translate("minihud.info_line.facing." + facing.name().toLowerCase() + ".name");
             String str;
 
-            if (facingName.contains("minihud.info_line.facing." + facing.name() + ".name"))
+            if (facingName.contains("minihud.info_line.facing." + facing.name().toLowerCase() + ".name"))
             {
-                facingName = facing.name();
+                facingName = facing.name().toLowerCase();
                 str = StringUtils.translate("minihud.info_line.invalid_value");
             }
             else
             {
-                str = StringUtils.translate("minihud.info_line.facing." + facing.name());
+                str = StringUtils.translate("minihud.info_line.facing." + facing.name().toLowerCase());
             }
 
             this.addLineI18n("minihud.info_line.facing", facingName, str);

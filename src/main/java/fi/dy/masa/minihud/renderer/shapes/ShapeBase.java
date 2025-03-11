@@ -29,6 +29,7 @@ public abstract class ShapeBase extends OverlayRendererBase implements IRangeCha
     protected String displayName;
     protected ShapeRenderType renderType;
     protected Color4f color;
+    protected Color4f colorLines;
     protected boolean enabled;
     protected boolean needsUpdate;
 
@@ -37,6 +38,7 @@ public abstract class ShapeBase extends OverlayRendererBase implements IRangeCha
         this.mc = MinecraftClient.getInstance();
         this.type = type;
         this.color = color;
+        this.colorLines = Color4f.WHITE;
         this.layerRange = new LayerRange(this);
         this.renderType = ShapeRenderType.OUTER_EDGE;
         this.displayName = type.getDisplayName();
@@ -67,6 +69,11 @@ public abstract class ShapeBase extends OverlayRendererBase implements IRangeCha
     public Color4f getColor()
     {
         return this.color;
+    }
+
+    public Color4f getColorLines()
+    {
+        return this.colorLines;
     }
 
     public ShapeRenderType getRenderType()

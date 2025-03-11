@@ -20,7 +20,9 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.profiler.Profiler;
 
+import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.*;
+import fi.dy.masa.malilib.util.data.Color4f;
 import fi.dy.masa.malilib.util.position.PositionUtils;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
@@ -45,7 +47,6 @@ public class ShapeLineBlock extends ShapeBlocky
         this.setBlockSnap(BlockSnap.CENTER);
         this.hasData = false;
         this.useCulling = true;
-        this.renderThrough = false;
     }
 
     public Vec3d getStartPos()
@@ -92,6 +93,8 @@ public class ShapeLineBlock extends ShapeBlocky
     public void update(Vec3d cameraPos, Entity entity, MinecraftClient mc, Profiler profiler)
     {
         this.hasData = true;
+        this.renderThrough = Configs.Generic.SHAPE_RENDER_THROUGH.getBooleanValue();
+        this.colorLines = Color4f.fromColor(this.color.intValue, 1f);
         this.render(cameraPos, mc, profiler);
         this.needsUpdate = false;
     }
@@ -103,17 +106,16 @@ public class ShapeLineBlock extends ShapeBlocky
     }
 
     @Override
-    protected void allocateBuffers()
-    {
-        this.clearBuffers();
-        this.renderObjects.add(new RenderObjectVbo(() -> this.getName()+" Quads", ShaderPipelines.DEBUG_QUADS, GlUsage.STATIC_WRITE));
-    }
-
-    @Override
     public void render(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
     {
-        this.allocateBuffers();
+        boolean outlines = Configs.Generic.SHAPE_RENDER_OUTLINES.getBooleanValue();
+        this.allocateBuffers(outlines);
         this.renderQuads(cameraPos, mc, profiler);
+
+        if (outlines)
+        {
+            this.renderOutlines(cameraPos, mc, profiler);
+        }
     }
 
     private void renderQuads(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
@@ -125,11 +127,11 @@ public class ShapeLineBlock extends ShapeBlocky
 
         profiler.push("line_block_quads");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "Line Block Quads", ShaderPipelines.DEBUG_QUADS, GlUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.start(() -> "Line Block Quads", this.renderThrough ? MaLiLibPipelines.POSITION_COLOR_SIMPLE : MaLiLibPipelines.POSITION_COLOR_LESSER_DEPTH, GlUsage.STATIC_WRITE);
         MatrixStack matrices = new MatrixStack();
 
         matrices.push();
-        this.renderLineShape(cameraPos, builder);
+        this.renderLineShapeQuads(cameraPos, builder, matrices);
 
         try
         {
@@ -138,6 +140,34 @@ public class ShapeLineBlock extends ShapeBlocky
         catch (Exception err)
         {
             MiniHUD.LOGGER.error("ShapeLineBlock#renderQuads(): Exception; {}", err.getMessage());
+        }
+
+        matrices.pop();
+        profiler.pop();
+    }
+
+    private void renderOutlines(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
+    {
+        if (mc.world == null || mc.player == null || !Configs.Generic.SHAPE_RENDER_OUTLINES.getBooleanValue())
+        {
+            return;
+        }
+
+        profiler.push("line_block_outlines");
+        RenderObjectVbo ctx = this.renderObjects.get(1);
+        BufferBuilder builder = ctx.start(() -> "Line Block Outlines", ShaderPipelines.LINES, GlUsage.STATIC_WRITE);
+        MatrixStack matrices = new MatrixStack();
+
+        matrices.push();
+        this.renderLineShapeLines(cameraPos, builder, matrices.peek());
+
+        try
+        {
+            ctx.upload(builder.endNullable(), GlBufferTarget.VERTICES);
+        }
+        catch (Exception err)
+        {
+            MiniHUD.LOGGER.error("ShapeLineBlock#renderOutlines(): Exception; {}", err.getMessage());
         }
 
         matrices.pop();
@@ -215,7 +245,7 @@ public class ShapeLineBlock extends ShapeBlocky
         this.setNeedsUpdate();
     }
 
-    protected void renderLineShape(Vec3d cameraPos, BufferBuilder builder)
+    protected void renderLineShapeQuads(Vec3d cameraPos, BufferBuilder builder, MatrixStack matrices)
     {
         final double maxDist = 30000;
 
@@ -233,11 +263,37 @@ public class ShapeLineBlock extends ShapeBlocky
         if (this.getCombineQuads())
         {
             Long2ObjectOpenHashMap<SideQuad> strips = this.buildPositionsToStrips(positions, this.layerRange);
-            RenderUtils.renderQuads(strips.values(), this.color, expand, cameraPos, builder);
+            RenderUtils.renderQuads(strips.values(), this.color, expand, cameraPos, builder, matrices.peek());
         }
         else
         {
-            RenderUtils.renderBlockPositions(positions, this.layerRange, this.color, expand, cameraPos, builder);
+            RenderUtils.renderBlockPositions(positions, this.layerRange, this.color, expand, cameraPos, builder, matrices.peek());
+        }
+    }
+
+    protected void renderLineShapeLines(Vec3d cameraPos, BufferBuilder builder, MatrixStack.Entry e)
+    {
+        final double maxDist = 30000;
+
+        if (this.effectiveEndPos.distanceTo(this.effectiveStartPos) > maxDist)
+        {
+            return;
+        }
+
+        LongOpenHashSet positions = new LongOpenHashSet();
+        RayTracer tracer = new RayTracer(this.effectiveStartPos, this.effectiveEndPos);
+        double expand = 0;
+
+        tracer.iterateAllPositions(this.getLinePositionCollector(positions));
+
+        if (this.getCombineQuads())
+        {
+            Long2ObjectOpenHashMap<SideQuad> strips = this.buildPositionsToStrips(positions, this.layerRange);
+            RenderUtils.renderQuadLines(strips.values(), this.colorLines, expand, cameraPos, builder, e);
+        }
+        else
+        {
+            RenderUtils.renderBlockPositionOutlines(positions, this.layerRange, this.colorLines, expand, cameraPos, builder, e);
         }
     }
 
