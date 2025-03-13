@@ -2,14 +2,13 @@ package fi.dy.masa.minihud.renderer;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.joml.Matrix4f;
 
+import com.mojang.blaze3d.buffers.BufferType;
+import com.mojang.blaze3d.buffers.BufferUsage;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.FluidBlock;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.GlBufferTarget;
-import net.minecraft.client.gl.GlUsage;
 import net.minecraft.client.gl.ShaderPipelines;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.util.math.MatrixStack;
@@ -51,7 +50,6 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
 {
     public static final OverlayRendererLightLevel INSTANCE = new OverlayRendererLightLevel();
     private static final Identifier TEXTURE_NUMBERS = Identifier.of(Reference.MOD_ID, "textures/misc/light_level_numbers.png");
-    private static final Identifier TEXTURE_NUMBERS2 = Identifier.of(Reference.MOD_ID, "textures/misc/light_level_numbers");
 
     private final List<LightLevelInfo> lightInfos;
     private BlockPos.Mutable mutablePos;
@@ -105,17 +103,17 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
             return;
         }
 
+        long pre = System.nanoTime();
         BlockPos pos = PositionUtils.getEntityBlockPos(entity);
         this.hasData = this.updateLightLevels(mc.world, pos);
         this.renderThrough = Configs.Generic.LIGHT_LEVEL_RENDER_THROUGH.getBooleanValue();
 
         if (this.hasData())
         {
-//            long pre = System.nanoTime();
-//            System.out.printf("LL markers: %d, time: %.3f s\n", this.lightInfos.size(), (double) (System.nanoTime() - pre) / 1000000000D);
-
             this.render(cameraPos, mc, profiler);
         }
+
+        System.out.printf("LL markers: %d, time: %.3f s\n", this.lightInfos.size(), (double) (System.nanoTime() - pre) / 1000000000D);
 
         this.lastUpdatePos = pos;
         this.lastDirection = entity.getHorizontalFacing();
@@ -152,12 +150,12 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
 
         // this.renderThrough ? MaLiLibPipelines.POSITION_TEX_COLOR_SIMPLE : MaLiLibPipelines.POSITION_TEX_COLOR_LESSER_DEPTH
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "Light Level Quads", this.renderThrough ? MaLiLibPipelines.POSITION_TEX_COLOR_SIMPLE : MaLiLibPipelines.POSITION_TEX_COLOR_LESSER_DEPTH, GlUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.start(() -> "Light Level Quads", this.renderThrough ? MaLiLibPipelines.POSITION_TEX_COLOR_MASA_NO_DEPTH_NO_CULL : MaLiLibPipelines.POSITION_TEX_COLOR_MASA_LESSER_DEPTH, BufferUsage.STATIC_WRITE);
         MatrixStack matrices = new MatrixStack();
 
         try
         {
-            ctx.bindTexture(TEXTURE_NUMBERS);
+            ctx.bindTexture(TEXTURE_NUMBERS, 0);
         }
         catch (Exception err)
         {
@@ -194,7 +192,7 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
 
         try
         {
-            ctx.upload(builder.endNullable(), GlBufferTarget.VERTICES);
+            ctx.upload(builder.endNullable(), BufferType.VERTICES);
         }
         catch (Exception err)
         {
@@ -218,7 +216,7 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
         LightLevelMarkerMode markerMode = (LightLevelMarkerMode) Configs.Generic.LIGHT_LEVEL_MARKER_MODE.getOptionListValue();
 
         RenderObjectVbo ctx = this.renderObjects.get(1);
-        BufferBuilder builder = ctx.start(() -> "Light Level Lines", ShaderPipelines.LINES, GlUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.start(() -> "Light Level Lines", ShaderPipelines.LINES, BufferUsage.STATIC_WRITE);
         MatrixStack matrices = new MatrixStack();
 
         matrices.push();
@@ -235,7 +233,7 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
 
         try
         {
-            ctx.upload(builder.endNullable(), GlBufferTarget.VERTICES);
+            ctx.upload(builder.endNullable(), BufferType.VERTICES);
         }
         catch (Exception err)
         {

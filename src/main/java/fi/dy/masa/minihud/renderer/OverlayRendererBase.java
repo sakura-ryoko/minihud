@@ -5,10 +5,9 @@ import java.util.List;
 import javax.annotation.Nullable;
 import com.google.gson.JsonObject;
 
+import com.mojang.blaze3d.buffers.BufferUsage;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.gl.GlUsage;
-import net.minecraft.client.gl.ShaderPipeline;
-import net.minecraft.client.gl.ShaderPipelines;
 import net.minecraft.client.render.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -51,11 +50,11 @@ public abstract class OverlayRendererBase implements IOverlayRenderer
     protected void allocateBuffers(boolean useOutlines)
     {
         this.clearBuffers();
-        this.renderObjects.add(new RenderObjectVbo(() -> this.getName()+" Quads", MaLiLibPipelines.POSITION_COLOR_SIMPLE, GlUsage.STATIC_WRITE));
+        this.renderObjects.add(new RenderObjectVbo(() -> this.getName()+" Quads", MaLiLibPipelines.getPositionSimple(), BufferUsage.STATIC_WRITE));
 
         if (useOutlines)
         {
-            this.renderObjects.add(new RenderObjectVbo(() -> this.getName() + " Lines", ShaderPipelines.LINES, GlUsage.STATIC_WRITE));
+            this.renderObjects.add(new RenderObjectVbo(() -> this.getName() + " Lines", MaLiLibPipelines.LINES_MASA_NO_DEPTH_NO_CULL, BufferUsage.STATIC_WRITE));
         }
     }
 
@@ -76,9 +75,9 @@ public abstract class OverlayRendererBase implements IOverlayRenderer
         this.updateCameraPos = cameraPosition;
     }
 
-    protected ShaderPipeline getRenderThrough()
+    protected RenderPipeline getRenderThrough()
     {
-        return this.renderThrough ? MaLiLibPipelines.POSITION_COLOR_SIMPLE : MaLiLibPipelines.POSITION_COLOR_LESSER_DEPTH;
+        return this.renderThrough ? MaLiLibPipelines.getPositionSimple() : MaLiLibPipelines.POSITION_COLOR_MASA_LESSER_DEPTH;
     }
 
     protected void preRender()
@@ -118,7 +117,8 @@ public abstract class OverlayRendererBase implements IOverlayRenderer
 
         for (RenderObjectVbo obj : this.renderObjects)
         {
-            obj.drawPost(null, -1, new float[]{0.0F, 0.0F, 0.0F}, false, this.glLineWidth, (obj.getFormat() == VertexFormats.LINES));
+            obj.lineWidth(this.glLineWidth);
+            obj.drawPost(null,false, (obj.getVertexFormat() == VertexFormats.LINE_COLOR_NORMAL));
         }
 
         this.postRender();

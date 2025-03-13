@@ -5,9 +5,9 @@ import java.util.List;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 
+import com.mojang.blaze3d.buffers.BufferType;
+import com.mojang.blaze3d.buffers.BufferUsage;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.GlBufferTarget;
-import net.minecraft.client.gl.GlUsage;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
@@ -112,7 +112,7 @@ public class OverlayRendererStructures extends OverlayRendererBase
 
         profiler.push("structure main");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "Structure Main", this.renderThrough ? MaLiLibPipelines.POSITION_COLOR_SIMPLE : MaLiLibPipelines.POSITION_COLOR_LESSER_DEPTH, GlUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.start(() -> "Structure Main", this.renderThrough ? MaLiLibPipelines.getPositionColorSimple() : MaLiLibPipelines.POSITION_COLOR_MASA_GREATER_DEPTH, BufferUsage.STATIC_WRITE);
         MatrixStack matrices = new MatrixStack();
 
         matrices.push();
@@ -129,7 +129,7 @@ public class OverlayRendererStructures extends OverlayRendererBase
 
         try
         {
-            ctx.upload(builder.endNullable(), GlBufferTarget.VERTICES);
+            ctx.upload(builder.endNullable(), BufferType.VERTICES);
         }
         catch (Exception err)
         {
@@ -147,9 +147,10 @@ public class OverlayRendererStructures extends OverlayRendererBase
             return;
         }
 
+        // ShaderPipelines.DEBUG_QUADS
         profiler.push("structure components");
         RenderObjectVbo ctx = this.renderObjects.get(1);
-        BufferBuilder builder = ctx.start(() -> "Structure Components", this.renderThrough ? MaLiLibPipelines.POSITION_COLOR_SIMPLE : MaLiLibPipelines.POSITION_COLOR_LESSER_DEPTH, GlUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.start(() -> "Structure Components", this.renderThrough ? MaLiLibPipelines.getPositionColorSimple() : MaLiLibPipelines.POSITION_COLOR_MASA_LESSER_DEPTH, BufferUsage.STATIC_WRITE);
         MatrixStack matrices = new MatrixStack();
 
         matrices.push();
@@ -175,7 +176,7 @@ public class OverlayRendererStructures extends OverlayRendererBase
 
         try
         {
-            ctx.upload(builder.endNullable(), GlBufferTarget.VERTICES);
+            ctx.upload(builder.endNullable(), BufferType.VERTICES);
         }
         catch (Exception err)
         {

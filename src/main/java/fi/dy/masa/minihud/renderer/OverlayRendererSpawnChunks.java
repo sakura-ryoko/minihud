@@ -5,10 +5,10 @@ import java.util.List;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.tuple.Pair;
 
+import com.mojang.blaze3d.buffers.BufferType;
+import com.mojang.blaze3d.buffers.BufferUsage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.GlBufferTarget;
-import net.minecraft.client.gl.GlUsage;
 import net.minecraft.client.gl.ShaderPipelines;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.util.math.MatrixStack;
@@ -248,7 +248,7 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
                 Configs.Colors.SPAWN_REAL_OUTER_OVERLAY_COLOR.getColor();
 
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "Spawn Chunk Quads", MaLiLibPipelines.POSITION_COLOR_SIMPLE, GlUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.start(() -> "Spawn Chunk Quads", MaLiLibPipelines.getPositionColorSimple(), BufferUsage.STATIC_WRITE);
         MatrixStack matrices = new MatrixStack();
 
         matrices.push();
@@ -275,7 +275,7 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
 
         try
         {
-            ctx.upload(builder.endNullable(), GlBufferTarget.VERTICES);
+            ctx.upload(builder.endNullable(), BufferType.VERTICES);
         }
         catch (Exception err)
         {
@@ -308,13 +308,13 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
                 Configs.Colors.SPAWN_REAL_OUTER_OVERLAY_COLOR.getColor();
 
         RenderObjectVbo ctx = this.renderObjects.get(1);
-        BufferBuilder builder = ctx.start(() -> "Spawn Chunk Lines", ShaderPipelines.LINES, GlUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.start(() -> "Spawn Chunk Lines", ShaderPipelines.LINES, BufferUsage.STATIC_WRITE);
         MatrixStack matrices = new MatrixStack();
 
         matrices.push();
-        fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(this.center, cameraPos, colorEntity, 0.001, builder, matrices);
-
         MatrixStack.Entry e = matrices.peek();
+
+        fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(this.center, cameraPos, colorEntity, 0.001, builder, e);
 
         for (Box entry : this.boxesBrown)
         {
@@ -335,7 +335,7 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
 
         try
         {
-            ctx.upload(builder.endNullable(), GlBufferTarget.VERTICES);
+            ctx.upload(builder.endNullable(), BufferType.VERTICES);
         }
         catch (Exception err)
         {
