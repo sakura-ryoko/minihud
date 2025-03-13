@@ -83,7 +83,7 @@ public class RenderObjectVbo
         this.usage = usage;
         this.gpuBuffer = null;
         this.bufferIndex = -1;
-//        this.texture = null;
+        this.texture = null;
         this.textureId = -1;
         this.offset = new float[]{0f, 0f, 0f};
         this.color = -1;
@@ -490,12 +490,12 @@ public class RenderObjectVbo
 
     public void reset()
     {
-//        if (this.texture != null)
-//        {
-//            this.unbindTexture(null);
-//            this.texture.close();
-//            this.texture = null;
-//        }
+        if (this.texture != null)
+        {
+            this.unbindTexture(null);
+            this.texture.close();
+            this.texture = null;
+        }
 
         if (this.gpuBuffer != null)
         {
