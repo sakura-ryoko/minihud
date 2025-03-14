@@ -118,7 +118,7 @@ public abstract class OverlayRendererBase implements IOverlayRenderer
         for (RenderObjectVbo obj : this.renderObjects)
         {
             obj.lineWidth(this.glLineWidth);
-            obj.drawPost(null,false, (obj.getVertexFormat() == VertexFormats.LINE_COLOR_NORMAL));
+            obj.drawPost(null,false, (obj.getVertexFormat() == VertexFormats.POSITION_COLOR_NORMAL));
         }
 
         this.postRender();

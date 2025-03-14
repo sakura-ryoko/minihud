@@ -104,6 +104,7 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
 
         Color4f color = Configs.Colors.CONDUIT_RANGE_OVERLAY_COLOR.getColor();
 
+        // MaLiLibPipelines.POSITION_COLOR_MASA_LESSER_DEPTH
         profiler.push("conduit_quads");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
         BufferBuilder builder = ctx.start(() -> "Conduit Quads", this.renderThrough ? MaLiLibPipelines.getPositionColorSimple() : MaLiLibPipelines.POSITION_COLOR_MASA_LESSER_DEPTH, BufferUsage.STATIC_WRITE);

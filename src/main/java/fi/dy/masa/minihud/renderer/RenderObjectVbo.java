@@ -1,6 +1,6 @@
 package fi.dy.masa.minihud.renderer;
 
-import java.io.InputStream;
+import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.function.Supplier;
@@ -17,14 +17,13 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.BuiltBuffer;
-import net.minecraft.client.texture.NativeImage;
-import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.client.util.BufferAllocator;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.ColorHelper;
 
 import fi.dy.masa.malilib.mixin.render.IMixinBufferBuilder;
 import fi.dy.masa.malilib.render.RenderUtils;
+import fi.dy.masa.malilib.render.TexturePreloadManager;
 import fi.dy.masa.minihud.MiniHUD;
 
 /**
@@ -247,83 +246,121 @@ public class RenderObjectVbo
     {
         this.ensureSafeNoBuffer();
 
-        if (this.texture != null)
-        {
-            this.rebindTexture(textureId);
-            return;
-        }
-
         if (textureId < 0 || textureId > 12)
         {
             throw new RuntimeException("Invalid textureId of: "+textureId+" for texture: "+id.toString());
         }
 
-        NativeImageBackedTexture newTexture = this.loadFile(id);
+//        NativeImageBackedTexture newTexture = this.loadFile(id);
+//
+//        if (newTexture != null)
+//        {
+//            RenderUtils.tex().registerTexture(id, newTexture);
+//            newTexture.upload();
+//            this.texture = newTexture.getGlTexture();
+//            this.textureId = textureId;
+//            RenderSystem.setShaderTexture(this.textureId, this.texture);
+////            MiniHUD.LOGGER.warn("bindTexture() -> OK");
+//        }
+//        else
+//        {
+//            MiniHUD.LOGGER.error("Error uploading texture [{}]", id.toString());
+//
+//            if (this.texture != null)
+//            {
+//                this.texture.close();
+//            }
+//
+//            this.texture = null;
+//            this.textureId = -1;
+//        }
 
-        if (newTexture != null)
+        if (TexturePreloadManager.INSTANCE.hasTexture(id))
         {
-            RenderUtils.tex().registerTexture(id, newTexture);
-            newTexture.upload();
-            this.texture = newTexture.getGlTexture();
-            this.textureId = textureId;
-            RenderSystem.setShaderTexture(this.textureId, this.texture);
-//            MiniHUD.LOGGER.warn("bindTexture() -> OK");
-        }
-        else
-        {
-            MiniHUD.LOGGER.error("Error uploading texture [{}]", id.toString());
+            this.texture = TexturePreloadManager.INSTANCE.getTexture(id).orElse(null);
+            this.textureId = TexturePreloadManager.INSTANCE.getTextureId(id).orElse(-1);
 
-            if (this.texture != null)
+            if (this.texture != null && this.textureId > -1)
             {
-                this.texture.close();
+                MiniHUD.LOGGER.warn("bindTexture() -> Load & Set");
+                RenderSystem.setShaderTexture(this.textureId, this.texture);
+            }
+            else
+            {
+                TexturePreloadManager.INSTANCE.reloadTexture(id);
+                throw new RuntimeException("bindTexture: Preload texture for ["+id.toString()+"] is empty!");
             }
 
-            this.texture = null;
-            this.textureId = -1;
-        }
-    }
-
-    private void rebindTexture(int textureId) throws RuntimeException
-    {
-        this.ensureSafeNoBuffer();
-
-        if (this.texture == null || this.texture.isClosed())
-        {
-            throw new RuntimeException("Invalid texture ... it is null or closed.");
+            return;
         }
 
-        if (textureId < 0 || textureId > 12)
-        {
-            throw new RuntimeException("Invalid textureId of: "+textureId+" for texture: "+this.texture.getLabel());
-        }
-
-        MiniHUD.LOGGER.warn("rebindTexture()");
-        this.textureId = textureId;
-        RenderSystem.setShaderTexture(this.textureId, this.texture);
-    }
-
-    private @Nullable NativeImageBackedTexture loadFile(Identifier texture)
-    {
         try
         {
-            InputStream inputStream = RenderUtils.mc().getResourceManager().open(texture);
+            if (TexturePreloadManager.INSTANCE.registerTexture(id, textureId))
+            {
+                Optional<GpuTexture> opt = TexturePreloadManager.INSTANCE.getTexture(id);
 
-            try (NativeImage image = NativeImage.read(inputStream))
-            {
-                return new NativeImageBackedTexture(texture::toString, image.getWidth(), image.getHeight(), false);
-            }
-            catch (Exception err)
-            {
-                MiniHUD.LOGGER.error("Failed to read texture: '{}'; Exception: {}", texture.toString(), err.getMessage());
+                if (opt.isPresent())
+                {
+                    MiniHUD.LOGGER.warn("bindTexture() -> Create & set!");
+                    this.texture = opt.get();
+                    this.textureId = textureId;
+                    RenderSystem.setShaderTexture(textureId, this.texture);
+                }
+                else
+                {
+                    throw new RuntimeException("bindTexture: Failed to get Texture ["+id.toString()+"]");
+                }
             }
         }
         catch (Exception err)
         {
-            MiniHUD.LOGGER.error("Error opening input stream for texture: '{}'; Exception: {}", texture.toString(), err.getMessage());
+            MiniHUD.LOGGER.error("bindTexture: Failed to register texture [{}], Exception; {}", id.toString(), err.getMessage());
+            throw new RuntimeException(err);
         }
-
-        return null;
     }
+
+//    private void rebindTexture(int textureId) throws RuntimeException
+//    {
+//        this.ensureSafeNoBuffer();
+//
+//        if (this.texture == null || this.texture.isClosed())
+//        {
+//            throw new RuntimeException("Invalid texture ... it is null or closed.");
+//        }
+//
+//        if (textureId < 0 || textureId > 12)
+//        {
+//            throw new RuntimeException("Invalid textureId of: "+textureId+" for texture: "+this.texture.getLabel());
+//        }
+//
+//        MiniHUD.LOGGER.warn("rebindTexture()");
+//        this.textureId = textureId;
+//        RenderSystem.setShaderTexture(this.textureId, this.texture);
+//    }
+//
+//    private @Nullable NativeImageBackedTexture loadFile(Identifier texture)
+//    {
+//        try
+//        {
+//            InputStream inputStream = RenderUtils.mc().getResourceManager().open(texture);
+//
+//            try (NativeImage image = NativeImage.read(inputStream))
+//            {
+//                return new NativeImageBackedTexture(texture::toString, image.getWidth(), image.getHeight(), false);
+//            }
+//            catch (Exception err)
+//            {
+//                MiniHUD.LOGGER.error("Failed to read texture: '{}'; Exception: {}", texture.toString(), err.getMessage());
+//            }
+//        }
+//        catch (Exception err)
+//        {
+//            MiniHUD.LOGGER.error("Error opening input stream for texture: '{}'; Exception: {}", texture.toString(), err.getMessage());
+//        }
+//
+//        return null;
+//    }
 
     public void unbindTexture(@Nullable Identifier id)
     {

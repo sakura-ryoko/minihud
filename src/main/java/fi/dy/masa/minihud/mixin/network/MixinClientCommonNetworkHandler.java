@@ -1,4 +1,4 @@
-package fi.dy.masa.minihud.mixin;
+package fi.dy.masa.minihud.mixin.network;
 
 import net.minecraft.client.network.ClientCommonNetworkHandler;
 import org.spongepowered.asm.mixin.Mixin;
