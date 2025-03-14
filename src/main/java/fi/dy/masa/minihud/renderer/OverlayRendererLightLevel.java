@@ -76,6 +76,7 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
     public void setNeedsUpdate()
     {
         this.needsUpdate = true;
+        // Clean buffers when receiving the RenderCallback.
         this.clearBuffers();
     }
 
