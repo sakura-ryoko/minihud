@@ -1,6 +1,5 @@
 package fi.dy.masa.minihud.renderer;
 
-import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.function.Supplier;
@@ -17,18 +16,25 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.BuiltBuffer;
+import net.minecraft.client.texture.NativeImage;
+import net.minecraft.client.texture.ResourceTexture;
+import net.minecraft.client.texture.TextureContents;
 import net.minecraft.client.util.BufferAllocator;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.TriState;
 import net.minecraft.util.math.ColorHelper;
 
+import fi.dy.masa.malilib.mixin.render.IMixinAbstractTexture;
 import fi.dy.masa.malilib.mixin.render.IMixinBufferBuilder;
 import fi.dy.masa.malilib.render.RenderUtils;
-import fi.dy.masa.malilib.render.TexturePreloadManager;
 import fi.dy.masa.minihud.MiniHUD;
 
 /**
  * This was primarily copied from RenderContext, but this way
- * the RenderContainer has full control from within MiniHUD.
+ * the RenderContainer has full control from within MiniHUD; and
+ * it is not AutoClosable so that we can dynamically re-allocate
+ * it using the RenderContainer system.
+ * For other non-RenderContainer purposes; use RenderContext.
  */
 public class RenderObjectVbo
 {
@@ -41,7 +47,7 @@ public class RenderObjectVbo
     private BufferBuilder builder;
     private VertexFormat format;
     private VertexFormat.DrawMode drawMode;
-    private GpuTexture texture;
+    private ResourceTexture texture;
     private int textureId;
     private float[] offset;
     private float lineWidth;
@@ -49,7 +55,7 @@ public class RenderObjectVbo
     private boolean started;
     private int bufferIndex;
 
-    public RenderObjectVbo(Supplier<String> name, RenderPipeline shader, BufferUsage usage)
+    protected RenderObjectVbo(Supplier<String> name, RenderPipeline shader, BufferUsage usage)
     {
         this.name = name;
         this.alloc = new BufferAllocator(shader.getVertexFormat().getVertexSize() * 4);
@@ -61,7 +67,8 @@ public class RenderObjectVbo
         this.usage = usage;
         this.gpuBuffer = null;
         this.bufferIndex = -1;
-        this.texture = null;
+        // We don't need to reset this, in case we need to re-use the texture
+//        this.texture = null;
         this.textureId = -1;
         this.offset = new float[]{0f, 0f, 0f};
         this.color = -1;
@@ -69,7 +76,7 @@ public class RenderObjectVbo
         this.started = true;
     }
 
-    public BufferBuilder start(Supplier<String> name, RenderPipeline shader, BufferUsage usage)
+    protected BufferBuilder start(Supplier<String> name, RenderPipeline shader, BufferUsage usage)
     {
         this.reset();
         this.name = name;
@@ -82,7 +89,8 @@ public class RenderObjectVbo
         this.usage = usage;
         this.gpuBuffer = null;
         this.bufferIndex = -1;
-        this.texture = null;
+        // We don't need to reset this, in case we need to re-use the texture
+//        this.texture = null;
         this.textureId = -1;
         this.offset = new float[]{0f, 0f, 0f};
         this.color = -1;
@@ -96,7 +104,7 @@ public class RenderObjectVbo
         return this.name.get();
     }
 
-    public BufferBuilder getBuilder()
+    protected BufferBuilder getBuilder()
     {
         return this.builder;
     }
@@ -143,31 +151,20 @@ public class RenderObjectVbo
      * @param builder ()
      * @return ()
      */
-    public RenderObjectVbo setBuilder(BufferBuilder builder) throws RuntimeException
+    protected RenderObjectVbo setBuilder(BufferBuilder builder) throws RuntimeException
     {
         this.ensureBuilding(builder);
         this.builder = builder;
         return this;
     }
 
-//    public RenderObjectVbo setShader(RenderPipeline shader) throws RuntimeException
-//    {
-//        if (this.format != shader.getVertexFormat() || this.drawMode != shader.getVertexFormatMode())
-//        {
-//            throw new RuntimeException("Shader does not match Format/Draw mode!");
-//        }
-//
-//        this.shader = shader;
-//        return this;
-//    }
-
-    public RenderObjectVbo lineWidth(float width)
+    protected RenderObjectVbo lineWidth(float width)
     {
         this.lineWidth = Math.clamp(width, 0.0f, 25.0f);
         return this;
     }
 
-    public RenderObjectVbo offset(float[] value)
+    protected RenderObjectVbo offset(float[] value)
     {
         if (value.length != 3)
         {
@@ -181,7 +178,7 @@ public class RenderObjectVbo
         return this;
     }
 
-    public RenderObjectVbo color(int color)
+    protected RenderObjectVbo color(int color)
     {
         this.color = color;
         return this;
@@ -192,14 +189,14 @@ public class RenderObjectVbo
      * -
      * This uploads the BufferBuilder to the GpuBuffer for Drawing
      */
-    public void upload() throws RuntimeException
+    protected void upload() throws RuntimeException
     {
         this.ensureSafeNoShader();
         this.ensureBuilding(this.builder);
         this.upload(this.builder.endNullable(), BufferType.VERTICES);
     }
 
-    public void upload(BufferBuilder builder) throws RuntimeException
+    protected void upload(BufferBuilder builder) throws RuntimeException
     {
         this.ensureSafeNoShader();
         this.ensureBuilding(builder);
@@ -207,13 +204,13 @@ public class RenderObjectVbo
         this.upload(this.builder.endNullable(), BufferType.VERTICES);
     }
 
-    public void upload(BuiltBuffer meshData) throws RuntimeException
+    protected void upload(BuiltBuffer meshData) throws RuntimeException
     {
         this.ensureSafeNoShader();
         this.upload(meshData, BufferType.VERTICES);
     }
 
-    public void upload(BuiltBuffer meshData, BufferType target)
+    protected void upload(BuiltBuffer meshData, BufferType target)
     {
         this.ensureSafeNoBuffer();
 
@@ -242,103 +239,95 @@ public class RenderObjectVbo
      * -
      * Performs the Texture Binding/Unbind for the "Shader Texture" layer
      */
-    public void bindTexture(Identifier id, int textureId) throws RuntimeException
+    protected void bindTexture(Identifier id, int textureId, int width, int height) throws Exception
     {
         this.ensureSafeNoBuffer();
 
         if (textureId < 0 || textureId > 12)
         {
-            throw new RuntimeException("Invalid textureId of: "+textureId+" for texture: "+id.toString());
-        }
-
-//        NativeImageBackedTexture newTexture = this.loadFile(id);
-//
-//        if (newTexture != null)
-//        {
-//            RenderUtils.tex().registerTexture(id, newTexture);
-//            newTexture.upload();
-//            this.texture = newTexture.getGlTexture();
-//            this.textureId = textureId;
-//            RenderSystem.setShaderTexture(this.textureId, this.texture);
-////            MiniHUD.LOGGER.warn("bindTexture() -> OK");
-//        }
-//        else
-//        {
-//            MiniHUD.LOGGER.error("Error uploading texture [{}]", id.toString());
-//
-//            if (this.texture != null)
-//            {
-//                this.texture.close();
-//            }
-//
-//            this.texture = null;
-//            this.textureId = -1;
-//        }
-
-        if (TexturePreloadManager.INSTANCE.hasTexture(id))
-        {
-            this.texture = TexturePreloadManager.INSTANCE.getTexture(id).orElse(null);
-            this.textureId = TexturePreloadManager.INSTANCE.getTextureId(id).orElse(-1);
-
-            if (this.texture != null && this.textureId > -1)
-            {
-                MiniHUD.LOGGER.warn("bindTexture() -> Load & Set");
-                RenderSystem.setShaderTexture(this.textureId, this.texture);
-            }
-            else
-            {
-                TexturePreloadManager.INSTANCE.reloadTexture(id);
-                throw new RuntimeException("bindTexture: Preload texture for ["+id.toString()+"] is empty!");
-            }
-
-            return;
+            throw new RuntimeException("Invalid textureId of: " + textureId + " for texture: " + id.toString());
         }
 
         try
         {
-            if (TexturePreloadManager.INSTANCE.registerTexture(id, textureId))
+            // Verify that we potentially have the correct texture by checking various values
+            while (!this.isTextureValid(width, height))
             {
-                Optional<GpuTexture> opt = TexturePreloadManager.INSTANCE.getTexture(id);
+                this.texture = (ResourceTexture) RenderUtils.tex().getTexture(id);
 
-                if (opt.isPresent())
+                if (this.isTextureValid(width, height))
                 {
-                    MiniHUD.LOGGER.warn("bindTexture() -> Create & set!");
-                    this.texture = opt.get();
-                    this.textureId = textureId;
-                    RenderSystem.setShaderTexture(textureId, this.texture);
-                }
-                else
-                {
-                    throw new RuntimeException("bindTexture: Failed to get Texture ["+id.toString()+"]");
+                    if (this.texture != null)
+                    {
+                        this.texture.setFilter(TriState.DEFAULT, false);
+                        RenderSystem.setShaderTexture(textureId, this.texture.getGlTexture());
+                    }
+
+                    break;
                 }
             }
         }
         catch (Exception err)
         {
-            MiniHUD.LOGGER.error("bindTexture: Failed to register texture [{}], Exception; {}", id.toString(), err.getMessage());
-            throw new RuntimeException(err);
+            throw new RuntimeException("Exception reading Texture ["+id.toString()+"]: "+err.getMessage());
         }
+
+        if (this.texture != null)
+        {
+            // Simple texture rebind since we already have a valid texture
+            this.textureId = textureId;
+            RenderSystem.setShaderTexture(this.textureId, this.texture.getGlTexture());
+            return;
+        }
+
+        // General failure & cleanup
+        MiniHUD.LOGGER.error("bindTexture: Error uploading texture [{}]", id.toString());
+
+        if (this.texture != null)
+        {
+            this.texture.close();
+        }
+
+        this.texture = null;
+        this.textureId = -1;
     }
 
-//    private void rebindTexture(int textureId) throws RuntimeException
-//    {
-//        this.ensureSafeNoBuffer();
-//
-//        if (this.texture == null || this.texture.isClosed())
-//        {
-//            throw new RuntimeException("Invalid texture ... it is null or closed.");
-//        }
-//
-//        if (textureId < 0 || textureId > 12)
-//        {
-//            throw new RuntimeException("Invalid textureId of: "+textureId+" for texture: "+this.texture.getLabel());
-//        }
-//
-//        MiniHUD.LOGGER.warn("rebindTexture()");
-//        this.textureId = textureId;
-//        RenderSystem.setShaderTexture(this.textureId, this.texture);
-//    }
-//
+    private boolean isTextureValid(int width, int height)
+    {
+        if (this.texture == null)
+        {
+            return false;
+        }
+
+        try (TextureContents content = this.texture.loadContents(RenderUtils.mc().getResourceManager()))
+        {
+            NativeImage image = content.image();
+
+            if (image == null || image.getWidth() != width || image.getHeight() != height)
+            {
+                this.texture.close();
+                this.texture = null;
+                return false;
+            }
+        }
+        catch (Exception e)
+        {
+            this.texture.close();
+            this.texture = null;
+            return false;
+        }
+
+        if (((IMixinAbstractTexture) this.texture).malilib_getGlTexture() == null ||
+            this.texture.getGlTexture().isClosed())
+        {
+            this.texture.close();
+            this.texture = null;
+            return false;
+        }
+
+        return true;
+    }
+
 //    private @Nullable NativeImageBackedTexture loadFile(Identifier texture)
 //    {
 //        try
@@ -362,11 +351,51 @@ public class RenderObjectVbo
 //        return null;
 //    }
 
-    public void unbindTexture(@Nullable Identifier id)
+//    private void dumpTexture(Identifier id)
+//    {
+//        Path dir = FileUtils.getConfigDirectoryAsPath().resolve(Reference.MOD_ID).resolve("textures");
+//
+//        try (TextureContents content = this.texture.loadContents(RenderUtils.mc().getResourceManager()))
+//        {
+//            if (!Files.isDirectory(dir))
+//            {
+//                Files.createDirectory(dir);
+//            }
+//
+//            content.image().writeTo(dir.resolve(FileNameUtils.generateSimpleSafeFileName(id.toString())));
+//        }
+//        catch (Exception err)
+//        {
+//            MiniHUD.LOGGER.error("bindTexture: Error saving debug texture for [{}]", id.toString());
+//        }
+//    }
+
+//    private void dumpTextureManager()
+//    {
+//        Path dir = FileUtils.getConfigDirectoryAsPath().resolve(Reference.MOD_ID).resolve("textures/manager_dump");
+//
+//        try
+//        {
+//            if (!Files.isDirectory(dir))
+//            {
+//                Files.createDirectory(dir);
+//            }
+//
+//            RenderUtils.tex().dumpDynamicTextures(dir);
+//        }
+//        catch (Exception ignored) {}
+//    }
+
+    protected void unbindTexture(@Nullable Identifier id)
     {
         if (id != null)
         {
             RenderUtils.tex().destroyTexture(id);
+        }
+
+        if (this.texture != null)
+        {
+            RenderUtils.tex().destroyTexture(this.texture.getId());
         }
 
         RenderSystem.setShaderTexture(0, null);
@@ -377,31 +406,31 @@ public class RenderObjectVbo
      * -
      * Performs the Renderer draw to the specified Frame Buffer
      */
-    public void draw(BuiltBuffer meshData) throws RuntimeException
+    protected void draw(BuiltBuffer meshData) throws RuntimeException
     {
         this.ensureSafeNoBuffer();
         this.draw(null, BufferType.VERTICES, meshData, false, false);
     }
 
-    public void draw(BuiltBuffer meshData, boolean setLineWidth) throws RuntimeException
+    protected void draw(BuiltBuffer meshData, boolean setLineWidth) throws RuntimeException
     {
         this.ensureSafeNoBuffer();
         this.draw(null, BufferType.VERTICES, meshData, false, setLineWidth);
     }
 
-    public void draw(@Nullable Framebuffer otherFb, BuiltBuffer meshData) throws RuntimeException
+    protected void draw(@Nullable Framebuffer otherFb, BuiltBuffer meshData) throws RuntimeException
     {
         this.ensureSafeNoBuffer();
         this.draw(otherFb, BufferType.VERTICES, meshData, false, false);
     }
 
-    public void draw(@Nullable Framebuffer otherFb, BuiltBuffer meshData, boolean setLineWidth) throws RuntimeException
+    protected void draw(@Nullable Framebuffer otherFb, BuiltBuffer meshData, boolean setLineWidth) throws RuntimeException
     {
         this.ensureSafeNoBuffer();
         this.draw(otherFb, BufferType.VERTICES, meshData, false, setLineWidth);
     }
 
-    public void draw(@Nullable Framebuffer otherFb, BufferType target,
+    protected void draw(@Nullable Framebuffer otherFb, BufferType target,
                      BuiltBuffer meshData, boolean useOffset, boolean setLineWidth)
             throws RuntimeException
     {
@@ -433,7 +462,7 @@ public class RenderObjectVbo
         }
     }
 
-    public void drawPost(@Nullable Framebuffer otherFb, boolean useOffset, boolean setLineWidth)
+    protected void drawPost(@Nullable Framebuffer otherFb, boolean useOffset, boolean setLineWidth)
             throws RuntimeException
     {
         if (this.bufferIndex > 0)
@@ -487,7 +516,8 @@ public class RenderObjectVbo
 
                 if (this.textureId > -1 && this.textureId < 12 && this.texture != null)
                 {
-                    pass.bindSampler("Sampler"+this.textureId, this.texture);
+//                    MiniHUD.LOGGER.warn("RenderContext#drawInternal() [{}] renderPass --> bindSampler({}) [{}]", this.name.get(), this.textureId, this.texture.getGlTexture().getLabel());
+                    pass.bindSampler("Sampler"+this.textureId, this.texture.getGlTexture());
                 }
 
 //                for (int i = 0; i < 12; i++)
@@ -523,56 +553,6 @@ public class RenderObjectVbo
                 RenderSystem.resetModelOffset();
             }
         }
-    }
-
-    public void reset()
-    {
-        if (this.texture != null)
-        {
-            this.unbindTexture(null);
-            this.texture.close();
-            this.texture = null;
-        }
-
-        if (this.gpuBuffer != null)
-        {
-            this.gpuBuffer.close();
-            this.gpuBuffer = null;
-        }
-
-        if (this.builder != null)
-        {
-            if (((IMixinBufferBuilder) this.builder).malilib_isBuilding() && ((IMixinBufferBuilder) this.builder).malilib_getVertexCount() != 0)
-            {
-                try
-                {
-                    BuiltBuffer meshData = this.builder.endNullable();
-
-                    if (meshData != null)
-                    {
-                        meshData.close();
-                    }
-                }
-                catch (Exception ignored)
-                {
-                }
-            }
-
-            this.builder = null;
-        }
-
-        if (this.alloc != null)
-        {
-            this.alloc.close();
-            this.alloc = null;
-        }
-
-        this.bufferIndex = -1;
-        this.textureId = -1;
-        this.offset = new float[]{0f, 0f, 0f};
-        this.color = -1;
-        this.lineWidth = 1.0f;
-        this.started = false;
     }
 
     private void ensureBuilding(BufferBuilder builder) throws RuntimeException
@@ -625,5 +605,60 @@ public class RenderObjectVbo
         {
             throw new RuntimeException("A Texture Object is expected to be bound");
         }
+    }
+
+    protected void reset()
+    {
+        if (this.gpuBuffer != null)
+        {
+            this.gpuBuffer.close();
+            this.gpuBuffer = null;
+        }
+
+        if (this.builder != null)
+        {
+            if (((IMixinBufferBuilder) this.builder).malilib_isBuilding() &&
+                ((IMixinBufferBuilder) this.builder).malilib_getVertexCount() != 0)
+            {
+                try
+                {
+                    BuiltBuffer meshData = this.builder.endNullable();
+
+                    if (meshData != null)
+                    {
+                        meshData.close();
+                    }
+                }
+                catch (Exception ignored)
+                {
+                }
+            }
+
+            this.builder = null;
+        }
+
+        if (this.alloc != null)
+        {
+            this.alloc.close();
+            this.alloc = null;
+        }
+
+        this.bufferIndex = -1;
+        this.textureId = -1;
+        this.offset = new float[]{0f, 0f, 0f};
+        this.color = -1;
+        this.lineWidth = 1.0f;
+        this.started = false;
+    }
+
+    protected void close()
+    {
+        if (this.texture != null)
+        {
+            this.unbindTexture(this.texture.getId());
+            this.texture.close();
+        }
+
+        this.reset();
     }
 }

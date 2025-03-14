@@ -76,6 +76,7 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
     public void setNeedsUpdate()
     {
         this.needsUpdate = true;
+        this.clearBuffers();
     }
 
     @Override
@@ -127,6 +128,17 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
     }
 
     @Override
+    public void allocateBuffers()
+    {
+        // Don't reallocate it unless empty; using start() calls reset() anyways.
+        if (this.renderObjects.isEmpty())
+        {
+            this.renderObjects.add(new RenderObjectVbo(() -> this.getName() + " Quads", MaLiLibPipelines.POSITION_TEX_COLOR_MASA_NO_DEPTH_NO_CULL, BufferUsage.STATIC_WRITE));
+            this.renderObjects.add(new RenderObjectVbo(() -> this.getName() + " Lines", MaLiLibPipelines.LINES_MASA_NO_DEPTH_NO_CULL, BufferUsage.STATIC_WRITE));
+        }
+    }
+
+    @Override
     public void render(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
     {
         this.allocateBuffers();
@@ -155,7 +167,7 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
 
         try
         {
-            ctx.bindTexture(TEXTURE_NUMBERS, 0);
+            ctx.bindTexture(TEXTURE_NUMBERS, 0, 256, 256);
         }
         catch (Exception err)
         {
