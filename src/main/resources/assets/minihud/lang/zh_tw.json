@@ -157,8 +157,6 @@
     "minihud.config.generic.comment.serverNbtRequestRate": "向伺服器請求實體資料同步的速率",
     "minihud.config.generic.comment.setDistanceReferencePoint": "儲存玩家位置的快速鍵\n用於設定距離參考點位",
     "minihud.config.generic.comment.shapeEditor": "開啟所選形狀的形狀編輯界面",
-    "minihud.config.generic.comment.shapeRenderOutlines": "If enabled, then all Shapes will be rendered with outlines",
-    "minihud.config.generic.comment.shapeRenderThrough": "If enabled, then all Shapes will be rendered through blocks",
     "minihud.config.generic.comment.shulkerBoxPreview": "啟用後, 在按住Shift的同時將滑鼠位於界伏盒將預覽界伏盒內的物品",
     "minihud.config.generic.comment.shulkerDisplayBgColor": "將 §6[界伏盒預覽]§f 功能預覽界面的背景顏色設定為界伏盒的顏色。",
     "minihud.config.generic.comment.shulkerDisplayEnderChest": "Enables Ender Chest display similar to the Shulker Box Display.",
@@ -264,8 +262,6 @@
     "minihud.config.generic.name.serverNbtRequestRate": "伺服器 NBT 請求速率",
     "minihud.config.generic.name.setDistanceReferencePoint": "設定距離參考點",
     "minihud.config.generic.name.shapeEditor": "形狀編輯器",
-    "minihud.config.generic.name.shapeRenderOutlines": "shapeRenderOutlines",
-    "minihud.config.generic.name.shapeRenderThrough": "shapeRenderThrough",
     "minihud.config.generic.name.shulkerBoxPreview": "界伏盒預覽",
     "minihud.config.generic.name.shulkerDisplayBgColor": "界伏盒預覽背景色",
     "minihud.config.generic.name.shulkerDisplayEnderChest": "shulkerDisplayEnderChest",
@@ -1009,5 +1005,11 @@
     "minihud.message.toggled_using_center_position": "%s 切換為 %s，使用中心位置 %s",
     "minihud.message.toggled_using_player_spawn": "%s 切換為 %s，使用模擬距離 %s",
     "minihud.message.toggled_using_position": "%s 切換為 %s，使用位置 %s",
-    "minihud.message.toggled_using_world_spawn": "%s 切換為 %s，使用世界出生點 %s"
+    "minihud.message.toggled_using_world_spawn": "%s 切換為 %s，使用世界出生點 %s",
+    "minihud.config.generic.comment.conduitRangeOverlayOutlines": "Uses the \"Render Outlines\" mode for rendering the Conduit Overlay Renderer",
+    "minihud.config.generic.comment.conduitRangeOverlayThrough": "Uses the \"Render Through\" mode for rendering the Conduit Overlay Renderer",
+    "minihud.config.generic.name.conduitRangeOverlayOutlines": "conduitRangeOverlayOutlines",
+    "minihud.config.generic.name.conduitRangeOverlayThrough": "conduitRangeOverlayThrough",
+    "minihud.gui.button.shape_renderer.toggle_render_lines": "Render Lines: %s",
+    "minihud.gui.button.shape_renderer.toggle_render_through": "Render Through: %s"
 }
