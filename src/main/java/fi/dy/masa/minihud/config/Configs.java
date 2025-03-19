@@ -53,7 +53,9 @@ public class Configs implements IConfigHandler
         public static final ConfigBoolean       BUNDLE_DISPLAY_BACKGROUND_COLOR     = new ConfigBoolean("bundleDisplayBgColor", true).apply(GENERIC_KEY);
         public static final ConfigBoolean       BUNDLE_DISPLAY_REQUIRE_SHIFT        = new ConfigBoolean("bundleDisplayRequireShift", true).apply(GENERIC_KEY);
         public static final ConfigInteger       BUNDLE_DISPLAY_ROW_WIDTH            = new ConfigInteger("bundleDisplayRowWidth", 9, 6, 9).apply(GENERIC_KEY);
-        public static final ConfigBoolean       CONDUIT_RANGE_OVERLAY_COMBINE_QUADS = new ConfigBoolean("conduitRangeOverlayCombineQuads", true).apply(GENERIC_KEY);
+        public static final ConfigBoolean       CONDUIT_RANGE_OVERLAY_COMBINE_QUADS  = new ConfigBoolean("conduitRangeOverlayCombineQuads", true).apply(GENERIC_KEY);
+        public static final ConfigBoolean       CONDUIT_RANGE_OVERLAY_RENDER_OUTLINES= new ConfigBoolean("conduitRangeOverlayOutlines", false).apply(GENERIC_KEY);
+        public static final ConfigBoolean       CONDUIT_RANGE_OVERLAY_RENDER_THROUGH = new ConfigBoolean("conduitRangeOverlayThrough", false).apply(GENERIC_KEY);
         public static final ConfigString        COORDINATE_FORMAT_STRING            = new ConfigString("coordinateFormat", "x: %.1f y: %.1f z: %.1f").apply(GENERIC_KEY);
         public static final ConfigOptionList    DATE_FORMAT_TYPE                    = new ConfigOptionList("dateFormatType", TimeFormat.REGULAR).apply(GENERIC_KEY);
         public static final ConfigString        DATE_FORMAT_STRING                  = new ConfigString("dateFormatString", "yyyy-MM-dd HH:mm:ss").apply(GENERIC_KEY);
@@ -61,7 +63,6 @@ public class Configs implements IConfigHandler
         public static final ConfigOptionList    DURATION_FORMAT_TYPE                = new ConfigOptionList("durationFormatType", DurationFormat.PRETTY).apply(GENERIC_KEY);
         public static final ConfigString        DURATION_FORMAT_STRING              = new ConfigString("durationFormatString", "HH:mm:ss.SSS").apply(GENERIC_KEY);
         public static final ConfigBoolean       DEBUG_MESSAGES                      = new ConfigBoolean("debugMessages", false).apply(GENERIC_KEY);
-        //public static final ConfigBoolean       DEBUG_DEVELOPMENT_MODE              = new ConfigBoolean("debugDevelopmentMode", false).apply(GENERIC_KEY);
         //public static final ConfigBoolean       DEBUG_RENDERER_PATH_MAX_DIST        = new ConfigBoolean("debugRendererPathFindingEnablePointWidth", true).apply(GENERIC_KEY);
         public static final ConfigBoolean       DONT_RESET_SEED_ON_DIMENSION_CHANGE = new ConfigBoolean("dontClearStoredSeedOnDimensionChange", true).apply(GENERIC_KEY);
         public static final ConfigBooleanHotkeyed ENTITY_DATA_SYNC                  = new ConfigBooleanHotkeyed("entityDataSync", false, "").apply(GENERIC_KEY);
@@ -111,8 +112,6 @@ public class Configs implements IConfigHandler
         public static final ConfigInteger       SERVER_NBT_REQUEST_RATE             = new ConfigInteger("serverNbtRequestRate", 2).apply(GENERIC_KEY);
         public static final ConfigHotkey        SET_DISTANCE_REFERENCE_POINT        = new ConfigHotkey("setDistanceReferencePoint", "").apply(GENERIC_KEY);
         public static final ConfigHotkey        SHAPE_EDITOR                        = new ConfigHotkey("shapeEditor", "").apply(GENERIC_KEY);
-        public static final ConfigBoolean       SHAPE_RENDER_OUTLINES               = new ConfigBoolean("shapeRenderOutlines", false).apply(GENERIC_KEY);
-        public static final ConfigBoolean       SHAPE_RENDER_THROUGH                = new ConfigBoolean("shapeRenderThrough", false).apply(GENERIC_KEY);
         public static final ConfigBoolean       SHULKER_BOX_PREVIEW                 = new ConfigBoolean("shulkerBoxPreview", false).apply(GENERIC_KEY);
         public static final ConfigBoolean       SHULKER_DISPLAY_BACKGROUND_COLOR    = new ConfigBoolean("shulkerDisplayBgColor", true).apply(GENERIC_KEY);
         public static final ConfigBoolean       SHULKER_DISPLAY_ENDER_CHEST         = new ConfigBoolean("shulkerDisplayEnderChest", false).apply(GENERIC_KEY);
@@ -162,6 +161,8 @@ public class Configs implements IConfigHandler
                 //DEBUG_RENDERER_PATH_MAX_DIST,
                 DONT_RESET_SEED_ON_DIMENSION_CHANGE,
                 CONDUIT_RANGE_OVERLAY_COMBINE_QUADS,
+                CONDUIT_RANGE_OVERLAY_RENDER_OUTLINES,
+                CONDUIT_RANGE_OVERLAY_RENDER_THROUGH,
                 HUD_DATA_SYNC,
                 ENTITY_DATA_SYNC,
                 ENTITY_DATA_SYNC_BACKUP,
@@ -205,8 +206,6 @@ public class Configs implements IConfigHandler
                 SERVER_NBT_REQUEST_RATE,
                 SET_DISTANCE_REFERENCE_POINT,
                 SHAPE_EDITOR,
-                SHAPE_RENDER_OUTLINES,
-                SHAPE_RENDER_THROUGH,
 
                 BLOCK_GRID_OVERLAY_MODE,
                 LIGHT_LEVEL_MARKER_CONDITION,

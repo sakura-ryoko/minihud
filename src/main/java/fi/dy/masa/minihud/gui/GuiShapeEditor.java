@@ -50,6 +50,14 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
 
         ButtonGeneric button = new ButtonGeneric(x, this.getScreenHeight() - 24, -1, 20, ConfigGuiTab.SHAPES.getDisplayName());
         this.addButton(button, new GuiShapeManager.ButtonListenerTab(ConfigGuiTab.SHAPES));
+
+        ButtonOnOff renderThroughButton = new ButtonOnOff(this.getScreenWidth() - 224, this.getScreenHeight() - 24, -1, false, "minihud.gui.button.shape_renderer.toggle_render_through", this.shape.shouldRenderThrough());
+        this.addButton(renderThroughButton, (b, mb) -> this.toggleRenderThrough(shape, renderThroughButton));
+
+        this.createColorOutlinesInput(this.getScreenWidth() - 98, this.getScreenHeight() - 60);
+
+        ButtonOnOff renderLinesButton = new ButtonOnOff(this.getScreenWidth() - 104, this.getScreenHeight() - 24, -1, false, "minihud.gui.button.shape_renderer.toggle_render_lines", this.shape.shouldRenderLines());
+        this.addButton(renderLinesButton, (b, mb) -> this.toggleRenderLines(shape, renderLinesButton));
     }
 
     @Override
@@ -188,11 +196,9 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
 
         ButtonOnOff combineQuadsButton = new ButtonOnOff(btnX, y, -1, false, "minihud.gui.button.shape_renderer.toggle_combine_quads", ((ShapeBlocky) this.shape).getCombineQuads());
         this.addButton(combineQuadsButton, (b, mb) -> this.toggleCombineQuads(shape, combineQuadsButton));
-        y += 34;
+        y += 24;
 
         this.createColorInput(x, y);
-        y += 34;
-        this.createColorOutlinesInput(x, y);
     }
 
     private void createShapeEditorElementsBox(int xIn, int yIn)
@@ -206,8 +212,6 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
 
         y += 160;
         this.createColorInput(x + 12, y);
-        y += 34;
-        this.createColorOutlinesInput(x + 12, y);
 
         x = xIn + 250;
         y = yIn + 4;
@@ -282,9 +286,6 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         y += 11;
 
         this.createLayerEditControls(xIn + 115, y, this.getLayerRange());
-        y += 22;
-
-        this.createColorOutlinesInput(xIn + 12, y);
     }
 
     private void toggleGridEnabled(ShapeBox shape)
@@ -320,6 +321,17 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         shape.setEnabledSidesMask(mask ^ (1 << side.getIndex()));
     }
 
+    private void toggleRenderLines(ShapeBase shape, ButtonOnOff button)
+    {
+        shape.toggleRenderLines();
+        button.updateDisplayString(shape.shouldRenderLines());
+    }
+
+    private void toggleRenderThrough(ShapeBase shape, ButtonOnOff button)
+    {
+        shape.toggleRenderThrough();
+        button.updateDisplayString(shape.shouldRenderThrough());
+    }
 
     public void createBoxInputs(int x1, int y1, int x2, int y2, int textFieldWidth, ShapeBox shape)
     {

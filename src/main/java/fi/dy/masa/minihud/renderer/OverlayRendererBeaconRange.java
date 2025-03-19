@@ -94,7 +94,7 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
 
     private void renderOutlines(World world, BlockPos pos, int level, Vec3d cameraPos, Color4f color, MinecraftClient mc, Profiler profiler)
     {
-        if (mc.world == null || mc.player == null || !Configs.Generic.SHAPE_RENDER_OUTLINES.getBooleanValue())
+        if (mc.world == null || mc.player == null)
         {
             return;
         }

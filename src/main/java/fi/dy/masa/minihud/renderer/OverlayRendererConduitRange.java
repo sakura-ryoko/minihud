@@ -85,16 +85,21 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
 
         this.colorLines = Configs.Colors.CONDUIT_RANGE_OUTLINES.getColor();
         this.combineQuads = Configs.Generic.CONDUIT_RANGE_OVERLAY_COMBINE_QUADS.getBooleanValue();
-        this.renderThrough = Configs.Generic.SHAPE_RENDER_THROUGH.getBooleanValue();
+        this.renderThrough = Configs.Generic.CONDUIT_RANGE_OVERLAY_RENDER_THROUGH.getBooleanValue();
+        boolean outlines = Configs.Generic.CONDUIT_RANGE_OVERLAY_RENDER_OUTLINES.getBooleanValue();
 
         if (this.combineQuads)
         {
             this.quads = SphereUtils.buildSphereShellToQuads(this.positions, this.quadAxis, this.test, this.renderType, this.layerRange);
         }
 
-        this.allocateBuffers();
+        this.allocateBuffers(outlines);
         this.renderQuads(cameraPos, mc, profiler);
-        this.renderOutlines(cameraPos, mc, profiler);
+
+        if (outlines)
+        {
+            this.renderOutlines(cameraPos, mc, profiler);
+        }
     }
 
     private void renderQuads(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
@@ -142,7 +147,7 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
 
     private void renderOutlines(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
     {
-        if (mc.world == null || mc.player == null || !Configs.Generic.SHAPE_RENDER_OUTLINES.getBooleanValue())
+        if (mc.world == null || mc.player == null || !Configs.Generic.CONDUIT_RANGE_OVERLAY_RENDER_OUTLINES.getBooleanValue())
         {
             return;
         }

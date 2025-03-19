@@ -92,7 +92,6 @@ public class ShapeLineBlock extends ShapeBlocky
     public void update(Vec3d cameraPos, Entity entity, MinecraftClient mc, Profiler profiler)
     {
         this.hasData = true;
-        this.renderThrough = Configs.Generic.SHAPE_RENDER_THROUGH.getBooleanValue();
         this.render(cameraPos, mc, profiler);
         this.needsUpdate = false;
     }
@@ -106,11 +105,10 @@ public class ShapeLineBlock extends ShapeBlocky
     @Override
     public void render(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
     {
-        boolean outlines = Configs.Generic.SHAPE_RENDER_OUTLINES.getBooleanValue();
-        this.allocateBuffers(outlines);
+        this.allocateBuffers(this.renderLines);
         this.renderQuads(cameraPos, mc, profiler);
 
-        if (outlines)
+        if (this.renderLines)
         {
             this.renderOutlines(cameraPos, mc, profiler);
         }
@@ -125,7 +123,7 @@ public class ShapeLineBlock extends ShapeBlocky
 
         profiler.push("line_block_quads");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "Line Block Quads", this.renderThrough ? MaLiLibPipelines.POSITION_COLOR_MASA_NO_DEPTH_NO_CULL : MaLiLibPipelines.POSITION_COLOR_MASA_LESSER_DEPTH, BufferUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.start(() -> "Line Block Quads", this.renderThroughShape ? MaLiLibPipelines.POSITION_COLOR_MASA_NO_DEPTH_NO_CULL : MaLiLibPipelines.POSITION_COLOR_MASA_LESSER_DEPTH, BufferUsage.STATIC_WRITE);
         MatrixStack matrices = new MatrixStack();
 
         matrices.push();
@@ -146,7 +144,7 @@ public class ShapeLineBlock extends ShapeBlocky
 
     private void renderOutlines(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
     {
-        if (mc.world == null || mc.player == null || !Configs.Generic.SHAPE_RENDER_OUTLINES.getBooleanValue())
+        if (mc.world == null || mc.player == null || !this.renderLines)
         {
             return;
         }

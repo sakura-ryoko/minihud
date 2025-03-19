@@ -32,6 +32,8 @@ public abstract class ShapeBase extends OverlayRendererBase implements IRangeCha
     protected Color4f colorLines;
     protected boolean enabled;
     protected boolean needsUpdate;
+    protected boolean renderLines;
+    protected boolean renderThroughShape;
 
     public ShapeBase(ShapeType type, Color4f color)
     {
@@ -43,6 +45,8 @@ public abstract class ShapeBase extends OverlayRendererBase implements IRangeCha
         this.renderType = ShapeRenderType.OUTER_EDGE;
         this.displayName = type.getDisplayName();
         this.needsUpdate = true;
+        this.renderLines = false;
+        this.renderThroughShape = false;
     }
 
     @Override
@@ -135,6 +139,28 @@ public abstract class ShapeBase extends OverlayRendererBase implements IRangeCha
         }
     }
 
+    public void toggleRenderLines()
+    {
+        this.renderLines = ! this.renderLines;
+        this.setNeedsUpdate();
+    }
+
+    public boolean shouldRenderLines()
+    {
+        return this.renderLines;
+    }
+
+    public void toggleRenderThrough()
+    {
+        this.renderThroughShape = ! this.renderThroughShape;
+        this.setNeedsUpdate();
+    }
+
+    public boolean shouldRenderThrough()
+    {
+        return this.renderThroughShape;
+    }
+
     public void setNeedsUpdate()
     {
         this.needsUpdate = true;
@@ -199,6 +225,8 @@ public abstract class ShapeBase extends OverlayRendererBase implements IRangeCha
         obj.add("color_lines", new JsonPrimitive(this.colorLines.intValue));
         obj.add("enabled", new JsonPrimitive(this.enabled));
         obj.add("display_name", new JsonPrimitive(this.displayName));
+        obj.add("render_lines", new JsonPrimitive(this.renderLines));
+        obj.add("render_through", new JsonPrimitive(this.renderThroughShape));
         obj.add("render_type", new JsonPrimitive(this.renderType.getStringValue()));
         obj.add("layers", this.layerRange.toJson());
 
@@ -223,6 +251,16 @@ public abstract class ShapeBase extends OverlayRendererBase implements IRangeCha
         if (JsonUtils.hasObject(obj, "layers"))
         {
             this.layerRange.fromJson(JsonUtils.getNestedObject(obj, "layers", false));
+        }
+
+        if (JsonUtils.hasBoolean(obj, "render_lines"))
+        {
+            this.renderLines = JsonUtils.getBoolean(obj, "render_lines");
+        }
+
+        if (JsonUtils.hasBoolean(obj, "render_through"))
+        {
+            this.renderThroughShape = JsonUtils.getBoolean(obj, "render_through");
         }
 
         if (JsonUtils.hasString(obj, "render_type"))

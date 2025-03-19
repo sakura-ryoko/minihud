@@ -188,7 +188,6 @@ public class ShapeBox extends ShapeBase
     {
         this.renderBox = this.box.offset(-cameraPos.x, -cameraPos.y, -cameraPos.z);
         this.hasData = true;
-        this.renderThrough = Configs.Generic.SHAPE_RENDER_THROUGH.getBooleanValue();
         this.render(cameraPos, mc, profiler);
         this.needsUpdate = false;
     }
@@ -202,9 +201,13 @@ public class ShapeBox extends ShapeBase
     @Override
     public void render(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
     {
-        this.allocateBuffers();
+        this.allocateBuffers(this.renderLines);
         this.renderBoxQuads(cameraPos, mc, profiler);
-        this.renderBoxOutlines(cameraPos, mc, profiler);
+
+        if (this.renderLines)
+        {
+            this.renderBoxOutlines(cameraPos, mc, profiler);
+        }
     }
 
     @Override
@@ -224,7 +227,7 @@ public class ShapeBox extends ShapeBase
 
         profiler.push("box_quads");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "Box Quads", this.renderThrough ? MaLiLibPipelines.POSITION_COLOR_MASA_SIMPLE_NO_DEPTH_NO_CULL : MaLiLibPipelines.POSITION_COLOR_MASA_LESSER_DEPTH, BufferUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.start(() -> "Box Quads", this.renderThroughShape ? MaLiLibPipelines.POSITION_COLOR_MASA_SIMPLE_NO_DEPTH_NO_CULL : MaLiLibPipelines.POSITION_COLOR_MASA_LESSER_DEPTH, BufferUsage.STATIC_WRITE);
         MatrixStack matrices = new MatrixStack();
 
         matrices.push();
@@ -252,7 +255,7 @@ public class ShapeBox extends ShapeBase
 
     protected void renderBoxOutlines(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
     {
-        if (mc.world == null || mc.player == null)
+        if (mc.world == null || mc.player == null || !this.renderLines)
         {
             return;
         }
