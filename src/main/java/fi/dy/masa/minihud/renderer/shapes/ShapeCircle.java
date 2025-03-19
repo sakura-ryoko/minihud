@@ -12,7 +12,7 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import com.mojang.blaze3d.buffers.BufferType;
 import com.mojang.blaze3d.buffers.BufferUsage;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.ShaderPipelines;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
@@ -25,7 +25,6 @@ import net.minecraft.util.profiler.Profiler;
 import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.JsonUtils;
 import fi.dy.masa.malilib.util.StringUtils;
-import fi.dy.masa.malilib.util.data.Color4f;
 import fi.dy.masa.malilib.util.position.PositionUtils;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
@@ -51,7 +50,6 @@ public class ShapeCircle extends ShapeCircleBase
     {
         this.hasData = true;
         this.renderThrough = Configs.Generic.SHAPE_RENDER_THROUGH.getBooleanValue();
-        this.colorLines = Color4f.fromColor(this.color.intValue, 1f);
         this.render(cameraPos, mc, profiler);
         this.needsUpdate = false;
     }
@@ -84,7 +82,7 @@ public class ShapeCircle extends ShapeCircleBase
 
         profiler.push("circle_quads");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "Circle Quads", this.renderThrough ? MaLiLibPipelines.getPositionColorSimple() : MaLiLibPipelines.POSITION_COLOR_MASA_LESSER_DEPTH, BufferUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.start(() -> "Circle Quads", this.renderThrough ? MaLiLibPipelines.POSITION_COLOR_MASA_NO_DEPTH_NO_CULL : MaLiLibPipelines.POSITION_COLOR_MASA_LESSER_DEPTH, BufferUsage.STATIC_WRITE);
         MatrixStack matrices = new MatrixStack();
 
         matrices.push();
@@ -112,7 +110,7 @@ public class ShapeCircle extends ShapeCircleBase
 
         profiler.push("circle_outlines");
         RenderObjectVbo ctx = this.renderObjects.get(1);
-        BufferBuilder builder = ctx.start(() -> "Circle Outlines", ShaderPipelines.LINES, BufferUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.start(() -> "Circle Outlines", RenderPipelines.LINES, BufferUsage.STATIC_WRITE);
         MatrixStack matrices = new MatrixStack();
 
         matrices.push();

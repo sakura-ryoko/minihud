@@ -9,7 +9,7 @@ import com.mojang.blaze3d.buffers.BufferType;
 import com.mojang.blaze3d.buffers.BufferUsage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.ShaderPipelines;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
@@ -19,6 +19,7 @@ import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.profiler.Profiler;
 import net.minecraft.world.GameRules;
+import net.minecraft.world.Heightmap;
 import net.minecraft.world.World;
 
 import fi.dy.masa.malilib.render.MaLiLibPipelines;
@@ -248,7 +249,7 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
                 Configs.Colors.SPAWN_REAL_OUTER_OVERLAY_COLOR.getColor();
 
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "Spawn Chunk Quads", MaLiLibPipelines.getPositionColorSimple(), BufferUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.start(() -> "Spawn Chunk Quads", MaLiLibPipelines.POSITION_COLOR_MASA_NO_DEPTH_NO_CULL, BufferUsage.STATIC_WRITE);
         MatrixStack matrices = new MatrixStack();
 
         matrices.push();
@@ -308,13 +309,14 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
                 Configs.Colors.SPAWN_REAL_OUTER_OVERLAY_COLOR.getColor();
 
         RenderObjectVbo ctx = this.renderObjects.get(1);
-        BufferBuilder builder = ctx.start(() -> "Spawn Chunk Lines", ShaderPipelines.LINES, BufferUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.start(() -> "Spawn Chunk Lines", RenderPipelines.LINES, BufferUsage.STATIC_WRITE);
         MatrixStack matrices = new MatrixStack();
 
         matrices.push();
         MatrixStack.Entry e = matrices.peek();
 
-        fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(this.center, cameraPos, colorEntity, 0.001, builder, e);
+        // The SpawnPos box looks better with white outlines.  You can't really see the `colorEntity` value
+        fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(this.center, cameraPos, Color4f.WHITE, 0.001, builder, e);
 
         for (Box entry : this.boxesBrown)
         {
@@ -370,7 +372,7 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
         int cx = (worldSpawn.getX() >> 4);
         int cz = (worldSpawn.getZ() >> 4);
 
-        int minY = this.getMinY(world, cx, cz);
+        int minY = this.getMinY(world, worldSpawn, cx, cz);
         int maxY = world != null ? world.getTopYInclusive() + 1 : 320;
         BlockPos pos1 = new BlockPos( (cx - chunkRange) << 4      , minY,  (cz - chunkRange) << 4);
         BlockPos pos2 = new BlockPos(((cx + chunkRange) << 4) + 15, maxY, ((cz + chunkRange) << 4) + 15);
@@ -378,7 +380,7 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
         return Pair.of(pos1, pos2);
     }
 
-    private int getMinY(World world, int cx, int cz)
+    private int getMinY(World world, BlockPos pos, int cx, int cz)
     {
         MinecraftClient mc = MinecraftClient.getInstance();
         int minY;
@@ -388,14 +390,17 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
 //        if (MinecraftClient.isFabulousGraphicsOrBetter() && world != null && mc.player != null)
         if (world != null && mc.player != null)
         {
+            int ws = world.getChunk(cx, cz).sampleHeightmap(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, pos.getX(), pos.getZ());
+
             if (mc.player.getBlockPos().getY() >= world.getSeaLevel())
             {
-                minY = world.getSeaLevel();
+                minY = Math.min(world.getSeaLevel(), ws);
             }
             else
             {
                 // Dumb hack to help correct the display
-                minY = Math.max(world.getBottomSectionCoord(), mc.player.getBlockPos().getY() - 16);
+                // mc.player.getBlockPos().getY() - 16
+                minY = Math.min(Math.max(world.getBottomSectionCoord(), ws), mc.player.getBlockPos().getY() - 16);
             }
         }
         else

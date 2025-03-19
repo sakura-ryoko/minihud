@@ -76,7 +76,7 @@ public class RenderObjectVbo
         this.started = true;
     }
 
-    protected BufferBuilder start(Supplier<String> name, RenderPipeline shader, BufferUsage usage)
+    public BufferBuilder start(Supplier<String> name, RenderPipeline shader, BufferUsage usage)
     {
         this.reset();
         this.name = name;
@@ -210,7 +210,7 @@ public class RenderObjectVbo
         this.upload(meshData, BufferType.VERTICES);
     }
 
-    protected void upload(BuiltBuffer meshData, BufferType target)
+    public void upload(BuiltBuffer meshData, BufferType target)
     {
         this.ensureSafeNoBuffer();
 

@@ -73,6 +73,21 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         this.addWidget(new WidgetColorIndicator(x + 74, this.colorY, 19, 19, this.shape.getColor(), this.shape::setColor));
     }
 
+    private void createColorOutlinesInput(int x, int y)
+    {
+        this.addLabel(x, y, -1, 14, 0xFFFFFFFF, StringUtils.translate("minihud.gui.label.outlines_color"));
+        y += 12;
+
+        GuiTextFieldGeneric textField = new GuiTextFieldGeneric(x, y, 70, 17, this.textRenderer);
+        textField.setMaxLengthWrapper(12);
+        textField.setTextWrapper(String.format("#%08X", this.shape.getColorLines().intValue));
+        this.addTextField(textField, new TextFieldListenerColorLines(this.shape));
+        this.nextY = y + 20;
+        this.colorY = y - 1;
+
+        this.addWidget(new WidgetColorIndicator(x + 74, this.colorY, 19, 19, this.shape.getColorLines(), this.shape::setColorLines));
+    }
+
     private void createShapeEditorElements(int x, int y)
     {
         this.addLabel(x, y, -1, 14, 0xFFFFFFFF, StringUtils.translate("minihud.gui.label.display_name_colon"));
@@ -176,6 +191,8 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         y += 34;
 
         this.createColorInput(x, y);
+        y += 34;
+        this.createColorOutlinesInput(x, y);
     }
 
     private void createShapeEditorElementsBox(int xIn, int yIn)
@@ -188,7 +205,9 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         this.createBoxInputs(x, y, x, y + 82, 120, shape);
 
         y += 160;
-        this.createColorInput(x, y);
+        this.createColorInput(x + 12, y);
+        y += 34;
+        this.createColorOutlinesInput(x + 12, y);
 
         x = xIn + 250;
         y = yIn + 4;
@@ -263,6 +282,9 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         y += 11;
 
         this.createLayerEditControls(xIn + 115, y, this.getLayerRange());
+        y += 22;
+
+        this.createColorOutlinesInput(xIn + 12, y);
     }
 
     private void toggleGridEnabled(ShapeBox shape)
@@ -628,6 +650,16 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         public boolean onTextChange(GuiTextFieldGeneric textField)
         {
             this.shape.setColorFromString(textField.getTextWrapper());
+            return false;
+        }
+    }
+
+    private record TextFieldListenerColorLines(ShapeBase shape) implements ITextFieldListener<GuiTextFieldGeneric>
+    {
+        @Override
+        public boolean onTextChange(GuiTextFieldGeneric textField)
+        {
+            this.shape.setColorLinesFromString(textField.getTextWrapper());
             return false;
         }
     }

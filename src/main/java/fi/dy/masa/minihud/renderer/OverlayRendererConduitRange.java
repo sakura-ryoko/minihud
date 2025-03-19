@@ -9,7 +9,7 @@ import com.mojang.blaze3d.buffers.BufferUsage;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.block.entity.ConduitBlockEntity;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.ShaderPipelines;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.BlockPos;
@@ -38,6 +38,7 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
     private final LayerRange layerRange;
     private final Direction.Axis quadAxis;
     private boolean combineQuads;
+    private Color4f colorLines;
 
     private LongOpenHashSet positions;
     private SphereUtils.RingPositionTest test;
@@ -82,7 +83,8 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
         this.test = this.getPositionTest(pos, range);
         SphereUtils.collectSpherePositions(positionCollector, this.test, pos, range);
 
-        this.combineQuads = true;
+        this.colorLines = Configs.Colors.CONDUIT_RANGE_OUTLINES.getColor();
+        this.combineQuads = Configs.Generic.CONDUIT_RANGE_OVERLAY_COMBINE_QUADS.getBooleanValue();
         this.renderThrough = Configs.Generic.SHAPE_RENDER_THROUGH.getBooleanValue();
 
         if (this.combineQuads)
@@ -107,7 +109,7 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
         // MaLiLibPipelines.POSITION_COLOR_MASA_LESSER_DEPTH
         profiler.push("conduit_quads");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "Conduit Quads", this.renderThrough ? MaLiLibPipelines.getPositionColorSimple() : MaLiLibPipelines.POSITION_COLOR_MASA_LESSER_DEPTH, BufferUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.start(() -> "Conduit Quads", this.renderThrough ? MaLiLibPipelines.POSITION_COLOR_MASA_NO_DEPTH_NO_CULL : MaLiLibPipelines.POSITION_COLOR_MASA_LESSER_DEPTH, BufferUsage.STATIC_WRITE);
         MatrixStack matrices = new MatrixStack();
 
         matrices.push();
@@ -145,24 +147,22 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
             return;
         }
 
-        Color4f color = Configs.Colors.CONDUIT_RANGE_OVERLAY_COLOR.getColor();
-
         profiler.push("conduit_outlines");
         RenderObjectVbo ctx = this.renderObjects.get(1);
-        BufferBuilder builder = ctx.start(() -> "Conduit Outlines", ShaderPipelines.LINES, BufferUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.start(() -> "Conduit Outlines", RenderPipelines.LINES, BufferUsage.STATIC_WRITE);
         MatrixStack matrices = new MatrixStack();
 
         matrices.push();
 
         if (this.combineQuads)
         {
-            RenderUtils.renderQuadLines(this.quads, color, 0, cameraPos, builder, matrices.peek());
+            RenderUtils.renderQuadLines(this.quads, this.colorLines, 0, cameraPos, builder, matrices.peek());
         }
         else
         {
             RenderUtils.renderCircleBlockOutlines(this.positions, PositionUtils.ALL_DIRECTIONS,
                                                   this.test, this.renderType,
-                                                  this.layerRange, Color4f.fromColor(color.intValue, 1f), 0,
+                                                  this.layerRange, this.colorLines, 0,
                                                   cameraPos, builder, matrices.peek());
         }
 

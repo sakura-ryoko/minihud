@@ -6,7 +6,7 @@ import com.google.gson.JsonObject;
 import com.mojang.blaze3d.buffers.BufferType;
 import com.mojang.blaze3d.buffers.BufferUsage;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.ShaderPipelines;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
@@ -189,7 +189,6 @@ public class ShapeBox extends ShapeBase
         this.renderBox = this.box.offset(-cameraPos.x, -cameraPos.y, -cameraPos.z);
         this.hasData = true;
         this.renderThrough = Configs.Generic.SHAPE_RENDER_THROUGH.getBooleanValue();
-//        this.colorLines = Color4f.fromColor(this.color.intValue, 1f);
         this.render(cameraPos, mc, profiler);
         this.needsUpdate = false;
     }
@@ -225,7 +224,7 @@ public class ShapeBox extends ShapeBase
 
         profiler.push("box_quads");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "Box Quads", this.renderThrough ? MaLiLibPipelines.getPositionColorSimple() : MaLiLibPipelines.POSITION_COLOR_MASA_LESSER_DEPTH, BufferUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.start(() -> "Box Quads", this.renderThrough ? MaLiLibPipelines.POSITION_COLOR_MASA_SIMPLE_NO_DEPTH_NO_CULL : MaLiLibPipelines.POSITION_COLOR_MASA_LESSER_DEPTH, BufferUsage.STATIC_WRITE);
         MatrixStack matrices = new MatrixStack();
 
         matrices.push();
@@ -259,20 +258,21 @@ public class ShapeBox extends ShapeBase
         }
 
         profiler.push("box_outlines");
-        Color4f color = Color4f.fromColor(this.color.intValue, 1f);
+//        Color4f color = Color4f.fromColor(this.color.intValue, 1f);
+//        Color4f color = Configs.Colors.SHAPE_OUTLINES.getColor();
 
         RenderObjectVbo ctx = this.renderObjects.get(1);
-        BufferBuilder builder = ctx.start(() -> "Box Lines", ShaderPipelines.LINES, BufferUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.start(() -> "Box Lines", RenderPipelines.LINES, BufferUsage.STATIC_WRITE);
         MatrixStack matrices = new MatrixStack();
 
         matrices.push();
         MatrixStack.Entry e = matrices.peek();
 
-        this.renderBoxEnabledEdgeLines(this.renderBox, color, this.enabledSidesMask, builder, e);
+        this.renderBoxEnabledEdgeLines(this.renderBox, this.colorLines, this.enabledSidesMask, builder, e);
 
         if (this.gridEnabled)
         {
-            this.renderGridLines(this.renderBox, color, builder, e);
+            this.renderGridLines(this.renderBox, this.colorLines, builder, e);
         }
 
         try

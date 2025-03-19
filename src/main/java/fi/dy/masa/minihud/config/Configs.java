@@ -53,6 +53,7 @@ public class Configs implements IConfigHandler
         public static final ConfigBoolean       BUNDLE_DISPLAY_BACKGROUND_COLOR     = new ConfigBoolean("bundleDisplayBgColor", true).apply(GENERIC_KEY);
         public static final ConfigBoolean       BUNDLE_DISPLAY_REQUIRE_SHIFT        = new ConfigBoolean("bundleDisplayRequireShift", true).apply(GENERIC_KEY);
         public static final ConfigInteger       BUNDLE_DISPLAY_ROW_WIDTH            = new ConfigInteger("bundleDisplayRowWidth", 9, 6, 9).apply(GENERIC_KEY);
+        public static final ConfigBoolean       CONDUIT_RANGE_OVERLAY_COMBINE_QUADS = new ConfigBoolean("conduitRangeOverlayCombineQuads", true).apply(GENERIC_KEY);
         public static final ConfigString        COORDINATE_FORMAT_STRING            = new ConfigString("coordinateFormat", "x: %.1f y: %.1f z: %.1f").apply(GENERIC_KEY);
         public static final ConfigOptionList    DATE_FORMAT_TYPE                    = new ConfigOptionList("dateFormatType", TimeFormat.REGULAR).apply(GENERIC_KEY);
         public static final ConfigString        DATE_FORMAT_STRING                  = new ConfigString("dateFormatString", "yyyy-MM-dd HH:mm:ss").apply(GENERIC_KEY);
@@ -160,6 +161,7 @@ public class Configs implements IConfigHandler
                 //DEBUG_DEVELOPMENT_MODE,
                 //DEBUG_RENDERER_PATH_MAX_DIST,
                 DONT_RESET_SEED_ON_DIMENSION_CHANGE,
+                CONDUIT_RANGE_OVERLAY_COMBINE_QUADS,
                 HUD_DATA_SYNC,
                 ENTITY_DATA_SYNC,
                 ENTITY_DATA_SYNC_BACKUP,
@@ -277,6 +279,7 @@ public class Configs implements IConfigHandler
         public static final ConfigColor BEACON_RANGE_LVL4_OVERLAY_COLOR         = new ConfigColor("beaconRangeLvl4",                    "#2060FF40").apply(COLORS_KEY);
         public static final ConfigColor BLOCK_GRID_OVERLAY_COLOR                = new ConfigColor("blockGridOverlayColor",              "#80FFFFFF").apply(COLORS_KEY);
         public static final ConfigColor CONDUIT_RANGE_OVERLAY_COLOR             = new ConfigColor("conduitRange",                       "#2030FFFF").apply(COLORS_KEY);
+        public static final ConfigColor CONDUIT_RANGE_OUTLINES                  = new ConfigColor("conduitRangeOutlines",               "#80FFFFFF").apply(COLORS_KEY);
         public static final ConfigColor LIGHT_LEVEL_MARKER_BLOCK_LIT            = new ConfigColor("lightLevelMarkerBlockLit",           "#FF209040").apply(COLORS_KEY);
         public static final ConfigColor LIGHT_LEVEL_MARKER_DARK                 = new ConfigColor("lightLevelMarkerDark",               "#FFFF4848").apply(COLORS_KEY);
         public static final ConfigColor LIGHT_LEVEL_MARKER_DIM                  = new ConfigColor("lightLevelMarkerDim",                "#FFC0C040").apply(COLORS_KEY);
@@ -318,6 +321,7 @@ public class Configs implements IConfigHandler
                 BEACON_RANGE_LVL4_OVERLAY_COLOR,
                 BLOCK_GRID_OVERLAY_COLOR,
                 CONDUIT_RANGE_OVERLAY_COLOR,
+                CONDUIT_RANGE_OUTLINES,
                 LIGHT_LEVEL_MARKER_BLOCK_LIT,
                 LIGHT_LEVEL_MARKER_DARK,
                 LIGHT_LEVEL_MARKER_DIM,

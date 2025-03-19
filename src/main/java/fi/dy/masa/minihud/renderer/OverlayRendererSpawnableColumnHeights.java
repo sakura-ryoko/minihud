@@ -8,7 +8,7 @@ import java.util.Set;
 import com.mojang.blaze3d.buffers.BufferType;
 import com.mojang.blaze3d.buffers.BufferUsage;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.ShaderPipelines;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
@@ -144,7 +144,7 @@ public class OverlayRendererSpawnableColumnHeights extends OverlayRendererBase
 
         profiler.push("column_quads");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "Spawnable Column Quads", ShaderPipelines.DEBUG_QUADS, BufferUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.start(() -> "Spawnable Column Quads", RenderPipelines.DEBUG_QUADS, BufferUsage.STATIC_WRITE);
         MatrixStack matrices = new MatrixStack();
 
         matrices.push();
@@ -178,7 +178,7 @@ public class OverlayRendererSpawnableColumnHeights extends OverlayRendererBase
         final Color4f color = Configs.Colors.SPAWNABLE_COLUMNS_OVERLAY_COLOR.getColor();
         profiler.push("column_outlines");
         RenderObjectVbo ctx = this.renderObjects.get(1);
-        BufferBuilder builder = ctx.start(() -> "Spawnable Column Outlines", ShaderPipelines.LINES, BufferUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.start(() -> "Spawnable Column Outlines", RenderPipelines.LINES, BufferUsage.STATIC_WRITE);
         MatrixStack matrices = new MatrixStack();
 
         matrices.push();

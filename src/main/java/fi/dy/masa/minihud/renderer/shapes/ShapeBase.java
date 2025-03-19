@@ -106,6 +106,20 @@ public abstract class ShapeBase extends OverlayRendererBase implements IRangeCha
         this.setColor(StringUtils.getColor(newValue, 0));
     }
 
+    public void setColorLines(int newColor)
+    {
+        if (newColor != this.colorLines.intValue)
+        {
+            this.colorLines = Color4f.fromColor(newColor);
+            this.setNeedsUpdate();
+        }
+    }
+
+    public void setColorLinesFromString(String newValue)
+    {
+        this.setColorLines(StringUtils.getColor(newValue, 0));
+    }
+
     public boolean isEnabled()
     {
         return this.enabled;
@@ -182,6 +196,7 @@ public abstract class ShapeBase extends OverlayRendererBase implements IRangeCha
 
         obj.add("type", new JsonPrimitive(this.type.getId()));
         obj.add("color", new JsonPrimitive(this.color.intValue));
+        obj.add("color_lines", new JsonPrimitive(this.colorLines.intValue));
         obj.add("enabled", new JsonPrimitive(this.enabled));
         obj.add("display_name", new JsonPrimitive(this.displayName));
         obj.add("render_type", new JsonPrimitive(this.renderType.getStringValue()));
@@ -198,6 +213,11 @@ public abstract class ShapeBase extends OverlayRendererBase implements IRangeCha
         if (JsonUtils.hasInteger(obj, "color"))
         {
             this.color = Color4f.fromColor(JsonUtils.getInteger(obj, "color"));
+        }
+
+        if (JsonUtils.hasInteger(obj, "color_lines"))
+        {
+            this.colorLines = Color4f.fromColor(JsonUtils.getInteger(obj, "color_lines"));
         }
 
         if (JsonUtils.hasObject(obj, "layers"))

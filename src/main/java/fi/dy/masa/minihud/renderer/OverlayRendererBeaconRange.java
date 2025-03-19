@@ -5,7 +5,7 @@ import com.mojang.blaze3d.buffers.BufferUsage;
 import net.minecraft.block.entity.BeaconBlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.ShaderPipelines;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.BlockPos;
@@ -41,10 +41,11 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
     {
         int level = ((IMixinBeaconBlockEntity) be).minihud_getLevel();
 
+        this.renderThrough = false;
+
         if (level >= 1 && level <= 4)
         {
-            this.renderThrough = false;
-            this.allocateBuffers();
+            this.allocateBuffers(true);
             this.renderQuads(world, pos, level, cameraPos, getColorForLevel(level), mc, profiler);
             this.renderOutlines(world, pos, level, cameraPos, getColorForLevel(level), mc, profiler);
         }
@@ -71,7 +72,7 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
 
         profiler.push("beacon_quads");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "Beacon Quads", MaLiLibPipelines.POSITION_COLOR_MASA_NO_DEPTH, BufferUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.start(() -> "Beacon Quads", this.renderThrough ? MaLiLibPipelines.POSITION_COLOR_MASA_NO_DEPTH_NO_CULL : MaLiLibPipelines.POSITION_COLOR_MASA_LESSER_DEPTH, BufferUsage.STATIC_WRITE);
         MatrixStack matrices = new MatrixStack();
 
         matrices.push();
@@ -112,7 +113,7 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
 
         profiler.push("beacon_outlines");
         RenderObjectVbo ctx = this.renderObjects.get(1);
-        BufferBuilder builder = ctx.start(() -> "Beacon Lines", ShaderPipelines.LINES, BufferUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.start(() -> "Beacon Lines", RenderPipelines.LINES, BufferUsage.STATIC_WRITE);
         MatrixStack matrices = new MatrixStack();
 
         matrices.push();

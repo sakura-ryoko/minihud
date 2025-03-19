@@ -3,7 +3,7 @@ package fi.dy.masa.minihud.renderer;
 import com.mojang.blaze3d.buffers.BufferType;
 import com.mojang.blaze3d.buffers.BufferUsage;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.ShaderPipelines;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
@@ -83,7 +83,7 @@ public class OverlayRendererBlockGrid extends OverlayRendererBase
     protected void allocateBuffers()
     {
         this.clearBuffers();
-        this.renderObjects.add(new RenderObjectVbo(() -> this.getName()+" Lines", ShaderPipelines.LINES, BufferUsage.STATIC_WRITE));
+        this.renderObjects.add(new RenderObjectVbo(() -> this.getName()+" Lines", RenderPipelines.LINES, BufferUsage.STATIC_WRITE));
     }
 
     @Override
@@ -107,7 +107,7 @@ public class OverlayRendererBlockGrid extends OverlayRendererBase
         Color4f color = Configs.Colors.BLOCK_GRID_OVERLAY_COLOR.getColor();
 
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "Block Grid Lines", ShaderPipelines.LINES, BufferUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.start(() -> "Block Grid Lines", RenderPipelines.LINES, BufferUsage.STATIC_WRITE);
         MatrixStack matrices = new MatrixStack();
 
         matrices.push();

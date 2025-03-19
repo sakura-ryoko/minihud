@@ -8,6 +8,7 @@ import com.google.gson.JsonObject;
 import com.mojang.blaze3d.buffers.BufferUsage;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.render.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -50,11 +51,11 @@ public abstract class OverlayRendererBase implements IOverlayRenderer
     protected void allocateBuffers(boolean useOutlines)
     {
         this.clearBuffers();
-        this.renderObjects.add(new RenderObjectVbo(() -> this.getName()+" Quads", MaLiLibPipelines.getPositionSimple(), BufferUsage.STATIC_WRITE));
+        this.renderObjects.add(new RenderObjectVbo(() -> this.getName()+" Quads", MaLiLibPipelines.POSITION_COLOR_MASA_NO_DEPTH_NO_CULL, BufferUsage.STATIC_WRITE));
 
         if (useOutlines)
         {
-            this.renderObjects.add(new RenderObjectVbo(() -> this.getName() + " Lines", MaLiLibPipelines.LINES_MASA_NO_DEPTH_NO_CULL, BufferUsage.STATIC_WRITE));
+            this.renderObjects.add(new RenderObjectVbo(() -> this.getName() + " Lines", RenderPipelines.LINES, BufferUsage.STATIC_WRITE));
         }
     }
 
