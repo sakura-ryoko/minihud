@@ -157,8 +157,6 @@
     "minihud.config.generic.comment.serverNbtRequestRate": "服务器实体数据同步请求频率限制",
     "minihud.config.generic.comment.setDistanceReferencePoint": "设置当前位置为距离信息行的参考点",
     "minihud.config.generic.comment.shapeEditor": "打开选定形状的编辑器界面",
-    "minihud.config.generic.comment.shapeRenderOutlines": "如果开启，则所有形状都将以轮廓线呈现",
-    "minihud.config.generic.comment.shapeRenderThrough": "If enabled, then all Shapes will be rendered through blocks",
     "minihud.config.generic.comment.shulkerBoxPreview": "启用潜影盒内容预览\n按住Shift悬停潜影盒时显示",
     "minihud.config.generic.comment.shulkerDisplayBgColor": "启用潜影盒预览界面背景染色\n使用潜影盒染料颜色着色",
     "minihud.config.generic.comment.shulkerDisplayEnderChest": "启用末影箱预览功能（类似潜影盒预览）",
@@ -264,8 +262,6 @@
     "minihud.config.generic.name.serverNbtRequestRate": "数据请求频率",
     "minihud.config.generic.name.setDistanceReferencePoint": "设置测距参考点",
     "minihud.config.generic.name.shapeEditor": "形状编辑器",
-    "minihud.config.generic.name.shapeRenderOutlines": "shapeRenderOutlines",
-    "minihud.config.generic.name.shapeRenderThrough": "shapeRenderThrough",
     "minihud.config.generic.name.shulkerBoxPreview": "潜影盒 - 预览",
     "minihud.config.generic.name.shulkerDisplayBgColor": "潜影盒 - 预览背景染色",
     "minihud.config.generic.name.shulkerDisplayEnderChest": "末影箱 - 预览",
@@ -1009,5 +1005,11 @@
     "minihud.message.toggled_using_center_position": "已切换 %s %s，使用中心坐标 %s",
     "minihud.message.toggled_using_player_spawn": "已切换 %s %s，模拟距离 %s",
     "minihud.message.toggled_using_position": "已切换 %s %s，使用坐标 %s",
-    "minihud.message.toggled_using_world_spawn": "已切换 %s %s，世界出生点 %s"
+    "minihud.message.toggled_using_world_spawn": "已切换 %s %s，世界出生点 %s",
+    "minihud.config.generic.comment.conduitRangeOverlayOutlines": "Uses the \"Render Outlines\" mode for rendering the Conduit Overlay Renderer",
+    "minihud.config.generic.comment.conduitRangeOverlayThrough": "Uses the \"Render Through\" mode for rendering the Conduit Overlay Renderer",
+    "minihud.config.generic.name.conduitRangeOverlayOutlines": "conduitRangeOverlayOutlines",
+    "minihud.config.generic.name.conduitRangeOverlayThrough": "conduitRangeOverlayThrough",
+    "minihud.gui.button.shape_renderer.toggle_render_lines": "Render Lines: %s",
+    "minihud.gui.button.shape_renderer.toggle_render_through": "Render Through: %s"
 }
