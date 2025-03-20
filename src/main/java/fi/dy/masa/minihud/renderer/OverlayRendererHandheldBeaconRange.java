@@ -112,7 +112,7 @@ public class OverlayRendererHandheldBeaconRange extends OverlayRendererBase
         Color4f color = OverlayRendererBeaconRange.getColorForLevel(this.level);
 
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "Held Beacon Quads", MaLiLibPipelines.POSITION_COLOR_MASA_LESSER_DEPTH, BufferUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.start(() -> "Held Beacon Quads", MaLiLibPipelines.POSITION_COLOR_MASA_LESSER_DEPTH_OFFSET_1, BufferUsage.STATIC_WRITE);
         MatrixStack matrices = new MatrixStack();
 
         matrices.push();

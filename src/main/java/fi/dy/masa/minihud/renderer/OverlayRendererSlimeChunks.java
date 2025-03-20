@@ -166,7 +166,7 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
         final Color4f colorSides = Configs.Colors.SLIME_CHUNKS_OVERLAY_COLOR.getColor();
         profiler.push("slime_chunk_quads");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "SlimeChunks Quads", this.renderThrough ? MaLiLibPipelines.POSITION_COLOR_MASA_NO_DEPTH_NO_CULL : MaLiLibPipelines.POSITION_COLOR_MASA_LESSER_DEPTH, BufferUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.start(() -> "SlimeChunks Quads", this.renderThrough ? MaLiLibPipelines.POSITION_COLOR_MASA_NO_DEPTH_NO_CULL : MaLiLibPipelines.POSITION_COLOR_MASA_LESSER_DEPTH_OFFSET_1, BufferUsage.STATIC_WRITE);
         // MaLiLibPipelines.POSITION_COLOR_LESSER_DEPTH
         MatrixStack matrices = new MatrixStack();
 

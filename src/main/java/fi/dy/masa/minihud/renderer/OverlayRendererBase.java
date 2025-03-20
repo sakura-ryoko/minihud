@@ -9,7 +9,7 @@ import com.mojang.blaze3d.buffers.BufferUsage;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gl.RenderPipelines;
-import net.minecraft.client.render.*;
+import net.minecraft.client.render.VertexFormats;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
@@ -78,7 +78,7 @@ public abstract class OverlayRendererBase implements IOverlayRenderer
 
     protected RenderPipeline getRenderThrough()
     {
-        return this.renderThrough ? MaLiLibPipelines.getPositionSimple() : MaLiLibPipelines.POSITION_COLOR_MASA_LESSER_DEPTH;
+        return this.renderThrough ? MaLiLibPipelines.getPositionSimple() : MaLiLibPipelines.POSITION_COLOR_MASA_LESSER_DEPTH_OFFSET_1;
     }
 
     protected void preRender()
@@ -114,15 +114,15 @@ public abstract class OverlayRendererBase implements IOverlayRenderer
     @Override
     public void draw()
     {
-        this.preRender();
+//        this.preRender();
 
         for (RenderObjectVbo obj : this.renderObjects)
         {
             obj.lineWidth(this.glLineWidth);
-            obj.drawPost(null,false, (obj.getVertexFormat() == VertexFormats.POSITION_COLOR_NORMAL));
+            obj.drawPost(null, false, (obj.getVertexFormat() == VertexFormats.POSITION_COLOR_NORMAL));
         }
 
-        this.postRender();
+//        this.postRender();
     }
 
     @Override

@@ -105,7 +105,7 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
             return;
         }
 
-        long pre = System.nanoTime();
+//        long pre = System.nanoTime();
         BlockPos pos = PositionUtils.getEntityBlockPos(entity);
         this.hasData = this.updateLightLevels(mc.world, pos);
         this.renderThrough = Configs.Generic.LIGHT_LEVEL_RENDER_THROUGH.getBooleanValue();
@@ -115,7 +115,7 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
             this.render(cameraPos, mc, profiler);
         }
 
-        System.out.printf("LL markers: %d, time: %.3f s\n", this.lightInfos.size(), (double) (System.nanoTime() - pre) / 1000000000D);
+//        System.out.printf("LL markers: %d, time: %.3f s\n", this.lightInfos.size(), (double) (System.nanoTime() - pre) / 1000000000D);
 
         this.lastUpdatePos = pos;
         this.lastDirection = entity.getHorizontalFacing();
@@ -135,7 +135,7 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
         if (this.renderObjects.isEmpty())
         {
             this.renderObjects.add(new RenderObjectVbo(() -> this.getName() + " Quads", MaLiLibPipelines.POSITION_TEX_COLOR_MASA_NO_DEPTH_NO_CULL, BufferUsage.STATIC_WRITE));
-            this.renderObjects.add(new RenderObjectVbo(() -> this.getName() + " Lines", MaLiLibPipelines.LINES_MASA_NO_DEPTH_NO_CULL, BufferUsage.STATIC_WRITE));
+            this.renderObjects.add(new RenderObjectVbo(() -> this.getName() + " Lines", MaLiLibPipelines.LINES_MASA_SIMPLE, BufferUsage.STATIC_WRITE));
         }
     }
 

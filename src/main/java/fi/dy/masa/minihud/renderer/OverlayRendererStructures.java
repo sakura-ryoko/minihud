@@ -96,11 +96,21 @@ public class OverlayRendererStructures extends OverlayRendererBase
     }
 
     @Override
+    protected void allocateBuffers(boolean useOutlines)
+    {
+        this.clearBuffers();
+        this.renderObjects.add(new RenderObjectVbo(() -> this.getName()+" Main Quads",  MaLiLibPipelines.POSITION_COLOR_TRANSLUCENT_LESSER_DEPTH_OFFSET_1, BufferUsage.STATIC_WRITE));
+        this.renderObjects.add(new RenderObjectVbo(() -> this.getName()+" Components",  MaLiLibPipelines.POSITION_COLOR_MASA_NO_DEPTH, BufferUsage.STATIC_WRITE));
+//        this.renderObjects.add(new RenderObjectVbo(() -> this.getName()+" Sub Surface", MaLiLibPipelines.POSITION_COLOR_MASA_LESSER_DEPTH_OFFSET_2, BufferUsage.STATIC_WRITE));
+    }
+
+    @Override
     public void render(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
     {
         this.allocateBuffers();
         this.renderStructureMain(cameraPos, mc, profiler);
         this.renderStructureComponents(cameraPos, mc, profiler);
+//        this.renderStructureSubSurface(cameraPos, mc, profiler);
     }
 
     private void renderStructureMain(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
@@ -112,7 +122,7 @@ public class OverlayRendererStructures extends OverlayRendererBase
 
         profiler.push("structure main");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "Structure Main", this.renderThrough ? MaLiLibPipelines.POSITION_COLOR_TRANSLUCENT_NO_DEPTH_NO_CULL : MaLiLibPipelines.POSITION_COLOR_TRANSLUCENT_GREATER_DEPTH, BufferUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.start(() -> "Structure Main", this.renderThrough ? MaLiLibPipelines.POSITION_COLOR_TRANSLUCENT_NO_DEPTH_NO_CULL : MaLiLibPipelines.POSITION_COLOR_TRANSLUCENT_LESSER_DEPTH_OFFSET_1, BufferUsage.STATIC_WRITE);
         MatrixStack matrices = new MatrixStack();
 
         matrices.push();
@@ -150,7 +160,7 @@ public class OverlayRendererStructures extends OverlayRendererBase
         // ShaderPipelines.DEBUG_QUADS
         profiler.push("structure components");
         RenderObjectVbo ctx = this.renderObjects.get(1);
-        BufferBuilder builder = ctx.start(() -> "Structure Components", this.renderThrough ? MaLiLibPipelines.POSITION_COLOR_MASA_NO_DEPTH_NO_CULL : MaLiLibPipelines.POSITION_COLOR_MASA_LESSER_DEPTH, BufferUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.start(() -> "Structure Components", this.renderThrough ? MaLiLibPipelines.POSITION_COLOR_MASA_NO_DEPTH_NO_CULL : MaLiLibPipelines.POSITION_COLOR_MASA_NO_DEPTH, BufferUsage.STATIC_WRITE);
         MatrixStack matrices = new MatrixStack();
 
         matrices.push();

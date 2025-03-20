@@ -77,7 +77,7 @@ public class ShapeSphereBlocky extends ShapeCircleBase
         profiler.push("sphere_blocky_quads");
 
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "Sphere Blocky Quads", this.renderThroughShape ? MaLiLibPipelines.POSITION_COLOR_MASA_SIMPLE_NO_DEPTH_NO_CULL : MaLiLibPipelines.POSITION_COLOR_MASA_LESSER_DEPTH, BufferUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.start(() -> "Sphere Blocky Quads", this.renderThroughShape ? MaLiLibPipelines.POSITION_COLOR_MASA_NO_DEPTH_NO_CULL : MaLiLibPipelines.POSITION_COLOR_MASA_LESSER_DEPTH_OFFSET_1, BufferUsage.STATIC_WRITE);
         MatrixStack matrices = new MatrixStack();
 
         matrices.push();

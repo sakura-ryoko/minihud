@@ -118,7 +118,7 @@ public class OverlayRendererRegion extends OverlayRendererBase
         profiler.push("region_quads");
         Color4f color = Configs.Colors.REGION_OVERLAY_COLOR.getColor();
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "Region Quads", MaLiLibPipelines.POSITION_COLOR_MASA_LESSER_DEPTH, BufferUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.start(() -> "Region Quads", MaLiLibPipelines.POSITION_COLOR_MASA_LESSER_DEPTH_OFFSET_1, BufferUsage.STATIC_WRITE);
         MatrixStack matrices = new MatrixStack();
 
         matrices.push();

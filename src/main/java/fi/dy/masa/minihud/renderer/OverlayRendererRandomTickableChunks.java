@@ -41,7 +41,7 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
     protected double maxX;
     protected double maxZ;
 
-    private HashMap<ChunkPos, List<Box>> chunkMap;
+    private final HashMap<ChunkPos, List<Box>> chunkMap;
     private Entity cameraEntity;
     private boolean hasData;
 
@@ -178,7 +178,7 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
                               Configs.Colors.RANDOM_TICKS_FIXED_OVERLAY_COLOR.getColor();
 
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "RandomTick Quads", MaLiLibPipelines.POSITION_COLOR_MASA_LESSER_DEPTH, BufferUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.start(() -> "RandomTick Quads", MaLiLibPipelines.POSITION_COLOR_MASA_LESSER_DEPTH_OFFSET_1, BufferUsage.STATIC_WRITE);
         MatrixStack matrices = new MatrixStack();
 
         matrices.push();

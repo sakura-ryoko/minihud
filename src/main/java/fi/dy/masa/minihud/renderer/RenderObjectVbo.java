@@ -485,7 +485,7 @@ public class RenderObjectVbo
         {
             if (useOffset)
             {
-                RenderSystem.setModelOffset(-this.offset[0], this.offset[1], -this.offset[2]);
+                RenderSystem.setModelOffset(this.offset[0], this.offset[1], this.offset[2]);
             }
 
             Framebuffer mainFb = RenderUtils.fb();
