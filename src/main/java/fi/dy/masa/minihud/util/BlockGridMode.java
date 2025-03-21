@@ -1,7 +1,5 @@
 package fi.dy.masa.minihud.util;
 
-import com.mojang.serialization.Codec;
-
 import fi.dy.masa.malilib.config.IConfigOptionListEntry;
 import fi.dy.masa.malilib.util.StringUtils;
 
@@ -18,12 +16,6 @@ public enum BlockGridMode implements IConfigOptionListEntry
     {
         this.configString = configString;
         this.unlocName = unlocName;
-    }
-
-    @Override
-    public Codec<BlockGridMode> codec()
-    {
-        return null;
     }
 
     @Override

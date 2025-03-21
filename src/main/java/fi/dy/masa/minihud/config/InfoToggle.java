@@ -5,8 +5,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
 
-import com.mojang.serialization.Codec;
-
 import fi.dy.masa.malilib.config.ConfigType;
 import fi.dy.masa.malilib.config.IConfigInteger;
 import fi.dy.masa.malilib.config.IHotkeyTogglable;
@@ -259,12 +257,6 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     public ConfigType getType()
     {
         return ConfigType.HOTKEY;
-    }
-
-    @Override
-    public Codec<InfoToggle> codec()
-    {
-        return null;
     }
 
     public @Nullable InfoLineType<?> getInfoType()
