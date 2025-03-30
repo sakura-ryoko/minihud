@@ -11,7 +11,6 @@ import net.minecraft.structure.StructurePiece;
 import net.minecraft.structure.StructureStart;
 
 import fi.dy.masa.malilib.util.IntBoundingBox;
-import fi.dy.masa.malilib.util.data.Constants;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
 
