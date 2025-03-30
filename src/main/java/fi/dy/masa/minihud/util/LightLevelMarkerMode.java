@@ -12,7 +12,7 @@ public enum LightLevelMarkerMode implements IConfigOptionListEntry
     private final String configString;
     private final String translationKey;
 
-    private LightLevelMarkerMode(String configString, String translationKey)
+    LightLevelMarkerMode(String configString, String translationKey)
     {
         this.configString = configString;
         this.translationKey = translationKey;

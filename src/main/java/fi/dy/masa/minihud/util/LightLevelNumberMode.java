@@ -13,7 +13,7 @@ public enum LightLevelNumberMode implements IConfigOptionListEntry
     private final String configString;
     private final String translationKey;
 
-    private LightLevelNumberMode(String configString, String translationKey)
+    LightLevelNumberMode(String configString, String translationKey)
     {
         this.configString = configString;
         this.translationKey = translationKey;

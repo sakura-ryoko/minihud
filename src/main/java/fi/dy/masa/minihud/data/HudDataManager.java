@@ -1,12 +1,24 @@
 package fi.dy.masa.minihud.data;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import javax.annotation.Nullable;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-
 import com.mojang.datafixers.util.Pair;
+import fi.dy.masa.malilib.config.options.ConfigBoolean;
+import fi.dy.masa.malilib.gui.GuiBase;
+import fi.dy.masa.malilib.network.ClientPlayHandler;
+import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
+import fi.dy.masa.malilib.util.InfoUtils;
+import fi.dy.masa.malilib.util.JsonUtils;
+import fi.dy.masa.malilib.util.StringUtils;
+import fi.dy.masa.minihud.MiniHUD;
+import fi.dy.masa.minihud.Reference;
+import fi.dy.masa.minihud.config.Configs;
+import fi.dy.masa.minihud.config.RendererToggle;
+import fi.dy.masa.minihud.mixin.world.IMixinServerRecipeManager;
+import fi.dy.masa.minihud.network.ServuxHudHandler;
+import fi.dy.masa.minihud.network.ServuxHudPacket;
+import fi.dy.masa.minihud.renderer.OverlayRendererSpawnChunks;
+import fi.dy.masa.minihud.util.DataStorage;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
@@ -23,23 +35,9 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-import fi.dy.masa.malilib.config.options.ConfigBoolean;
-import fi.dy.masa.malilib.gui.GuiBase;
-import fi.dy.masa.malilib.network.ClientPlayHandler;
-import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
-import fi.dy.masa.malilib.util.InfoUtils;
-import fi.dy.masa.malilib.util.JsonUtils;
-import fi.dy.masa.malilib.util.StringUtils;
-import fi.dy.masa.malilib.util.data.Constants;
-import fi.dy.masa.minihud.MiniHUD;
-import fi.dy.masa.minihud.Reference;
-import fi.dy.masa.minihud.config.Configs;
-import fi.dy.masa.minihud.config.RendererToggle;
-import fi.dy.masa.minihud.mixin.world.IMixinServerRecipeManager;
-import fi.dy.masa.minihud.network.ServuxHudHandler;
-import fi.dy.masa.minihud.network.ServuxHudPacket;
-import fi.dy.masa.minihud.renderer.OverlayRendererSpawnChunks;
-import fi.dy.masa.minihud.util.DataStorage;
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collection;
 
 public class HudDataManager
 {
@@ -213,7 +211,7 @@ public class HudDataManager
     {
         if (!this.worldSpawn.equals(spawn))
         {
-            OverlayRendererSpawnChunks.setNeedsUpdate();
+            OverlayRendererSpawnChunks.INSTANCE_REAL.setNeedsUpdate();
             MiniHUD.debugLog("HudDataStorage#setWorldSpawn(): set world spawn [{}] -> [{}]", this.worldSpawn.toShortString(), spawn.toShortString());
         }
         this.worldSpawn = spawn;
@@ -232,7 +230,7 @@ public class HudDataManager
                     InfoUtils.printActionbarMessage(StringUtils.translate("minihud.message.spawn_chunk_radius_set", strRadius));
                 }
 
-                OverlayRendererSpawnChunks.setNeedsUpdate();
+                OverlayRendererSpawnChunks.INSTANCE_REAL.setNeedsUpdate();
                 MiniHUD.debugLog("HudDataStorage#setSpawnChunkRadius(): set spawn chunk radius [{}] -> [{}]", this.spawnChunkRadius, radius);
             }
             this.spawnChunkRadius = radius;
@@ -250,7 +248,7 @@ public class HudDataManager
         if (!this.worldSpawnValid)
         {
             this.setWorldSpawn(spawn);
-            OverlayRendererSpawnChunks.setNeedsUpdate();
+            OverlayRendererSpawnChunks.INSTANCE_REAL.setNeedsUpdate();
         }
     }
 
@@ -259,7 +257,7 @@ public class HudDataManager
         if (!this.spawnChunkRadiusValid)
         {
             this.setSpawnChunkRadius(radius, true);
-            OverlayRendererSpawnChunks.setNeedsUpdate();
+            OverlayRendererSpawnChunks.INSTANCE_REAL.setNeedsUpdate();
         }
     }
 
@@ -517,26 +515,26 @@ public class HudDataManager
 
     public boolean receiveMetadata(NbtCompound data)
     {
-        if (!this.servuxServer && !DataStorage.getInstance().hasIntegratedServer())
+        if (!this.servuxServer && !DataStorage.getInstance().hasIntegratedServer() &&
+            this.shouldRegister)
         {
             MiniHUD.debugLog("HudDataStorage#receiveMetadata(): received METADATA from Servux");
 
-            if (data.getInt("version") != ServuxHudPacket.PROTOCOL_VERSION)
+            if (data.getInt("version", -1) != ServuxHudPacket.PROTOCOL_VERSION)
             {
                 MiniHUD.LOGGER.warn("hudDataChannel: Mis-matched protocol version!");
             }
 
-            this.setServuxVersion(data.getString("servux"));
-            this.setWorldSpawn(new BlockPos(data.getInt("spawnPosX"), data.getInt("spawnPosY"), data.getInt("spawnPosZ")));
-            this.setSpawnChunkRadius(data.getInt("spawnChunkRadius"), true);
+            this.setServuxVersion(data.getString("servux", "?"));
+            this.setWorldSpawn(new BlockPos(data.getInt("spawnPosX", 0), data.getInt("spawnPosY", 0), data.getInt("spawnPosZ", 0)));
+            this.setSpawnChunkRadius(data.getInt("spawnChunkRadius", 2), true);
 
-            if (data.contains("worldSeed", Constants.NBT.TAG_LONG))
+            if (data.contains("worldSeed"))
             {
-                this.setWorldSeed(data.getLong("worldSeed"));
+                this.setWorldSeed(data.getLong("worldSeed", -1L));
             }
 
             this.setIsServuxServer();
-            this.requestRecipeManager();
 
             if (Configs.Generic.HUD_DATA_SYNC.getBooleanValue())
             {
@@ -588,13 +586,13 @@ public class HudDataManager
         {
             MiniHUD.debugLog("HudDataStorage#receiveSpawnMetadata(): from Servux");
 
-            this.setServuxVersion(data.getString("servux"));
-            this.setWorldSpawn(new BlockPos(data.getInt("spawnPosX"), data.getInt("spawnPosY"), data.getInt("spawnPosZ")));
-            this.setSpawnChunkRadius(data.getInt("spawnChunkRadius"), true);
+            this.setServuxVersion(data.getString("servux", "?"));
+            this.setWorldSpawn(new BlockPos(data.getInt("spawnPosX", 0), data.getInt("spawnPosY", 0), data.getInt("spawnPosZ", 0)));
+            this.setSpawnChunkRadius(data.getInt("spawnChunkRadius", 2), true);
 
-            if (data.contains("worldSeed", Constants.NBT.TAG_LONG))
+            if (data.contains("worldSeed"))
             {
-                this.setWorldSeed(data.getLong("worldSeed"));
+                this.setWorldSeed(data.getLong("worldSeed", -1L));
             }
 
             if (Configs.Generic.HUD_DATA_SYNC.getBooleanValue())
@@ -618,25 +616,25 @@ public class HudDataManager
         {
             //MiniHUD.printDebug("HudDataStorage#receiveWeatherData(): from Servux");
 
-            if (data.contains("SetRaining", Constants.NBT.TAG_INT))
+            if (data.contains("SetRaining"))
             {
-                this.rainWeatherTimer = data.getInt("SetRaining");
+                this.rainWeatherTimer = data.getInt("SetRaining", -1);
             }
             if (data.contains("isRaining"))
             {
-                this.isRaining = data.getBoolean("isRaining");
+                this.isRaining = data.getBoolean("isRaining", false);
             }
-            if (data.contains("SetThundering", Constants.NBT.TAG_INT))
+            if (data.contains("SetThundering"))
             {
-                this.thunderWeatherTimer = data.getInt("SetThundering");
+                this.thunderWeatherTimer = data.getInt("SetThundering", -1);
             }
             if (data.contains("isThundering"))
             {
-                this.isThundering = data.getBoolean("isThundering");
+                this.isThundering = data.getBoolean("isThundering", false);
             }
-            if (data.contains("SetClear", Constants.NBT.TAG_INT))
+            if (data.contains("SetClear"))
             {
-                this.clearWeatherTimer = data.getInt("SetClear");
+                this.clearWeatherTimer = data.getInt("SetClear", -1);
             }
 
             if (!this.hasServuxServer() && DataStorage.getInstance().hasServuxServer())
@@ -677,7 +675,7 @@ public class HudDataManager
         if (!DataStorage.getInstance().hasIntegratedServer() && data.contains("RecipeManager"))
         {
             Collection<RecipeEntry<?>> recipes = new ArrayList<>();
-            NbtList list = data.getList("RecipeManager", Constants.NBT.TAG_COMPOUND);
+            NbtList list = data.getListOrEmpty("RecipeManager");
             int count = 0;
 
             this.preparedRecipes = PreparedRecipes.EMPTY;
@@ -685,9 +683,9 @@ public class HudDataManager
 
             for (int i = 0; i < list.size(); i++)
             {
-                NbtCompound item = list.getCompound(i);
-                Identifier idReg = Identifier.tryParse(item.getString("id_reg"));
-                Identifier idValue = Identifier.tryParse(item.getString("id_value"));
+                NbtCompound item = list.getCompoundOrEmpty(i);
+                Identifier idReg = Identifier.tryParse(item.getString("id_reg", ""));
+                Identifier idValue = Identifier.tryParse(item.getString("id_value", ""));
 
                 if (idReg == null || idValue == null)
                 {
@@ -697,7 +695,7 @@ public class HudDataManager
                 try
                 {
                     RegistryKey<Recipe<?>> key = RegistryKey.of(RegistryKey.ofRegistry(idReg), idValue);
-                    Pair<Recipe<?>, NbtElement> pair = Recipe.CODEC.decode(DataStorage.getInstance().getWorldRegistryManager().getOps(NbtOps.INSTANCE), item.getCompound("recipe")).getOrThrow();
+                    Pair<Recipe<?>, NbtElement> pair = Recipe.CODEC.decode(DataStorage.getInstance().getWorldRegistryManager().getOps(NbtOps.INSTANCE), item.getCompoundOrEmpty("recipe")).getOrThrow();
                     RecipeEntry<?> entry = new RecipeEntry<>(key, pair.getFirst());
                     recipes.add(entry);
                     count++;
@@ -788,7 +786,7 @@ public class HudDataManager
             {
                 MiniHUD.LOGGER.warn("HudDataStorage#fromJson(): toggling feature OFF since SPAWN_CHUNK_RADIUS is set to 0");
                 RendererToggle.OVERLAY_SPAWN_CHUNK_OVERLAY_REAL.setBooleanValue(false);
-                OverlayRendererSpawnChunks.setNeedsUpdate();
+                OverlayRendererSpawnChunks.INSTANCE_REAL.setNeedsUpdate();
             }
         }
     }

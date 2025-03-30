@@ -11,23 +11,28 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 
+import com.mojang.blaze3d.buffers.BufferType;
+import com.mojang.blaze3d.buffers.BufferUsage;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.VertexFormats;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.*;
+import net.minecraft.util.profiler.Profiler;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.source.BiomeAccess;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.WorldChunk;
 
-import fi.dy.masa.malilib.util.Color4f;
+import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.SubChunkPos;
+import fi.dy.masa.malilib.util.data.Color4f;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.RendererToggle;
@@ -48,10 +53,15 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
     //private long lastUpdateTime = System.nanoTime();
     private boolean needsUpdate;
     private boolean needsRenderUpdate;
+    private List<ColoredQuad> renderQuads;
+    private boolean hasData;
 
     private OverlayRendererBiomeBorders()
     {
+        this.renderQuads = new ArrayList<>();
+        this.hasData = false;
         this.useCulling = true;
+        this.renderThrough = false;
     }
 
     @Override
@@ -109,22 +119,19 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
     }
 
     @Override
-    public void update(Vec3d cameraPos, Entity cameraEntity, MinecraftClient mc)
+    public void update(Vec3d cameraPos, Entity entity, MinecraftClient mc, Profiler profiler)
     {
-        List<SubChunkPos> chunks = this.getSubChunksWithinRange(cameraEntity, mc);
+        List<SubChunkPos> chunks = this.getSubChunksWithinRange(mc.getCameraEntity(), mc);
         BlockPos cameraBlockPos = BlockPos.ofFloored(cameraPos);
         this.scheduleTasksForMissingChunks(chunks, cameraBlockPos, mc.world);
 
-        List<ColoredQuad> quads = this.getQuadsToRender(chunks);
-        RenderObjectBase renderQuads = this.renderObjects.get(0);
-        RenderObjectBase renderLines = this.renderObjects.get(1);
-        BUFFER_1 = TESSELLATOR_1.begin(renderQuads.getGlMode(), VertexFormats.POSITION_COLOR);
-        BUFFER_2 = TESSELLATOR_2.begin(renderLines.getGlMode(), VertexFormats.POSITION_COLOR);
+        this.renderQuads = this.getQuadsToRender(chunks);
 
-        this.renderQuads(quads, BUFFER_1, BUFFER_2, this.cameraPosition);
-
-        renderQuads.uploadData(BUFFER_1);
-        renderLines.uploadData(BUFFER_2);
+        if (!this.renderQuads.isEmpty())
+        {
+            this.hasData = true;
+            this.render(cameraPos, mc, profiler);
+        }
 
         // All the quads need to have the same relative camera offset, so
         // we use an internal position that is only updated when all the quads are cleared
@@ -133,23 +140,95 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
         this.needsRenderUpdate = false;
     }
 
-    protected void renderQuads(List<ColoredQuad> quads, BufferBuilder quadBuffer,
-                               BufferBuilder lineBuffer, Vec3d cameraPos)
+    @Override
+    public boolean hasData()
+    {
+        return this.hasData && !this.renderQuads.isEmpty();
+    }
+
+    @Override
+    public void render(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
+    {
+        this.allocateBuffers();
+        //long pre = System.nanoTime();
+        this.renderQuads(cameraPos, mc, profiler);
+        this.renderOutlines(cameraPos, mc, profiler);
+        //long post = System.nanoTime(); System.out.printf("renderQuads: %.6fs\n", ((double) post - (double) pre) / 1000000000D);
+    }
+
+    private void renderQuads(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
     {
         double inset = 0.0001;
 
-        //long pre = System.nanoTime();
-        for (ColoredQuad quad : quads)
+        profiler.push("biome_quads");
+        RenderObjectVbo ctx = this.renderObjects.getFirst();
+        BufferBuilder builder = ctx.start(() -> "Biome Quads", MaLiLibPipelines.POSITION_COLOR_MASA_LESSER_DEPTH_OFFSET_1, BufferUsage.STATIC_WRITE);
+        MatrixStack matrices = new MatrixStack();
+
+        matrices.push();
+
+        for (ColoredQuad quad : this.renderQuads)
         {
             Color4f color = this.getColor(quad.biomeId);
-            RenderUtils.renderInsetQuad(quad.start, quad.width, quad.height, quad.side, inset, color, cameraPos, quadBuffer);
-            RenderUtils.renderBiomeBorderLines(quad.start, quad.width, quad.height, quad.side, inset, color, cameraPos, lineBuffer);
+            RenderUtils.renderInsetQuad(quad.start, quad.width, quad.height, quad.side, inset, color, cameraPos, builder, matrices.peek());
         }
-        //long post = System.nanoTime(); System.out.printf("renderQuads: %.6fs\n", ((double) post - (double) pre) / 1000000000D);
+
+        try
+        {
+            ctx.upload(builder.endNullable(), BufferType.VERTICES);
+        }
+        catch (Exception err)
+        {
+            MiniHUD.LOGGER.error("OverlayRendererBiomeBorders#renderQuads(): Exception; {}", err.getMessage());
+        }
+
+        matrices.pop();
+        profiler.pop();
+    }
+
+    private void renderOutlines(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
+    {
+        double inset = 0.0001;
+
+        profiler.push("biome_outlines");
+        RenderObjectVbo ctx = this.renderObjects.get(1);
+        BufferBuilder builder = ctx.start(() -> "Biome Lines", RenderPipelines.LINES, BufferUsage.STATIC_WRITE);
+        MatrixStack matrices = new MatrixStack();
+
+        matrices.push();
+        MatrixStack.Entry e = matrices.peek();
+
+        for (ColoredQuad quad : this.renderQuads)
+        {
+            Color4f color = this.getColor(quad.biomeId);
+            RenderUtils.renderBiomeBorderLines(quad.start, quad.width, quad.height, quad.side, inset, color, cameraPos, builder, e);
+        }
+
+        try
+        {
+            ctx.upload(builder.endNullable(), BufferType.VERTICES);
+        }
+        catch (Exception err)
+        {
+            MiniHUD.LOGGER.error("OverlayRendererBiomeBorders#renderOutlines(): Exception; {}", err.getMessage());
+        }
+
+        matrices.pop();
+        profiler.pop();
+    }
+
+    @Override
+    public void reset()
+    {
+        super.reset();
+        this.renderQuads.clear();
+        this.hasData = false;
     }
 
     protected List<SubChunkPos> getSubChunksWithinRange(Entity cameraEntity, MinecraftClient mc)
     {
+        if (mc.world == null) return new ArrayList<>();
+
         //long pre = System.nanoTime();
         World world = mc.world;
         int viewDistance = Math.min(Configs.Generic.BIOME_OVERLAY_RANGE.getIntegerValue(), mc.options.getViewDistance().getValue());
@@ -351,7 +430,7 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
         for (Direction side : sides)
         {
             Biome adjBiome = biomes[x + side.getOffsetX()][y + side.getOffsetY()][z + side.getOffsetZ()];
-            int sideIndex = side.getId();
+            int sideIndex = side.getIndex();
             int stripStart = startPos[sideIndex];
             //if (stripX == 100 && stripY == 65 && stripZ < -80 && side == Direction.EAST)
             //System.out.printf("biome @ [%d, %d, %d]: %d, adj @ %s = %d, ss: %d\n", minCorner.getX() + x, minCorner.getY() + y, minCorner.getZ() + z, biomeMapping.getInt(biome), side, biomeMapping.getInt(adjBiome), stripStart);
@@ -414,7 +493,7 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
 
         for (Direction side : sides)
         {
-            int sideIndex = side.getId();
+            int sideIndex = side.getIndex();
             int stripStart = startPos[sideIndex];
 
             // There was a started strip for the side
@@ -460,7 +539,7 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
         for (EdgeStrip strip : stripList)
         {
             Direction side = strip.side;
-            int sideIndex = side.getId();
+            int sideIndex = side.getIndex();
             final long startPos = strip.startPosLong;
             int x = unpackX(startPos) & 0xF;
             int y = unpackY(startPos) & 0xF;

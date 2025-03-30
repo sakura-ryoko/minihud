@@ -1,0 +1,53 @@
+package fi.dy.masa.minihud.info.state;
+
+import java.util.ArrayList;
+import java.util.List;
+import javax.annotation.Nonnull;
+
+import net.minecraft.block.BeehiveBlock;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.entity.BeehiveBlockEntity;
+import net.minecraft.world.World;
+
+import fi.dy.masa.minihud.Reference;
+import fi.dy.masa.minihud.config.InfoToggle;
+import fi.dy.masa.minihud.info.InfoLine;
+
+public class InfoLineHoneyLevel extends InfoLine
+{
+    private static final String HONEY_KEY = Reference.MOD_ID+".info_line.honey_level";
+
+    public InfoLineHoneyLevel(InfoToggle type)
+    {
+        super(type);
+    }
+
+    public InfoLineHoneyLevel()
+    {
+        this(InfoToggle.HONEY_LEVEL);
+    }
+
+    @Override
+    public List<Entry> parse(@Nonnull Context ctx)
+    {
+        if (ctx.hasBlockState() && ctx.state() != null)
+        {
+            return this.parseBlockState(ctx.world(), ctx.state());
+        }
+
+        return null;
+    }
+
+    @Override
+    public List<Entry> parseBlockState(@Nonnull World world, @Nonnull BlockState state)
+    {
+        List<Entry> list = new ArrayList<>();
+
+        if (state.getBlock() instanceof BeehiveBlock)
+        {
+            list.add(this.translate(HONEY_KEY, BeehiveBlockEntity.getHoneyLevel(state)));
+        }
+
+        return list;
+    }
+}

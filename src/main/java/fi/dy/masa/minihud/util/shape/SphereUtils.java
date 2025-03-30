@@ -5,16 +5,18 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import javax.annotation.Nullable;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
-import fi.dy.masa.malilib.util.LayerRange;
-import fi.dy.masa.malilib.util.PositionUtils;
-import fi.dy.masa.minihud.renderer.shapes.SideQuad;
-import fi.dy.masa.minihud.util.ShapeRenderType;
 import it.unimi.dsi.fastutil.longs.Long2ByteOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3d;
+
+import fi.dy.masa.malilib.util.LayerRange;
+import fi.dy.masa.malilib.util.position.PositionUtils;
+import fi.dy.masa.minihud.renderer.shapes.SideQuad;
+import fi.dy.masa.minihud.util.ShapeRenderType;
 
 public class SphereUtils
 {
@@ -398,7 +400,7 @@ public class SphereUtils
                                                   Direction side,
                                                   Long2ByteOpenHashMap handledPositions)
     {
-        byte sideMask = (byte) (1 << side.getId());
+        byte sideMask = (byte) (1 << side.getIndex());
         byte val = handledPositions.get(pos);
 
         if ((val & sideMask) != 0)
@@ -480,7 +482,7 @@ public class SphereUtils
         int x = BlockPos.unpackLongX(pos);
         int y = BlockPos.unpackLongY(pos);
         int z = BlockPos.unpackLongZ(pos);
-        long val = (1L << side.getId()) << 58;
+        long val = (1L << side.getIndex()) << 58;
         val |= (y & 0x3FFFL  ) << 44; // 14 bits for the y
         val |= (z & 0x3FFFFFL) << 22; // 22 bits for the z
         val |= (x & 0x3FFFFFL)      ; // 22 bits for the x

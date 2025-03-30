@@ -44,8 +44,11 @@ import net.minecraft.world.gen.structure.Structure;
 import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.network.ClientPlayHandler;
 import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
-import fi.dy.masa.malilib.util.*;
+import fi.dy.masa.malilib.util.InfoUtils;
+import fi.dy.masa.malilib.util.JsonUtils;
+import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.malilib.util.data.Constants;
+import fi.dy.masa.malilib.util.position.PositionUtils;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.RendererToggle;
@@ -169,10 +172,10 @@ public class DataStorage
         this.servuxTimeout = -1;
 
         ShapeManager.INSTANCE.clear();
-        OverlayRendererBeaconRange.INSTANCE.clear();
-        OverlayRendererConduitRange.INSTANCE.clear();
-        OverlayRendererBiomeBorders.INSTANCE.clear();
-        OverlayRendererLightLevel.reset();
+        OverlayRendererBeaconRange.INSTANCE.reset();
+        OverlayRendererConduitRange.INSTANCE.reset();
+        OverlayRendererBiomeBorders.INSTANCE.reset();
+        OverlayRendererLightLevel.INSTANCE.reset();
     }
 
     public void clearTasks()
@@ -260,7 +263,8 @@ public class DataStorage
         MiniHUD.debugLog("DataStorage#onWorldJoin()");
         OverlayRendererBeaconRange.INSTANCE.setNeedsUpdate();
         OverlayRendererConduitRange.INSTANCE.setNeedsUpdate();
-        OverlayRendererSpawnChunks.setNeedsUpdate();
+        OverlayRendererSpawnChunks.INSTANCE_REAL.setNeedsUpdate();
+        OverlayRendererSpawnChunks.INSTANCE_PLAYER.setNeedsUpdate();
 
         if (this.hasIntegratedServer == false)
         {
@@ -313,7 +317,8 @@ public class DataStorage
         {
             if (this.simulationDistance != distance)
             {
-                OverlayRendererSpawnChunks.setNeedsUpdate();
+                OverlayRendererSpawnChunks.INSTANCE_REAL.setNeedsUpdate();
+                OverlayRendererSpawnChunks.INSTANCE_PLAYER.setNeedsUpdate();
             }
             this.simulationDistance = distance;
             //MiniHUD.printDebug("DataStorage#setSimulationDistance(): set to: [{}]", distance);
@@ -399,8 +404,8 @@ public class DataStorage
 
             if (Math.abs(pos.x - (chunkX << 4) - 8) <= 48D || Math.abs(pos.z - (chunkZ << 4) - 8) <= 48D)
             {
-                OverlayRendererSpawnableColumnHeights.markChunkChanged(chunkX, chunkZ);
-                OverlayRendererLightLevel.setNeedsUpdate();
+                OverlayRendererSpawnableColumnHeights.INSTANCE.markChunkChanged(chunkX, chunkZ);
+                OverlayRendererLightLevel.INSTANCE.setNeedsUpdate();
             }
         }
     }
@@ -779,23 +784,24 @@ public class DataStorage
         {
             MiniHUD.debugLog("DataStorage#receiveServuxStrucutresMetadata(): received METADATA from Servux");
 
-            if (data.getInt("version") != ServuxStructuresPacket.PROTOCOL_VERSION)
+            if (data.getInt("version", -1) != ServuxStructuresPacket.PROTOCOL_VERSION)
             {
                 MiniHUD.LOGGER.warn("structureChannel: Mis-matched protocol version!");
             }
-            this.servuxTimeout = data.getInt("timeout");
-            this.setServuxVersion(data.getString("servux"));
-            if (data.contains("spawnPosX", Constants.NBT.TAG_INT))
+            this.servuxTimeout = data.getInt("timeout", 300);
+            this.setServuxVersion(data.getString("servux", "?"));
+            // Backwards compat only
+            if (data.contains("spawnPosX"))
             {
-                HudDataManager.getInstance().setWorldSpawn(new BlockPos(data.getInt("spawnPosX"), data.getInt("spawnPosY"), data.getInt("spawnPosZ")));
+                HudDataManager.getInstance().setWorldSpawn(new BlockPos(data.getInt("spawnPosX", 0), data.getInt("spawnPosY", 0), data.getInt("spawnPosZ", 0)));
             }
-            if (data.contains("spawnChunkRadius", Constants.NBT.TAG_INT))
+            if (data.contains("spawnChunkRadius"))
             {
-                HudDataManager.getInstance().setSpawnChunkRadius(data.getInt("spawnChunkRadius"), true);
+                HudDataManager.getInstance().setSpawnChunkRadius(data.getInt("spawnChunkRadius", 2), true);
             }
-            if (data.contains("worldSeed", Constants.NBT.TAG_LONG))
+            if (data.contains("worldSeed"))
             {
-                HudDataManager.getInstance().setWorldSeed(data.getLong("worldSeed"));
+                HudDataManager.getInstance().setWorldSeed(data.getLong("worldSeed", -1L));
             }
             this.setIsServuxServer();
 
@@ -890,7 +896,7 @@ public class DataStorage
             return;
         }
 
-        if (structures.getHeldType() == Constants.NBT.TAG_COMPOUND)
+        if (structures.getType() == Constants.NBT.TAG_COMPOUND)
         {
             this.structureDataTimeout = this.servuxTimeout + 300;
 
@@ -902,7 +908,7 @@ public class DataStorage
 
             for (int i = 0; i < count; ++i)
             {
-                NbtCompound tag = structures.getCompound(i);
+                NbtCompound tag = structures.getCompoundOrEmpty(i);
                 StructureData data = StructureData.fromStructureStartTag(tag, currentTime);
 
                 if (data != null)

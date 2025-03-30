@@ -20,6 +20,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.EnchantmentTags;
 import net.minecraft.util.math.*;
+import net.minecraft.util.profiler.Profiler;
 import net.minecraft.village.TradeOffer;
 import net.minecraft.village.TradeOfferList;
 import net.minecraft.village.VillagerProfession;
@@ -41,14 +42,13 @@ import fi.dy.masa.minihud.util.EntityUtils;
 
 public class OverlayRendererVillagerInfo extends OverlayRendererBase implements IClientTickHandler
 {
-    private static final OverlayRendererVillagerInfo INSTANCE = new OverlayRendererVillagerInfo();
-    public static OverlayRendererVillagerInfo getInstance() { return INSTANCE; }
+    public static final OverlayRendererVillagerInfo INSTANCE = new OverlayRendererVillagerInfo();
 
     // Mini Secondary Cache so villagers' data doesn't ... `Flash`
     private final ConcurrentHashMap<Integer, Pair<Long, Pair<Entity, NbtCompound>>> recentEntityData;
     private long lastTick;
 
-    public OverlayRendererVillagerInfo()
+    protected OverlayRendererVillagerInfo()
     {
         this.recentEntityData = new ConcurrentHashMap<>();
         this.lastTick = System.currentTimeMillis();
@@ -129,7 +129,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
             return true;
         }
         else return (nbt.contains(NbtKeys.ZOMBIE_CONVERSION) &&
-                     nbt.getInt(NbtKeys.ZOMBIE_CONVERSION) > 0) ||
+                     nbt.getInt(NbtKeys.ZOMBIE_CONVERSION, -1) > 0) ||
                      nbt.contains(NbtKeys.CONVERSION_PLAYER);
     }
 
@@ -227,7 +227,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
     }
 
     @Override
-    public void update(Vec3d cameraPos, Entity entity, MinecraftClient mc)
+    public void update(Vec3d cameraPos, Entity entity, MinecraftClient mc, Profiler profiler)
     {
         Box box = entity.getBoundingBox().expand(30, 10, 30);
         World world = WorldUtils.getBestWorld(mc);
@@ -236,7 +236,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
 
         if (Configs.Generic.VILLAGER_OFFER_ENCHANTMENT_BOOKS.getBooleanValue())
         {
-            List<VillagerEntity> librarians = EntityUtils.getEntitiesByClass(mc, VillagerEntity.class, box, villager -> villager.getVillagerData().getProfession() == VillagerProfession.LIBRARIAN);
+            List<VillagerEntity> librarians = EntityUtils.getEntitiesByClass(mc, VillagerEntity.class, box, villager -> villager.getVillagerData().profession().matchesKey(VillagerProfession.LIBRARIAN));
             Map<Object2IntMap.Entry<RegistryEntry<Enchantment>>, Integer> lowestPrices = new HashMap<>();
 
             // Prepare
@@ -379,9 +379,27 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
         }
     }
 
+    @Override
+    public boolean hasData()
+    {
+        return false;
+    }
+
+    @Override
+    public void render(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
+    {
+        // NO-OP
+    }
+
+    @Override
+    public void reset()
+    {
+        super.reset();
+    }
+
     private void renderAtEntity(List<String> texts, Entity entity, Entity targetEntity)
     {
-        float delta = MinecraftClient.getInstance().getRenderTickCounter().getTickDelta(true);
+        float delta = MinecraftClient.getInstance().getRenderTickCounter().getTickProgress(true);
         var cameraPos = entity.getLerpedPos(delta);
         var targetPos = targetEntity.getLerpedPos(delta);
         double hypot = MathHelper.hypot(cameraPos.getX() - targetPos.getX(), cameraPos.getZ() - targetPos.getZ());

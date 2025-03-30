@@ -99,7 +99,8 @@ public class WidgetShapeEntry extends WidgetListEntryBase<ShapeBase>
         this.drawString(this.x + 4, this.y + 7, 0xFFFFFFFF, name, context);
 
         RenderUtils.color(1f, 1f, 1f, 1f);
-        RenderSystem.disableBlend();
+        //RenderSystem.disableBlend();
+        RenderUtils.blend(false);
 
         super.render(mouseX, mouseY, selected, context);
     }

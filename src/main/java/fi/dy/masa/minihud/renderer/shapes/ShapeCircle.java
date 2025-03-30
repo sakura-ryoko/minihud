@@ -8,18 +8,27 @@ import com.google.gson.JsonPrimitive;
 import it.unimi.dsi.fastutil.longs.Long2ByteOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+
+import com.mojang.blaze3d.buffers.BufferType;
+import com.mojang.blaze3d.buffers.BufferUsage;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.VertexFormats;
+import net.minecraft.client.gl.RenderPipelines;
+import net.minecraft.client.render.BufferBuilder;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.profiler.Profiler;
+
+import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.JsonUtils;
-import fi.dy.masa.malilib.util.PositionUtils;
 import fi.dy.masa.malilib.util.StringUtils;
+import fi.dy.masa.malilib.util.position.PositionUtils;
+import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
-import fi.dy.masa.minihud.renderer.RenderObjectBase;
+import fi.dy.masa.minihud.renderer.RenderObjectVbo;
 import fi.dy.masa.minihud.renderer.RenderUtils;
 import fi.dy.masa.minihud.util.ShapeRenderType;
 import fi.dy.masa.minihud.util.shape.SphereUtils;
@@ -27,17 +36,102 @@ import fi.dy.masa.minihud.util.shape.SphereUtils;
 public class ShapeCircle extends ShapeCircleBase
 {
     protected int height = 1;
+    private boolean hasData;
 
     public ShapeCircle()
     {
         super(ShapeType.CIRCLE, Configs.Colors.SHAPE_CIRCLE.getColor(), 16);
+        this.hasData = false;
+        this.useCulling = true;
     }
 
     @Override
-    public void update(Vec3d cameraPos, Entity entity, MinecraftClient mc)
+    public void update(Vec3d cameraPos, Entity entity, MinecraftClient mc, Profiler profiler)
     {
-        this.renderCircleShape(cameraPos);
+        this.hasData = true;
+        this.render(cameraPos, mc, profiler);
         this.needsUpdate = false;
+    }
+
+    @Override
+    public boolean hasData()
+    {
+        return this.hasData;
+    }
+
+    @Override
+    public void render(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
+    {
+        this.allocateBuffers(this.renderLines);
+        this.renderQuads(cameraPos, mc, profiler);
+
+        if (this.renderLines)
+        {
+            this.renderOutlines(cameraPos, mc, profiler);
+        }
+    }
+
+    private void renderQuads(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
+    {
+        if (mc.world == null || mc.player == null)
+        {
+            return;
+        }
+
+        profiler.push("circle_quads");
+        RenderObjectVbo ctx = this.renderObjects.getFirst();
+        BufferBuilder builder = ctx.start(() -> "Circle Quads", this.renderThroughShape ? MaLiLibPipelines.POSITION_COLOR_MASA_NO_DEPTH_NO_CULL : MaLiLibPipelines.POSITION_COLOR_MASA_LESSER_DEPTH_OFFSET_1, BufferUsage.STATIC_WRITE);
+        MatrixStack matrices = new MatrixStack();
+
+        matrices.push();
+        this.renderCircleShapeQuads(cameraPos, builder, matrices);
+
+        try
+        {
+            ctx.upload(builder.endNullable(), BufferType.VERTICES);
+        }
+        catch (Exception err)
+        {
+            MiniHUD.LOGGER.error("ShapeCircle#renderQuads(): Exception; {}", err.getMessage());
+        }
+
+        matrices.pop();
+        profiler.pop();
+    }
+
+    private void renderOutlines(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
+    {
+        if (mc.world == null || mc.player == null || !this.renderLines)
+        {
+            return;
+        }
+
+        profiler.push("circle_outlines");
+        RenderObjectVbo ctx = this.renderObjects.get(1);
+        BufferBuilder builder = ctx.start(() -> "Circle Outlines", RenderPipelines.LINES, BufferUsage.STATIC_WRITE);
+        MatrixStack matrices = new MatrixStack();
+
+        matrices.push();
+        this.renderCircleShapeOutlines(cameraPos, builder, matrices.peek());
+
+        try
+        {
+            ctx.upload(builder.endNullable(), BufferType.VERTICES);
+        }
+        catch (Exception err)
+        {
+            MiniHUD.LOGGER.error("ShapeCircle#renderOutlines(): Exception; {}", err.getMessage());
+        }
+
+        matrices.pop();
+        profiler.pop();
+    }
+
+    @Override
+    public void reset()
+    {
+        super.reset();
+        this.hasData = false;
     }
 
     public int getHeight()
@@ -51,7 +145,7 @@ public class ShapeCircle extends ShapeCircleBase
         this.setNeedsUpdate();
     }
 
-    protected void renderCircleShape(Vec3d cameraPos)
+    protected void renderCircleShapeQuads(Vec3d cameraPos, BufferBuilder builder, MatrixStack matrices)
     {
         LongOpenHashSet positions = new LongOpenHashSet();
         Consumer<BlockPos.Mutable> positionConsumer = this.getPositionCollector(positions);
@@ -60,9 +154,6 @@ public class ShapeCircle extends ShapeCircleBase
         Vec3d effectiveCenter = this.getEffectiveCenter();
         Direction.Axis axis = this.mainAxis.getAxis();
         double expand = 0;
-
-        RenderObjectBase renderQuads = this.renderObjects.getFirst();
-        BUFFER_1 = TESSELLATOR_1.begin(renderQuads.getGlMode(), VertexFormats.POSITION_COLOR);
 
         if (this.getCombineQuads())
         {
@@ -81,7 +172,7 @@ public class ShapeCircle extends ShapeCircleBase
                     SphereUtils.buildSphereShellToStrips(positions, axis, test, this.renderType, this.layerRange);
             List<SideQuad> quads = buildStripsToQuadsForCircle(strips, this.mainAxis, this.height);
 
-            RenderUtils.renderQuads(quads, this.color, expand, cameraPos, BUFFER_1);
+            RenderUtils.renderQuads(quads, this.color, expand, cameraPos, builder, matrices.peek());
         }
         else
         {
@@ -108,10 +199,66 @@ public class ShapeCircle extends ShapeCircleBase
 
             Direction[] sides = this.getSides();
             RenderUtils.renderCircleBlockPositions(positions, sides, test, this.renderType, this.layerRange,
-                                                   this.color, expand, cameraPos, BUFFER_1);
+                                                   this.color, expand, cameraPos, builder, matrices.peek());
         }
+    }
 
-        renderQuads.uploadData(BUFFER_1);
+    protected void renderCircleShapeOutlines(Vec3d cameraPos, BufferBuilder builder, MatrixStack.Entry e)
+    {
+        LongOpenHashSet positions = new LongOpenHashSet();
+        Consumer<BlockPos.Mutable> positionConsumer = this.getPositionCollector(positions);
+        SphereUtils.RingPositionTest test = this::isPositionOnOrInsideRing;
+        BlockPos.Mutable mutablePos = new BlockPos.Mutable();
+        Vec3d effectiveCenter = this.getEffectiveCenter();
+        Direction.Axis axis = this.mainAxis.getAxis();
+        double expand = 0;
+
+        if (this.getCombineQuads())
+        {
+            mutablePos.set(effectiveCenter.x, effectiveCenter.y, effectiveCenter.z);
+
+            if (axis == Direction.Axis.Y)
+            {
+                SphereUtils.addPositionsOnHorizontalBlockRing(positionConsumer, mutablePos, test);
+            }
+            else
+            {
+                SphereUtils.addPositionsOnVerticalBlockRing(positionConsumer, mutablePos, this.mainAxis, test);
+            }
+
+            Long2ObjectOpenHashMap<SideQuad> strips =
+                    SphereUtils.buildSphereShellToStrips(positions, axis, test, this.renderType, this.layerRange);
+            List<SideQuad> quads = buildStripsToQuadsForCircle(strips, this.mainAxis, this.height);
+
+            RenderUtils.renderQuadLines(quads, this.colorLines, expand, cameraPos, builder, e);
+        }
+        else
+        {
+            BlockPos posCenter = BlockPos.ofFloored(effectiveCenter);
+            int offX = this.mainAxis.getOffsetX();
+            int offY = this.mainAxis.getOffsetY();
+            int offZ = this.mainAxis.getOffsetZ();
+
+            for (int i = 0; i < this.height; ++i)
+            {
+                mutablePos.set(posCenter.getX() + offX * i,
+                               posCenter.getY() + offY * i,
+                               posCenter.getZ() + offZ * i);
+
+                if (axis == Direction.Axis.Y)
+                {
+                    SphereUtils.addPositionsOnHorizontalBlockRing(positionConsumer, mutablePos, test);
+                }
+                else
+                {
+                    SphereUtils.addPositionsOnVerticalBlockRing(positionConsumer, mutablePos, this.mainAxis, test);
+                }
+            }
+
+            Direction[] sides = this.getSides();
+            RenderUtils.renderCircleBlockOutlines(positions, sides, test, this.renderType, this.layerRange,
+                                                  this.colorLines, expand, cameraPos, builder, e);
+        }
     }
 
     protected Direction[] getSides()

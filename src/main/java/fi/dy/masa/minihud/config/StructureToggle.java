@@ -1,6 +1,9 @@
 package fi.dy.masa.minihud.config;
 
 import com.google.common.collect.ImmutableList;
+
+import com.mojang.serialization.Codec;
+
 import fi.dy.masa.malilib.config.IConfigBoolean;
 import fi.dy.masa.malilib.config.options.ConfigBoolean;
 import fi.dy.masa.malilib.config.options.ConfigColor;
@@ -65,6 +68,11 @@ public enum StructureToggle
 
         this.hotkey.getKeybind().setCallback((action, key) -> { this.toggleOption.toggleBooleanValue(); return true; });
         this.toggleOption.setValueChangeCallback((config) -> DataStorage.getInstance().setStructuresNeedUpdating());
+    }
+
+    public Codec<StructureToggle> codec()
+    {
+        return null;
     }
 
     public IConfigBoolean getToggleOption()

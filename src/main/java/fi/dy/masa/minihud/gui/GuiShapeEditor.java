@@ -1,12 +1,8 @@
 package fi.dy.masa.minihud.gui;
 
 import java.util.Locale;
-import java.util.function.Consumer;
-import java.util.function.DoubleConsumer;
-import java.util.function.DoubleSupplier;
-import java.util.function.IntConsumer;
-import java.util.function.IntSupplier;
-import java.util.function.Supplier;
+import java.util.function.*;
+
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.entity.Entity;
@@ -14,38 +10,19 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
+
 import fi.dy.masa.malilib.config.options.ConfigOptionList;
-import fi.dy.masa.malilib.gui.GuiBase;
-import fi.dy.masa.malilib.gui.GuiRenderLayerEditBase;
-import fi.dy.masa.malilib.gui.GuiTextFieldDouble;
-import fi.dy.masa.malilib.gui.GuiTextFieldGeneric;
-import fi.dy.masa.malilib.gui.GuiTextFieldInteger;
-import fi.dy.masa.malilib.gui.MaLiLibIcons;
-import fi.dy.masa.malilib.gui.button.ButtonBase;
-import fi.dy.masa.malilib.gui.button.ButtonGeneric;
-import fi.dy.masa.malilib.gui.button.ButtonOnOff;
-import fi.dy.masa.malilib.gui.button.ConfigButtonOptionList;
-import fi.dy.masa.malilib.gui.button.IButtonActionListener;
+import fi.dy.masa.malilib.gui.*;
+import fi.dy.masa.malilib.gui.button.*;
 import fi.dy.masa.malilib.gui.interfaces.ITextFieldListener;
 import fi.dy.masa.malilib.gui.widgets.WidgetCheckBox;
 import fi.dy.masa.malilib.gui.widgets.WidgetColorIndicator;
 import fi.dy.masa.malilib.interfaces.ICoordinateValueModifier;
-import fi.dy.masa.malilib.util.BlockSnap;
-import fi.dy.masa.malilib.util.EntityUtils;
-import fi.dy.masa.malilib.util.GuiUtils;
-import fi.dy.masa.malilib.util.LayerRange;
-import fi.dy.masa.malilib.util.PositionUtils;
-import fi.dy.masa.malilib.util.PositionUtils.CoordinateType;
-import fi.dy.masa.malilib.util.StringUtils;
+import fi.dy.masa.malilib.util.*;
+import fi.dy.masa.malilib.util.position.PositionUtils;
+import fi.dy.masa.malilib.util.position.PositionUtils.CoordinateType;
 import fi.dy.masa.minihud.gui.GuiConfigs.ConfigGuiTab;
-import fi.dy.masa.minihud.renderer.shapes.ShapeBase;
-import fi.dy.masa.minihud.renderer.shapes.ShapeBlocky;
-import fi.dy.masa.minihud.renderer.shapes.ShapeBox;
-import fi.dy.masa.minihud.renderer.shapes.ShapeCircle;
-import fi.dy.masa.minihud.renderer.shapes.ShapeCircleBase;
-import fi.dy.masa.minihud.renderer.shapes.ShapeLineBlock;
-import fi.dy.masa.minihud.renderer.shapes.ShapeSpawnSphere;
-import fi.dy.masa.minihud.renderer.shapes.ShapeType;
+import fi.dy.masa.minihud.renderer.shapes.*;
 import fi.dy.masa.minihud.util.ShapeRenderType;
 
 public class GuiShapeEditor extends GuiRenderLayerEditBase
@@ -73,6 +50,14 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
 
         ButtonGeneric button = new ButtonGeneric(x, this.getScreenHeight() - 24, -1, 20, ConfigGuiTab.SHAPES.getDisplayName());
         this.addButton(button, new GuiShapeManager.ButtonListenerTab(ConfigGuiTab.SHAPES));
+
+        ButtonOnOff renderThroughButton = new ButtonOnOff(this.getScreenWidth() - 224, this.getScreenHeight() - 24, -1, false, "minihud.gui.button.shape_renderer.toggle_render_through", this.shape.shouldRenderThrough());
+        this.addButton(renderThroughButton, (b, mb) -> this.toggleRenderThrough(shape, renderThroughButton));
+
+        this.createColorOutlinesInput(this.getScreenWidth() - 98, this.getScreenHeight() - 60);
+
+        ButtonOnOff renderLinesButton = new ButtonOnOff(this.getScreenWidth() - 104, this.getScreenHeight() - 24, -1, false, "minihud.gui.button.shape_renderer.toggle_render_lines", this.shape.shouldRenderLines());
+        this.addButton(renderLinesButton, (b, mb) -> this.toggleRenderLines(shape, renderLinesButton));
     }
 
     @Override
@@ -94,6 +79,21 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         this.colorY = y - 1;
 
         this.addWidget(new WidgetColorIndicator(x + 74, this.colorY, 19, 19, this.shape.getColor(), this.shape::setColor));
+    }
+
+    private void createColorOutlinesInput(int x, int y)
+    {
+        this.addLabel(x, y, -1, 14, 0xFFFFFFFF, StringUtils.translate("minihud.gui.label.outlines_color"));
+        y += 12;
+
+        GuiTextFieldGeneric textField = new GuiTextFieldGeneric(x, y, 70, 17, this.textRenderer);
+        textField.setMaxLengthWrapper(12);
+        textField.setTextWrapper(String.format("#%08X", this.shape.getColorLines().intValue));
+        this.addTextField(textField, new TextFieldListenerColorLines(this.shape));
+        this.nextY = y + 20;
+        this.colorY = y - 1;
+
+        this.addWidget(new WidgetColorIndicator(x + 74, this.colorY, 19, 19, this.shape.getColorLines(), this.shape::setColorLines));
     }
 
     private void createShapeEditorElements(int x, int y)
@@ -196,7 +196,7 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
 
         ButtonOnOff combineQuadsButton = new ButtonOnOff(btnX, y, -1, false, "minihud.gui.button.shape_renderer.toggle_combine_quads", ((ShapeBlocky) this.shape).getCombineQuads());
         this.addButton(combineQuadsButton, (b, mb) -> this.toggleCombineQuads(shape, combineQuadsButton));
-        y += 34;
+        y += 24;
 
         this.createColorInput(x, y);
     }
@@ -211,7 +211,7 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         this.createBoxInputs(x, y, x, y + 82, 120, shape);
 
         y += 160;
-        this.createColorInput(x, y);
+        this.createColorInput(x + 12, y);
 
         x = xIn + 250;
         y = yIn + 4;
@@ -308,7 +308,7 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
 
     private void addBoxSideToggleCheckbox(int x, int y, Direction side, ShapeBox shape)
     {
-        String sideName = StringUtils.translate("minihud.gui.name.box.box_side." + side.getName());
+        String sideName = StringUtils.translate("minihud.gui.name.box.box_side." + side.name().toLowerCase());
         WidgetCheckBox cb = new WidgetCheckBox(x, y, MaLiLibIcons.MINUS, MaLiLibIcons.PLUS, this.capitalize(sideName), StringUtils.translate("minihud.gui.hover.shape.box.box_side", sideName));
         cb.setChecked(shape.isSideEnabled(side));
         cb.setListener((w) -> this.toggleSideEnabled(side, shape));
@@ -318,9 +318,20 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
     private void toggleSideEnabled(Direction side, ShapeBox shape)
     {
         int mask = shape.getEnabledSidesMask();
-        shape.setEnabledSidesMask(mask ^ (1 << side.getId()));
+        shape.setEnabledSidesMask(mask ^ (1 << side.getIndex()));
     }
 
+    private void toggleRenderLines(ShapeBase shape, ButtonOnOff button)
+    {
+        shape.toggleRenderLines();
+        button.updateDisplayString(shape.shouldRenderLines());
+    }
+
+    private void toggleRenderThrough(ShapeBase shape, ButtonOnOff button)
+    {
+        shape.toggleRenderThrough();
+        button.updateDisplayString(shape.shouldRenderThrough());
+    }
 
     public void createBoxInputs(int x1, int y1, int x2, int y2, int textFieldWidth, ShapeBox shape)
     {
@@ -441,7 +452,7 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
 
     public static Direction cycleDirection(Direction direction, boolean reverse)
     {
-        int index = direction.getId();
+        int index = direction.getIndex();
 
         if (reverse)
         {
@@ -452,7 +463,7 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
             index = index >= 5 ? 0 : index + 1;
         }
 
-        return Direction.byId(index);
+        return Direction.byIndex(index);
     }
 
     protected void setPositionFromCamera(Consumer<Vec3d> consumer)
@@ -651,6 +662,16 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         public boolean onTextChange(GuiTextFieldGeneric textField)
         {
             this.shape.setColorFromString(textField.getTextWrapper());
+            return false;
+        }
+    }
+
+    private record TextFieldListenerColorLines(ShapeBase shape) implements ITextFieldListener<GuiTextFieldGeneric>
+    {
+        @Override
+        public boolean onTextChange(GuiTextFieldGeneric textField)
+        {
+            this.shape.setColorLinesFromString(textField.getTextWrapper());
             return false;
         }
     }

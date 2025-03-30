@@ -1,23 +1,31 @@
 package fi.dy.masa.minihud.renderer;
 
+import java.util.List;
 import java.util.function.Consumer;
-import com.mojang.blaze3d.systems.RenderSystem;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import org.joml.Matrix4f;
-import org.lwjgl.opengl.GL11;
+
+import com.mojang.blaze3d.buffers.BufferType;
+import com.mojang.blaze3d.buffers.BufferUsage;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.block.entity.ConduitBlockEntity;
-import net.minecraft.client.render.VertexFormat;
-import net.minecraft.client.render.VertexFormats;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.RenderPipelines;
+import net.minecraft.client.render.BufferBuilder;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.profiler.Profiler;
 import net.minecraft.world.World;
-import fi.dy.masa.malilib.util.Color4f;
+
+import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.LayerRange;
-import fi.dy.masa.malilib.util.PositionUtils;
+import fi.dy.masa.malilib.util.data.Color4f;
+import fi.dy.masa.malilib.util.position.PositionUtils;
+import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.RendererToggle;
+import fi.dy.masa.minihud.renderer.shapes.SideQuad;
 import fi.dy.masa.minihud.util.ConduitExtra;
 import fi.dy.masa.minihud.util.ShapeRenderType;
 import fi.dy.masa.minihud.util.shape.SphereUtils;
@@ -26,9 +34,25 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
 {
     public static final OverlayRendererConduitRange INSTANCE = new OverlayRendererConduitRange();
 
+    private final ShapeRenderType renderType;
+    private final LayerRange layerRange;
+    private final Direction.Axis quadAxis;
+    private boolean combineQuads;
+    private Color4f colorLines;
+
+    private LongOpenHashSet positions;
+    private SphereUtils.RingPositionTest test;
+    private List<SideQuad> quads;
+
     public OverlayRendererConduitRange()
     {
         super(RendererToggle.OVERLAY_CONDUIT_RANGE, BlockEntityType.CONDUIT, ConduitBlockEntity.class);
+        this.quadAxis = Direction.UP.getAxis();
+        this.renderType = ShapeRenderType.OUTER_EDGE;
+        this.layerRange = new LayerRange(null);
+        this.positions = new LongOpenHashSet();
+        this.test = null;
+        this.quads = null;
     }
 
     @Override
@@ -37,61 +61,137 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
         return "ConduitRange";
     }
 
-    @Override
-    public void allocateGlResources()
-    {
-        this.allocateBuffer(VertexFormat.DrawMode.QUADS);
-    }
+//    @Override
+//    protected void allocateBuffers()
+//    {
+//        this.clearBuffers();
+//        this.renderObjects.add(new RenderObjectVbo(() -> this.getName()+" Quads", MaLiLibPipelines.POSITION_COLOR_SIMPLE, GlUsage.STATIC_WRITE));
+//    }
 
     @Override
-    protected void startBuffers()
+    protected void renderBlockRange(World world, BlockPos pos, ConduitBlockEntity be, Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
     {
-        BUFFER_1 = TESSELLATOR_1.begin(this.renderObjects.getFirst().getGlMode(), VertexFormats.POSITION_COLOR);
-    }
-
-    @Override
-    protected void uploadBuffers()
-    {
-        this.renderObjects.getFirst().uploadData(BUFFER_1);
-    }
-
-    @Override
-    public void draw(Matrix4f matrix4f, Matrix4f projMatrix)
-    {
-        this.preRender();
-
-        this.renderObjects.getFirst().draw(matrix4f, projMatrix);
-
-        // Render the lines as quads with glPolygonMode(GL_LINE)
-        RenderSystem.polygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
-        RenderSystem.disableBlend();
-        this.renderObjects.getFirst().draw(matrix4f, projMatrix);
-        RenderSystem.polygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
-        RenderSystem.enableBlend();
-
-        this.postRender();
-    }
-
-    @Override
-    protected void renderBlockRange(World world, BlockPos pos, ConduitBlockEntity be, Vec3d cameraPos)
-    {
-        if (be.isActive() == false)
+        if (!be.isActive())
         {
             return;
         }
 
         int range = ((ConduitExtra) be).minihud$getStoredActivatingBlockCount() / 7 * 16;
+
+        this.positions.clear();
+        Consumer<BlockPos.Mutable> positionCollector = (p) -> this.positions.add(p.asLong());
+        this.test = this.getPositionTest(pos, range);
+        SphereUtils.collectSpherePositions(positionCollector, this.test, pos, range);
+
+        this.colorLines = Configs.Colors.CONDUIT_RANGE_OUTLINES.getColor();
+        this.combineQuads = Configs.Generic.CONDUIT_RANGE_OVERLAY_COMBINE_QUADS.getBooleanValue();
+        this.renderThrough = Configs.Generic.CONDUIT_RANGE_OVERLAY_RENDER_THROUGH.getBooleanValue();
+        boolean outlines = Configs.Generic.CONDUIT_RANGE_OVERLAY_RENDER_OUTLINES.getBooleanValue();
+
+        if (this.combineQuads)
+        {
+            this.quads = SphereUtils.buildSphereShellToQuads(this.positions, this.quadAxis, this.test, this.renderType, this.layerRange);
+        }
+
+        this.allocateBuffers(outlines);
+        this.renderQuads(cameraPos, mc, profiler);
+
+        if (outlines)
+        {
+            this.renderOutlines(cameraPos, mc, profiler);
+        }
+    }
+
+    private void renderQuads(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
+    {
+        if (mc.world == null || mc.player == null)
+        {
+            return;
+        }
+
         Color4f color = Configs.Colors.CONDUIT_RANGE_OVERLAY_COLOR.getColor();
 
-        LongOpenHashSet positions = new LongOpenHashSet();
-        Consumer<BlockPos.Mutable> positionCollector = (p) -> positions.add(p.asLong());
-        SphereUtils.RingPositionTest test = this.getPositionTest(pos, range);
+        // MaLiLibPipelines.POSITION_COLOR_MASA_LESSER_DEPTH
+        profiler.push("conduit_quads");
+        RenderObjectVbo ctx = this.renderObjects.getFirst();
+        BufferBuilder builder = ctx.start(() -> "Conduit Quads", this.renderThrough ? MaLiLibPipelines.POSITION_COLOR_MASA_NO_DEPTH_NO_CULL : MaLiLibPipelines.POSITION_COLOR_MASA_LESSER_DEPTH_OFFSET_1, BufferUsage.STATIC_WRITE);
+        MatrixStack matrices = new MatrixStack();
 
-        SphereUtils.collectSpherePositions(positionCollector, test, pos, range);
+        matrices.push();
 
-        RenderUtils.renderCircleBlockPositions(positions, PositionUtils.ALL_DIRECTIONS,
-                                               test, ShapeRenderType.OUTER_EDGE,
-                                               new LayerRange(null), color, 0, cameraPos, BUFFER_1);
+        if (this.combineQuads)
+        {
+            RenderUtils.renderQuads(this.quads, color, 0, cameraPos, builder, matrices.peek());
+        }
+        else
+        {
+            RenderUtils.renderCircleBlockPositions(this.positions, PositionUtils.ALL_DIRECTIONS,
+                                                   this.test, this.renderType,
+                                                   this.layerRange, color, 0,
+                                                   cameraPos, builder, matrices.peek());
+        }
+
+        try
+        {
+            ctx.upload(builder.endNullable(), BufferType.VERTICES);
+        }
+        catch (Exception err)
+        {
+            MiniHUD.LOGGER.error("OverlayRendererConduitRange#renderQuads(): Exception; {}", err.getMessage());
+        }
+
+        matrices.pop();
+        profiler.pop();
+
+    }
+
+    private void renderOutlines(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
+    {
+        if (mc.world == null || mc.player == null || !Configs.Generic.CONDUIT_RANGE_OVERLAY_RENDER_OUTLINES.getBooleanValue())
+        {
+            return;
+        }
+
+        profiler.push("conduit_outlines");
+        RenderObjectVbo ctx = this.renderObjects.get(1);
+        BufferBuilder builder = ctx.start(() -> "Conduit Outlines", RenderPipelines.LINES, BufferUsage.STATIC_WRITE);
+        MatrixStack matrices = new MatrixStack();
+
+        matrices.push();
+
+        if (this.combineQuads)
+        {
+            RenderUtils.renderQuadLines(this.quads, this.colorLines, 0, cameraPos, builder, matrices.peek());
+        }
+        else
+        {
+            RenderUtils.renderCircleBlockOutlines(this.positions, PositionUtils.ALL_DIRECTIONS,
+                                                  this.test, this.renderType,
+                                                  this.layerRange, this.colorLines, 0,
+                                                  cameraPos, builder, matrices.peek());
+        }
+
+        try
+        {
+            ctx.upload(builder.endNullable(), BufferType.VERTICES);
+        }
+        catch (Exception err)
+        {
+            MiniHUD.LOGGER.error("OverlayRendererConduitRange#renderBlockRange(): Exception; {}", err.getMessage());
+        }
+
+        matrices.pop();
+        profiler.pop();
+
+    }
+
+    @Override
+    public void reset()
+    {
+        super.reset();
+        this.positions = new LongOpenHashSet();
+        this.test = null;
+        this.quads = null;
     }
 
     protected SphereUtils.RingPositionTest getPositionTest(BlockPos centerPos, int range)

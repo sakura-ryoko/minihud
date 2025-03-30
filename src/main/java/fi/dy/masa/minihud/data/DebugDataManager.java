@@ -35,7 +35,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.NameGenerator;
 import net.minecraft.util.Nameable;
 import net.minecraft.util.math.*;
-import net.minecraft.village.VillageGossipType;
+import net.minecraft.village.VillagerGossipType;
 import net.minecraft.village.raid.Raid;
 import net.minecraft.world.StructureWorldAccess;
 import net.minecraft.world.event.GameEvent;
@@ -203,12 +203,12 @@ public class DebugDataManager
         {
             MiniHUD.debugLog("DebugDataManager#receiveMetadata(): received METADATA from Servux");
 
-            if (data.getInt("version") != ServuxDebugPacket.PROTOCOL_VERSION)
+            if (data.getInt("version", -1) != ServuxDebugPacket.PROTOCOL_VERSION)
             {
                 MiniHUD.LOGGER.warn("debugDataChannel: Mis-matched protocol version!");
             }
 
-            this.setServuxVersion(data.getString("servux"));
+            this.setServuxVersion(data.getString("servux", "?"));
             this.setIsServuxServer();
 
             if (RendererToggle.DEBUG_DATA_MAIN_TOGGLE.getBooleanValue())
@@ -471,7 +471,7 @@ public class DebugDataManager
 
             if (entity instanceof VillagerEntity villager)
             {
-                profession = villager.getVillagerData().getProfession().toString();
+                profession = villager.getVillagerData().profession().toString();
                 xp = villager.getExperience();
                 inventory = villager.getInventory().toString();
                 wantsGolem = villager.canSummonGolem(serverWorld.getTime());
@@ -483,9 +483,9 @@ public class DebugDataManager
                         {
                             String name = NameGenerator.name(gossipEntity);
 
-                            for (Object2IntMap.Entry<VillageGossipType> typeEntry : associatedGossip.object2IntEntrySet())
+                            for (Object2IntMap.Entry<VillagerGossipType> typeEntry : associatedGossip.object2IntEntrySet())
                             {
-                                Map.Entry<VillageGossipType, Integer> entry = (Map.Entry) typeEntry;
+                                Map.Entry<VillagerGossipType, Integer> entry = (Map.Entry) typeEntry;
                                 gossips.add(name + ": " + entry.getKey().asString() + " " + entry.getValue());
                             }
                         }

@@ -259,7 +259,7 @@ public class DebugInfoUtils
         }
         if (RendererToggle.DEBUG_SOLID_FACES.getBooleanValue())
         {
-            RenderSystem.enableDepthTest();
+            //RenderSystem.enableDepthTest();
             renderer.blockOutlineDebugRenderer.render(matrixStack, vtx, cameraX, cameraY, cameraZ);
         }
         if (RendererToggle.DEBUG_SUPPORTING_BLOCK.getBooleanValue())

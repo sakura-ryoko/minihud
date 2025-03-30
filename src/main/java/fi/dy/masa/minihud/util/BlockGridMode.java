@@ -12,7 +12,7 @@ public enum BlockGridMode implements IConfigOptionListEntry
     private final String configString;
     private final String unlocName;
 
-    private BlockGridMode(String configString, String unlocName)
+    BlockGridMode(String configString, String unlocName)
     {
         this.configString = configString;
         this.unlocName = unlocName;

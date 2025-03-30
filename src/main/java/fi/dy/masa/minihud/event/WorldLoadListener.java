@@ -56,7 +56,7 @@ public class WorldLoadListener implements IWorldLoadListener
         DataStorage.getInstance().reset(worldAfter == null);
         HudDataManager.getInstance().reset(worldAfter == null);
         EntitiesDataManager.getInstance().reset(worldAfter == null);
-        OverlayRendererVillagerInfo.getInstance().reset(worldAfter == null);
+        OverlayRendererVillagerInfo.INSTANCE.reset(worldAfter == null);
         DebugDataManager.getInstance().reset(worldAfter == null);
 
         // Logging in to a world or changing dimensions or respawning

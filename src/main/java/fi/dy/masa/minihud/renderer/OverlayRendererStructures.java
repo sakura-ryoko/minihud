@@ -4,13 +4,22 @@ import java.util.ArrayList;
 import java.util.List;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
+
+import com.mojang.blaze3d.buffers.BufferType;
+import com.mojang.blaze3d.buffers.BufferUsage;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.VertexFormats;
+import net.minecraft.client.render.BufferBuilder;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
-import fi.dy.masa.malilib.util.Color4f;
+import net.minecraft.util.profiler.Profiler;
+
+import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.IntBoundingBox;
+import fi.dy.masa.malilib.util.data.Color4f;
+import fi.dy.masa.minihud.MiniHUD;
+import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.RendererToggle;
 import fi.dy.masa.minihud.config.StructureToggle;
 import fi.dy.masa.minihud.util.DataStorage;
@@ -21,10 +30,13 @@ import fi.dy.masa.minihud.util.StructureType;
 public class OverlayRendererStructures extends OverlayRendererBase
 {
     public static final OverlayRendererStructures INSTANCE = new OverlayRendererStructures();
-    private boolean wasEmpty = true;
+    private List<StructureData> structures;
+    private boolean hasData;
 
     private OverlayRendererStructures()
     {
+        this.structures = new ArrayList<>();
+        this.hasData = false;
     }
 
     @Override
@@ -36,7 +48,7 @@ public class OverlayRendererStructures extends OverlayRendererBase
     @Override
     public boolean shouldRender(MinecraftClient mc)
     {
-        if (RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue() == false)
+        if (!RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue())
         {
             return false;
         }
@@ -64,65 +76,164 @@ public class OverlayRendererStructures extends OverlayRendererBase
     }
 
     @Override
-    public void update(Vec3d cameraPos, Entity entity, MinecraftClient mc)
+    public void update(Vec3d cameraPos, Entity entity, MinecraftClient mc, Profiler profiler)
     {
         int maxRange = (mc.options.getViewDistance().getValue() + 4) * 16;
-        List<StructureData> data = this.getStructuresToRender(this.lastUpdatePos, maxRange);
+        this.structures = this.getStructuresToRender(this.lastUpdatePos, maxRange);
+        this.hasData = !this.structures.isEmpty();
+        this.renderThrough = Configs.Generic.STRUCTURES_RENDER_THROUGH.getBooleanValue();
 
-        if (data.isEmpty() == false)
+        if (this.hasData())
         {
-            if (this.wasEmpty)
-            {
-                this.allocateGlResources();
-            }
-
-            RenderObjectBase renderQuads = this.renderObjects.get(0);
-            RenderObjectBase renderLines = this.renderObjects.get(1);
-            BUFFER_1 = TESSELLATOR_1.begin(renderQuads.getGlMode(), VertexFormats.POSITION_COLOR);
-            BUFFER_2 = TESSELLATOR_2.begin(renderLines.getGlMode(), VertexFormats.POSITION_COLOR);
-
-            this.renderStructureBoxes(data, cameraPos);
-
-            renderQuads.uploadData(BUFFER_1);
-            renderLines.uploadData(BUFFER_2);
-
-            this.wasEmpty = false;
-        }
-        else
-        {
-            this.deleteGlResources();
-            this.wasEmpty = true;
+            this.render(cameraPos, mc, profiler);
         }
     }
 
-    private void renderStructureBoxes(List<StructureData> wrappedData, Vec3d cameraPos)
+    @Override
+    public boolean hasData()
     {
-        for (StructureData data : wrappedData)
+        return this.hasData && !this.structures.isEmpty();
+    }
+
+    @Override
+    protected void allocateBuffers(boolean useOutlines)
+    {
+        this.clearBuffers();
+        this.renderObjects.add(new RenderObjectVbo(() -> this.getName()+" Main Quads",  MaLiLibPipelines.POSITION_COLOR_TRANSLUCENT_LESSER_DEPTH_OFFSET_1, BufferUsage.STATIC_WRITE));
+        this.renderObjects.add(new RenderObjectVbo(() -> this.getName()+" Components",  MaLiLibPipelines.POSITION_COLOR_MASA_NO_DEPTH, BufferUsage.STATIC_WRITE));
+//        this.renderObjects.add(new RenderObjectVbo(() -> this.getName()+" Sub Surface", MaLiLibPipelines.POSITION_COLOR_MASA_LESSER_DEPTH_OFFSET_2, BufferUsage.STATIC_WRITE));
+    }
+
+    @Override
+    public void render(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
+    {
+        this.allocateBuffers();
+        this.renderStructureMain(cameraPos, mc, profiler);
+        this.renderStructureComponents(cameraPos, mc, profiler);
+//        this.renderStructureSubSurface(cameraPos, mc, profiler);
+    }
+
+    private void renderStructureMain(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
+    {
+        if (mc.world == null || mc.player == null)
         {
-            StructureToggle toggle = data.getStructureType().getToggle();
+            return;
+        }
+
+        profiler.push("structure main");
+        RenderObjectVbo ctx = this.renderObjects.getFirst();
+        BufferBuilder builder = ctx.start(() -> "Structure Main", this.renderThrough ? MaLiLibPipelines.POSITION_COLOR_TRANSLUCENT_NO_DEPTH_NO_CULL : MaLiLibPipelines.POSITION_COLOR_TRANSLUCENT_LESSER_DEPTH_OFFSET_1, BufferUsage.STATIC_WRITE);
+        MatrixStack matrices = new MatrixStack();
+
+        matrices.push();
+        MatrixStack.Entry e = matrices.peek();
+
+        for (StructureData structure : this.structures)
+        {
+            StructureToggle toggle = structure.getStructureType().getToggle();
             Color4f mainColor = toggle.getColorMain().getColor();
-            Color4f componentColor = toggle.getColorComponents().getColor();
-            this.renderStructure(data, mainColor, componentColor, cameraPos);
+            IntBoundingBox bb = structure.getBoundingBox();
+
+            RenderUtils.drawBoxNoOutlines(bb, cameraPos, mainColor, builder, e);
         }
+
+        try
+        {
+            ctx.upload(builder.endNullable(), BufferType.VERTICES);
+        }
+        catch (Exception err)
+        {
+            MiniHUD.LOGGER.error("OverlayRendererStructures#renderStructureMain(): Exception; {}", err.getMessage());
+        }
+
+        matrices.pop();
+        profiler.pop();
     }
 
-    private void renderStructure(StructureData structure, Color4f mainColor, Color4f componentColor, Vec3d cameraPos)
+    private void renderStructureComponents(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
     {
-        fi.dy.masa.malilib.render.RenderUtils.drawBox(structure.getBoundingBox(), cameraPos, mainColor, BUFFER_1, BUFFER_2);
-
-        ImmutableList<IntBoundingBox> components = structure.getComponents();
-
-        if (components.isEmpty() == false)
+        if (mc.world == null || mc.player == null)
         {
-            if (components.size() > 1 || MiscUtils.areBoxesEqual(components.get(0), structure.getBoundingBox()) == false)
+            return;
+        }
+
+        // ShaderPipelines.DEBUG_QUADS
+        profiler.push("structure components");
+        RenderObjectVbo ctx = this.renderObjects.get(1);
+        BufferBuilder builder = ctx.start(() -> "Structure Components", this.renderThrough ? MaLiLibPipelines.POSITION_COLOR_MASA_NO_DEPTH_NO_CULL : MaLiLibPipelines.POSITION_COLOR_MASA_NO_DEPTH, BufferUsage.STATIC_WRITE);
+        MatrixStack matrices = new MatrixStack();
+
+        matrices.push();
+        MatrixStack.Entry e = matrices.peek();
+
+        for (StructureData structure : this.structures)
+        {
+            StructureToggle toggle = structure.getStructureType().getToggle();
+            Color4f componentColor = toggle.getColorComponents().getColor();
+            ImmutableList<IntBoundingBox> components = structure.getComponents();
+
+            if (!components.isEmpty())
             {
-                for (IntBoundingBox bb : components)
+                if (components.size() > 1 || !MiscUtils.areBoxesEqual(components.getFirst(), structure.getBoundingBox()))
                 {
-                    fi.dy.masa.malilib.render.RenderUtils.drawBox(bb, cameraPos, componentColor, BUFFER_1, BUFFER_2);
+                    for (IntBoundingBox bb : components)
+                    {
+                        RenderUtils.drawBoxNoOutlines(bb, cameraPos, componentColor, builder, e);
+                    }
                 }
             }
         }
+
+        try
+        {
+            ctx.upload(builder.endNullable(), BufferType.VERTICES);
+        }
+        catch (Exception err)
+        {
+            MiniHUD.LOGGER.error("OverlayRendererStructures#renderStructureComponents(): Exception; {}", err.getMessage());
+        }
+
+        matrices.pop();
+        profiler.pop();
     }
+
+    @Override
+    public void reset()
+    {
+        super.reset();
+        this.structures.clear();
+    }
+
+//    private void renderStructureBoxes(List<StructureData> wrappedData, Vec3d cameraPos,
+//                                      BufferBuilder builder1, BufferBuilder builder2)
+//    {
+//        for (StructureData data : wrappedData)
+//        {
+//            StructureToggle toggle = data.getStructureType().getToggle();
+//            Color4f mainColor = toggle.getColorMain().getColor();
+//            Color4f componentColor = toggle.getColorComponents().getColor();
+//            this.renderStructure(data, mainColor, componentColor, cameraPos, builder1, builder2);
+//        }
+//    }
+//
+//    private void renderStructure(StructureData structure, Color4f mainColor, Color4f componentColor, Vec3d cameraPos,
+//                                 BufferBuilder builder1, BufferBuilder builder2)
+//    {
+//        fi.dy.masa.malilib.render.RenderUtils.drawBox(structure.getBoundingBox(), cameraPos, mainColor, builder1, builder2);
+//
+//        ImmutableList<IntBoundingBox> components = structure.getComponents();
+//
+//        if (components.isEmpty() == false)
+//        {
+//            if (components.size() > 1 || MiscUtils.areBoxesEqual(components.get(0), structure.getBoundingBox()) == false)
+//            {
+//                for (IntBoundingBox bb : components)
+//                {
+//                    fi.dy.masa.malilib.render.RenderUtils.drawBox(bb, cameraPos, componentColor, builder1, builder2);
+//                }
+//            }
+//        }
+//    }
 
     private List<StructureData> getStructuresToRender(BlockPos playerPos, int maxRange)
     {
@@ -131,7 +242,7 @@ public class OverlayRendererStructures extends OverlayRendererBase
 
         for (StructureType type : structures.keySet())
         {
-            if (type.isEnabled() == false)
+            if (!type.isEnabled())
             {
                 continue;
             }

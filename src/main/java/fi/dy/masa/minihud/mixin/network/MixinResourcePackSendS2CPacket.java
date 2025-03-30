@@ -1,4 +1,4 @@
-package fi.dy.masa.minihud.mixin;
+package fi.dy.masa.minihud.mixin.network;
 
 import net.minecraft.network.packet.s2c.common.ResourcePackSendS2CPacket;
 import org.spongepowered.asm.mixin.Mixin;
