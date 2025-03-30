@@ -3,7 +3,7 @@
   "package": "fi.dy.masa.minihud.mixin",
   "compatibilityLevel": "JAVA_21",
   "minVersion": "0.8",
-  "client": [
+  "mixins": [
     "IMixinMinecraftServer",
     "IMixinWorldRenderer",
     "MixinChatScreen",
