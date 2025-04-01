@@ -117,7 +117,10 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
                     HANDLER.unregisterPlayReceiver();
                 }
 
-                return;
+                if (!Configs.Generic.ENTITY_DATA_SYNC_BACKUP.getBooleanValue())
+                {
+                    return;
+                }
             }
             else if (!DataStorage.getInstance().hasIntegratedServer() &&
                     !this.hasServuxServer() &&
@@ -465,7 +468,8 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
         {
             // Refresh at 25%
             if (!DataStorage.getInstance().hasIntegratedServer() &&
-                Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue())
+                (Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue() ||
+                 Configs.Generic.ENTITY_DATA_SYNC_BACKUP.getBooleanValue()))
             {
                 if (System.currentTimeMillis() - this.blockEntityCache.get(pos).getLeft() > this.getCacheRefresh())
                 {
@@ -479,7 +483,8 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
         else if (world.getBlockState(pos).getBlock() instanceof BlockEntityProvider)
         {
             if (!DataStorage.getInstance().hasIntegratedServer() &&
-                Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue())
+                (Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue() ||
+                 Configs.Generic.ENTITY_DATA_SYNC_BACKUP.getBooleanValue()))
             {
                 this.pendingBlockEntitiesQueue.add(pos);
             }
@@ -510,7 +515,8 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
         {
             // Refresh at 25%
             if (!DataStorage.getInstance().hasIntegratedServer() &&
-                Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue())
+                (Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue() ||
+                 Configs.Generic.ENTITY_DATA_SYNC_BACKUP.getBooleanValue()))
             {
                 if (System.currentTimeMillis() - this.entityCache.get(entityId).getLeft() > this.getCacheRefresh())
                 {
@@ -523,7 +529,8 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
         }
 
         if (!DataStorage.getInstance().hasIntegratedServer() &&
-            Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue())
+            (Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue() ||
+             Configs.Generic.ENTITY_DATA_SYNC_BACKUP.getBooleanValue()))
         {
             this.pendingEntitiesQueue.add(entityId);
         }
@@ -614,7 +621,8 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
             }
         }
 
-        if (Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue())
+        if (Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue() ||
+            Configs.Generic.ENTITY_DATA_SYNC_BACKUP.getDefaultBooleanValue())
         {
             this.requestBlockEntity(world, pos);
         }
@@ -666,7 +674,8 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
             }
         }
 
-        if (Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue())
+        if (Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue() ||
+            Configs.Generic.ENTITY_DATA_SYNC_BACKUP.getDefaultBooleanValue())
         {
             this.requestEntity(this.getWorld(), entityId);
         }
