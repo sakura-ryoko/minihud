@@ -3,26 +3,32 @@ package fi.dy.masa.minihud.renderer;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.function.Supplier;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import com.mojang.blaze3d.buffers.BufferType;
 import com.mojang.blaze3d.buffers.BufferUsage;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.systems.VertexSorter;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.BuiltBuffer;
+import net.minecraft.client.render.Camera;
 import net.minecraft.client.texture.NativeImage;
 import net.minecraft.client.texture.ResourceTexture;
 import net.minecraft.client.texture.TextureContents;
 import net.minecraft.client.util.BufferAllocator;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.TriState;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ColorHelper;
+import net.minecraft.util.math.Vec3d;
 
 import fi.dy.masa.malilib.mixin.render.IMixinAbstractTexture;
 import fi.dy.masa.malilib.mixin.render.IMixinBufferBuilder;
@@ -41,19 +47,22 @@ public class RenderObjectVbo
     private Supplier<String> name;
     private RenderPipeline shader;
     private BufferUsage usage;
-    private GpuBuffer gpuBuffer;
+    private GpuBuffer vertexBuffer;
+    @Nullable private GpuBuffer indexBuffer;
     private RenderSystem.ShapeIndexBuffer shapeIndex;
+    private VertexFormat.IndexType indexType;
     private BufferAllocator alloc;
     private BufferBuilder builder;
     private VertexFormat format;
     private VertexFormat.DrawMode drawMode;
     private ResourceTexture texture;
+    @Nullable private BuiltBuffer.SortState sortState;
     private int textureId;
     private float[] offset;
     private float lineWidth;
     private int color;
     private boolean started;
-    private int bufferIndex;
+    private int indexCount;
 
     protected RenderObjectVbo(Supplier<String> name, RenderPipeline shader, BufferUsage usage)
     {
@@ -61,12 +70,15 @@ public class RenderObjectVbo
         this.alloc = new BufferAllocator(shader.getVertexFormat().getVertexSize() * 4);
         this.builder = new BufferBuilder(this.alloc, shader.getVertexFormatMode(), shader.getVertexFormat());
         this.shapeIndex = RenderSystem.getSequentialBuffer(shader.getVertexFormatMode());
+        this.indexType = this.shapeIndex.getIndexType();
         this.format = shader.getVertexFormat();
         this.drawMode = shader.getVertexFormatMode();
         this.shader = shader;
         this.usage = usage;
-        this.gpuBuffer = null;
-        this.bufferIndex = -1;
+        this.vertexBuffer = null;
+        this.indexBuffer = null;
+        this.sortState = null;
+        this.indexCount = -1;
         // We don't need to reset this, in case we need to re-use the texture
 //        this.texture = null;
         this.textureId = -1;
@@ -83,12 +95,15 @@ public class RenderObjectVbo
         this.alloc = new BufferAllocator(shader.getVertexFormat().getVertexSize() * 4);
         this.builder = new BufferBuilder(this.alloc, shader.getVertexFormatMode(), shader.getVertexFormat());
         this.shapeIndex = RenderSystem.getSequentialBuffer(shader.getVertexFormatMode());
+        this.indexType = this.shapeIndex.getIndexType();
         this.format = shader.getVertexFormat();
         this.drawMode = shader.getVertexFormatMode();
         this.shader = shader;
         this.usage = usage;
-        this.gpuBuffer = null;
-        this.bufferIndex = -1;
+        this.vertexBuffer = null;
+        this.indexBuffer = null;
+        this.sortState = null;
+        this.indexCount = -1;
         // We don't need to reset this, in case we need to re-use the texture
 //        this.texture = null;
         this.textureId = -1;
@@ -193,7 +208,18 @@ public class RenderObjectVbo
     {
         this.ensureSafeNoShader();
         this.ensureBuilding(this.builder);
-        this.upload(this.builder.endNullable(), BufferType.VERTICES);
+
+        try (BuiltBuffer meshData = this.builder.endNullable())
+        {
+            if (meshData != null)
+            {
+                this.upload(meshData);
+            }
+            else
+            {
+                throw new RuntimeException("Empty Mesh Data!");
+            }
+        }
     }
 
     protected void upload(BufferBuilder builder) throws RuntimeException
@@ -201,16 +227,21 @@ public class RenderObjectVbo
         this.ensureSafeNoShader();
         this.ensureBuilding(builder);
         this.builder = builder;
-        this.upload(this.builder.endNullable(), BufferType.VERTICES);
+
+        try (BuiltBuffer meshData = this.builder.endNullable())
+        {
+            if (meshData != null)
+            {
+                this.upload(meshData);
+            }
+            else
+            {
+                throw new RuntimeException("Empty Mesh Data!");
+            }
+        }
     }
 
-    protected void upload(BuiltBuffer meshData) throws RuntimeException
-    {
-        this.ensureSafeNoShader();
-        this.upload(meshData, BufferType.VERTICES);
-    }
-
-    public void upload(BuiltBuffer meshData, BufferType target)
+    public void upload(BuiltBuffer meshData) throws RuntimeException
     {
         this.ensureSafeNoBuffer();
 
@@ -218,19 +249,152 @@ public class RenderObjectVbo
         {
             int expectedSize = meshData.getBuffer().remaining();
 
-            if (this.gpuBuffer != null)
+//            if (this.vertexBuffer != null)
+//            {
+//                this.vertexBuffer.close();
+//            }
+//            if (this.indexBuffer != null)
+//            {
+//                this.indexBuffer.close();
+//                this.indexBuffer = null;
+//            }
+
+            if (this.vertexBuffer == null)
             {
-                this.gpuBuffer.close();
+                this.vertexBuffer = RenderSystem.getDevice().createBuffer(() -> this.name.get()+" VertexBuffer", BufferType.VERTICES, this.usage, expectedSize);
+            }
+            else if (this.vertexBuffer.size() < expectedSize)
+            {
+                this.vertexBuffer.close();
+                this.vertexBuffer = RenderSystem.getDevice().createBuffer(() -> this.name.get()+" VertexBuffer", BufferType.VERTICES, this.usage, expectedSize);
             }
 
-            this.gpuBuffer = RenderSystem.getDevice().createBuffer(this.name, target, this.usage, expectedSize);
+            CommandEncoder encoder = RenderSystem.getDevice().createCommandEncoder();
 
-            RenderSystem.getDevice()
-                        .createCommandEncoder()
-                        .writeToBuffer(this.gpuBuffer, meshData.getBuffer(), 0);
+            if (!this.vertexBuffer.isClosed())
+            {
+                encoder.writeToBuffer(this.vertexBuffer, meshData.getBuffer(), 0);
+            }
+            else
+            {
+                throw new RuntimeException("Vertex Buffer is closed!");
+            }
 
-            this.bufferIndex = meshData.getDrawParameters().indexCount();
-            meshData.close();
+            // Resorting
+            if (meshData.getSortedBuffer() != null)
+            {
+                if (this.indexBuffer != null && this.indexBuffer.size() >= meshData.getSortedBuffer().remaining())
+                {
+                    if (!this.indexBuffer.isClosed())
+                    {
+                        encoder.writeToBuffer(this.indexBuffer, meshData.getSortedBuffer(), 0);
+                    }
+                }
+                else
+                {
+                    if (this.indexBuffer != null)
+                    {
+                        this.indexBuffer.close();
+                    }
+
+                    this.indexBuffer = RenderSystem.getDevice().createBuffer(() -> this.name.get()+" IndexBuffer", BufferType.INDICES, this.usage, meshData.getSortedBuffer());
+                }
+            }
+            else if (this.indexBuffer != null)
+            {
+                this.indexBuffer.close();
+                this.indexBuffer = null;
+            }
+
+            this.indexCount = meshData.getDrawParameters().indexCount();
+            this.indexType = meshData.getDrawParameters().indexType();
+//            meshData.close();
+        }
+    }
+
+    /**
+     * UPLOAD/RESORTING PHASE --
+     * -
+     * This uploads the IndexBuffer for resorting
+     */
+    protected VertexSorter createVertexSorter(float x, float y, float z)
+    {
+        return VertexSorter.byDistance(x, y, z);
+    }
+
+    public VertexSorter createVertexSorter(Vec3d pos)
+    {
+        return this.createVertexSorter(pos, BlockPos.ORIGIN);
+    }
+
+    public VertexSorter createVertexSorter(Camera camera)
+    {
+        return this.createVertexSorter(camera.getPos(), BlockPos.ORIGIN);
+    }
+
+    public VertexSorter createVertexSorter(Camera camera, BlockPos origin)
+    {
+        return this.createVertexSorter(camera.getPos(), origin);
+    }
+
+    public VertexSorter createVertexSorter(Vec3d pos, BlockPos origin)
+    {
+        return VertexSorter.byDistance((float)(pos.x - (double)origin.getX()), (float)(pos.y - (double) origin.getY()), (float)(pos.z - (double) origin.getZ()));
+    }
+
+    public void startResorting(@Nonnull BuiltBuffer meshData, @Nonnull VertexSorter sorter) throws RuntimeException
+    {
+        this.ensureSafeNoBuffer();
+
+        if (RenderSystem.isOnRenderThread())
+        {
+            this.sortState = meshData.sortQuads(this.alloc, sorter);
+            this.resortTranslucent(sorter);
+        }
+    }
+
+    public void resortTranslucent(@Nonnull VertexSorter sorter) throws RuntimeException
+    {
+        this.ensureSafeNoBuffer();
+
+        if (RenderSystem.isOnRenderThread())
+        {
+            if (this.sortState == null)
+            {
+                throw new RuntimeException("Sort State is empty!");
+            }
+
+            BufferAllocator.CloseableBuffer result = this.sortState.sortAndStore(this.alloc, sorter);
+
+            if (result != null)
+            {
+                this.uploadIndex(result);
+                result.close();
+            }
+            else
+            {
+                throw new RuntimeException("Unable to Store Sorting Data in Result Buffer!");
+            }
+        }
+    }
+
+    protected void uploadIndex(@Nonnull BufferAllocator.CloseableBuffer buffer) throws RuntimeException
+    {
+        this.ensureSafeNoBuffer();
+
+        if (RenderSystem.isOnRenderThread())
+        {
+            if (this.indexBuffer == null)
+            {
+                this.indexBuffer = RenderSystem.getDevice().createBuffer(() -> this.name.get()+" IndexBuffer", BufferType.INDICES, BufferUsage.STATIC_WRITE, buffer.getBuffer());
+            }
+            else
+            {
+                if (!this.indexBuffer.isClosed())
+                {
+                    RenderSystem.getDevice().createCommandEncoder().writeToBuffer(this.indexBuffer, buffer.getBuffer(), 0);
+                }
+            }
         }
     }
 
@@ -409,30 +573,29 @@ public class RenderObjectVbo
     protected void draw(BuiltBuffer meshData) throws RuntimeException
     {
         this.ensureSafeNoBuffer();
-        this.draw(null, BufferType.VERTICES, meshData, false, false);
+        this.draw(null, meshData, false, false);
     }
 
     protected void draw(BuiltBuffer meshData, boolean setLineWidth) throws RuntimeException
     {
         this.ensureSafeNoBuffer();
-        this.draw(null, BufferType.VERTICES, meshData, false, setLineWidth);
+        this.draw(null, meshData, false, setLineWidth);
     }
 
     protected void draw(@Nullable Framebuffer otherFb, BuiltBuffer meshData) throws RuntimeException
     {
         this.ensureSafeNoBuffer();
-        this.draw(otherFb, BufferType.VERTICES, meshData, false, false);
+        this.draw(otherFb, meshData, false, false);
     }
 
     protected void draw(@Nullable Framebuffer otherFb, BuiltBuffer meshData, boolean setLineWidth) throws RuntimeException
     {
         this.ensureSafeNoBuffer();
-        this.draw(otherFb, BufferType.VERTICES, meshData, false, setLineWidth);
+        this.draw(otherFb, meshData, false, setLineWidth);
     }
 
-    protected void draw(@Nullable Framebuffer otherFb, BufferType target,
-                     BuiltBuffer meshData, boolean useOffset, boolean setLineWidth)
-            throws RuntimeException
+    protected void draw(@Nullable Framebuffer otherFb, BuiltBuffer meshData,
+                        boolean useOffset, boolean setLineWidth) throws RuntimeException
     {
         this.ensureSafeNoBuffer();
 
@@ -440,18 +603,18 @@ public class RenderObjectVbo
         {
             if (meshData == null)
             {
-                this.bufferIndex = 0;
+                this.indexCount = 0;
             }
             else
             {
-                if (this.bufferIndex < 1)
+                if (this.indexCount < 1)
                 {
                     //MiniHUD.LOGGER.warn("RenderContext#draw() [{}] --> upload()", this.name.get());
-                    this.upload(meshData, target);
+                    this.upload(meshData);
                 }
             }
 
-            if (this.bufferIndex > 0)
+            if (this.indexCount > 0)
             {
                 float[] rgba = new float[]{ColorHelper.getRedFloat(this.color), ColorHelper.getGreenFloat(this.color), ColorHelper.getBlueFloat(this.color), ColorHelper.getAlphaFloat(this.color)};
 
@@ -465,7 +628,7 @@ public class RenderObjectVbo
     protected void drawPost(@Nullable Framebuffer otherFb, boolean useOffset, boolean setLineWidth)
             throws RuntimeException
     {
-        if (this.bufferIndex > 0)
+        if (this.indexCount > 0)
         {
             float[] rgba = new float[]{ColorHelper.getRedFloat(this.color), ColorHelper.getGreenFloat(this.color), ColorHelper.getBlueFloat(this.color), ColorHelper.getAlphaFloat(this.color)};
 
@@ -504,7 +667,7 @@ public class RenderObjectVbo
             }
 
             //MiniHUD.LOGGER.warn("RenderContext#drawInternal() [{}] --> new renderPass", this.name.get());
-            GpuBuffer indexBuffer = this.shapeIndex.getIndexBuffer(this.bufferIndex);
+            GpuBuffer indexBuffer = this.shapeIndex.getIndexBuffer(this.indexCount);
 
             try (RenderPass pass = RenderSystem.getDevice()
                                                .createCommandEncoder()
@@ -539,11 +702,20 @@ public class RenderObjectVbo
                 }
 
                 //MiniHUD.LOGGER.warn("RenderContext#drawInternal() [{}] renderPass --> setVertexBuffer() [0]", this.name.get());
-                pass.setVertexBuffer(0, this.gpuBuffer);
+                pass.setVertexBuffer(0, this.vertexBuffer);
+
                 //MiniHUD.LOGGER.warn("RenderContext#drawInternal() [{}] renderPass --> setIndexBuffer() [{}]", this.name.get(), this.bufferIndex);
-                pass.setIndexBuffer(indexBuffer, this.shapeIndex.getIndexType());
+                if (this.indexBuffer == null)
+                {
+                    pass.setIndexBuffer(indexBuffer, this.shapeIndex.getIndexType());
+                }
+                else
+                {
+                    pass.setIndexBuffer(this.indexBuffer, this.indexType);
+                }
+
                 //MiniHUD.LOGGER.warn("RenderContext#drawInternal() [{}] renderPass --> drawIndexed() [0, {}]", this.name.get(), this.bufferIndex);
-                pass.drawIndexed(0, this.bufferIndex);
+                pass.drawIndexed(0, this.indexCount);
             }
 
             //MiniHUD.LOGGER.warn("RenderContext#drawInternal() [{}] --> END", this.name.get());
@@ -609,10 +781,21 @@ public class RenderObjectVbo
 
     protected void reset()
     {
-        if (this.gpuBuffer != null)
+        if (this.vertexBuffer != null)
         {
-            this.gpuBuffer.close();
-            this.gpuBuffer = null;
+            this.vertexBuffer.close();
+            this.vertexBuffer = null;
+        }
+
+        if (this.indexBuffer != null)
+        {
+            this.indexBuffer.close();
+            this.indexBuffer = null;
+        }
+
+        if (this.sortState != null)
+        {
+            this.sortState = null;
         }
 
         if (this.builder != null)
@@ -629,9 +812,7 @@ public class RenderObjectVbo
                         meshData.close();
                     }
                 }
-                catch (Exception ignored)
-                {
-                }
+                catch (Exception ignored) { }
             }
 
             this.builder = null;
@@ -643,7 +824,8 @@ public class RenderObjectVbo
             this.alloc = null;
         }
 
-        this.bufferIndex = -1;
+        this.indexCount = -1;
+        this.indexType = null;
         this.textureId = -1;
         this.offset = new float[]{0f, 0f, 0f};
         this.color = -1;

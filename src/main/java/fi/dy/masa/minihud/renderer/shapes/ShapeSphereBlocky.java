@@ -4,13 +4,16 @@ import java.util.List;
 import java.util.function.Consumer;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 
-import com.mojang.blaze3d.buffers.BufferType;
 import com.mojang.blaze3d.buffers.BufferUsage;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.platform.DepthTestFunction;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.render.BufferBuilder;
+import net.minecraft.client.render.BuiltBuffer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
@@ -27,6 +30,15 @@ import fi.dy.masa.minihud.util.shape.SphereUtils;
 
 public class ShapeSphereBlocky extends ShapeCircleBase
 {
+    private static final RenderPipeline REPLICATE_PIPELINE =
+            RenderPipeline.builder(MaLiLibPipelines.POSITION_COLOR_MASA_STAGE)
+                          .withLocation(Identifier.of("epic", "gaming"))
+                          .withDepthBias(-3.0f, -3.0f)
+                          .withCull(false)
+                          .withDepthWrite(false)
+                          .withColorWrite(true)
+                          .withDepthTestFunction(DepthTestFunction.LEQUAL_DEPTH_TEST)
+                          .build();
     private boolean hasData;
 
     public ShapeSphereBlocky()
@@ -77,7 +89,7 @@ public class ShapeSphereBlocky extends ShapeCircleBase
         profiler.push("sphere_blocky_quads");
 
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "Sphere Blocky Quads", this.renderThroughShape ? MaLiLibPipelines.POSITION_COLOR_MASA_NO_DEPTH_NO_CULL : MaLiLibPipelines.POSITION_COLOR_MASA_LESSER_DEPTH_OFFSET_1, BufferUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.start(() -> "Sphere Blocky Quads", REPLICATE_PIPELINE, BufferUsage.STATIC_WRITE);
         MatrixStack matrices = new MatrixStack();
 
         matrices.push();
@@ -85,7 +97,14 @@ public class ShapeSphereBlocky extends ShapeCircleBase
 
         try
         {
-            ctx.upload(builder.endNullable(), BufferType.VERTICES);
+            BuiltBuffer meshData = builder.endNullable();
+
+            if (meshData != null)
+            {
+                ctx.upload(meshData);
+                ctx.startResorting(meshData, ctx.createVertexSorter(cameraPos));
+                meshData.close();
+            }
         }
         catch (Exception err)
         {
@@ -114,7 +133,7 @@ public class ShapeSphereBlocky extends ShapeCircleBase
 
         try
         {
-            ctx.upload(builder.endNullable(), BufferType.VERTICES);
+            ctx.upload(builder.end());
         }
         catch (Exception err)
         {
