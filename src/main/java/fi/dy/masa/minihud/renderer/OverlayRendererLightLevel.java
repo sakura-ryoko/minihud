@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 import org.joml.Matrix4f;
 
-import com.mojang.blaze3d.buffers.BufferType;
 import com.mojang.blaze3d.buffers.BufferUsage;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.FluidBlock;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.render.BufferBuilder;
+import net.minecraft.client.render.BuiltBuffer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -205,7 +205,13 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
 
         try
         {
-            ctx.upload(builder.endNullable(), BufferType.VERTICES);
+            BuiltBuffer meshData = builder.endNullable();
+
+            if (meshData != null)
+            {
+                ctx.upload(meshData);
+                meshData.close();
+            }
         }
         catch (Exception err)
         {
@@ -246,7 +252,13 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
 
         try
         {
-            ctx.upload(builder.endNullable(), BufferType.VERTICES);
+            BuiltBuffer meshData = builder.endNullable();
+
+            if (meshData != null)
+            {
+                ctx.upload(meshData);
+                meshData.close();
+            }
         }
         catch (Exception err)
         {

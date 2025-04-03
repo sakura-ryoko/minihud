@@ -57,7 +57,7 @@ public interface IOverlayRenderer
     /**
      * Draw Render buffers to Screen
      */
-    void draw();
+    void draw(Vec3d cameraPos);
 
     /**
      * Reset renderer's internal data

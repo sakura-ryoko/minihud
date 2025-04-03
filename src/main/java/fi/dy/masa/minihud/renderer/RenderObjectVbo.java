@@ -353,6 +353,11 @@ public class RenderObjectVbo
         }
     }
 
+    public boolean shouldResort()
+    {
+        return this.sortState != null;
+    }
+
     public void resortTranslucent(@Nonnull VertexSorter sorter) throws RuntimeException
     {
         this.ensureSafeNoBuffer();

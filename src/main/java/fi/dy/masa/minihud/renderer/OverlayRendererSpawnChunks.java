@@ -5,12 +5,12 @@ import java.util.List;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.tuple.Pair;
 
-import com.mojang.blaze3d.buffers.BufferType;
 import com.mojang.blaze3d.buffers.BufferUsage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.render.BufferBuilder;
+import net.minecraft.client.render.BuiltBuffer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.MinecraftServer;
@@ -249,7 +249,8 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
                 Configs.Colors.SPAWN_REAL_OUTER_OVERLAY_COLOR.getColor();
 
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "Spawn Chunk Quads", MaLiLibPipelines.POSITION_COLOR_MASA_NO_DEPTH_NO_CULL, BufferUsage.STATIC_WRITE);
+//        BufferBuilder builder = ctx.start(() -> "Spawn Chunk Quads", MaLiLibPipelines.POSITION_COLOR_MASA_NO_DEPTH_NO_CULL, BufferUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.start(() -> "Spawn Chunk Quads", MaLiLibPipelines.MINIHUD_SHAPE_OFFSET, BufferUsage.STATIC_WRITE);
         MatrixStack matrices = new MatrixStack();
 
         matrices.push();
@@ -276,7 +277,14 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
 
         try
         {
-            ctx.upload(builder.endNullable(), BufferType.VERTICES);
+            BuiltBuffer meshData = builder.endNullable();
+
+            if (meshData != null)
+            {
+                ctx.upload(meshData);
+                ctx.startResorting(meshData, ctx.createVertexSorter(cameraPos));
+                meshData.close();
+            }
         }
         catch (Exception err)
         {
@@ -337,7 +345,13 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
 
         try
         {
-            ctx.upload(builder.endNullable(), BufferType.VERTICES);
+            BuiltBuffer meshData = builder.endNullable();
+
+            if (meshData != null)
+            {
+                ctx.upload(meshData);
+                meshData.close();
+            }
         }
         catch (Exception err)
         {

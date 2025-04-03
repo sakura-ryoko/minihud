@@ -426,6 +426,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
         for (String line : texts)
         {
             RenderUtils.drawTextPlate(List.of(line), x, y, z, 0.02f);
+//            RenderUtils.drawTextPlate(List.of(line), x, y, z, entity.getYaw(), entity.getPitch(), 0.02f, 0xFFFFFFFF, 0x40000000, false);
             y -= 0.2;
         }
     }

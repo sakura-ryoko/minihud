@@ -7,11 +7,11 @@ import it.unimi.dsi.fastutil.longs.Long2ByteOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 
-import com.mojang.blaze3d.buffers.BufferType;
 import com.mojang.blaze3d.buffers.BufferUsage;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.render.BufferBuilder;
+import net.minecraft.client.render.BuiltBuffer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
@@ -123,7 +123,7 @@ public class ShapeLineBlock extends ShapeBlocky
 
         profiler.push("line_block_quads");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "Line Block Quads", this.renderThroughShape ? MaLiLibPipelines.POSITION_COLOR_MASA_NO_DEPTH_NO_CULL : MaLiLibPipelines.POSITION_COLOR_MASA_LESSER_DEPTH_OFFSET_1, BufferUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.start(() -> "Line Block Quads", this.renderThroughShape ? MaLiLibPipelines.MINIHUD_SHAPE_NO_DEPTH_OFFSET : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET, BufferUsage.STATIC_WRITE);
         MatrixStack matrices = new MatrixStack();
 
         matrices.push();
@@ -131,7 +131,14 @@ public class ShapeLineBlock extends ShapeBlocky
 
         try
         {
-            ctx.upload(builder.endNullable(), BufferType.VERTICES);
+            BuiltBuffer meshData = builder.endNullable();
+
+            if (meshData != null)
+            {
+                ctx.upload(meshData);
+                ctx.startResorting(meshData, ctx.createVertexSorter(cameraPos));
+                meshData.close();
+            }
         }
         catch (Exception err)
         {
@@ -159,7 +166,13 @@ public class ShapeLineBlock extends ShapeBlocky
 
         try
         {
-            ctx.upload(builder.endNullable(), BufferType.VERTICES);
+            BuiltBuffer meshData = builder.endNullable();
+
+            if (meshData != null)
+            {
+                ctx.upload(meshData);
+                meshData.close();
+            }
         }
         catch (Exception err)
         {

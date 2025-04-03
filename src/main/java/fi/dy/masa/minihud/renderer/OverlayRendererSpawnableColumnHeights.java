@@ -5,11 +5,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.mojang.blaze3d.buffers.BufferType;
 import com.mojang.blaze3d.buffers.BufferUsage;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.render.BufferBuilder;
+import net.minecraft.client.render.BuiltBuffer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.*;
@@ -157,7 +157,14 @@ public class OverlayRendererSpawnableColumnHeights extends OverlayRendererBase
 
         try
         {
-            ctx.upload(builder.endNullable(), BufferType.VERTICES);
+            BuiltBuffer meshData = builder.endNullable();
+
+            if (meshData != null)
+            {
+                ctx.upload(meshData);
+                ctx.startResorting(meshData, ctx.createVertexSorter(cameraPos));
+                meshData.close();
+            }
         }
         catch (Exception err)
         {
@@ -191,7 +198,13 @@ public class OverlayRendererSpawnableColumnHeights extends OverlayRendererBase
 
         try
         {
-            ctx.upload(builder.endNullable(), BufferType.VERTICES);
+            BuiltBuffer meshData = builder.endNullable();
+
+            if (meshData != null)
+            {
+                ctx.upload(meshData);
+                meshData.close();
+            }
         }
         catch (Exception err)
         {

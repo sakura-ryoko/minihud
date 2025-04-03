@@ -1,12 +1,12 @@
 package fi.dy.masa.minihud.renderer;
 
-import com.mojang.blaze3d.buffers.BufferType;
 import com.mojang.blaze3d.buffers.BufferUsage;
 import net.minecraft.block.entity.BeaconBlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.render.BufferBuilder;
+import net.minecraft.client.render.BuiltBuffer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -81,7 +81,14 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
 
         try
         {
-            ctx.upload(builder.endNullable(), BufferType.VERTICES);
+            BuiltBuffer meshData = builder.endNullable();
+
+            if (meshData != null)
+            {
+                ctx.upload(meshData);
+                ctx.startResorting(meshData, ctx.createVertexSorter(cameraPos));
+                meshData.close();
+            }
         }
         catch (Exception err)
         {
@@ -123,7 +130,13 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
 
         try
         {
-            ctx.upload(builder.endNullable(), BufferType.VERTICES);
+            BuiltBuffer meshData = builder.endNullable();
+
+            if (meshData != null)
+            {
+                ctx.upload(meshData);
+                meshData.close();
+            }
         }
         catch (Exception err)
         {

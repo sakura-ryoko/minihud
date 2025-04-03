@@ -7,14 +7,12 @@ import com.google.gson.JsonObject;
 
 import com.mojang.blaze3d.buffers.BufferUsage;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.gl.RenderPipelines;
-import net.minecraft.client.render.VertexFormats;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
 import fi.dy.masa.malilib.render.MaLiLibPipelines;
-import fi.dy.masa.malilib.render.RenderUtils;
 
 public abstract class OverlayRendererBase implements IOverlayRenderer
 {
@@ -51,7 +49,7 @@ public abstract class OverlayRendererBase implements IOverlayRenderer
     protected void allocateBuffers(boolean useOutlines)
     {
         this.clearBuffers();
-        this.renderObjects.add(new RenderObjectVbo(() -> this.getName()+" Quads", MaLiLibPipelines.POSITION_COLOR_MASA_NO_DEPTH_NO_CULL, BufferUsage.STATIC_WRITE));
+        this.renderObjects.add(new RenderObjectVbo(() -> this.getName()+" Quads", MaLiLibPipelines.MINIHUD_SHAPE_OFFSET, BufferUsage.STATIC_WRITE));
 
         if (useOutlines)
         {
@@ -78,52 +76,76 @@ public abstract class OverlayRendererBase implements IOverlayRenderer
 
     protected RenderPipeline getRenderThrough()
     {
-        return this.renderThrough ? MaLiLibPipelines.getPositionSimple() : MaLiLibPipelines.POSITION_COLOR_MASA_LESSER_DEPTH_OFFSET_1;
+        return this.renderThrough ? MaLiLibPipelines.POSITION_COLOR_MASA_NO_DEPTH_NO_CULL : MaLiLibPipelines.POSITION_COLOR_MASA_LESSER_DEPTH_OFFSET_1;
     }
 
-    protected void preRender()
-    {
-        RenderSystem.lineWidth(this.glLineWidth);
+//    protected void preRender()
+//    {
+//        RenderSystem.lineWidth(this.glLineWidth);
+//
+//        if (this.renderThrough)
+//        {
+//            RenderUtils.depthTest(false);
+//            RenderUtils.depthMask(false);
+//        }
+//
+//        if (this.useCulling)
+//        {
+//            RenderUtils.culling(true);
+//        }
+//    }
 
-        if (this.renderThrough)
-        {
-            RenderUtils.depthTest(false);
-            RenderUtils.depthMask(false);
-        }
-
-        if (this.useCulling)
-        {
-            RenderUtils.culling(true);
-        }
-    }
-
-    protected void postRender()
-    {
-        if (this.renderThrough)
-        {
-            RenderUtils.depthTest(true);
-            RenderUtils.depthMask(true);
-        }
-
-        if (this.useCulling)
-        {
-            RenderUtils.culling(false);
-        }
-    }
+//    protected void postRender()
+//    {
+//        if (this.renderThrough)
+//        {
+//            RenderUtils.depthTest(true);
+//            RenderUtils.depthMask(true);
+//        }
+//
+//        if (this.useCulling)
+//        {
+//            RenderUtils.culling(false);
+//        }
+//    }
 
     @Override
-    public void draw()
+    public void draw(Vec3d cameraPos)
     {
 //        this.preRender();
 
         for (RenderObjectVbo obj : this.renderObjects)
         {
-            obj.lineWidth(this.glLineWidth);
-            obj.drawPost(null, false, (obj.getVertexFormat() == VertexFormats.POSITION_COLOR_NORMAL));
+            if (obj.shouldResort())
+            {
+                obj.resortTranslucent(obj.createVertexSorter(cameraPos));
+            }
+
+            if (obj.getDrawMode() == VertexFormat.DrawMode.LINES || obj.getDrawMode() == VertexFormat.DrawMode.DEBUG_LINES)
+            {
+                obj.lineWidth(this.glLineWidth);
+                obj.drawPost(null, false, true);
+            }
+            else
+            {
+                obj.drawPost(null, false, false);
+            }
         }
 
 //        this.postRender();
     }
+
+//    @Override
+//    public void resortQuads(Vec3d cameraPos)
+//    {
+//        for (RenderObjectVbo obj : this.renderObjects)
+//        {
+//            if (obj.getDrawMode() == VertexFormat.DrawMode.QUADS && obj.getVertexFormat() == VertexFormats.POSITION_COLOR)
+//            {
+//                obj.resortTranslucent(obj.createVertexSorter(cameraPos));
+//            }
+//        }
+//    }
 
     @Override
     public void reset()

@@ -15,7 +15,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.profiler.Profiler;
 
-import fi.dy.masa.malilib.render.RenderUtils;
 import fi.dy.masa.malilib.util.JsonUtils;
 import fi.dy.masa.malilib.util.position.PositionUtils;
 
@@ -103,9 +102,9 @@ public class RenderContainer
 //            RenderUtils.culling(false);
 //            RenderUtils.depthTest(true);
 //            RenderUtils.depthMask(false);
-            RenderUtils.polygonOffset(-3f, -3f);
-            RenderUtils.polygonOffset(true);
-            RenderUtils.blend(true);
+//            RenderUtils.polygonOffset(-3f, -3f);
+//            RenderUtils.polygonOffset(true);
+//            RenderUtils.blend(true);
 //            RenderUtils.color(1f, 1f, 1f, 1f);
 
             Matrix4fStack matrix4fstack = RenderSystem.getModelViewStack();
@@ -121,7 +120,8 @@ public class RenderContainer
 
                     matrix4fstack.pushMatrix();
                     matrix4fstack.translate((float) (updatePos.x - cameraPos.x), (float) (updatePos.y - cameraPos.y), (float) (updatePos.z - cameraPos.z));
-                    renderer.draw();
+//                    renderer.resortQuads(cameraPos);
+                    renderer.draw(cameraPos);
                     matrix4fstack.popMatrix();
                 }
                 else
@@ -132,10 +132,10 @@ public class RenderContainer
                 profiler.pop();
             }
 
-            RenderUtils.polygonOffset(0f, 0f);
-            RenderUtils.polygonOffset(false);
+//            RenderUtils.polygonOffset(0f, 0f);
+//            RenderUtils.polygonOffset(false);
 //            RenderUtils.color(1f, 1f, 1f, 1f);
-            RenderUtils.blend(false);
+//            RenderUtils.blend(false);
 //            RenderUtils.depthTest(true);
 //            RenderUtils.culling(true);
 //            RenderUtils.depthMask(true);

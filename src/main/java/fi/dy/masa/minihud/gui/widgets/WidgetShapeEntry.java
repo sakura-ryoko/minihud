@@ -1,7 +1,6 @@
 package fi.dy.masa.minihud.gui.widgets;
 
 import java.util.List;
-import com.mojang.blaze3d.systems.RenderSystem;
 
 import net.minecraft.client.gui.DrawContext;
 
@@ -100,7 +99,7 @@ public class WidgetShapeEntry extends WidgetListEntryBase<ShapeBase>
 
         RenderUtils.color(1f, 1f, 1f, 1f);
         //RenderSystem.disableBlend();
-        RenderUtils.blend(false);
+//        RenderUtils.blend(false);
 
         super.render(mouseX, mouseY, selected, context);
     }
