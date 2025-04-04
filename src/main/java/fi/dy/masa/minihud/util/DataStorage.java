@@ -896,7 +896,7 @@ public class DataStorage
             return;
         }
 
-        if (structures.getType() == Constants.NBT.TAG_COMPOUND)
+        if (!structures.isEmpty())
         {
             this.structureDataTimeout = this.servuxTimeout + 300;
 
