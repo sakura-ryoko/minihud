@@ -28,7 +28,7 @@ import fi.dy.masa.minihud.util.ShapeRenderType;
 public class GuiShapeEditor extends GuiRenderLayerEditBase
 {
     private final ShapeBase shape;
-    private ConfigOptionList configBlockSnap;
+    private final ConfigOptionList configBlockSnap;
     private int colorY;
 
     public GuiShapeEditor(ShapeBase shape)
@@ -142,7 +142,7 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
                     this.addButton(button, (btn, mbtn) -> this.toggleUseQuadrants(shape, button));
                 }
 
-                this.createLayerEditControls(146, 162, this.getLayerRange());
+//                this.createLayerEditControls(146, 162, this.getLayerRange());
                 break;
             }
 
@@ -153,14 +153,14 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
                 this.createShapeEditorElementIntField(x + 150, y + 36, shape::getHeight, shape::setHeight, "minihud.gui.label.height_colon", true);
                 this.createDirectionButton(x + 230, y + 36, shape::getMainAxis, shape::setMainAxis, "minihud.gui.label.shape.circle.main_axis_colon");
                 this.createRenderTypeButton(renderTypeX, renderTypeY, this.shape::getRenderType, this.shape::setRenderType, "minihud.gui.label.shape.render_type_colon");
-                this.createLayerEditControls(146, 162, this.getLayerRange());
+//                this.createLayerEditControls(146, 162, this.getLayerRange());
                 break;
             }
 
             case SPHERE_BLOCKY:
                 this.createShapeEditorElementsSphereBase(x, y, true);
                 this.createRenderTypeButton(renderTypeX, renderTypeY, this.shape::getRenderType, this.shape::setRenderType, "minihud.gui.label.shape.render_type_colon");
-                this.createLayerEditControls(146, 162, this.getLayerRange());
+//                this.createLayerEditControls(146, 162, this.getLayerRange());
                 break;
         }
     }
@@ -199,6 +199,9 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         y += 24;
 
         this.createColorInput(x, y);
+        y += 11;
+
+        this.createLayerEditControls(146, y, this.getLayerRange());
     }
 
     private void createShapeEditorElementsBox(int xIn, int yIn)
