@@ -92,8 +92,13 @@ public class ShapeCircle extends ShapeCircleBase
 
             if (meshData != null)
             {
-                ctx.upload(meshData);
-                ctx.startResorting(meshData, ctx.createVertexSorter(cameraPos));
+                ctx.upload(meshData, this.shouldResort);
+
+                if (this.shouldResort)
+                {
+                    ctx.startResorting(meshData, ctx.createVertexSorter(cameraPos));
+                }
+
                 meshData.close();
             }
         }
@@ -127,7 +132,7 @@ public class ShapeCircle extends ShapeCircleBase
 
             if (meshData != null)
             {
-                ctx.upload(meshData);
+                ctx.upload(meshData, false);
                 meshData.close();
             }
         }

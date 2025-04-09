@@ -22,6 +22,7 @@ public abstract class OverlayRendererBase implements IOverlayRenderer
     protected float glLineWidth;
     @Nullable protected BlockPos lastUpdatePos;
     private Vec3d updateCameraPos;
+    protected boolean shouldResort;
 
     public OverlayRendererBase()
     {
@@ -30,6 +31,7 @@ public abstract class OverlayRendererBase implements IOverlayRenderer
         this.updateCameraPos = Vec3d.ZERO;
         this.renderThrough = false;
         this.useCulling = false;
+        this.shouldResort = false;
     }
 
     protected void clearBuffers()
@@ -74,11 +76,6 @@ public abstract class OverlayRendererBase implements IOverlayRenderer
         this.updateCameraPos = cameraPosition;
     }
 
-    protected RenderPipeline getRenderThrough()
-    {
-        return this.renderThrough ? MaLiLibPipelines.POSITION_COLOR_MASA_NO_DEPTH_NO_CULL : MaLiLibPipelines.POSITION_COLOR_MASA_LESSER_DEPTH_OFFSET_1;
-    }
-
 //    protected void preRender()
 //    {
 //        RenderSystem.lineWidth(this.glLineWidth);
@@ -116,7 +113,8 @@ public abstract class OverlayRendererBase implements IOverlayRenderer
 
         for (RenderObjectVbo obj : this.renderObjects)
         {
-            if (obj.shouldResort())
+            // TODO (nvidia only?)
+            if (this.shouldResort && obj.shouldResort())
             {
                 obj.resortTranslucent(obj.createVertexSorter(cameraPos));
             }
@@ -134,18 +132,6 @@ public abstract class OverlayRendererBase implements IOverlayRenderer
 
 //        this.postRender();
     }
-
-//    @Override
-//    public void resortQuads(Vec3d cameraPos)
-//    {
-//        for (RenderObjectVbo obj : this.renderObjects)
-//        {
-//            if (obj.getDrawMode() == VertexFormat.DrawMode.QUADS && obj.getVertexFormat() == VertexFormats.POSITION_COLOR)
-//            {
-//                obj.resortTranslucent(obj.createVertexSorter(cameraPos));
-//            }
-//        }
-//    }
 
     @Override
     public void reset()

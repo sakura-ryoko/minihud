@@ -206,6 +206,11 @@ public class RenderObjectVbo
      */
     protected void upload() throws RuntimeException
     {
+        this.upload(false);
+    }
+
+    protected void upload(boolean shouldResort) throws RuntimeException
+    {
         this.ensureSafeNoShader();
         this.ensureBuilding(this.builder);
 
@@ -213,7 +218,7 @@ public class RenderObjectVbo
         {
             if (meshData != null)
             {
-                this.upload(meshData);
+                this.upload(meshData, shouldResort);
             }
             else
             {
@@ -224,6 +229,11 @@ public class RenderObjectVbo
 
     protected void upload(BufferBuilder builder) throws RuntimeException
     {
+        this.upload(builder, false);
+    }
+
+    protected void upload(BufferBuilder builder, boolean shouldResort) throws RuntimeException
+    {
         this.ensureSafeNoShader();
         this.ensureBuilding(builder);
         this.builder = builder;
@@ -232,7 +242,7 @@ public class RenderObjectVbo
         {
             if (meshData != null)
             {
-                this.upload(meshData);
+                this.upload(meshData, shouldResort);
             }
             else
             {
@@ -241,7 +251,7 @@ public class RenderObjectVbo
         }
     }
 
-    public void upload(BuiltBuffer meshData) throws RuntimeException
+    public void upload(BuiltBuffer meshData, boolean shouldResort) throws RuntimeException
     {
         this.ensureSafeNoBuffer();
 
@@ -249,10 +259,11 @@ public class RenderObjectVbo
         {
             int expectedSize = meshData.getBuffer().remaining();
 
-//            if (this.vertexBuffer != null)
-//            {
-//                this.vertexBuffer.close();
-//            }
+            if (this.vertexBuffer != null)
+            {
+                this.vertexBuffer.close();
+            }
+
 //            if (this.indexBuffer != null)
 //            {
 //                this.indexBuffer.close();
@@ -281,7 +292,7 @@ public class RenderObjectVbo
             }
 
             // Resorting
-            if (meshData.getSortedBuffer() != null)
+            if (shouldResort && meshData.getSortedBuffer() != null)
             {
                 if (this.indexBuffer != null && this.indexBuffer.size() >= meshData.getSortedBuffer().remaining())
                 {
@@ -327,17 +338,17 @@ public class RenderObjectVbo
         return this.createVertexSorter(pos, BlockPos.ORIGIN);
     }
 
-    public VertexSorter createVertexSorter(Camera camera)
+    protected VertexSorter createVertexSorter(Camera camera)
     {
         return this.createVertexSorter(camera.getPos(), BlockPos.ORIGIN);
     }
 
-    public VertexSorter createVertexSorter(Camera camera, BlockPos origin)
+    protected VertexSorter createVertexSorter(Camera camera, BlockPos origin)
     {
         return this.createVertexSorter(camera.getPos(), origin);
     }
 
-    public VertexSorter createVertexSorter(Vec3d pos, BlockPos origin)
+    protected VertexSorter createVertexSorter(Vec3d pos, BlockPos origin)
     {
         return VertexSorter.byDistance((float)(pos.x - (double)origin.getX()), (float)(pos.y - (double) origin.getY()), (float)(pos.z - (double) origin.getZ()));
     }
@@ -353,12 +364,12 @@ public class RenderObjectVbo
         }
     }
 
-    public boolean shouldResort()
+    protected boolean shouldResort()
     {
         return this.sortState != null;
     }
 
-    public void resortTranslucent(@Nonnull VertexSorter sorter) throws RuntimeException
+    protected void resortTranslucent(@Nonnull VertexSorter sorter) throws RuntimeException
     {
         this.ensureSafeNoBuffer();
 
@@ -575,31 +586,55 @@ public class RenderObjectVbo
      * -
      * Performs the Renderer draw to the specified Frame Buffer
      */
+    protected void draw() throws RuntimeException
+    {
+        this.draw(false);
+    }
+
+    protected void draw(boolean shouldResort) throws RuntimeException
+    {
+        this.ensureSafeNoBuffer();
+        this.ensureBuilding(this.builder);
+        BuiltBuffer meshData = this.builder.endNullable();
+
+        if (meshData != null)
+        {
+            this.draw(meshData, shouldResort);
+            meshData.close();
+        }
+    }
+
     protected void draw(BuiltBuffer meshData) throws RuntimeException
     {
         this.ensureSafeNoBuffer();
-        this.draw(null, meshData, false, false);
+        this.draw(null, meshData, false, false, false);
     }
 
-    protected void draw(BuiltBuffer meshData, boolean setLineWidth) throws RuntimeException
+    protected void draw(BuiltBuffer meshData, boolean shouldResort) throws RuntimeException
     {
         this.ensureSafeNoBuffer();
-        this.draw(null, meshData, false, setLineWidth);
+        this.draw(null, meshData, shouldResort, false, false);
     }
 
-    protected void draw(@Nullable Framebuffer otherFb, BuiltBuffer meshData) throws RuntimeException
+    protected void draw(BuiltBuffer meshData, boolean shouldResort, boolean setLineWidth) throws RuntimeException
     {
         this.ensureSafeNoBuffer();
-        this.draw(otherFb, meshData, false, false);
+        this.draw(null, meshData, shouldResort,false, setLineWidth);
     }
 
-    protected void draw(@Nullable Framebuffer otherFb, BuiltBuffer meshData, boolean setLineWidth) throws RuntimeException
+    protected void draw(@Nullable Framebuffer otherFb, BuiltBuffer meshData, boolean shouldResort) throws RuntimeException
     {
         this.ensureSafeNoBuffer();
-        this.draw(otherFb, meshData, false, setLineWidth);
+        this.draw(otherFb, meshData, shouldResort, false, false);
     }
 
-    protected void draw(@Nullable Framebuffer otherFb, BuiltBuffer meshData,
+    protected void draw(@Nullable Framebuffer otherFb, BuiltBuffer meshData, boolean shouldResort, boolean setLineWidth) throws RuntimeException
+    {
+        this.ensureSafeNoBuffer();
+        this.draw(otherFb, meshData, shouldResort, false, setLineWidth);
+    }
+
+    protected void draw(@Nullable Framebuffer otherFb, BuiltBuffer meshData, boolean shouldResort,
                         boolean useOffset, boolean setLineWidth) throws RuntimeException
     {
         this.ensureSafeNoBuffer();
@@ -615,7 +650,7 @@ public class RenderObjectVbo
                 if (this.indexCount < 1)
                 {
                     //MiniHUD.LOGGER.warn("RenderContext#draw() [{}] --> upload()", this.name.get());
-                    this.upload(meshData);
+                    this.upload(meshData, shouldResort);
                 }
             }
 
@@ -844,6 +879,7 @@ public class RenderObjectVbo
         {
             this.unbindTexture(this.texture.getId());
             this.texture.close();
+            this.texture = null;
         }
 
         this.reset();

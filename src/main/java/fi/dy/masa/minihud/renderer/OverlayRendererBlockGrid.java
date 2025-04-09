@@ -132,7 +132,7 @@ public class OverlayRendererBlockGrid extends OverlayRendererBase
 
             if (meshData != null)
             {
-                ctx.upload(meshData);
+                ctx.upload(meshData, false);
                 meshData.close();
             }
         }

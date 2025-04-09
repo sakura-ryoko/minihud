@@ -209,7 +209,7 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
 
             if (meshData != null)
             {
-                ctx.upload(meshData);
+                ctx.upload(meshData, false);
                 meshData.close();
             }
         }
@@ -256,7 +256,7 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
 
             if (meshData != null)
             {
-                ctx.upload(meshData);
+                ctx.upload(meshData, false);
                 meshData.close();
             }
         }

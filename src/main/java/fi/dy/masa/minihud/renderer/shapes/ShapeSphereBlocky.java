@@ -99,8 +99,13 @@ public class ShapeSphereBlocky extends ShapeCircleBase
 
             if (meshData != null)
             {
-                ctx.upload(meshData);
-                ctx.startResorting(meshData, ctx.createVertexSorter(cameraPos));
+                ctx.upload(meshData, this.shouldResort);
+
+                if (this.shouldResort)
+                {
+                    ctx.startResorting(meshData, ctx.createVertexSorter(cameraPos));
+                }
+
                 meshData.close();
             }
         }
@@ -131,7 +136,13 @@ public class ShapeSphereBlocky extends ShapeCircleBase
 
         try
         {
-            ctx.upload(builder.end());
+            BuiltBuffer meshData = builder.endNullable();
+
+            if (meshData != null)
+            {
+                ctx.upload(meshData, false);
+                meshData.close();
+            }
         }
         catch (Exception err)
         {

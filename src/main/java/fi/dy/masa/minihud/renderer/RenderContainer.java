@@ -120,7 +120,6 @@ public class RenderContainer
 
                     matrix4fstack.pushMatrix();
                     matrix4fstack.translate((float) (updatePos.x - cameraPos.x), (float) (updatePos.y - cameraPos.y), (float) (updatePos.z - cameraPos.z));
-//                    renderer.resortQuads(cameraPos);
                     renderer.draw(cameraPos);
                     matrix4fstack.popMatrix();
                 }
