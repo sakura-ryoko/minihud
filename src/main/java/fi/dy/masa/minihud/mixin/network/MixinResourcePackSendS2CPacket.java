@@ -3,7 +3,7 @@ package fi.dy.masa.minihud.mixin.network;
 import net.minecraft.network.packet.s2c.common.ResourcePackSendS2CPacket;
 import org.spongepowered.asm.mixin.Mixin;
 
-@Mixin(value = ResourcePackSendS2CPacket.class)
+@Mixin(ResourcePackSendS2CPacket.class)
 public class MixinResourcePackSendS2CPacket
 {
     /*

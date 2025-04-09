@@ -5,21 +5,15 @@
   "minVersion": "0.8",
   "mixins": [
     "IMixinMinecraftServer",
-    "IMixinWorldRenderer",
-    "MixinChatScreen",
     "MixinLanguage",
-    "MixinMinecraftClient",
     "MixinMinecraftServer",
-    "MixinSubtitlesHud",
     "block.IMixinAbstractFurnaceBlockEntity",
     "block.IMixinBeaconBlockEntity",
     "block.MixinBeaconBlockEntity",
     "block.MixinConduitBlockEntity",
-    "debug.IMixinDebugRenderer",
     "debug.IMixinEntityNavigation",
     "debug.IMixinMobEntity",
     "debug.MixinDebugInfoSender",
-    "debug.MixinDebugRenderer",
     "debug.MixinPath",
     "debug.MixinSharedConstants",
     "entity.IMixinEntity",
@@ -30,9 +24,6 @@
     "entity.IMixinZombieVillagerEntity",
     "item.MixinBundleItem",
     "item.MixinItemStack",
-    "network.MixinClientCommonNetworkHandler",
-    "network.MixinClientPlayerInteractionManager",
-    "network.MixinClientPlayNetworkHandler",
     "network.MixinResourcePackSendS2CPacket",
     "world.IMixinBiomeAccess",
     "world.IMixinChunkDeltaUpdateS2CPacket",
@@ -43,6 +34,18 @@
     "world.MixinServerEntityManager",
     "world.MixinServerWorld"
   ],
+  "client": [
+    "IMixinWorldRenderer",
+    "MixinChatScreen",
+    "MixinMinecraftClient",
+    "MixinSubtitlesHud",
+    "debug.IMixinDebugRenderer",
+    "debug.MixinDebugRenderer",
+    "network.MixinClientCommonNetworkHandler",
+    "network.MixinClientPlayerInteractionManager",
+    "network.MixinClientPlayNetworkHandler"
+  ],
+  "server": [],
   "injectors": {
     "defaultRequire": 1
   }
