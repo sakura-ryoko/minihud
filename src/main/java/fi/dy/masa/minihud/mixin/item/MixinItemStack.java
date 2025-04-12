@@ -6,6 +6,7 @@ import net.minecraft.block.BeehiveBlock;
 import net.minecraft.component.ComponentType;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.TooltipDisplayComponent;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -27,7 +28,7 @@ public abstract class MixinItemStack
     @Inject(method = "appendComponentTooltip",
             at = @At(value = "HEAD"),
             cancellable = true)
-    private <T> void minihud_disableVanillaBeeTooltips(ComponentType<T> componentType, Item.TooltipContext context, TooltipDisplayComponent displayComponent, Consumer<Text> textConsumer, TooltipType type, CallbackInfo ci)
+    private <T> void minihud_disableVanillaBeeTooltips(ComponentType<T> componentType, Item.TooltipContext context, TooltipDisplayComponent displayComponent, PlayerEntity playerEntity, Consumer<Text> consumer, TooltipType tooltipType, CallbackInfo ci)
     {
         if (Configs.Generic.DISABLE_VANILLA_BEE_TOOLTIPS.getBooleanValue())
         {

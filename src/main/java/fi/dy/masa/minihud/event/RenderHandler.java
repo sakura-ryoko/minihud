@@ -1735,9 +1735,9 @@ public class RenderHandler implements IRenderer
         IntegratedServer server = this.getDataStorage().getIntegratedServer();
         CompletableFuture<OptionalChunk<Chunk>> future = null;
 
-        if (server != null)
+        if (server != null && server.getGameInstance() != null)
         {
-            ServerWorld world = server.getWorld(this.mc.world.getRegistryKey());
+            ServerWorld world = server.getGameInstance().getWorld(this.mc.world.getRegistryKey());
 
             if (world != null)
             {

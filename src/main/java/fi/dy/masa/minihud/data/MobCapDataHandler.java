@@ -136,13 +136,13 @@ public class MobCapDataHandler
             MinecraftServer server = this.mc.getServer();
             RegistryKey<World> dim = this.mc.world.getRegistryKey();
 
-            if (server == null)
+            if (server == null || server.getGameInstance() == null)
             {
                 return;
             }
 
             server.execute(() -> {
-                ServerWorld world = server.getWorld(dim);
+                ServerWorld world = server.getGameInstance().getWorld(dim);
 
                 if (world != null)
                 {

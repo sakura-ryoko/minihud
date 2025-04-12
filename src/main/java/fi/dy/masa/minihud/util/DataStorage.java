@@ -47,14 +47,13 @@ import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
 import fi.dy.masa.malilib.util.InfoUtils;
 import fi.dy.masa.malilib.util.JsonUtils;
 import fi.dy.masa.malilib.util.StringUtils;
-import fi.dy.masa.malilib.util.data.Constants;
 import fi.dy.masa.malilib.util.position.PositionUtils;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.RendererToggle;
 import fi.dy.masa.minihud.data.HudDataManager;
 import fi.dy.masa.minihud.data.MobCapDataHandler;
-import fi.dy.masa.minihud.mixin.IMixinMinecraftServer;
+import fi.dy.masa.minihud.mixin.server.IMixinMinecraftServer;
 import fi.dy.masa.minihud.network.ServuxStructuresHandler;
 import fi.dy.masa.minihud.network.ServuxStructuresPacket;
 import fi.dy.masa.minihud.renderer.*;
@@ -858,10 +857,10 @@ public class DataStorage
 
     private void updateStructureDataFromIntegratedServer(final BlockPos playerPos, final int maxRange)
     {
-        if (this.mc.player == null || this.mc.getServer() == null) return;
+        if (this.mc.player == null || this.mc.getServer() == null || this.mc.getServer().getGameInstance() == null) return;
 
         final RegistryKey<World> worldId = this.mc.player.getEntityWorld().getRegistryKey();
-        final ServerWorld world = this.mc.getServer().getWorld(worldId);
+        final ServerWorld world = this.mc.getServer().getGameInstance().getWorld(worldId);
 
         if (world != null)
         {

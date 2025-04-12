@@ -1,8 +1,29 @@
 package fi.dy.masa.minihud.data;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import javax.annotation.Nullable;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+
 import com.mojang.datafixers.util.Pair;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtList;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.recipe.PreparedRecipes;
+import net.minecraft.recipe.Recipe;
+import net.minecraft.recipe.RecipeEntry;
+import net.minecraft.recipe.RecipeManager;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.server.GameInstance;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
+
 import fi.dy.masa.malilib.config.options.ConfigBoolean;
 import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.network.ClientPlayHandler;
@@ -19,25 +40,6 @@ import fi.dy.masa.minihud.network.ServuxHudHandler;
 import fi.dy.masa.minihud.network.ServuxHudPacket;
 import fi.dy.masa.minihud.renderer.OverlayRendererSpawnChunks;
 import fi.dy.masa.minihud.util.DataStorage;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.recipe.PreparedRecipes;
-import net.minecraft.recipe.Recipe;
-import net.minecraft.recipe.RecipeEntry;
-import net.minecraft.recipe.RecipeManager;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-
-import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collection;
 
 public class HudDataManager
 {
@@ -270,8 +272,10 @@ public class HudDataManager
         else if (this.mc.isIntegratedServerRunning())
         {
             MinecraftServer server = this.mc.getServer();
-            assert server != null;
-            World worldTmp = server.getWorld(world.getRegistryKey());
+            if (server == null) return false;
+            GameInstance instance = server.getGameInstance();
+            if (instance == null) return false;
+            World worldTmp = instance.getWorld(world.getRegistryKey());
             return worldTmp != null;
         }
 
@@ -290,8 +294,10 @@ public class HudDataManager
         if (!this.worldSeedValid && this.mc.isIntegratedServerRunning())
         {
             MinecraftServer server = this.mc.getServer();
-            assert server != null;
-            ServerWorld worldTmp = server.getWorld(world.getRegistryKey());
+            if (server == null) return -1L;
+            GameInstance instance = server.getGameInstance();
+            if (instance == null) return -1L;
+            ServerWorld worldTmp = instance.getWorld(world.getRegistryKey());
 
             if (worldTmp != null)
             {
@@ -314,7 +320,9 @@ public class HudDataManager
     {
         if (this.mc.isIntegratedServerRunning())
         {
-            ServerWorld worldTmp = server.getOverworld();
+            GameInstance instance = server.getGameInstance();
+            if (instance == null) return;
+            ServerWorld worldTmp = instance.getOverworld();
 
             if (worldTmp != null)
             {
@@ -426,7 +434,9 @@ public class HudDataManager
     {
         if (DataStorage.getInstance().hasIntegratedServer() && mc.getServer() != null)
         {
-            return mc.getServer().getRecipeManager();
+            GameInstance instance = mc.getServer().getGameInstance();
+            if (instance == null) return null;
+            return instance.getRecipeManager();
         }
         else if (mc.world != null)
         {

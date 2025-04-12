@@ -249,8 +249,10 @@ public class InfoLineEntityVariant extends InfoLine
             case AxolotlEntity axolotl -> list.add(this.translate(VARIANT_KEY + ".axolotl", axolotl.getVariant().getId()));
             case CatEntity cat ->
             {
-                RegistryKey<CatVariant> variant = cat.getVariant().getKey().orElse(CatVariants.BLACK);
-                list.add(this.translate(VARIANT_KEY + ".cat", variant.getValue().getPath(), cat.getCollarColor().getId()));
+                // TODO getVariant()
+                RegistryKey<CatVariant> variant = cat.method_69376().getKey().orElse(CatVariants.BLACK);
+                // TODO getCollarColor()
+                list.add(this.translate(VARIANT_KEY + ".cat", variant.getValue().getPath(), cat.method_69377().getId()));
             }
             case ChickenEntity chicken -> list.add(this.translate(VARIANT_KEY + ".chicken", chicken.getVariant().getKey().orElse(ChickenVariants.DEFAULT).getValue().getPath()));
             case CowEntity cow -> list.add(this.translate(VARIANT_KEY + ".cow", cow.getVariant().getKey().orElse(CowVariants.DEFAULT).getValue().getPath()));

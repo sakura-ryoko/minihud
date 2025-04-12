@@ -431,9 +431,9 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
 
     protected int getSpawnChunkRadius(@Nullable MinecraftServer server)
     {
-        if (server != null)
+        if (server != null && server.getGameInstance() != null)
         {
-            return server.getOverworld().getGameRules().getInt(GameRules.SPAWN_CHUNK_RADIUS);
+            return server.getGameInstance().getOverworld().getGameRules().getInt(GameRules.SPAWN_CHUNK_RADIUS);
         }
         else if (HudDataManager.getInstance().isSpawnChunkRadiusKnown())
         {
