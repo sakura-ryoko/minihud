@@ -23,7 +23,6 @@ import net.minecraft.world.Heightmap;
 import net.minecraft.world.World;
 
 import fi.dy.masa.malilib.render.MaLiLibPipelines;
-import fi.dy.masa.malilib.util.EntityUtils;
 import fi.dy.masa.malilib.util.data.Color4f;
 import fi.dy.masa.malilib.util.position.PositionUtils;
 import fi.dy.masa.minihud.MiniHUD;
@@ -193,20 +192,20 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
         if (brownEnabled)
         {
             corners = this.getSpawnChunkCorners(this.center, brown, mc.world);   // Org 22 (Brown / WorldGen Only)
-            this.boxesBrown = this.calculateBoxes(corners.getLeft(), corners.getRight());
+            this.boxesBrown = RenderUtils.calculateBoxes(corners.getLeft(), corners.getRight());
         }
 
         corners = this.getSpawnChunkCorners(this.center, red, mc.world);     // Org 11 (Red / Mob Caps Only)
-        this.boxesRed = this.calculateBoxes(corners.getLeft(), corners.getRight());
+        this.boxesRed = RenderUtils.calculateBoxes(corners.getLeft(), corners.getRight());
 
         if (yellowEnabled)
         {
             corners = this.getSpawnChunkCorners(this.center, yellow, mc.world);     // Org 10 (Yellow / Redstone Processing)
-            this.boxesYellow = this.calculateBoxes(corners.getLeft(), corners.getRight());
+            this.boxesYellow = RenderUtils.calculateBoxes(corners.getLeft(), corners.getRight());
         }
 
         corners = this.getSpawnChunkCorners(this.center, green, mc.world);      // Org 9 (Green / Entity Processing)
-        this.boxesGreen = this.calculateBoxes(corners.getLeft(), corners.getRight());
+        this.boxesGreen = RenderUtils.calculateBoxes(corners.getLeft(), corners.getRight());
 
         this.hasData = true;
         this.render(cameraPos, mc, profiler);
@@ -469,71 +468,71 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
 //        fi.dy.masa.malilib.render.RenderUtils.drawBoxAllSidesBatchedQuads(minX, minY, minZ, maxX, maxY, maxZ, color, buffer);
 //    }
 
-    public List<Box> calculateBoxes(
-            BlockPos posStart,
-            BlockPos posEnd)
-    {
-        Entity entity = EntityUtils.getCameraEntity();
-        if (entity == null) return List.of();
-//        World world = entity.getEntityWorld();
-        final int boxMinX = Math.min(posStart.getX(), posEnd.getX());
-        final int boxMinZ = Math.min(posStart.getZ(), posEnd.getZ());
-        final int boxMaxX = Math.max(posStart.getX(), posEnd.getX());
-        final int boxMaxZ = Math.max(posStart.getZ(), posEnd.getZ());
-
-        final int centerX = (int) Math.floor(entity.getX());
-        final int centerZ = (int) Math.floor(entity.getZ());
-        final int maxDist = MinecraftClient.getInstance().options.getViewDistance().getValue() * 32; // double the view distance in blocks
-        final int rangeMinX = centerX - maxDist;
-        final int rangeMinZ = centerZ - maxDist;
-        final int rangeMaxX = centerX + maxDist;
-        final int rangeMaxZ = centerZ + maxDist;
-        final double minY = Math.min(posStart.getY(), posEnd.getY());
-        final double maxY = Math.max(posStart.getY(), posEnd.getY()) + 1;
-        double minX, minZ, maxX, maxZ;
-
-        List<Box> boxes = new ArrayList<>();
-
-        // The sides of the box along the x-axis can be at least partially inside the range
-        if (rangeMinX <= boxMaxX && rangeMaxX >= boxMinX)
-        {
-            minX = Math.max(boxMinX, rangeMinX);
-            maxX = Math.min(boxMaxX, rangeMaxX) + 1;
-
-            if (rangeMinZ <= boxMinZ && rangeMaxZ >= boxMinZ)
-            {
-                minZ = maxZ = boxMinZ;
-                boxes.add(new Box(minX, minY, minZ, maxX, maxY, maxZ));
-            }
-
-            if (rangeMinZ <= boxMaxZ && rangeMaxZ >= boxMaxZ)
-            {
-                minZ = maxZ = boxMaxZ + 1;
-                boxes.add(new Box(minX, minY, minZ, maxX, maxY, maxZ));
-            }
-        }
-
-        // The sides of the box along the z-axis can be at least partially inside the range
-        if (rangeMinZ <= boxMaxZ && rangeMaxZ >= boxMinZ)
-        {
-            minZ = Math.max(boxMinZ, rangeMinZ);
-            maxZ = Math.min(boxMaxZ, rangeMaxZ) + 1;
-
-            if (rangeMinX <= boxMinX && rangeMaxX >= boxMinX)
-            {
-                minX = maxX = boxMinX;
-                boxes.add(new Box(minX, minY, minZ, maxX, maxY, maxZ));
-            }
-
-            if (rangeMinX <= boxMaxX && rangeMaxX >= boxMaxX)
-            {
-                minX = maxX = boxMaxX + 1;
-                boxes.add(new Box(minX, minY, minZ, maxX, maxY, maxZ));
-            }
-        }
-
-        return boxes;
-    }
+//    public List<Box> calculateBoxes(
+//            BlockPos posStart,
+//            BlockPos posEnd)
+//    {
+//        Entity entity = EntityUtils.getCameraEntity();
+//        if (entity == null) return List.of();
+////        World world = entity.getEntityWorld();
+//        final int boxMinX = Math.min(posStart.getX(), posEnd.getX());
+//        final int boxMinZ = Math.min(posStart.getZ(), posEnd.getZ());
+//        final int boxMaxX = Math.max(posStart.getX(), posEnd.getX());
+//        final int boxMaxZ = Math.max(posStart.getZ(), posEnd.getZ());
+//
+//        final int centerX = (int) Math.floor(entity.getX());
+//        final int centerZ = (int) Math.floor(entity.getZ());
+//        final int maxDist = MinecraftClient.getInstance().options.getViewDistance().getValue() * 32; // double the view distance in blocks
+//        final int rangeMinX = centerX - maxDist;
+//        final int rangeMinZ = centerZ - maxDist;
+//        final int rangeMaxX = centerX + maxDist;
+//        final int rangeMaxZ = centerZ + maxDist;
+//        final double minY = Math.min(posStart.getY(), posEnd.getY());
+//        final double maxY = Math.max(posStart.getY(), posEnd.getY()) + 1;
+//        double minX, minZ, maxX, maxZ;
+//
+//        List<Box> boxes = new ArrayList<>();
+//
+//        // The sides of the box along the x-axis can be at least partially inside the range
+//        if (rangeMinX <= boxMaxX && rangeMaxX >= boxMinX)
+//        {
+//            minX = Math.max(boxMinX, rangeMinX);
+//            maxX = Math.min(boxMaxX, rangeMaxX) + 1;
+//
+//            if (rangeMinZ <= boxMinZ && rangeMaxZ >= boxMinZ)
+//            {
+//                minZ = maxZ = boxMinZ;
+//                boxes.add(new Box(minX, minY, minZ, maxX, maxY, maxZ));
+//            }
+//
+//            if (rangeMinZ <= boxMaxZ && rangeMaxZ >= boxMaxZ)
+//            {
+//                minZ = maxZ = boxMaxZ + 1;
+//                boxes.add(new Box(minX, minY, minZ, maxX, maxY, maxZ));
+//            }
+//        }
+//
+//        // The sides of the box along the z-axis can be at least partially inside the range
+//        if (rangeMinZ <= boxMaxZ && rangeMaxZ >= boxMinZ)
+//        {
+//            minZ = Math.max(boxMinZ, rangeMinZ);
+//            maxZ = Math.min(boxMaxZ, rangeMaxZ) + 1;
+//
+//            if (rangeMinX <= boxMinX && rangeMaxX >= boxMinX)
+//            {
+//                minX = maxX = boxMinX;
+//                boxes.add(new Box(minX, minY, minZ, maxX, maxY, maxZ));
+//            }
+//
+//            if (rangeMinX <= boxMaxX && rangeMaxX >= boxMaxX)
+//            {
+//                minX = maxX = boxMaxX + 1;
+//                boxes.add(new Box(minX, minY, minZ, maxX, maxY, maxZ));
+//            }
+//        }
+//
+//        return boxes;
+//    }
 
 //    private static void dumpBoxes(List<Box> boxes)
 //    {

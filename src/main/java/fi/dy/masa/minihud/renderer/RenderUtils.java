@@ -1,8 +1,6 @@
 package fi.dy.masa.minihud.renderer;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import org.joml.Matrix4f;
 
@@ -109,7 +107,7 @@ public class RenderUtils
 //            }
 //        }
 //    }
-
+//
 //    public static void renderWallWithLines(
 //            float minX, float minY, float minZ,
 //            float maxX, float maxY, float maxZ,
@@ -166,6 +164,72 @@ public class RenderUtils
 //            }
 //        }
 //    }
+
+    public static List<Box> calculateBoxes(
+            BlockPos posStart,
+            BlockPos posEnd)
+    {
+        Entity entity = EntityUtils.getCameraEntity();
+        if (entity == null) return List.of();
+//        World world = entity.getEntityWorld();
+        final int boxMinX = Math.min(posStart.getX(), posEnd.getX());
+        final int boxMinZ = Math.min(posStart.getZ(), posEnd.getZ());
+        final int boxMaxX = Math.max(posStart.getX(), posEnd.getX());
+        final int boxMaxZ = Math.max(posStart.getZ(), posEnd.getZ());
+
+        final int centerX = (int) Math.floor(entity.getX());
+        final int centerZ = (int) Math.floor(entity.getZ());
+        final int maxDist = MinecraftClient.getInstance().options.getViewDistance().getValue() * 32; // double the view distance in blocks
+        final int rangeMinX = centerX - maxDist;
+        final int rangeMinZ = centerZ - maxDist;
+        final int rangeMaxX = centerX + maxDist;
+        final int rangeMaxZ = centerZ + maxDist;
+        final double minY = Math.min(posStart.getY(), posEnd.getY());
+        final double maxY = Math.max(posStart.getY(), posEnd.getY()) + 1;
+        double minX, minZ, maxX, maxZ;
+
+        List<Box> boxes = new ArrayList<>();
+
+        // The sides of the box along the x-axis can be at least partially inside the range
+        if (rangeMinX <= boxMaxX && rangeMaxX >= boxMinX)
+        {
+            minX = Math.max(boxMinX, rangeMinX);
+            maxX = Math.min(boxMaxX, rangeMaxX) + 1;
+
+            if (rangeMinZ <= boxMinZ && rangeMaxZ >= boxMinZ)
+            {
+                minZ = maxZ = boxMinZ;
+                boxes.add(new Box(minX, minY, minZ, maxX, maxY, maxZ));
+            }
+
+            if (rangeMinZ <= boxMaxZ && rangeMaxZ >= boxMaxZ)
+            {
+                minZ = maxZ = boxMaxZ + 1;
+                boxes.add(new Box(minX, minY, minZ, maxX, maxY, maxZ));
+            }
+        }
+
+        // The sides of the box along the z-axis can be at least partially inside the range
+        if (rangeMinZ <= boxMaxZ && rangeMaxZ >= boxMinZ)
+        {
+            minZ = Math.max(boxMinZ, rangeMinZ);
+            maxZ = Math.min(boxMaxZ, rangeMaxZ) + 1;
+
+            if (rangeMinX <= boxMinX && rangeMaxX >= boxMinX)
+            {
+                minX = maxX = boxMinX;
+                boxes.add(new Box(minX, minY, minZ, maxX, maxY, maxZ));
+            }
+
+            if (rangeMinX <= boxMaxX && rangeMaxX >= boxMaxX)
+            {
+                minX = maxX = boxMaxX + 1;
+                boxes.add(new Box(minX, minY, minZ, maxX, maxY, maxZ));
+            }
+        }
+
+        return boxes;
+    }
 
     public static void renderWallQuads(Box box, Vec3d cameraPos, Color4f color, BufferBuilder bufferQuads, MatrixStack.Entry entry)
     {
@@ -875,6 +939,7 @@ public class RenderUtils
     }
 
     // OG Method (Works)
+    @Deprecated
     public static void renderInventoryOverlay(MinecraftClient mc, DrawContext drawContext)
     {
         World world = WorldUtils.getBestWorld(mc);

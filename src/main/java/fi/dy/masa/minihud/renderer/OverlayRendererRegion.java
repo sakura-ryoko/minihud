@@ -1,5 +1,8 @@
 package fi.dy.masa.minihud.renderer;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.mojang.blaze3d.buffers.BufferUsage;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.RenderPipelines;
@@ -24,12 +27,12 @@ public class OverlayRendererRegion extends OverlayRendererBase
 {
     public static final OverlayRendererRegion INSTANCE = new OverlayRendererRegion();
     protected boolean needsUpdate = true;
-    private Box box;
+    private List<Box> boxes;
     private boolean hasData;
 
     protected OverlayRendererRegion()
     {
-        this.box = null;
+        this.boxes = new ArrayList<>();
         this.hasData = false;
         this.useCulling = true;
         this.renderThrough = false;
@@ -90,14 +93,14 @@ public class OverlayRendererRegion extends OverlayRendererBase
         int rz = MathHelper.floor(entity.getZ()) & ~0x1FF;
         BlockPos pos1 = new BlockPos(rx,       minY, rz      );
         BlockPos pos2 = new BlockPos(rx + 511, maxY, rz + 511);
-        this.box = Box.enclosing(pos1, pos2);
+        this.boxes = RenderUtils.calculateBoxes(pos1, pos2);
         this.hasData = true;
     }
 
     @Override
     public boolean hasData()
     {
-        return this.hasData && this.box != null;
+        return this.hasData && !this.boxes.isEmpty();
     }
 
     @Override
@@ -124,7 +127,10 @@ public class OverlayRendererRegion extends OverlayRendererBase
         matrices.push();
         MatrixStack.Entry e = matrices.peek();
 
-        RenderUtils.renderWallQuads(this.box, cameraPos, color, builder, e);
+        for (Box box : this.boxes)
+        {
+            RenderUtils.renderWallQuads(box, cameraPos, color, builder, e);
+        }
 
         try
         {
@@ -167,7 +173,10 @@ public class OverlayRendererRegion extends OverlayRendererBase
         matrices.push();
         MatrixStack.Entry e = matrices.peek();
 
-        RenderUtils.renderWallOutlines(this.box, 16, 16, true, cameraPos, color, builder, e);
+        for (Box box : this.boxes)
+        {
+            RenderUtils.renderWallOutlines(box, 16, 16, true, cameraPos, color, builder, e);
+        }
 
         try
         {
@@ -192,7 +201,7 @@ public class OverlayRendererRegion extends OverlayRendererBase
     public void reset()
     {
         super.reset();
-        this.box = null;
+        this.boxes.clear();
         this.hasData = false;
     }
 }
