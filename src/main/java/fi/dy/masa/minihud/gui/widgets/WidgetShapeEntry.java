@@ -155,7 +155,7 @@ public class WidgetShapeEntry extends WidgetListEntryBase<ShapeBase>
 
             private final String translationKey;
 
-            private Type(String translationKey)
+            Type(String translationKey)
             {
                 this.translationKey = translationKey;
             }

@@ -2,6 +2,7 @@ package fi.dy.masa.minihud.gui;
 
 import javax.annotation.Nullable;
 import com.google.common.collect.ImmutableList;
+
 import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.gui.GuiListBase;
 import fi.dy.masa.malilib.gui.Message.MessageType;
