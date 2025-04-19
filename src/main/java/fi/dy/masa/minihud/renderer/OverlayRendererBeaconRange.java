@@ -4,7 +4,6 @@ import com.mojang.blaze3d.buffers.BufferUsage;
 import net.minecraft.block.entity.BeaconBlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.BuiltBuffer;
 import net.minecraft.client.util.math.MatrixStack;
@@ -72,7 +71,7 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
 
         profiler.push("beacon_quads");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "Beacon Quads", this.renderThrough ? MaLiLibPipelines.POSITION_COLOR_MASA_NO_DEPTH_NO_CULL : MaLiLibPipelines.POSITION_COLOR_MASA_LESSER_DEPTH_OFFSET_1, BufferUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.start(() -> "Beacon Quads", this.renderThrough ? MaLiLibPipelines.POSITION_COLOR_MASA_NO_DEPTH_NO_CULL : MaLiLibPipelines.POSITION_COLOR_MASA_LEQUAL_DEPTH_OFFSET_1, BufferUsage.STATIC_WRITE);
         MatrixStack matrices = new MatrixStack();
 
         matrices.push();
@@ -125,13 +124,13 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
 
         profiler.push("beacon_outlines");
         RenderObjectVbo ctx = this.renderObjects.get(1);
-        BufferBuilder builder = ctx.start(() -> "Beacon Lines", RenderPipelines.LINES, BufferUsage.STATIC_WRITE);
-        MatrixStack matrices = new MatrixStack();
+        BufferBuilder builder = ctx.start(() -> "Beacon Lines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, BufferUsage.STATIC_WRITE);
+//        MatrixStack matrices = new MatrixStack();
 
-        matrices.push();
-        MatrixStack.Entry e = matrices.peek();
+//        matrices.push();
+//        MatrixStack.Entry e = matrices.peek();
 
-        fi.dy.masa.malilib.render.RenderUtils.drawBoxAllEdgesBatchedLines((float) minX, (float) minY, (float) minZ, (float) maxX, (float) maxY, (float) maxZ, Color4f.fromColor(color.intValue, 1f), builder, e);
+        fi.dy.masa.malilib.render.RenderUtils.drawBoxAllEdgesBatchedLines((float) minX, (float) minY, (float) minZ, (float) maxX, (float) maxY, (float) maxZ, Color4f.fromColor(color.intValue, 1f), builder);
 
         try
         {
@@ -148,7 +147,7 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
             MiniHUD.LOGGER.error("OverlayRendererBeaconRange#renderOutlines(): Exception; {}", err.getMessage());
         }
 
-        matrices.pop();
+//        matrices.pop();
         profiler.pop();
     }
 

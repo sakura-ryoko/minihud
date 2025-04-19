@@ -8,10 +8,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import com.mojang.blaze3d.buffers.BufferUsage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.BuiltBuffer;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
@@ -250,28 +248,28 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
         RenderObjectVbo ctx = this.renderObjects.getFirst();
 //        BufferBuilder builder = ctx.start(() -> "Spawn Chunk Quads", MaLiLibPipelines.POSITION_COLOR_MASA_NO_DEPTH_NO_CULL, BufferUsage.STATIC_WRITE);
         BufferBuilder builder = ctx.start(() -> "Spawn Chunk Quads", MaLiLibPipelines.MINIHUD_SHAPE_OFFSET, BufferUsage.STATIC_WRITE);
-        MatrixStack matrices = new MatrixStack();
+//        MatrixStack matrices = new MatrixStack();
 
-        matrices.push();
+//        matrices.push();
         fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxSidesBatchedQuads(this.center, cameraPos, colorEntity, 0.001, builder);
 
-        MatrixStack.Entry e = matrices.peek();
+//        MatrixStack.Entry e = matrices.peek();
 
         for (Box entry : this.boxesBrown)
         {
-            RenderUtils.renderWallQuads(entry, cameraPos, colorOuter, builder, e);
+            RenderUtils.renderWallQuads(entry, cameraPos, colorOuter, builder);
         }
         for (Box entry : this.boxesRed)
         {
-            RenderUtils.renderWallQuads(entry, cameraPos, colorLazy, builder, e);
+            RenderUtils.renderWallQuads(entry, cameraPos, colorLazy, builder);
         }
         for (Box entry : this.boxesYellow)
         {
-            RenderUtils.renderWallQuads(entry, cameraPos, colorRedstone, builder, e);
+            RenderUtils.renderWallQuads(entry, cameraPos, colorRedstone, builder);
         }
         for (Box entry : this.boxesGreen)
         {
-            RenderUtils.renderWallQuads(entry, cameraPos, colorEntity, builder, e);
+            RenderUtils.renderWallQuads(entry, cameraPos, colorEntity, builder);
         }
 
         try
@@ -295,7 +293,7 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
             MiniHUD.LOGGER.error("OverlayRendererSpawnChunks#renderQuads(): Exception; {}", err.getMessage());
         }
 
-        matrices.pop();
+//        matrices.pop();
         profiler.pop();
     }
 
@@ -321,30 +319,30 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
                 Configs.Colors.SPAWN_REAL_OUTER_OVERLAY_COLOR.getColor();
 
         RenderObjectVbo ctx = this.renderObjects.get(1);
-        BufferBuilder builder = ctx.start(() -> "Spawn Chunk Lines", RenderPipelines.LINES, BufferUsage.STATIC_WRITE);
-        MatrixStack matrices = new MatrixStack();
+        BufferBuilder builder = ctx.start(() -> "Spawn Chunk Lines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, BufferUsage.STATIC_WRITE);
+//        MatrixStack matrices = new MatrixStack();
 
-        matrices.push();
-        MatrixStack.Entry e = matrices.peek();
+//        matrices.push();
+//        MatrixStack.Entry e = matrices.peek();
 
         // The SpawnPos box looks better with white outlines.  You can't really see the `colorEntity` value
-        fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(this.center, cameraPos, Color4f.WHITE, 0.001, builder, e);
+        fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(this.center, cameraPos, Color4f.WHITE, 0.001, builder);
 
         for (Box entry : this.boxesBrown)
         {
-            RenderUtils.renderWallOutlines(entry, 16, 16, true, cameraPos, colorOuter, builder, e);
+            RenderUtils.renderWallOutlines(entry, 16, 16, true, cameraPos, colorOuter, builder);
         }
         for (Box entry : this.boxesRed)
         {
-            RenderUtils.renderWallOutlines(entry, 16, 16, true, cameraPos, colorLazy, builder, e);
+            RenderUtils.renderWallOutlines(entry, 16, 16, true, cameraPos, colorLazy, builder);
         }
         for (Box entry : this.boxesYellow)
         {
-            RenderUtils.renderWallOutlines(entry, 16, 16, true, cameraPos, colorRedstone, builder, e);
+            RenderUtils.renderWallOutlines(entry, 16, 16, true, cameraPos, colorRedstone, builder);
         }
         for (Box entry : this.boxesGreen)
         {
-            RenderUtils.renderWallOutlines(entry, 16, 16, true, cameraPos, colorEntity, builder, e);
+            RenderUtils.renderWallOutlines(entry, 16, 16, true, cameraPos, colorEntity, builder);
         }
 
         try
@@ -362,7 +360,7 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
             MiniHUD.LOGGER.error("OverlayRendererSpawnChunks#renderOutlines(): Exception; {}", err.getMessage());
         }
 
-        matrices.pop();
+//        matrices.pop();
         profiler.pop();
     }
 

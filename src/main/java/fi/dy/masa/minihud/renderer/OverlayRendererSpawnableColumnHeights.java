@@ -7,16 +7,15 @@ import java.util.Set;
 
 import com.mojang.blaze3d.buffers.BufferUsage;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.BuiltBuffer;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.*;
 import net.minecraft.util.profiler.Profiler;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.World;
 
+import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.data.Color4f;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
@@ -144,10 +143,10 @@ public class OverlayRendererSpawnableColumnHeights extends OverlayRendererBase
 
         profiler.push("column_quads");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "Spawnable Column Quads", RenderPipelines.DEBUG_QUADS, BufferUsage.STATIC_WRITE);
-        MatrixStack matrices = new MatrixStack();
+        BufferBuilder builder = ctx.start(() -> "Spawnable Column Quads", MaLiLibPipelines.POSITION_COLOR_MASA_LEQUAL_DEPTH, BufferUsage.STATIC_WRITE);
+//        MatrixStack matrices = new MatrixStack();
 
-        matrices.push();
+//        matrices.push();
 
         for (Box bb : this.boxes)
         {
@@ -176,7 +175,7 @@ public class OverlayRendererSpawnableColumnHeights extends OverlayRendererBase
             MiniHUD.LOGGER.error("OverlayRendererSpawnableColumnHeights#renderQuads(): Exception; {}", err.getMessage());
         }
 
-        matrices.pop();
+//        matrices.pop();
         profiler.pop();
     }
 
@@ -190,15 +189,15 @@ public class OverlayRendererSpawnableColumnHeights extends OverlayRendererBase
         final Color4f color = Configs.Colors.SPAWNABLE_COLUMNS_OVERLAY_COLOR.getColor();
         profiler.push("column_outlines");
         RenderObjectVbo ctx = this.renderObjects.get(1);
-        BufferBuilder builder = ctx.start(() -> "Spawnable Column Outlines", RenderPipelines.LINES, BufferUsage.STATIC_WRITE);
-        MatrixStack matrices = new MatrixStack();
+        BufferBuilder builder = ctx.start(() -> "Spawnable Column Outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, BufferUsage.STATIC_WRITE);
+//        MatrixStack matrices = new MatrixStack();
 
-        matrices.push();
-        MatrixStack.Entry e = matrices.peek();
+//        matrices.push();
+//        MatrixStack.Entry e = matrices.peek();
 
         for (Box bb : this.boxes)
         {
-            fi.dy.masa.malilib.render.RenderUtils.drawBoxAllEdgesBatchedLines((float) bb.minX, (float) bb.minY, (float) bb.minZ, (float) bb.maxX, (float) bb.maxY, (float) bb.maxZ, color, builder, e);
+            fi.dy.masa.malilib.render.RenderUtils.drawBoxAllEdgesBatchedLines((float) bb.minX, (float) bb.minY, (float) bb.minZ, (float) bb.maxX, (float) bb.maxY, (float) bb.maxZ, color, builder);
         }
 
         try
@@ -216,7 +215,7 @@ public class OverlayRendererSpawnableColumnHeights extends OverlayRendererBase
             MiniHUD.LOGGER.error("OverlayRendererSpawnableColumnHeights#renderOutlines(): Exception; {}", err.getMessage());
         }
 
-        matrices.pop();
+//        matrices.pop();
         profiler.pop();
     }
 

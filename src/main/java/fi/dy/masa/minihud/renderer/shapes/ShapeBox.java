@@ -5,7 +5,6 @@ import com.google.gson.JsonObject;
 
 import com.mojang.blaze3d.buffers.BufferUsage;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.BuiltBuffer;
 import net.minecraft.client.util.math.MatrixStack;
@@ -277,7 +276,7 @@ public class ShapeBox extends ShapeBase
 //        Color4f color = Configs.Colors.SHAPE_OUTLINES.getColor();
 
         RenderObjectVbo ctx = this.renderObjects.get(1);
-        BufferBuilder builder = ctx.start(() -> "Box Lines", RenderPipelines.LINES, BufferUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.start(() -> "Box Lines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, BufferUsage.STATIC_WRITE);
         MatrixStack matrices = new MatrixStack();
 
         matrices.push();

@@ -13,10 +13,8 @@ import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 
 import com.mojang.blaze3d.buffers.BufferUsage;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.BuiltBuffer;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKeys;
@@ -162,15 +160,15 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
 
         profiler.push("biome_quads");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "Biome Quads", MaLiLibPipelines.POSITION_COLOR_MASA_LESSER_DEPTH_OFFSET_1, BufferUsage.STATIC_WRITE);
-        MatrixStack matrices = new MatrixStack();
-
-        matrices.push();
+        BufferBuilder builder = ctx.start(() -> "Biome Quads", MaLiLibPipelines.POSITION_COLOR_MASA_LEQUAL_DEPTH_OFFSET_1, BufferUsage.STATIC_WRITE);
+//        MatrixStack matrices = new MatrixStack();
+//
+//        matrices.push();
 
         for (ColoredQuad quad : this.renderQuads)
         {
             Color4f color = this.getColor(quad.biomeId);
-            RenderUtils.renderInsetQuad(quad.start, quad.width, quad.height, quad.side, inset, color, cameraPos, builder, matrices.peek());
+            RenderUtils.renderInsetQuad(quad.start, quad.width, quad.height, quad.side, inset, color, cameraPos, builder);
         }
 
         try
@@ -194,7 +192,7 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
             MiniHUD.LOGGER.error("OverlayRendererBiomeBorders#renderQuads(): Exception; {}", err.getMessage());
         }
 
-        matrices.pop();
+//        matrices.pop();
         profiler.pop();
     }
 
@@ -204,16 +202,16 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
 
         profiler.push("biome_outlines");
         RenderObjectVbo ctx = this.renderObjects.get(1);
-        BufferBuilder builder = ctx.start(() -> "Biome Lines", RenderPipelines.LINES, BufferUsage.STATIC_WRITE);
-        MatrixStack matrices = new MatrixStack();
+        BufferBuilder builder = ctx.start(() -> "Biome Lines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, BufferUsage.STATIC_WRITE);
+//        MatrixStack matrices = new MatrixStack();
 
-        matrices.push();
-        MatrixStack.Entry e = matrices.peek();
+//        matrices.push();
+//        MatrixStack.Entry e = matrices.peek();
 
         for (ColoredQuad quad : this.renderQuads)
         {
             Color4f color = this.getColor(quad.biomeId);
-            RenderUtils.renderBiomeBorderLines(quad.start, quad.width, quad.height, quad.side, inset, color, cameraPos, builder, e);
+            RenderUtils.renderBiomeBorderLines(quad.start, quad.width, quad.height, quad.side, inset, color, cameraPos, builder);
         }
 
         try
@@ -231,7 +229,7 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
             MiniHUD.LOGGER.error("OverlayRendererBiomeBorders#renderOutlines(): Exception; {}", err.getMessage());
         }
 
-        matrices.pop();
+//        matrices.pop();
         profiler.pop();
     }
 

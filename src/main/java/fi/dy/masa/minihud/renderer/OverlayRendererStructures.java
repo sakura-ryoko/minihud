@@ -9,7 +9,6 @@ import com.mojang.blaze3d.buffers.BufferUsage;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.BuiltBuffer;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -99,7 +98,7 @@ public class OverlayRendererStructures extends OverlayRendererBase
     protected void allocateBuffers(boolean useOutlines)
     {
         this.clearBuffers();
-        this.renderObjects.add(new RenderObjectVbo(() -> this.getName()+" Main Quads",  MaLiLibPipelines.POSITION_COLOR_TRANSLUCENT_LESSER_DEPTH_OFFSET_1, BufferUsage.STATIC_WRITE));
+        this.renderObjects.add(new RenderObjectVbo(() -> this.getName()+" Main Quads",  MaLiLibPipelines.POSITION_COLOR_TRANSLUCENT_LEQUAL_DEPTH_OFFSET_1, BufferUsage.STATIC_WRITE));
         this.renderObjects.add(new RenderObjectVbo(() -> this.getName()+" Components",  MaLiLibPipelines.POSITION_COLOR_MASA_NO_DEPTH, BufferUsage.STATIC_WRITE));
 //        this.renderObjects.add(new RenderObjectVbo(() -> this.getName()+" Sub Surface", MaLiLibPipelines.POSITION_COLOR_MASA_LESSER_DEPTH_OFFSET_2, BufferUsage.STATIC_WRITE));
     }
@@ -123,10 +122,10 @@ public class OverlayRendererStructures extends OverlayRendererBase
         profiler.push("structure main");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
         BufferBuilder builder = ctx.start(() -> "Structure Main", this.renderThrough ? MaLiLibPipelines.MINIHUD_SHAPE_NO_DEPTH_OFFSET : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET, BufferUsage.STATIC_WRITE);
-        MatrixStack matrices = new MatrixStack();
+//        MatrixStack matrices = new MatrixStack();
 
-        matrices.push();
-        MatrixStack.Entry e = matrices.peek();
+//        matrices.push();
+//        MatrixStack.Entry e = matrices.peek();
 
         for (StructureData structure : this.structures)
         {
@@ -134,7 +133,7 @@ public class OverlayRendererStructures extends OverlayRendererBase
             Color4f mainColor = toggle.getColorMain().getColor();
             IntBoundingBox bb = structure.getBoundingBox();
 
-            RenderUtils.drawBoxNoOutlines(bb, cameraPos, mainColor, builder, e);
+            RenderUtils.drawBoxNoOutlines(bb, cameraPos, mainColor, builder);
         }
 
         try
@@ -158,7 +157,7 @@ public class OverlayRendererStructures extends OverlayRendererBase
             MiniHUD.LOGGER.error("OverlayRendererStructures#renderStructureMain(): Exception; {}", err.getMessage());
         }
 
-        matrices.pop();
+//        matrices.pop();
         profiler.pop();
     }
 
@@ -173,10 +172,10 @@ public class OverlayRendererStructures extends OverlayRendererBase
         profiler.push("structure components");
         RenderObjectVbo ctx = this.renderObjects.get(1);
         BufferBuilder builder = ctx.start(() -> "Structure Components", this.renderThrough ? MaLiLibPipelines.MINIHUD_SHAPE_NO_DEPTH_OFFSET : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET, BufferUsage.STATIC_WRITE);
-        MatrixStack matrices = new MatrixStack();
+//        MatrixStack matrices = new MatrixStack();
 
-        matrices.push();
-        MatrixStack.Entry e = matrices.peek();
+//        matrices.push();
+//        MatrixStack.Entry e = matrices.peek();
 
         for (StructureData structure : this.structures)
         {
@@ -190,7 +189,7 @@ public class OverlayRendererStructures extends OverlayRendererBase
                 {
                     for (IntBoundingBox bb : components)
                     {
-                        RenderUtils.drawBoxNoOutlines(bb, cameraPos, componentColor, builder, e);
+                        RenderUtils.drawBoxNoOutlines(bb, cameraPos, componentColor, builder);
                     }
                 }
             }
@@ -217,7 +216,7 @@ public class OverlayRendererStructures extends OverlayRendererBase
             MiniHUD.LOGGER.error("OverlayRendererStructures#renderStructureComponents(): Exception; {}", err.getMessage());
         }
 
-        matrices.pop();
+//        matrices.pop();
         profiler.pop();
     }
 

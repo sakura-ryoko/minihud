@@ -8,10 +8,8 @@ import com.mojang.blaze3d.buffers.BufferUsage;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.block.entity.ConduitBlockEntity;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.BuiltBuffer;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
@@ -115,20 +113,20 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
         profiler.push("conduit_quads");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
         BufferBuilder builder = ctx.start(() -> "Conduit Quads", this.renderThrough ? MaLiLibPipelines.MINIHUD_SHAPE_NO_DEPTH_OFFSET : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET, BufferUsage.STATIC_WRITE);
-        MatrixStack matrices = new MatrixStack();
-
-        matrices.push();
+//        MatrixStack matrices = new MatrixStack();
+//
+//        matrices.push();
 
         if (this.combineQuads)
         {
-            RenderUtils.renderQuads(this.quads, color, 0, cameraPos, builder, matrices.peek());
+            RenderUtils.renderQuads(this.quads, color, 0, cameraPos, builder);
         }
         else
         {
             RenderUtils.renderCircleBlockPositions(this.positions, PositionUtils.ALL_DIRECTIONS,
                                                    this.test, this.renderType,
                                                    this.layerRange, color, 0,
-                                                   cameraPos, builder, matrices.peek());
+                                                   cameraPos, builder);
         }
 
         try
@@ -152,7 +150,7 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
             MiniHUD.LOGGER.error("OverlayRendererConduitRange#renderQuads(): Exception; {}", err.getMessage());
         }
 
-        matrices.pop();
+//        matrices.pop();
         profiler.pop();
 
     }
@@ -166,21 +164,21 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
 
         profiler.push("conduit_outlines");
         RenderObjectVbo ctx = this.renderObjects.get(1);
-        BufferBuilder builder = ctx.start(() -> "Conduit Outlines", RenderPipelines.LINES, BufferUsage.STATIC_WRITE);
-        MatrixStack matrices = new MatrixStack();
+        BufferBuilder builder = ctx.start(() -> "Conduit Outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, BufferUsage.STATIC_WRITE);
+//        MatrixStack matrices = new MatrixStack();
 
-        matrices.push();
+//        matrices.push();
 
         if (this.combineQuads)
         {
-            RenderUtils.renderQuadLines(this.quads, this.colorLines, 0, cameraPos, builder, matrices.peek());
+            RenderUtils.renderQuadLines(this.quads, this.colorLines, 0, cameraPos, builder);
         }
         else
         {
             RenderUtils.renderCircleBlockOutlines(this.positions, PositionUtils.ALL_DIRECTIONS,
                                                   this.test, this.renderType,
                                                   this.layerRange, this.colorLines, 0,
-                                                  cameraPos, builder, matrices.peek());
+                                                  cameraPos, builder);
         }
 
         try
@@ -198,7 +196,7 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
             MiniHUD.LOGGER.error("OverlayRendererConduitRange#renderBlockRange(): Exception; {}", err.getMessage());
         }
 
-        matrices.pop();
+//        matrices.pop();
         profiler.pop();
 
     }

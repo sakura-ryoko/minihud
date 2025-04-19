@@ -6,10 +6,8 @@ import com.google.gson.JsonObject;
 
 import com.mojang.blaze3d.buffers.BufferUsage;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.BuiltBuffer;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.ChunkPos;
@@ -178,18 +176,18 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
                               Configs.Colors.RANDOM_TICKS_FIXED_OVERLAY_COLOR.getColor();
 
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "RandomTick Quads", MaLiLibPipelines.POSITION_COLOR_MASA_LESSER_DEPTH_OFFSET_1, BufferUsage.STATIC_WRITE);
-        MatrixStack matrices = new MatrixStack();
+        BufferBuilder builder = ctx.start(() -> "RandomTick Quads", MaLiLibPipelines.POSITION_COLOR_MASA_LEQUAL_DEPTH_OFFSET_1, BufferUsage.STATIC_WRITE);
+//        MatrixStack matrices = new MatrixStack();
 
-        matrices.push();
-        MatrixStack.Entry e = matrices.peek();
+//        matrices.push();
+//        MatrixStack.Entry e = matrices.peek();
 
         this.chunkMap.forEach(
                 (pos, boxes) ->
                 {
                     for (Box bb : boxes)
                     {
-                        RenderUtils.renderWallQuads(bb, cameraPos, color, builder, e);
+                        RenderUtils.renderWallQuads(bb, cameraPos, color, builder);
                     }
                 });
 
@@ -214,7 +212,7 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
             MiniHUD.LOGGER.error("OverlayRendererRandomTickableChunks#renderQuads(): Exception; {}", err.getMessage());
         }
 
-        matrices.pop();
+//        matrices.pop();
         profiler.pop();
     }
 
@@ -231,19 +229,18 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
                               Configs.Colors.RANDOM_TICKS_FIXED_OVERLAY_COLOR.getColor();
 
         RenderObjectVbo ctx = this.renderObjects.get(1);
-        BufferBuilder builder = ctx.start(() -> "RandomTick Lines", RenderPipelines.LINES, BufferUsage.STATIC_WRITE);
-        MatrixStack matrices = new MatrixStack();
+        BufferBuilder builder = ctx.start(() -> "RandomTick Lines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, BufferUsage.STATIC_WRITE);
+//        MatrixStack matrices = new MatrixStack();
 
-
-        matrices.push();
-        MatrixStack.Entry e = matrices.peek();
+//        matrices.push();
+//        MatrixStack.Entry e = matrices.peek();
 
         this.chunkMap.forEach(
                 (pos, boxes) ->
                 {
                     for (Box bb : boxes)
                     {
-                        RenderUtils.renderWallOutlines(bb, 16, 16, true, cameraPos, color, builder, e);
+                        RenderUtils.renderWallOutlines(bb, 16, 16, true, cameraPos, color, builder);
                     }
                 });
 
@@ -262,7 +259,7 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
             MiniHUD.LOGGER.error("OverlayRendererRandomTickableChunks#renderOutlines(): Exception; {}", err.getMessage());
         }
 
-        matrices.pop();
+//        matrices.pop();
         profiler.pop();
     }
 

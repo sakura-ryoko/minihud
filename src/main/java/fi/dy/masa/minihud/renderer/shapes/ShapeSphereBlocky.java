@@ -6,10 +6,8 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 
 import com.mojang.blaze3d.buffers.BufferUsage;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.BuiltBuffer;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -88,10 +86,10 @@ public class ShapeSphereBlocky extends ShapeCircleBase
 
         RenderObjectVbo ctx = this.renderObjects.getFirst();
         BufferBuilder builder = ctx.start(() -> "Sphere Blocky Quads", this.renderThroughShape ? MaLiLibPipelines.MINIHUD_SHAPE_NO_DEPTH_OFFSET : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET, BufferUsage.STATIC_WRITE);
-        MatrixStack matrices = new MatrixStack();
+//        MatrixStack matrices = new MatrixStack();
 
-        matrices.push();
-        this.renderSphereShapeQuads(cameraPos, builder, matrices);
+//        matrices.push();
+        this.renderSphereShapeQuads(cameraPos, builder);
 
         try
         {
@@ -114,7 +112,7 @@ public class ShapeSphereBlocky extends ShapeCircleBase
             MiniHUD.LOGGER.error("ShapeSphereBlocky#renderQuads(): Exception; {}", err.getMessage());
         }
 
-        matrices.pop();
+//        matrices.pop();
         profiler.pop();
     }
 
@@ -128,11 +126,11 @@ public class ShapeSphereBlocky extends ShapeCircleBase
         profiler.push("sphere_blocky_outlines");
 
         RenderObjectVbo ctx = this.renderObjects.get(1);
-        BufferBuilder builder = ctx.start(() -> "Sphere Blocky Outlines", RenderPipelines.LINES, BufferUsage.STATIC_WRITE);
-        MatrixStack matrices = new MatrixStack();
+        BufferBuilder builder = ctx.start(() -> "Sphere Blocky Outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, BufferUsage.STATIC_WRITE);
+//        MatrixStack matrices = new MatrixStack();
 
-        matrices.push();
-        this.renderSphereShapeOutlines(cameraPos, builder, matrices.peek());
+//        matrices.push();
+        this.renderSphereShapeOutlines(cameraPos, builder);
 
         try
         {
@@ -149,7 +147,7 @@ public class ShapeSphereBlocky extends ShapeCircleBase
             MiniHUD.LOGGER.error("ShapeSphereBlocky#renderOutlines(): Exception; {}", err.getMessage());
         }
 
-        matrices.pop();
+//        matrices.pop();
         profiler.pop();
     }
 
@@ -171,7 +169,7 @@ public class ShapeSphereBlocky extends ShapeCircleBase
         return this.getRadius();
     }
 
-    protected void renderSphereShapeQuads(Vec3d cameraPos, BufferBuilder builder, MatrixStack matrices)
+    protected void renderSphereShapeQuads(Vec3d cameraPos, BufferBuilder builder)
     {
         SphereUtils.RingPositionTest test = this.getPositionTest();
         LongOpenHashSet positions = new LongOpenHashSet();
@@ -185,16 +183,20 @@ public class ShapeSphereBlocky extends ShapeCircleBase
         {
             List<SideQuad> quads = SphereUtils.buildSphereShellToQuads(positions, this.mainAxis.getAxis(),
                                                                        test, this.renderType, this.layerRange);
-            RenderUtils.renderQuads(quads, this.color, expand, cameraPos, builder, matrices.peek());
+//            RenderUtils.renderQuads(quads, this.color, expand, cameraPos, builder, matrices.peek());
+            RenderUtils.renderQuads(quads, this.color, expand, cameraPos, builder);
         }
         else
         {
             RenderUtils.renderCircleBlockPositions(positions, PositionUtils.ALL_DIRECTIONS, test, this.renderType,
-                                                   this.layerRange, this.color, expand, cameraPos, builder, matrices.peek());
+//                                                   this.layerRange, this.color, expand, cameraPos, builder, matrices.peek());
+                                                   this.layerRange, this.color, expand, cameraPos, builder);
         }
     }
 
-    protected void renderSphereShapeOutlines(Vec3d cameraPos, BufferBuilder builder, MatrixStack.Entry e)
+    protected void renderSphereShapeOutlines(Vec3d cameraPos,
+//                                             BufferBuilder builder, MatrixStack.Entry e)
+                                             BufferBuilder builder)
     {
         SphereUtils.RingPositionTest test = this.getPositionTest();
         LongOpenHashSet positions = new LongOpenHashSet();
@@ -208,12 +210,14 @@ public class ShapeSphereBlocky extends ShapeCircleBase
         {
             List<SideQuad> quads = SphereUtils.buildSphereShellToQuads(positions, this.mainAxis.getAxis(),
                                                                        test, this.renderType, this.layerRange);
-            RenderUtils.renderQuadLines(quads, this.colorLines, expand, cameraPos, builder, e);
+//            RenderUtils.renderQuadLines(quads, this.colorLines, expand, cameraPos, builder, e);
+            RenderUtils.renderQuadLines(quads, this.colorLines, expand, cameraPos, builder);
         }
         else
         {
             RenderUtils.renderCircleBlockOutlines(positions, PositionUtils.ALL_DIRECTIONS, test, this.renderType,
-                                                  this.layerRange, this.colorLines, expand, cameraPos, builder, e);
+//                                                  this.layerRange, this.colorLines, expand, cameraPos, builder, e);
+                                                  this.layerRange, this.colorLines, expand, cameraPos, builder);
         }
     }
 }

@@ -6,9 +6,7 @@ import javax.annotation.Nullable;
 import com.google.gson.JsonObject;
 
 import com.mojang.blaze3d.buffers.BufferUsage;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
@@ -55,7 +53,7 @@ public abstract class OverlayRendererBase implements IOverlayRenderer
 
         if (useOutlines)
         {
-            this.renderObjects.add(new RenderObjectVbo(() -> this.getName() + " Lines", RenderPipelines.LINES, BufferUsage.STATIC_WRITE));
+            this.renderObjects.add(new RenderObjectVbo(() -> this.getName() + " Lines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, BufferUsage.STATIC_WRITE));
         }
     }
 

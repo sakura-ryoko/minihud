@@ -11,10 +11,8 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 
 import com.mojang.blaze3d.buffers.BufferUsage;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.BuiltBuffer;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -81,10 +79,10 @@ public class ShapeCircle extends ShapeCircleBase
         profiler.push("circle_quads");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
         BufferBuilder builder = ctx.start(() -> "Circle Quads", this.renderThroughShape ? MaLiLibPipelines.MINIHUD_SHAPE_NO_DEPTH_OFFSET : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET, BufferUsage.STATIC_WRITE);
-        MatrixStack matrices = new MatrixStack();
+//        MatrixStack matrices = new MatrixStack();
 
-        matrices.push();
-        this.renderCircleShapeQuads(cameraPos, builder, matrices);
+//        matrices.push();
+        this.renderCircleShapeQuads(cameraPos, builder);
 
         try
         {
@@ -107,7 +105,7 @@ public class ShapeCircle extends ShapeCircleBase
             MiniHUD.LOGGER.error("ShapeCircle#renderQuads(): Exception; {}", err.getMessage());
         }
 
-        matrices.pop();
+//        matrices.pop();
         profiler.pop();
     }
 
@@ -120,11 +118,11 @@ public class ShapeCircle extends ShapeCircleBase
 
         profiler.push("circle_outlines");
         RenderObjectVbo ctx = this.renderObjects.get(1);
-        BufferBuilder builder = ctx.start(() -> "Circle Outlines", RenderPipelines.LINES, BufferUsage.STATIC_WRITE);
-        MatrixStack matrices = new MatrixStack();
+        BufferBuilder builder = ctx.start(() -> "Circle Outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, BufferUsage.STATIC_WRITE);
+//        MatrixStack matrices = new MatrixStack();
 
-        matrices.push();
-        this.renderCircleShapeOutlines(cameraPos, builder, matrices.peek());
+//        matrices.push();
+        this.renderCircleShapeOutlines(cameraPos, builder);
 
         try
         {
@@ -141,7 +139,7 @@ public class ShapeCircle extends ShapeCircleBase
             MiniHUD.LOGGER.error("ShapeCircle#renderOutlines(): Exception; {}", err.getMessage());
         }
 
-        matrices.pop();
+//        matrices.pop();
         profiler.pop();
     }
 
@@ -163,7 +161,7 @@ public class ShapeCircle extends ShapeCircleBase
         this.setNeedsUpdate();
     }
 
-    protected void renderCircleShapeQuads(Vec3d cameraPos, BufferBuilder builder, MatrixStack matrices)
+    protected void renderCircleShapeQuads(Vec3d cameraPos, BufferBuilder builder)
     {
         LongOpenHashSet positions = new LongOpenHashSet();
         Consumer<BlockPos.Mutable> positionConsumer = this.getPositionCollector(positions);
@@ -190,7 +188,7 @@ public class ShapeCircle extends ShapeCircleBase
                     SphereUtils.buildSphereShellToStrips(positions, axis, test, this.renderType, this.layerRange);
             List<SideQuad> quads = buildStripsToQuadsForCircle(strips, this.mainAxis, this.height);
 
-            RenderUtils.renderQuads(quads, this.color, expand, cameraPos, builder, matrices.peek());
+            RenderUtils.renderQuads(quads, this.color, expand, cameraPos, builder);
         }
         else
         {
@@ -217,11 +215,13 @@ public class ShapeCircle extends ShapeCircleBase
 
             Direction[] sides = this.getSides();
             RenderUtils.renderCircleBlockPositions(positions, sides, test, this.renderType, this.layerRange,
-                                                   this.color, expand, cameraPos, builder, matrices.peek());
+                                                   this.color, expand, cameraPos, builder);
         }
     }
 
-    protected void renderCircleShapeOutlines(Vec3d cameraPos, BufferBuilder builder, MatrixStack.Entry e)
+    protected void renderCircleShapeOutlines(Vec3d cameraPos,
+//                                             BufferBuilder builder, MatrixStack.Entry e)
+                                             BufferBuilder builder)
     {
         LongOpenHashSet positions = new LongOpenHashSet();
         Consumer<BlockPos.Mutable> positionConsumer = this.getPositionCollector(positions);
@@ -248,7 +248,7 @@ public class ShapeCircle extends ShapeCircleBase
                     SphereUtils.buildSphereShellToStrips(positions, axis, test, this.renderType, this.layerRange);
             List<SideQuad> quads = buildStripsToQuadsForCircle(strips, this.mainAxis, this.height);
 
-            RenderUtils.renderQuadLines(quads, this.colorLines, expand, cameraPos, builder, e);
+            RenderUtils.renderQuadLines(quads, this.colorLines, expand, cameraPos, builder);
         }
         else
         {
@@ -275,7 +275,7 @@ public class ShapeCircle extends ShapeCircleBase
 
             Direction[] sides = this.getSides();
             RenderUtils.renderCircleBlockOutlines(positions, sides, test, this.renderType, this.layerRange,
-                                                  this.colorLines, expand, cameraPos, builder, e);
+                                                  this.colorLines, expand, cameraPos, builder);
         }
     }
 

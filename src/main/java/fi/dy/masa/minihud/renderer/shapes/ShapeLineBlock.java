@@ -9,10 +9,8 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 
 import com.mojang.blaze3d.buffers.BufferUsage;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.BuiltBuffer;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
@@ -124,10 +122,10 @@ public class ShapeLineBlock extends ShapeBlocky
         profiler.push("line_block_quads");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
         BufferBuilder builder = ctx.start(() -> "Line Block Quads", this.renderThroughShape ? MaLiLibPipelines.MINIHUD_SHAPE_NO_DEPTH_OFFSET : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET, BufferUsage.STATIC_WRITE);
-        MatrixStack matrices = new MatrixStack();
+//        MatrixStack matrices = new MatrixStack();
 
-        matrices.push();
-        this.renderLineShapeQuads(cameraPos, builder, matrices);
+//        matrices.push();
+        this.renderLineShapeQuads(cameraPos, builder);
 
         try
         {
@@ -150,7 +148,7 @@ public class ShapeLineBlock extends ShapeBlocky
             MiniHUD.LOGGER.error("ShapeLineBlock#renderQuads(): Exception; {}", err.getMessage());
         }
 
-        matrices.pop();
+//        matrices.pop();
         profiler.pop();
     }
 
@@ -163,11 +161,11 @@ public class ShapeLineBlock extends ShapeBlocky
 
         profiler.push("line_block_outlines");
         RenderObjectVbo ctx = this.renderObjects.get(1);
-        BufferBuilder builder = ctx.start(() -> "Line Block Outlines", RenderPipelines.LINES, BufferUsage.STATIC_WRITE);
-        MatrixStack matrices = new MatrixStack();
+        BufferBuilder builder = ctx.start(() -> "Line Block Outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, BufferUsage.STATIC_WRITE);
+//        MatrixStack matrices = new MatrixStack();
 
-        matrices.push();
-        this.renderLineShapeLines(cameraPos, builder, matrices.peek());
+//        matrices.push();
+        this.renderLineShapeLines(cameraPos, builder);
 
         try
         {
@@ -184,7 +182,7 @@ public class ShapeLineBlock extends ShapeBlocky
             MiniHUD.LOGGER.error("ShapeLineBlock#renderOutlines(): Exception; {}", err.getMessage());
         }
 
-        matrices.pop();
+//        matrices.pop();
         profiler.pop();
     }
 
@@ -259,7 +257,7 @@ public class ShapeLineBlock extends ShapeBlocky
         this.setNeedsUpdate();
     }
 
-    protected void renderLineShapeQuads(Vec3d cameraPos, BufferBuilder builder, MatrixStack matrices)
+    protected void renderLineShapeQuads(Vec3d cameraPos, BufferBuilder builder)
     {
         final double maxDist = 30000;
 
@@ -277,15 +275,17 @@ public class ShapeLineBlock extends ShapeBlocky
         if (this.getCombineQuads())
         {
             Long2ObjectOpenHashMap<SideQuad> strips = this.buildPositionsToStrips(positions, this.layerRange);
-            RenderUtils.renderQuads(strips.values(), this.color, expand, cameraPos, builder, matrices.peek());
+            RenderUtils.renderQuads(strips.values(), this.color, expand, cameraPos, builder);
         }
         else
         {
-            RenderUtils.renderBlockPositions(positions, this.layerRange, this.color, expand, cameraPos, builder, matrices.peek());
+            RenderUtils.renderBlockPositions(positions, this.layerRange, this.color, expand, cameraPos, builder);
         }
     }
 
-    protected void renderLineShapeLines(Vec3d cameraPos, BufferBuilder builder, MatrixStack.Entry e)
+    protected void renderLineShapeLines(Vec3d cameraPos,
+//                                        BufferBuilder builder, MatrixStack.Entry e)
+                                        BufferBuilder builder)
     {
         final double maxDist = 30000;
 
@@ -303,11 +303,11 @@ public class ShapeLineBlock extends ShapeBlocky
         if (this.getCombineQuads())
         {
             Long2ObjectOpenHashMap<SideQuad> strips = this.buildPositionsToStrips(positions, this.layerRange);
-            RenderUtils.renderQuadLines(strips.values(), this.colorLines, expand, cameraPos, builder, e);
+            RenderUtils.renderQuadLines(strips.values(), this.colorLines, expand, cameraPos, builder);
         }
         else
         {
-            RenderUtils.renderBlockPositionOutlines(positions, this.layerRange, this.colorLines, expand, cameraPos, builder, e);
+            RenderUtils.renderBlockPositionOutlines(positions, this.layerRange, this.colorLines, expand, cameraPos, builder);
         }
     }
 
