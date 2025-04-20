@@ -1,7 +1,10 @@
 package fi.dy.masa.minihud.renderer;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+import javax.annotation.Nullable;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 
 import com.mojang.blaze3d.buffers.BufferUsage;
@@ -31,6 +34,7 @@ import fi.dy.masa.minihud.util.shape.SphereUtils;
 public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBlockEntity>
 {
     public static final OverlayRendererConduitRange INSTANCE = new OverlayRendererConduitRange();
+//    private final AnsiLogger LOGGER = new AnsiLogger(OverlayRendererConduitRange.class, true, true);
 
     private final ShapeRenderType renderType;
     private final LayerRange layerRange;
@@ -38,9 +42,10 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
     private boolean combineQuads;
     private Color4f colorLines;
 
-    private LongOpenHashSet positions;
-    private SphereUtils.RingPositionTest test;
-    private List<SideQuad> quads;
+    private final List<Entry> conduits;
+//    private final LongOpenHashSet positions;
+//    private SphereUtils.RingPositionTest test;
+//    private List<SideQuad> quads;
 
     public OverlayRendererConduitRange()
     {
@@ -48,9 +53,10 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
         this.quadAxis = Direction.UP.getAxis();
         this.renderType = ShapeRenderType.OUTER_EDGE;
         this.layerRange = new LayerRange(null);
-        this.positions = new LongOpenHashSet();
-        this.test = null;
-        this.quads = null;
+        this.conduits = new ArrayList<>();
+//        this.positions = new LongOpenHashSet();
+//        this.test = null;
+//        this.quads = new ArrayList<>();
     }
 
     @Override
@@ -67,29 +73,68 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
 //    }
 
     @Override
-    protected void renderBlockRange(World world, BlockPos pos, ConduitBlockEntity be, Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
+    protected void updateBlockRange(World world, BlockPos pos, ConduitBlockEntity be, Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
     {
         if (!be.isActive())
         {
             return;
         }
 
-        int range = ((ConduitExtra) be).minihud$getStoredActivatingBlockCount() / 7 * 16;
-
-        this.positions.clear();
-        Consumer<BlockPos.Mutable> positionCollector = (p) -> this.positions.add(p.asLong());
-        this.test = this.getPositionTest(pos, range);
-        SphereUtils.collectSpherePositions(positionCollector, this.test, pos, range);
-
         this.colorLines = Configs.Colors.CONDUIT_RANGE_OUTLINES.getColor();
         this.combineQuads = Configs.Generic.CONDUIT_RANGE_OVERLAY_COMBINE_QUADS.getBooleanValue();
         this.renderThrough = Configs.Generic.CONDUIT_RANGE_OVERLAY_RENDER_THROUGH.getBooleanValue();
-        boolean outlines = Configs.Generic.CONDUIT_RANGE_OVERLAY_RENDER_OUTLINES.getBooleanValue();
+
+//        LOGGER.debug("updateBlockRange(): pos [{}], count [{}]", pos.toShortString(), this.conduits.size());
+        this.addOrReplaceEntry(this.calculateEach(pos,((ConduitExtra) be).minihud$getStoredActivatingBlockCount() / 7 * 16));
+    }
+
+    private Entry calculateEach(BlockPos pos, int range)
+    {
+        Entry entry = new Entry(pos, range);
+
+        Consumer<BlockPos.Mutable> positionCollector = (p) -> entry.addPosition(p.asLong());
+        entry.setTest(this.getPositionTest(pos, entry.range));
+        SphereUtils.collectSpherePositions(positionCollector, entry.getTest(), pos, entry.range);
 
         if (this.combineQuads)
         {
-            this.quads = SphereUtils.buildSphereShellToQuads(this.positions, this.quadAxis, this.test, this.renderType, this.layerRange);
+            entry.setQuads(SphereUtils.buildSphereShellToQuads(entry.getPositions(), this.quadAxis, entry.getTest(), this.renderType, this.layerRange));
         }
+
+        return entry;
+    }
+
+    private void addOrReplaceEntry(Entry entry)
+    {
+        AtomicBoolean replaced = new AtomicBoolean(false);
+
+        this.conduits.forEach(
+                (e) ->
+                {
+                    if (e.pos.compareTo(entry.pos) == 0)
+                    {
+                        e.clear();
+                        e.range = entry.range;
+                        e.positions.addAll(entry.getPositions());
+                        e.setTest(entry.getTest());
+                        e.setQuads(entry.getQuads());
+                        replaced.set(true);
+                    }
+                }
+        );
+
+        if (!replaced.get())
+        {
+            this.conduits.add(entry);
+        }
+    }
+
+    @Override
+    protected void renderBlockRange(World world, Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
+    {
+        boolean outlines = Configs.Generic.CONDUIT_RANGE_OVERLAY_RENDER_OUTLINES.getBooleanValue();
+
+//        LOGGER.debug("renderBlockRange(): count [{}]", this.conduits.size());
 
         this.allocateBuffers(outlines);
         this.renderQuads(cameraPos, mc, profiler);
@@ -98,6 +143,15 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
         {
             this.renderOutlines(cameraPos, mc, profiler);
         }
+    }
+
+    @Override
+    protected void resetBlockRange()
+    {
+//        this.positions.clear();
+//        this.quads.clear();
+        this.conduits.forEach(Entry::clear);
+        this.conduits.clear();
     }
 
     private void renderQuads(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
@@ -117,17 +171,24 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
 //
 //        matrices.push();
 
-        if (this.combineQuads)
-        {
-            RenderUtils.renderQuads(this.quads, color, 0, cameraPos, builder);
-        }
-        else
-        {
-            RenderUtils.renderCircleBlockPositions(this.positions, PositionUtils.ALL_DIRECTIONS,
-                                                   this.test, this.renderType,
-                                                   this.layerRange, color, 0,
-                                                   cameraPos, builder);
-        }
+        this.conduits.forEach(
+                (entry) ->
+                {
+//                    LOGGER.debug("renderQuads(): pos [{}], count [{}]", entry.pos.toShortString(), this.conduits.size());
+
+                    if (this.combineQuads)
+                    {
+                        RenderUtils.renderQuads(entry.getQuads(), color, 0, cameraPos, builder);
+                    }
+                    else
+                    {
+                        RenderUtils.renderCircleBlockPositions(entry.getPositions(), PositionUtils.ALL_DIRECTIONS,
+                                                               entry.getTest(), this.renderType,
+                                                               this.layerRange, color, 0,
+                                                               cameraPos, builder);
+                    }
+                }
+        );
 
         try
         {
@@ -169,17 +230,24 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
 
 //        matrices.push();
 
-        if (this.combineQuads)
-        {
-            RenderUtils.renderQuadLines(this.quads, this.colorLines, 0, cameraPos, builder);
-        }
-        else
-        {
-            RenderUtils.renderCircleBlockOutlines(this.positions, PositionUtils.ALL_DIRECTIONS,
-                                                  this.test, this.renderType,
-                                                  this.layerRange, this.colorLines, 0,
-                                                  cameraPos, builder);
-        }
+        this.conduits.forEach(
+                (entry) ->
+                {
+//                    LOGGER.debug("renderOutlines(): pos [{}], count [{}]", entry.pos.toShortString(), this.conduits.size());
+
+                    if (this.combineQuads)
+                    {
+                        RenderUtils.renderQuadLines(entry.getQuads(), this.colorLines, 0, cameraPos, builder);
+                    }
+                    else
+                    {
+                        RenderUtils.renderCircleBlockOutlines(entry.getPositions(), PositionUtils.ALL_DIRECTIONS,
+                                                              entry.getTest(), this.renderType,
+                                                              this.layerRange, this.colorLines, 0,
+                                                              cameraPos, builder);
+                    }
+                }
+        );
 
         try
         {
@@ -205,9 +273,13 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
     public void reset()
     {
         super.reset();
-        this.positions = new LongOpenHashSet();
-        this.test = null;
-        this.quads = null;
+        this.conduits.forEach(Entry::clear);
+        this.conduits.clear();
+
+//        this.positions.clear();
+//        this.positions = new LongOpenHashSet();
+//        this.quads.clear();
+//        this.test = null;
     }
 
     protected SphereUtils.RingPositionTest getPositionTest(BlockPos centerPos, int range)
@@ -217,5 +289,63 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
 
         return (x, y, z, dir) -> SphereUtils.isPositionInsideOrClosestToRadiusOnBlockRing(
                 x, y, z, center, squareRange, Direction.EAST);
+    }
+
+    public static class Entry
+    {
+        BlockPos pos;
+        int range;
+
+        private final LongOpenHashSet positions;
+        @Nullable private SphereUtils.RingPositionTest test;
+        private final List<SideQuad> quads;
+
+        Entry(BlockPos pos, int range)
+        {
+            this.pos = pos;
+            this.range = range;
+            this.positions = new LongOpenHashSet();
+            this.test = null;
+            this.quads = new ArrayList<>();
+        }
+
+        public void addPosition(long pos)
+        {
+            this.positions.add(pos);
+        }
+
+        public LongOpenHashSet getPositions()
+        {
+            return this.positions;
+        }
+
+        public void setTest(@Nullable SphereUtils.RingPositionTest test)
+        {
+            this.test = test;
+        }
+
+        @Nullable
+        public SphereUtils.RingPositionTest getTest()
+        {
+            return this.test;
+        }
+
+        public void setQuads(List<SideQuad> quads)
+        {
+            this.quads.clear();
+            this.quads.addAll(quads);
+        }
+
+        public List<SideQuad> getQuads()
+        {
+            return this.quads;
+        }
+
+        public void clear()
+        {
+            this.positions.clear();
+            this.quads.clear();
+            this.test = null;
+        }
     }
 }

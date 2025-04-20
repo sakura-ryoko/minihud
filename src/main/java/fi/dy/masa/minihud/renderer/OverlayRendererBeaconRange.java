@@ -1,12 +1,13 @@
 package fi.dy.masa.minihud.renderer;
 
+import java.util.HashMap;
+
 import com.mojang.blaze3d.buffers.BufferUsage;
 import net.minecraft.block.entity.BeaconBlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.BuiltBuffer;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.profiler.Profiler;
@@ -22,11 +23,14 @@ import fi.dy.masa.minihud.mixin.block.IMixinBeaconBlockEntity;
 public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBlockEntity>
 {
     public static final OverlayRendererBeaconRange INSTANCE = new OverlayRendererBeaconRange();
+//    private final AnsiLogger LOGGER = new AnsiLogger(OverlayRendererBeaconRange.class, true, true);
+    private final HashMap<BlockPos, Integer> positions;
 
     public OverlayRendererBeaconRange()
     {
         super(RendererToggle.OVERLAY_BEACON_RANGE, BlockEntityType.BEACON, BeaconBlockEntity.class);
         this.useCulling = false;
+        this.positions = new HashMap<>();
     }
 
     @Override
@@ -36,47 +40,71 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
     }
 
     @Override
-    protected void renderBlockRange(World world, BlockPos pos, BeaconBlockEntity be, Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
+    protected void updateBlockRange(World world, BlockPos pos, BeaconBlockEntity be, Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
     {
         int level = ((IMixinBeaconBlockEntity) be).minihud_getLevel();
 
-        this.renderThrough = false;
-
         if (level >= 1 && level <= 4)
         {
-            this.allocateBuffers(true);
-            this.renderQuads(world, pos, level, cameraPos, getColorForLevel(level), mc, profiler);
-            this.renderOutlines(world, pos, level, cameraPos, getColorForLevel(level), mc, profiler);
+            this.positions.put(pos, level);
         }
     }
 
-    private void renderQuads(World world, BlockPos pos, int level, Vec3d cameraPos, Color4f color, MinecraftClient mc, Profiler profiler)
+    @Override
+    protected void renderBlockRange(World world, Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
+    {
+        this.renderThrough = false;
+
+        if (!this.positions.isEmpty())
+        {
+            this.allocateBuffers(true);
+            this.renderQuads(world, cameraPos, mc, profiler);
+            this.renderOutlines(world, cameraPos, mc, profiler);
+        }
+    }
+
+    @Override
+    protected void resetBlockRange()
+    {
+        this.positions.clear();
+    }
+
+    private void renderQuads(World world, Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
     {
         if (mc.world == null || mc.player == null)
         {
             return;
         }
 
-        double x = pos.getX() - cameraPos.x;
-        double y = pos.getY() - cameraPos.y;
-        double z = pos.getZ() - cameraPos.z;
-
-        int range = level * 10 + 10;
-        double minX = x - range;
-        double minY = y - range;
-        double minZ = z - range;
-        double maxX = x + range + 1;
-        double maxY = this.getTopYOverTerrain(world, pos, range);
-        double maxZ = z + range + 1;
+        final double camX = cameraPos.x;
+        final double camY = cameraPos.y;
+        final double camZ = cameraPos.z;
 
         profiler.push("beacon_quads");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
         BufferBuilder builder = ctx.start(() -> "Beacon Quads", this.renderThrough ? MaLiLibPipelines.POSITION_COLOR_MASA_NO_DEPTH_NO_CULL : MaLiLibPipelines.POSITION_COLOR_MASA_LEQUAL_DEPTH_OFFSET_1, BufferUsage.STATIC_WRITE);
-        MatrixStack matrices = new MatrixStack();
+//        MatrixStack matrices = new MatrixStack();
 
-        matrices.push();
+//        matrices.push();
 
-        fi.dy.masa.malilib.render.RenderUtils.drawBoxAllSidesBatchedQuads((float) minX, (float) minY, (float) minZ, (float) maxX, (float) maxY, (float) maxZ, color, builder);
+        this.positions.forEach(
+                (pos, level) ->
+        {
+            final double x = pos.getX() - camX;
+            final double y = pos.getY() - camY;
+            final double z = pos.getZ() - camZ;
+
+            final Color4f color = getColorForLevel(level);
+            final int range = level * 10 + 10;
+            final double minX = x - range;
+            final double minY = y - range;
+            final double minZ = z - range;
+            final double maxX = x + range + 1;
+            final double maxY = this.getTopYOverTerrain(world, pos, range);
+            final double maxZ = z + range + 1;
+
+            fi.dy.masa.malilib.render.RenderUtils.drawBoxAllSidesBatchedQuads((float) minX, (float) minY, (float) minZ, (float) maxX, (float) maxY, (float) maxZ, color, builder);
+        });
 
         try
         {
@@ -99,28 +127,20 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
             MiniHUD.LOGGER.error("OverlayRendererBeaconRange#renderQuads(): Exception; {}", err.getMessage());
         }
 
-        matrices.pop();
+//        matrices.pop();
         profiler.pop();
     }
 
-    private void renderOutlines(World world, BlockPos pos, int level, Vec3d cameraPos, Color4f color, MinecraftClient mc, Profiler profiler)
+    private void renderOutlines(World world, Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
     {
         if (mc.world == null || mc.player == null)
         {
             return;
         }
 
-        double x = pos.getX() - cameraPos.x;
-        double y = pos.getY() - cameraPos.y;
-        double z = pos.getZ() - cameraPos.z;
-
-        int range = level * 10 + 10;
-        double minX = x - range;
-        double minY = y - range;
-        double minZ = z - range;
-        double maxX = x + range + 1;
-        double maxY = this.getTopYOverTerrain(world, pos, range);
-        double maxZ = z + range + 1;
+        final double camX = cameraPos.x;
+        final double camY = cameraPos.y;
+        final double camZ = cameraPos.z;
 
         profiler.push("beacon_outlines");
         RenderObjectVbo ctx = this.renderObjects.get(1);
@@ -130,7 +150,24 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
 //        matrices.push();
 //        MatrixStack.Entry e = matrices.peek();
 
-        fi.dy.masa.malilib.render.RenderUtils.drawBoxAllEdgesBatchedLines((float) minX, (float) minY, (float) minZ, (float) maxX, (float) maxY, (float) maxZ, Color4f.fromColor(color.intValue, 1f), builder);
+        this.positions.forEach(
+                (pos, level) ->
+        {
+            final double x = pos.getX() - camX;
+            final double y = pos.getY() - camY;
+            final double z = pos.getZ() - camZ;
+
+            final Color4f color = getColorForLevel(level);
+            final int range = level * 10 + 10;
+            final double minX = x - range;
+            final double minY = y - range;
+            final double minZ = z - range;
+            final double maxX = x + range + 1;
+            final double maxY = this.getTopYOverTerrain(world, pos, range);
+            final double maxZ = z + range + 1;
+
+            fi.dy.masa.malilib.render.RenderUtils.drawBoxAllEdgesBatchedLines((float) minX, (float) minY, (float) minZ, (float) maxX, (float) maxY, (float) maxZ, Color4f.fromColor(color.intValue, 1f), builder);
+        });
 
         try
         {
