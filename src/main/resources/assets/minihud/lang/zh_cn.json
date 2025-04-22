@@ -756,9 +756,9 @@
     "minihud.gui.button.shape_entry.enabled": "启用：%s",
     "minihud.gui.button.shape_renderer.spawn_sphere.toggle_use_quadrants": "使用角落象限：%s",
     "minihud.gui.button.shape_renderer.toggle_combine_quads": "合并四边形：%s",
+    "minihud.gui.button.shape_renderer_toggle": "形状渲染器：%s",
     "minihud.gui.button.shape_renderer.toggle_render_lines": "边界线渲染：%s",
     "minihud.gui.button.shape_renderer.toggle_render_through": "透视渲染：%s",
-    "minihud.gui.button.shape_renderer_toggle": "形状渲染器：%s",
     "minihud.gui.hover.shape.block_snap": "§7方块对齐：§b%s",
     "minihud.gui.hover.shape.box.box_side": "§7渲染方块的%s面",
     "minihud.gui.hover.shape.center_value": "§7中心坐标：x: §9%s§7, y: §9%s§7, z: §9%s",
@@ -770,10 +770,10 @@
     "minihud.gui.hover.shape.type_value": "§7类型：§b%s",
     "minihud.gui.label.center_colon": "中心：",
     "minihud.gui.label.color": "颜色：",
+    "minihud.gui.label.outlines_color": "边界线颜色：",
     "minihud.gui.label.display_name_colon": "显示名称：",
     "minihud.gui.label.height_colon": "高度：",
     "minihud.gui.label.margin_colon": "边距：",
-    "minihud.gui.label.outlines_color": "边界线颜色：",
     "minihud.gui.label.radius_colon": "半径：",
     "minihud.gui.label.shape.block_snap": "方块对齐：%s",
     "minihud.gui.label.shape.box.corner_1": "角点1",
@@ -1011,5 +1011,6 @@
     "minihud.message.toggled_using_center_position": "已切换 %s %s，使用中心坐标 %s",
     "minihud.message.toggled_using_player_spawn": "已切换 %s %s，模拟距离 %s",
     "minihud.message.toggled_using_position": "已切换 %s %s，使用坐标 %s",
-    "minihud.message.toggled_using_world_spawn": "已切换 %s %s，世界出生点 %s"
+    "minihud.message.toggled_using_world_spawn": "已切换 %s %s，世界出生点 %s",
+    "modmenu.descriptionTranslation.minihud": "Configurable \"mini-F3\" info lines, and various overlay renderers"
 }

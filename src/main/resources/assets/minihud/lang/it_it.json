@@ -1011,5 +1011,6 @@
     "minihud.message.toggled_using_center_position": "Toggled %s %s, using the center position %s",
     "minihud.message.toggled_using_player_spawn": "Toggled %s %s, Simulation distance %s",
     "minihud.message.toggled_using_position": "Toggled %s %s, using the position %s",
-    "minihud.message.toggled_using_world_spawn": "Toggled %s %s, World spawn %s"
+    "minihud.message.toggled_using_world_spawn": "Toggled %s %s, World spawn %s",
+    "modmenu.descriptionTranslation.minihud": "Configurable \"mini-F3\" info lines, and various overlay renderers"
 }
