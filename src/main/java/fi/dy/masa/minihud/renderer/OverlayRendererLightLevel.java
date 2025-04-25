@@ -235,18 +235,18 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
 
         RenderObjectVbo ctx = this.renderObjects.get(1);
         BufferBuilder builder = ctx.start(() -> "Light Level Lines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, BufferUsage.STATIC_WRITE);
-        MatrixStack matrices = new MatrixStack();
+//        MatrixStack matrices = new MatrixStack();
 
-        matrices.push();
-        MatrixStack.Entry e = matrices.peek();
+//        matrices.push();
+//        MatrixStack.Entry e = matrices.peek();
 
         if (markerMode == LightLevelMarkerMode.SQUARE)
         {
-            this.renderMarkers(this::renderLightLevelSquare, cameraPos, safeThreshold, dimThreshold, builder, e);
+            this.renderMarkers(this::renderLightLevelSquare, cameraPos, safeThreshold, dimThreshold, builder);
         }
         else if (markerMode == LightLevelMarkerMode.CROSS)
         {
-            this.renderMarkers(this::renderLightLevelCross, cameraPos, safeThreshold, dimThreshold, builder, e);
+            this.renderMarkers(this::renderLightLevelCross, cameraPos, safeThreshold, dimThreshold, builder);
         }
 
         try
@@ -264,7 +264,7 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
             MiniHUD.LOGGER.error("OverlayRendererLightLevel#renderOutlines(): Exception; {}", err.getMessage());
         }
 
-        matrices.pop();
+//        matrices.pop();
         profiler.pop();
     }
 
@@ -329,8 +329,8 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
                                Vec3d cameraPos,
                                int safeThreshold,
                                int dimThreshold,
-                               BufferBuilder buffer,
-                               MatrixStack.Entry e)
+                               BufferBuilder buffer)
+//                               MatrixStack.Entry e)
     {
         Color4f colorBlockLit = Configs.Colors.LIGHT_LEVEL_MARKER_BLOCK_LIT.getColor();
         Color4f colorDim = Configs.Colors.LIGHT_LEVEL_MARKER_DIM.getColor();
@@ -368,7 +368,7 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
                     color = colorDim;
                 }
 
-                renderer.render((float) x, (float) y, (float) z, color, (float) offset1, (float) offset2, buffer, e);
+                renderer.render((float) x, (float) y, (float) z, color, (float) offset1, (float) offset2, buffer);
             }
         }
     }
@@ -459,32 +459,50 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
         }
     }
 
-    private void renderLightLevelCross(float x, float y, float z, Color4f color, float offset1, float offset2, BufferBuilder buffer, MatrixStack.Entry e)
+    private void renderLightLevelCross(float x, float y, float z, Color4f color, float offset1, float offset2, BufferBuilder buffer)
     {
         y += 0.005F;
 
-        buffer.vertex(e, x + offset1, y, z + offset1).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
-        buffer.vertex(e, x + offset2, y, z + offset2).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
+//        buffer.vertex(e, x + offset1, y, z + offset1).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
+//        buffer.vertex(e, x + offset2, y, z + offset2).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
+//
+//        buffer.vertex(e, x + offset1, y, z + offset2).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
+//        buffer.vertex(e, x + offset2, y, z + offset1).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
 
-        buffer.vertex(e, x + offset1, y, z + offset2).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
-        buffer.vertex(e, x + offset2, y, z + offset1).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
+        buffer.vertex(x + offset1, y, z + offset1).color(color.r, color.g, color.b, color.a);
+        buffer.vertex(x + offset2, y, z + offset2).color(color.r, color.g, color.b, color.a);
+
+        buffer.vertex(x + offset1, y, z + offset2).color(color.r, color.g, color.b, color.a);
+        buffer.vertex(x + offset2, y, z + offset1).color(color.r, color.g, color.b, color.a);
     }
 
-    private void renderLightLevelSquare(float x, float y, float z, Color4f color, float offset1, float offset2, BufferBuilder buffer, MatrixStack.Entry e)
+    private void renderLightLevelSquare(float x, float y, float z, Color4f color, float offset1, float offset2, BufferBuilder buffer)
     {
         y += 0.005F;
 
-        buffer.vertex(e, x + offset1, y, z + offset1).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
-        buffer.vertex(e, x + offset1, y, z + offset2).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
+//        buffer.vertex(e, x + offset1, y, z + offset1).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
+//        buffer.vertex(e, x + offset1, y, z + offset2).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
+//
+//        buffer.vertex(e, x + offset1, y, z + offset2).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
+//        buffer.vertex(e, x + offset2, y, z + offset2).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
+//
+//        buffer.vertex(e, x + offset2, y, z + offset2).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
+//        buffer.vertex(e, x + offset2, y, z + offset1).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
+//
+//        buffer.vertex(e, x + offset2, y, z + offset1).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
+//        buffer.vertex(e, x + offset1, y, z + offset1).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
 
-        buffer.vertex(e, x + offset1, y, z + offset2).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
-        buffer.vertex(e, x + offset2, y, z + offset2).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
+        buffer.vertex(x + offset1, y, z + offset1).color(color.r, color.g, color.b, color.a);
+        buffer.vertex(x + offset1, y, z + offset2).color(color.r, color.g, color.b, color.a);
 
-        buffer.vertex(e, x + offset2, y, z + offset2).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
-        buffer.vertex(e, x + offset2, y, z + offset1).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
+        buffer.vertex(x + offset1, y, z + offset2).color(color.r, color.g, color.b, color.a);
+        buffer.vertex(x + offset2, y, z + offset2).color(color.r, color.g, color.b, color.a);
 
-        buffer.vertex(e, x + offset2, y, z + offset1).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
-        buffer.vertex(e, x + offset1, y, z + offset1).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
+        buffer.vertex(x + offset2, y, z + offset2).color(color.r, color.g, color.b, color.a);
+        buffer.vertex(x + offset2, y, z + offset1).color(color.r, color.g, color.b, color.a);
+
+        buffer.vertex(x + offset2, y, z + offset1).color(color.r, color.g, color.b, color.a);
+        buffer.vertex(x + offset1, y, z + offset1).color(color.r, color.g, color.b, color.a);
     }
 
     private boolean updateLightLevels(World world, BlockPos center)
@@ -673,6 +691,6 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
 
     private interface IMarkerRenderer
     {
-        void render(float x, float y, float z, Color4f color, float offset1, float offset2, BufferBuilder buffer, MatrixStack.Entry e);
+        void render(float x, float y, float z, Color4f color, float offset1, float offset2, BufferBuilder buffer);
     }
 }
