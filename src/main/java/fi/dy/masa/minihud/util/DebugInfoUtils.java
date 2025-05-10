@@ -168,9 +168,8 @@ public class DebugInfoUtils
             if (enabled != RendererToggle.DEBUG_CHUNK_BORDER.getBooleanValue())
             {
                 enabled = MinecraftClient.getInstance().debugRenderer.toggleShowChunkBorder();
+                debugWarn(enabled ? "debug.chunk_boundaries.on" : "debug.chunk_boundaries.off");
             }
-
-            debugWarn(enabled ? "debug.chunk_boundaries.on" : "debug.chunk_boundaries.off");
         }
         else if (config == RendererToggle.DEBUG_CHUNK_INFO)
         {
