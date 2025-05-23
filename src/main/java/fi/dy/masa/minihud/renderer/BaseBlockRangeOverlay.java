@@ -17,7 +17,6 @@ import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.WorldChunk;
 
 import fi.dy.masa.malilib.config.IConfigBoolean;
-import fi.dy.masa.malilib.util.WorldUtils;
 
 public abstract class BaseBlockRangeOverlay<T extends BlockEntity> extends OverlayRendererBase
 {
@@ -204,36 +203,6 @@ public abstract class BaseBlockRangeOverlay<T extends BlockEntity> extends Overl
         }
 
         profiler.pop();
-    }
-
-    protected int getTopYOverTerrain(World world, BlockPos pos, int range)
-    {
-        final int minX = pos.getX() - range;
-        final int minZ = pos.getZ() - range;
-        final int maxX = pos.getX() + range;
-        final int maxZ = pos.getZ() + range;
-
-        final int minCX = minX >> 4;
-        final int minCZ = minZ >> 4;
-        final int maxCX = maxX >> 4;
-        final int maxCZ = maxZ >> 4;
-        int maxY = 0;
-
-        for (int cz = minCZ; cz <= maxCZ; ++cz)
-        {
-            for (int cx = minCX; cx <= maxCX; ++cx)
-            {
-                WorldChunk chunk = world.getChunk(cx, cz);
-                int height = WorldUtils.getHighestSectionYOffset(chunk) + 15;
-
-                if (height > maxY)
-                {
-                    maxY = height;
-                }
-            }
-        }
-
-        return maxY + 4;
     }
 
     protected abstract void updateBlockRange(World world, BlockPos pos, T be, Vec3d cameraPos, MinecraftClient mc, Profiler profiler);

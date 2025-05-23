@@ -8,6 +8,8 @@ import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.BuiltBuffer;
+import net.minecraft.entity.effect.StatusEffect;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.profiler.Profiler;
@@ -42,11 +44,16 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
     @Override
     protected void updateBlockRange(World world, BlockPos pos, BeaconBlockEntity be, Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
     {
-        int level = ((IMixinBeaconBlockEntity) be).minihud_getLevel();
+        RegistryEntry<StatusEffect> primary = ((IMixinBeaconBlockEntity) be).minihud_getPrimary();
+        final int level = ((IMixinBeaconBlockEntity) be).minihud_getLevel();
 
-        if (level >= 1 && level <= 4)
+        if (level >= 1 && level <= 4 && primary != null)
         {
             this.positions.put(pos, level);
+        }
+        else
+        {
+            this.positions.remove(pos);
         }
     }
 

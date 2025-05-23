@@ -12,6 +12,7 @@ import net.minecraft.item.Item;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.profiler.Profiler;
+import net.minecraft.world.World;
 
 import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.data.Color4f;
@@ -23,7 +24,8 @@ public class OverlayRendererHandheldBeaconRange extends OverlayRendererBase
     public static final OverlayRendererHandheldBeaconRange INSTANCE = new OverlayRendererHandheldBeaconRange();
 
     private boolean needsUpdate;
-    protected int updateDistance = 48;
+    protected int updateDistance = 2;
+    // How often it updates in BlockPos changes
 
     private int level;
     private Box box;
@@ -77,7 +79,7 @@ public class OverlayRendererHandheldBeaconRange extends OverlayRendererBase
     {
         if (RendererToggle.OVERLAY_BEACON_RANGE.getBooleanValue())
         {
-            this.calculateBeaconBoxForPlayer(entity, mc);
+            this.calculateBeaconBoxForPlayer(entity.getEntityWorld(), entity, mc);
 
             if (this.hasData())
             {
@@ -188,7 +190,7 @@ public class OverlayRendererHandheldBeaconRange extends OverlayRendererBase
         this.hasData = false;
     }
 
-    private void calculateBeaconBoxForPlayer(Entity entity, MinecraftClient mc)
+    private void calculateBeaconBoxForPlayer(World world, Entity entity, MinecraftClient mc)
     {
         if (mc.player == null) return;
         Vec3d cameraPos = mc.gameRenderer.getCamera().getPos();
@@ -203,7 +205,7 @@ public class OverlayRendererHandheldBeaconRange extends OverlayRendererBase
         float minY = (float) (y - range);
         float minZ = (float) (z - range);
         float maxX = (float) (x + range + 1);
-        float maxY = (float) (y + 4);
+        float maxY = (float) (y + range + 24);  // the getYTop doesn't seem to work here
         float maxZ = (float) (z + range + 1);
 
         this.box = new Box(minX, minY, minZ, maxX, maxY, maxZ);

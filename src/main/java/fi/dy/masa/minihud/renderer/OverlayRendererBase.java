@@ -9,8 +9,11 @@ import com.mojang.blaze3d.buffers.BufferUsage;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
+import net.minecraft.world.chunk.WorldChunk;
 
 import fi.dy.masa.malilib.render.MaLiLibPipelines;
+import fi.dy.masa.malilib.util.WorldUtils;
 
 public abstract class OverlayRendererBase implements IOverlayRenderer
 {
@@ -103,6 +106,36 @@ public abstract class OverlayRendererBase implements IOverlayRenderer
 //            RenderUtils.culling(false);
 //        }
 //    }
+
+    protected int getTopYOverTerrain(World world, BlockPos pos, int range)
+    {
+        final int minX = pos.getX() - range;
+        final int minZ = pos.getZ() - range;
+        final int maxX = pos.getX() + range;
+        final int maxZ = pos.getZ() + range;
+
+        final int minCX = minX >> 4;
+        final int minCZ = minZ >> 4;
+        final int maxCX = maxX >> 4;
+        final int maxCZ = maxZ >> 4;
+        int maxY = 0;
+
+        for (int cz = minCZ; cz <= maxCZ; ++cz)
+        {
+            for (int cx = minCX; cx <= maxCX; ++cx)
+            {
+                WorldChunk chunk = world.getChunk(cx, cz);
+                int height = WorldUtils.getHighestSectionYOffset(chunk) + 15;
+
+                if (height > maxY)
+                {
+                    maxY = height;
+                }
+            }
+        }
+
+        return maxY + 4;
+    }
 
     @Override
     public void draw(Vec3d cameraPos)
