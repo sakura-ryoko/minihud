@@ -99,7 +99,7 @@
     "minihud.config.generic.comment.conduitRangeOverlayThrough": "전달체 오버레이 렌더러에 \"렌더 투시\" 모드를 사용합니다.",
     "minihud.config.generic.comment.coordinateFormat": "좌표 정보 라인의 형식 문자열입니다.\n세 개의 %%f 형식 문자열이 필요합니다!\n기본값: x: %%.1f y: %%.1f z: %%.1f",
     "minihud.config.generic.comment.customModelTooltips": "사용자 지정 모델 데이터의 첫 번째 항목을 추가합니다.",
-    "minihud.config.generic.comment.dateFormatMinecraft": "마인크래프트 날짜에 대한 형식 문자열입니다.\n지원되는 자리 표시자는 다음과 같습니다: {DAY_1}, {DAY}, {HOUR}, {MIN}, {SEC}, {MOON}.\n{DAY_1}은 1부터 시작하고, {DAY}는 0부터 시작합니다.",
+    "minihud.config.generic.comment.dateFormatMinecraft": "마인크래프트 날짜에 대한 형식 문자열입니다.\n지원되는 자리 표시자는 다음과 같습니다: {DAY_1}, {DAY}, {HOUR}, {MIN}, {SEC}, {MINIRL}, {SECIRL}, {MOON}.\n{DAY_1}은 1부터 시작하고, {DAY}는 0부터 시작합니다.",
     "minihud.config.generic.comment.dateFormatString": "실제 시간을 위한 문자열 형식입니다. 필요한 경우 형식 패턴에\n대한 자바 DateTimeFormatter 클래스 구문을 참조하세요.",
     "minihud.config.generic.comment.dateFormatType": "선택된 형식 지정자 옵션을 사용하는 실제 시간 형식:\n레귤러 (§6기본값§r): '§a2025-02-02_13.55.44§r' (§eyyyy-MM-dd_HH.mm.ss§r)\nISO 로컬: '§a2025-02-02T13:55:44.0939044§r' (§eyyyy-MM-ddTHH:mm:ss.n§r)\nISO 오프셋: '§a2025-02-02T13:55:44.0939044-05:00§r' (§eyyyy-MM-ddTHH:mm:ss.nZ§r)\nRFC1123: '§aSun, 2 Feb 2025 13:55:44 -0500§r' (§eEEE, dd MMM yyyy HH:mm:ss +HHMM§r)\n지정 형식: 이 옵션은 \"§b데이터 형식 문자열§r\"을 입력값으로 사용합니다.",
     "minihud.config.generic.comment.debugDevelopmentMode": "바닐라 개발 모드 토글을 활성화합니다.",
