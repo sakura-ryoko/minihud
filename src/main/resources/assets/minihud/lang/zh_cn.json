@@ -99,7 +99,7 @@
     "minihud.config.generic.comment.conduitRangeOverlayThrough": "使用\"Render Through(透视渲染)\"模式来渲染潮涌核心的范围",
     "minihud.config.generic.comment.coordinateFormat": "坐标信息行格式字符串\n需包含三个%%f占位符\n默认：“x: %%.1f y: %%.1f z: %%.1f”",
     "minihud.config.generic.comment.customModelTooltips": "添加任何自定义模型数据的首个条目",
-    "minihud.config.generic.comment.dateFormatMinecraft": "游戏内时间格式字符串\n可用占位符：{DAY_1}, {DAY}, {HOUR}, {MIN}, {SEC}, {MOON}\n{DAY_1}从1开始计数，{DAY}从0开始",
+    "minihud.config.generic.comment.dateFormatMinecraft": "游戏内时间格式字符串\n可用占位符：{DAY_1}, {DAY}, {HOUR}, {MIN}, {SEC}, {MINIRL}, {SECIRL}, {MOON}\n{DAY_1}从1开始计数，{DAY}从0开始",
     "minihud.config.generic.comment.dateFormatString": "实时格式字符串，请参考Java DateTimeFormatter\n类的格式模式语法（如有需要）",
     "minihud.config.generic.comment.dateFormatType": "使用选定格式选项格式化实时时间：\n常规（§6默认§r）：'§a2025-02-02_13.55.44§r'（§eyyyy-MM-dd_HH.mm.ss§r）\nISO本地：'§a2025-02-02T13:55:44.0939044§r'（§eyyyy-MM-ddTHH:mm:ss.n§r）\nISO偏移：'§a2025-02-02T13:55:44.0939044-05:00§r'（§eyyyy-MM-ddTHH:mm:ss.nZ§r）\nRFC1123：'§aSun, 2 Feb 2025 13:55:44 -0500§r'（§eEEE, dd MMM yyyy HH:mm:ss +HHMM§r）\n自定义格式：使用「§b日期格式字符串§r」作为输入",
     "minihud.config.generic.comment.debugDevelopmentMode": "启用原版开发者模式开关",
