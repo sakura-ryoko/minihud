@@ -497,6 +497,8 @@ public class RenderHandler implements IRenderer
                 int hour = (int) ((dayTicks / 1000) + 6) % 24;
                 int min = (int) (dayTicks / 16.666666) % 60;
                 int sec = (int) (dayTicks / 0.277777) % 60;
+                int minIrl = (int) (dayTicks / 1200) % 20;
+                int secIrl = (int) (dayTicks / 20) % 60;
                 // Moonphase has 8 different states in MC
                 int moonNumber = (int) day % 8;
                 String moon;
@@ -515,6 +517,8 @@ public class RenderHandler implements IRenderer
                 str = str.replace("{HOUR}", String.format("%02d", hour));
                 str = str.replace("{MIN}",  String.format("%02d", min));
                 str = str.replace("{SEC}",  String.format("%02d", sec));
+                str = str.replace("{MINIRL}", String.format("%02d", minIrl));
+                str = str.replace("{SECIRL}", String.format("%02d", secIrl));
                 str = str.replace("{MOON}",  String.format("%s", moon));
 
                 this.addLine(str);
