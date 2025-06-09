@@ -40,7 +40,10 @@ public abstract class MixinBeaconBlockEntity extends BlockEntity
     {
         if (((MixinBeaconBlockEntity) (Object) blockEntity).levelPre != -1)
         {
-            ((MixinBeaconBlockEntity) (Object) blockEntity).levelPre = ((MixinBeaconBlockEntity) (Object) blockEntity).level;
+            if (((MixinBeaconBlockEntity) (Object) blockEntity).levelPre != ((MixinBeaconBlockEntity) (Object) blockEntity).level)
+            {
+                ((MixinBeaconBlockEntity) (Object) blockEntity).levelPre = ((MixinBeaconBlockEntity) (Object) blockEntity).level;
+            }
         }
     }
 

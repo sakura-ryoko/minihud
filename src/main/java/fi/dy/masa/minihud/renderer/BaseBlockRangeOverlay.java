@@ -147,7 +147,7 @@ public abstract class BaseBlockRangeOverlay<T extends BlockEntity> extends Overl
         {
             for (int cx = centerCX - chunkRadius; cx <= centerCX + chunkRadius; ++cx)
             {
-                WorldChunk chunk = chunkManager.getChunk(cx, cz, ChunkStatus.SURFACE, false);
+                WorldChunk chunk = chunkManager.getChunk(cx, cz, ChunkStatus.FULL, false);
 
                 if (chunk != null)
                 {

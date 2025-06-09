@@ -46,4 +46,9 @@ public class OverlayRenderer
 
         RenderContainer.INSTANCE.render(entity, posMatrix, projMatrix, mc, camera, frustum, fog, profiler);
     }
+
+    public static void reset()
+    {
+        RenderContainer.INSTANCE.reset();
+    }
 }

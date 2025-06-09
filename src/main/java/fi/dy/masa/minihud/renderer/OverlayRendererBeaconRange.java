@@ -1,9 +1,11 @@
 package fi.dy.masa.minihud.renderer;
 
 import java.util.HashMap;
+import java.util.List;
 
 import com.mojang.blaze3d.buffers.BufferUsage;
 import net.minecraft.block.entity.BeaconBlockEntity;
+import net.minecraft.block.entity.BeamEmitter;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.BufferBuilder;
@@ -44,10 +46,21 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
     @Override
     protected void updateBlockRange(World world, BlockPos pos, BeaconBlockEntity be, Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
     {
+        List<BeamEmitter.BeamSegment> segments = ((IMixinBeaconBlockEntity) be).minihud_getBeamEmitter();
         RegistryEntry<StatusEffect> primary = ((IMixinBeaconBlockEntity) be).minihud_getPrimary();
         final int level = ((IMixinBeaconBlockEntity) be).minihud_getLevel();
 
-        if (level >= 1 && level <= 4 && primary != null)
+//        System.out.printf("beacon - pos [%s], level [%d], pri [%s], sec [%s], segment count: [%d]\n", pos, level,
+//                          primary != null ? primary.value().getName().getString() : "<NULL>",
+//                          secondary != null ? secondary.value().getName().getString() : "<NULL>",
+//                          segments.size()
+//        );
+
+        if (segments.isEmpty() || level == 0)
+        {
+            this.positions.remove(pos);
+        }
+        else if (level >= 1 && level <= 4 && primary != null)
         {
             this.positions.put(pos, level);
         }
@@ -67,6 +80,10 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
             this.allocateBuffers(true);
             this.renderQuads(world, cameraPos, mc, profiler);
             this.renderOutlines(world, cameraPos, mc, profiler);
+        }
+        else
+        {
+            this.clearBuffers();
         }
     }
 

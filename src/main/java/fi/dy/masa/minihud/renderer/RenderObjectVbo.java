@@ -114,6 +114,8 @@ public class RenderObjectVbo
         return this.builder;
     }
 
+    protected boolean isStarted() { return this.started; }
+
     public String getName()
     {
         return this.name.get();

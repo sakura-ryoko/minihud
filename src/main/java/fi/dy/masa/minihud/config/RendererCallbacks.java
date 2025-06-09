@@ -29,6 +29,7 @@ public class RendererCallbacks
     {
         if (config.getBooleanValue())
         {
+            OverlayRendererBeaconRange.INSTANCE.reset();
             OverlayRendererBeaconRange.INSTANCE.setNeedsUpdate();
         }
     }
@@ -37,6 +38,7 @@ public class RendererCallbacks
     {
         if (config.getBooleanValue())
         {
+            OverlayRendererBiomeBorders.INSTANCE.reset();
             OverlayRendererBiomeBorders.INSTANCE.setNeedsUpdate();
         }
     }
@@ -45,6 +47,7 @@ public class RendererCallbacks
     {
         if (config.getBooleanValue())
         {
+            OverlayRendererConduitRange.INSTANCE.reset();
             OverlayRendererConduitRange.INSTANCE.setNeedsUpdate();
         }
     }
@@ -53,6 +56,7 @@ public class RendererCallbacks
     {
         if (config.getBooleanValue())
         {
+            OverlayRendererLightLevel.INSTANCE.reset();
             OverlayRendererLightLevel.INSTANCE.setNeedsUpdate();
         }
     }

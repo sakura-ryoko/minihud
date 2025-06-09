@@ -58,6 +58,7 @@ public class WorldLoadListener implements IWorldLoadListener
         EntitiesDataManager.getInstance().reset(worldAfter == null);
         OverlayRendererVillagerInfo.INSTANCE.reset(worldAfter == null);
         DebugDataManager.getInstance().reset(worldAfter == null);
+        OverlayRenderer.reset();
 
         // Logging in to a world or changing dimensions or respawning
         if (worldAfter != null)

@@ -144,6 +144,8 @@ public abstract class OverlayRendererBase implements IOverlayRenderer
 
         for (RenderObjectVbo obj : this.renderObjects)
         {
+            if (!obj.isStarted()) continue;
+
             // TODO (nvidia only?)
             if (this.shouldResort && obj.shouldResort())
             {
