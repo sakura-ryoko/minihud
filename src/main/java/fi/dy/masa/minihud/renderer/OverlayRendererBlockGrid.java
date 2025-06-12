@@ -1,6 +1,5 @@
 package fi.dy.masa.minihud.renderer;
 
-import com.mojang.blaze3d.buffers.BufferUsage;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.BuiltBuffer;
@@ -82,7 +81,7 @@ public class OverlayRendererBlockGrid extends OverlayRendererBase
     protected void allocateBuffers()
     {
         this.clearBuffers();
-        this.renderObjects.add(new RenderObjectVbo(() -> this.getName()+" Lines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, BufferUsage.STATIC_WRITE));
+        this.renderObjects.add(new RenderObjectVbo(() -> this.getName()+" Lines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH));
     }
 
     @Override
@@ -106,7 +105,7 @@ public class OverlayRendererBlockGrid extends OverlayRendererBase
         Color4f color = Configs.Colors.BLOCK_GRID_OVERLAY_COLOR.getColor();
 
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "Block Grid Lines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, BufferUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.start(() -> "minihud:block_grid/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH);
 //        MatrixStack matrices = new MatrixStack();
 
 //        matrices.push();
@@ -118,10 +117,10 @@ public class OverlayRendererBlockGrid extends OverlayRendererBase
                 this.renderLinesAll(cameraPos, this.lastUpdatePos, radius, color, builder);
                 break;
             case NON_AIR:
-                this.renderLinesNonAir(cameraPos, this.cameraEntity.getEntityWorld(), this.lastUpdatePos, radius, color, builder);
+                this.renderLinesNonAir(cameraPos, this.cameraEntity.getWorld(), this.lastUpdatePos, radius, color, builder);
                 break;
             case ADJACENT:
-                this.renderLinesAdjacentToNonAir(cameraPos, this.cameraEntity.getEntityWorld(), this.lastUpdatePos, radius, color, builder);
+                this.renderLinesAdjacentToNonAir(cameraPos, this.cameraEntity.getWorld(), this.lastUpdatePos, radius, color, builder);
                 break;
         }
 

@@ -1,5 +1,6 @@
 package fi.dy.masa.minihud.config;
 
+import java.util.List;
 import javax.annotation.Nullable;
 import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonElement;
@@ -17,6 +18,7 @@ import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.info.InfoLine;
+import fi.dy.masa.minihud.info.InfoLineFlag;
 import fi.dy.masa.minihud.info.InfoLineType;
 import fi.dy.masa.minihud.info.InfoLineTypes;
 
@@ -71,7 +73,7 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     DISTANCE                ("infoDistance",                null, false, ""),
 
     // Chunk
-    LOADED_CHUNKS_COUNT     ("infoLoadedChunksCount",       null, false, ""),
+    LOADED_CHUNKS_COUNT     ("infoLoadedChunksCount",       InfoLineTypes.LOADED_CHUNKS, false, ""),
     CHUNK_SECTIONS          ("infoChunkSections",           null, false, ""),
     CHUNK_SECTIONS_FULL     ("infoChunkSectionsLine",       null, false, ""),
     CHUNK_UPDATES           ("infoChunkUpdates",            null, false, ""),
@@ -79,25 +81,26 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     SLIME_CHUNK             ("infoSlimeChunk",              null, false, ""),
 
     // Block
-    LOOKING_AT_BLOCK        ("infoLookingAtBlock",          null, false, ""),
-    LOOKING_AT_BLOCK_CHUNK  ("infoLookingAtBlockInChunk",   null, false, ""),
-    BLOCK_PROPS             ("infoBlockProperties",         null, false, ""),
+    LOOKING_AT_BLOCK        ("infoLookingAtBlock",          InfoLineTypes.LOOKING_AT_BLOCK, false, ""),
+    LOOKING_AT_BLOCK_CHUNK  ("infoLookingAtBlockInChunk",   InfoLineTypes.LOOKING_AT_CHUNK, false, ""),
+    BLOCK_PROPS             ("infoBlockProperties",         InfoLineTypes.BLOCK_PROPS, false, ""),
     BEE_COUNT               ("infoBeeCount",                InfoLineTypes.BEE_COUNT, false, true, ""),
     COMPARATOR_OUTPUT       ("infoComparatorOutput",        InfoLineTypes.COMPARATOR, false, true, ""),
     HONEY_LEVEL             ("infoHoneyLevel",              InfoLineTypes.HONEY_LEVEL, false, ""),
     FURNACE_XP              ("infoFurnaceXp",               InfoLineTypes.FURNACE_EXP, false, true, ""),
 
     // Entity
-    ENTITY_REG_NAME         ("infoEntityRegistryName",      null, false, ""),
+    ENTITY_REG_NAME         ("infoEntityRegistryName",      InfoLineTypes.ENTITY_REG, false, ""),
     LOOKING_AT_ENTITY       ("infoLookingAtEntity",         InfoLineTypes.LOOKING_AT_ENTITY, false, ""),
     LOOKING_AT_EFFECTS      ("infoLookingAtEffects",        InfoLineTypes.LOOKING_AT_EFFECTS, false, ""),
     LOOKING_AT_PLAYER_EXP   ("infoLookingAtPlayerExp",      InfoLineTypes.LOOKING_AT_PLAYER_EXP, false, ""),
     ZOMBIE_CONVERSION       ("infoZombieConversion",        InfoLineTypes.ZOMBIE_CONVERSION, false, ""),
-    HORSE_SPEED             ("infoHorseSpeed",              null, false, ""),
-    HORSE_JUMP              ("infoHorseJump",               null, false, ""),
+    HORSE_SPEED             ("infoHorseSpeed",              InfoLineTypes.HORSE_SPEED, false, ""),
+    HORSE_JUMP              ("infoHorseJump",               InfoLineTypes.HORSE_JUMP, false, ""),
     PANDA_GENE              ("infoPandaGene",               InfoLineTypes.PANDA_GENE, false, ""),
     DOLPHIN_TREASURE        ("infoDolphinTreasure",         InfoLineTypes.DOLPHIN_TREASURE, false, ""),
     ENTITY_VARIANT          ("infoEntityVariant",           InfoLineTypes.ENTITY_VARIANT, false, ""),
+    ENTITY_HOME_POS         ("infoEntityHomePos",           InfoLineTypes.HOME_POS, false, ""),
     ;
 
     public static final ImmutableList<InfoToggle> VALUES = ImmutableList.copyOf(values());
@@ -262,6 +265,21 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     public @Nullable InfoLineType<?> getInfoType()
     {
         return this.type;
+    }
+
+    public @Nullable List<InfoLineFlag> getInfoFlags()
+    {
+        if (this.type != null)
+        {
+            return this.type.getFlags();
+        }
+
+        return null;
+    }
+
+    public boolean hasFlag(InfoLineFlag flag)
+    {
+        return this.type != null && this.type.getFlags().contains(flag);
     }
     
     public @Nullable InfoLine initParser()

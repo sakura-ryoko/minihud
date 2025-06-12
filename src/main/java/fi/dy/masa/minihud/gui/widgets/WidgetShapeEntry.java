@@ -68,50 +68,48 @@ public class WidgetShapeEntry extends WidgetListEntryBase<ShapeBase>
     }
 
     @Override
-    public void render(int mouseX, int mouseY, boolean selected, DrawContext context)
+    public void render(DrawContext context, int mouseX, int mouseY, boolean selected)
     {
-        RenderUtils.color(1f, 1f, 1f, 1f);
+//        RenderUtils.color(1f, 1f, 1f, 1f);
 
         boolean shapeSelected = ShapeManager.INSTANCE.getSelectedShape() == this.entry;
 
         // Draw a lighter background for the hovered and the selected entry
         if (selected || shapeSelected || this.isMouseOver(mouseX, mouseY))
         {
-            RenderUtils.drawRect(this.x, this.y, this.width, this.height, 0x70FFFFFF);
+            RenderUtils.drawRect(context, this.x, this.y, this.width, this.height, 0x70FFFFFF);
         }
         else if (this.isOdd)
         {
-            RenderUtils.drawRect(this.x, this.y, this.width, this.height, 0x20FFFFFF);
+            RenderUtils.drawRect(context, this.x, this.y, this.width, this.height, 0x20FFFFFF);
         }
         // Draw a slightly lighter background for even entries
         else
         {
-            RenderUtils.drawRect(this.x, this.y, this.width, this.height, 0x50FFFFFF);
+            RenderUtils.drawRect(context, this.x, this.y, this.width, this.height, 0x50FFFFFF);
         }
 
         if (shapeSelected)
         {
-            RenderUtils.drawOutline(this.x, this.y, this.width, this.height, 0xFFE0E0E0);
+            RenderUtils.drawOutline(context, this.x, this.y, this.width, this.height, 0xFFE0E0E0);
         }
 
         String name = this.shape.getDisplayName();
-        this.drawString(this.x + 4, this.y + 7, 0xFFFFFFFF, name, context);
+        this.drawString(context, this.x + 4, this.y + 7, 0xFFFFFFFF, name);
 
-        RenderUtils.color(1f, 1f, 1f, 1f);
-        //RenderSystem.disableBlend();
-//        RenderUtils.blend(false);
+//        RenderUtils.color(1f, 1f, 1f, 1f);
 
-        super.render(mouseX, mouseY, selected, context);
+        super.render(context, mouseX, mouseY, selected);
     }
 
     @Override
-    public void postRenderHovered(int mouseX, int mouseY, boolean selected, DrawContext context)
+    public void postRenderHovered(DrawContext context, int mouseX, int mouseY, boolean selected)
     {
-        super.postRenderHovered(mouseX, mouseY, selected, context);
+        super.postRenderHovered(context, mouseX, mouseY, selected);
 
         if (mouseX >= this.x && mouseX < this.buttonsStartX && mouseY >= this.y && mouseY <= this.y + this.height)
         {
-            RenderUtils.drawHoverText(mouseX, mouseY, this.hoverLines, context);
+            RenderUtils.drawHoverText(context, mouseX, mouseY, this.hoverLines);
         }
     }
 

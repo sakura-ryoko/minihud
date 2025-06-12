@@ -35,7 +35,7 @@ public abstract class MixinBeaconBlockEntity extends BlockEntity
 
     @Inject(method = "tick",
             at = @At(value = "INVOKE",
-                     target = "Lnet/minecraft/block/entity/BeaconBlockEntity;updateLevel(Lnet/minecraft/world/World;III)I"))
+                     target = "Lnet/minecraft/world/World;getTime()J"))
     private static void minihud_onUpdateSegmentsPre(World world, BlockPos pos, BlockState state, BeaconBlockEntity blockEntity, CallbackInfo ci)
     {
         if (((MixinBeaconBlockEntity) (Object) blockEntity).levelPre != -1)
@@ -49,7 +49,7 @@ public abstract class MixinBeaconBlockEntity extends BlockEntity
 
     @Inject(method = "tick",
             at = @At(value = "FIELD", opcode = Opcodes.PUTFIELD, shift = At.Shift.AFTER,
-                     target = "Lnet/minecraft/block/entity/BeaconBlockEntity;level:I"))
+                     target = "Lnet/minecraft/block/entity/BeaconBlockEntity;level:I", ordinal = 0))
     private static void minihud_onUpdateSegmentsPost(World world, BlockPos pos, BlockState state, BeaconBlockEntity blockEntity, CallbackInfo ci)
     {
         int newLevel = ((MixinBeaconBlockEntity) (Object) blockEntity).level;

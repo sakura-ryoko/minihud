@@ -33,6 +33,9 @@ public class InfoLinePandaGene extends InfoLine
     }
 
     @Override
+    public boolean succeededType() { return false; }
+
+    @Override
     public List<Entry> parse(@NotNull InfoLine.Context ctx)
     {
         if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue() &&

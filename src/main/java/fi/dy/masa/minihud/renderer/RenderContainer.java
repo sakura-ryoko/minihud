@@ -9,7 +9,6 @@ import org.joml.Matrix4fStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.Camera;
-import net.minecraft.client.render.Fog;
 import net.minecraft.client.render.Frustum;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Vec3d;
@@ -53,7 +52,7 @@ public class RenderContainer
         this.renderers.remove(renderer);
     }
 
-    public void render(Entity entity, Matrix4f posMatrix, Matrix4f projMatrix, MinecraftClient mc, Camera camera, Frustum frustum, Fog fog, Profiler profiler)
+    public void render(Entity entity, Matrix4f posMatrix, Matrix4f projMatrix, MinecraftClient mc, Camera camera, Frustum frustum, Profiler profiler)
     {
         profiler.push("render_container");
         this.update(camera.getPos(), entity, mc, profiler);

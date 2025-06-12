@@ -4,7 +4,6 @@ import java.util.*;
 import javax.annotation.Nullable;
 import com.google.gson.JsonObject;
 
-import com.mojang.blaze3d.buffers.BufferUsage;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.BuiltBuffer;
@@ -125,7 +124,7 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
 
                 if (!chunks.contains(posAdj))
                 {
-                    Box bb = this.calculateChunkEdge(pos, side, entity.getEntityWorld());
+                    Box bb = this.calculateChunkEdge(pos, side, entity.getWorld());
 
                     if (bb != null)
                     {
@@ -176,7 +175,7 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
                               Configs.Colors.RANDOM_TICKS_FIXED_OVERLAY_COLOR.getColor();
 
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "RandomTick Quads", MaLiLibPipelines.POSITION_COLOR_MASA_LEQUAL_DEPTH_OFFSET_1, BufferUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.start(() -> "minihud:random_tick/quads", MaLiLibPipelines.POSITION_COLOR_MASA_LEQUAL_DEPTH_OFFSET_1);
 //        MatrixStack matrices = new MatrixStack();
 
 //        matrices.push();
@@ -229,7 +228,7 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
                               Configs.Colors.RANDOM_TICKS_FIXED_OVERLAY_COLOR.getColor();
 
         RenderObjectVbo ctx = this.renderObjects.get(1);
-        BufferBuilder builder = ctx.start(() -> "RandomTick Lines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, BufferUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.start(() -> "minihud:random_tick/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH);
 //        MatrixStack matrices = new MatrixStack();
 
 //        matrices.push();

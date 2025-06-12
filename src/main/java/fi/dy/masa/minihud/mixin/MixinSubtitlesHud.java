@@ -15,14 +15,14 @@ public abstract class MixinSubtitlesHud
 {
     @Inject(method = "render",
             at = @At(value = "INVOKE",
-                     target = "Lnet/minecraft/client/util/math/MatrixStack;scale(FFF)V"))
+                     target = "Lorg/joml/Matrix3x2fStack;scale(FF)Lorg/joml/Matrix3x2f;"), remap = false)
     private void nudgeSubtitleOverlay(DrawContext context, CallbackInfo ci)
     {
         int offset = RenderHandler.getInstance().getSubtitleOffset();
 
         if (offset != 0)
         {
-            context.getMatrices().translate(0, offset, 0);
+            context.getMatrices().translate(0, offset);
         }
     }
 }

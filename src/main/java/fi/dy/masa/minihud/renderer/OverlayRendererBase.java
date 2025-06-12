@@ -5,7 +5,6 @@ import java.util.List;
 import javax.annotation.Nullable;
 import com.google.gson.JsonObject;
 
-import com.mojang.blaze3d.buffers.BufferUsage;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -52,11 +51,11 @@ public abstract class OverlayRendererBase implements IOverlayRenderer
     protected void allocateBuffers(boolean useOutlines)
     {
         this.clearBuffers();
-        this.renderObjects.add(new RenderObjectVbo(() -> this.getName()+" Quads", MaLiLibPipelines.MINIHUD_SHAPE_OFFSET, BufferUsage.STATIC_WRITE));
+        this.renderObjects.add(new RenderObjectVbo(() -> this.getName()+"/Quads", MaLiLibPipelines.MINIHUD_SHAPE_OFFSET));
 
         if (useOutlines)
         {
-            this.renderObjects.add(new RenderObjectVbo(() -> this.getName() + " Lines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, BufferUsage.STATIC_WRITE));
+            this.renderObjects.add(new RenderObjectVbo(() -> this.getName() + "/Outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH));
         }
     }
 

@@ -860,7 +860,7 @@ public class DataStorage
     {
         if (this.mc.player == null || this.mc.getServer() == null) return;
 
-        final RegistryKey<World> worldId = this.mc.player.getEntityWorld().getRegistryKey();
+        final RegistryKey<World> worldId = this.mc.player.getWorld().getRegistryKey();
         final ServerWorld world = this.mc.getServer().getWorld(worldId);
 
         if (world != null)

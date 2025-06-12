@@ -1,0 +1,120 @@
+package fi.dy.masa.minihud.info.entity;
+
+import java.util.ArrayList;
+import java.util.List;
+import org.apache.commons.lang3.tuple.Pair;
+import org.jetbrains.annotations.NotNull;
+
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.passive.AbstractHorseEntity;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.world.World;
+
+import fi.dy.masa.malilib.util.nbt.NbtEntityUtils;
+import fi.dy.masa.minihud.Reference;
+import fi.dy.masa.minihud.config.Configs;
+import fi.dy.masa.minihud.config.InfoToggle;
+import fi.dy.masa.minihud.info.InfoLine;
+
+public class InfoLineHorseSpeed extends InfoLine
+{
+    private static final String HORSE_KEY = Reference.MOD_ID+".info_line.horse_speed";
+
+    public InfoLineHorseSpeed(InfoToggle type)
+    {
+        super(type);
+    }
+
+    public InfoLineHorseSpeed()
+    {
+        super(InfoToggle.HORSE_SPEED);
+    }
+
+    @Override
+    public boolean succeededType() { return this.succeeded; }
+
+    @Override
+    public List<Entry> parse(@NotNull InfoLine.Context ctx)
+    {
+        MinecraftClient mc = MinecraftClient.getInstance();
+
+        if (mc.player != null)
+        {
+            Entity vehicle = mc.player.getVehicle();
+
+            if (vehicle instanceof AbstractHorseEntity)
+            {
+                return this.parseEnt(ctx.world(), vehicle);
+            }
+        }
+
+        if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue() &&
+            ctx.hasLiving() && ctx.hasNbt())
+        {
+            EntityType<?> entityType = NbtEntityUtils.getEntityTypeFromNbt(ctx.nbt());
+            if (entityType == null) return null;
+
+            return this.parseNbt(ctx.world(), entityType, ctx.nbt());
+        }
+
+        if (ctx.ent() != null)
+        {
+            return this.parseEnt(ctx.world(), ctx.ent());
+        }
+
+        return null;
+    }
+
+    @Override
+    public List<Entry> parseNbt(@NotNull World world, @NotNull EntityType<?> entityType, @NotNull NbtCompound nbt)
+    {
+        List<Entry> list = new ArrayList<>();
+        String horseType = entityType.getName().getString();
+
+        if (entityType.equals(EntityType.CAMEL) ||
+            entityType.equals(EntityType.DONKEY) ||
+            entityType.equals(EntityType.HORSE) ||
+            entityType.equals(EntityType.LLAMA) ||
+            entityType.equals(EntityType.MULE) ||
+            entityType.equals(EntityType.SKELETON_HORSE) ||
+            entityType.equals(EntityType.TRADER_LLAMA) ||
+            entityType.equals(EntityType.ZOMBIE_HORSE))
+        {
+            Pair<Double, Double> horsePair = NbtEntityUtils.getSpeedAndJumpStrengthFromNbt(nbt);
+            double speed = horsePair.getLeft();
+
+            if (speed > 0d)
+            {
+                speed *= 42.1629629629629f;
+                list.add(this.translate(HORSE_KEY, horseType, speed));
+                this.succeeded = true;
+            }
+        }
+
+        return list;
+    }
+
+    @Override
+    public List<Entry> parseEnt(@NotNull World world, @NotNull Entity ent)
+    {
+        List<Entry> list = new ArrayList<>();
+
+        if (ent instanceof AbstractHorseEntity horse)
+        {
+            String horseType = horse.getType().getName().getString();
+            double speed = horse.getAttributeValue(EntityAttributes.MOVEMENT_SPEED);
+
+            if (speed > 0d)
+            {
+                speed *= 42.1629629629629f;
+                list.add(this.translate(HORSE_KEY, horseType, speed));
+                this.succeeded = true;
+            }
+        }
+
+        return list;
+    }
+}

@@ -7,7 +7,6 @@ import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 
-import com.mojang.blaze3d.buffers.BufferUsage;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.block.entity.ConduitBlockEntity;
 import net.minecraft.client.MinecraftClient;
@@ -166,7 +165,7 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
         // MaLiLibPipelines.POSITION_COLOR_MASA_LESSER_DEPTH
         profiler.push("conduit_quads");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "Conduit Quads", this.renderThrough ? MaLiLibPipelines.MINIHUD_SHAPE_NO_DEPTH_OFFSET : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET, BufferUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.start(() -> "minihud:conduit/quads", this.renderThrough ? MaLiLibPipelines.MINIHUD_SHAPE_NO_DEPTH_OFFSET : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET);
 //        MatrixStack matrices = new MatrixStack();
 //
 //        matrices.push();
@@ -225,7 +224,7 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
 
         profiler.push("conduit_outlines");
         RenderObjectVbo ctx = this.renderObjects.get(1);
-        BufferBuilder builder = ctx.start(() -> "Conduit Outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, BufferUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.start(() -> "minihud:conduit/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH);
 //        MatrixStack matrices = new MatrixStack();
 
 //        matrices.push();

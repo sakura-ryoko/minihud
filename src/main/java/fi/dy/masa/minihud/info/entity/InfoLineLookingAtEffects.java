@@ -38,6 +38,9 @@ public class InfoLineLookingAtEffects extends InfoLine
     }
 
     @Override
+    public boolean succeededType() { return false; }
+
+    @Override
     public List<Entry> parse(@Nonnull InfoLine.Context ctx)
     {
         if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue() &&

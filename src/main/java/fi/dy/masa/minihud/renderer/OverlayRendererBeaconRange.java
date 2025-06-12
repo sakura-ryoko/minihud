@@ -3,7 +3,6 @@ package fi.dy.masa.minihud.renderer;
 import java.util.HashMap;
 import java.util.List;
 
-import com.mojang.blaze3d.buffers.BufferUsage;
 import net.minecraft.block.entity.BeaconBlockEntity;
 import net.minecraft.block.entity.BeamEmitter;
 import net.minecraft.block.entity.BlockEntityType;
@@ -48,6 +47,7 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
     {
         List<BeamEmitter.BeamSegment> segments = ((IMixinBeaconBlockEntity) be).minihud_getBeamEmitter();
         RegistryEntry<StatusEffect> primary = ((IMixinBeaconBlockEntity) be).minihud_getPrimary();
+//        RegistryEntry<StatusEffect> secondary = ((IMixinBeaconBlockEntity) be).minihud_getSecondary();
         final int level = ((IMixinBeaconBlockEntity) be).minihud_getLevel();
 
 //        System.out.printf("beacon - pos [%s], level [%d], pri [%s], sec [%s], segment count: [%d]\n", pos, level,
@@ -106,7 +106,7 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
 
         profiler.push("beacon_quads");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "Beacon Quads", this.renderThrough ? MaLiLibPipelines.POSITION_COLOR_MASA_NO_DEPTH_NO_CULL : MaLiLibPipelines.POSITION_COLOR_MASA_LEQUAL_DEPTH_OFFSET_1, BufferUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.start(() -> "minihud:beacon/quads", this.renderThrough ? MaLiLibPipelines.POSITION_COLOR_MASA_NO_DEPTH_NO_CULL : MaLiLibPipelines.POSITION_COLOR_MASA_LEQUAL_DEPTH_OFFSET_1);
 //        MatrixStack matrices = new MatrixStack();
 
 //        matrices.push();
@@ -168,7 +168,7 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
 
         profiler.push("beacon_outlines");
         RenderObjectVbo ctx = this.renderObjects.get(1);
-        BufferBuilder builder = ctx.start(() -> "Beacon Lines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, BufferUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.start(() -> "minihud:beacon/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH);
 //        MatrixStack matrices = new MatrixStack();
 
 //        matrices.push();

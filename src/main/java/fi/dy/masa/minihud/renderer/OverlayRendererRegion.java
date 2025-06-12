@@ -3,7 +3,6 @@ package fi.dy.masa.minihud.renderer;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.mojang.blaze3d.buffers.BufferUsage;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.BuiltBuffer;
@@ -84,7 +83,7 @@ public class OverlayRendererRegion extends OverlayRendererBase
 
     private void calculateRegions(Entity entity)
     {
-        World world = entity.getEntityWorld();
+        World world = entity.getWorld();
         int minY = world != null ? world.getBottomY() : -64;
         int maxY = world != null ? world.getTopYInclusive() + 1 : 320;
         int rx = MathHelper.floor(entity.getX()) & ~0x1FF;
@@ -119,7 +118,7 @@ public class OverlayRendererRegion extends OverlayRendererBase
         profiler.push("region_quads");
         Color4f color = Configs.Colors.REGION_OVERLAY_COLOR.getColor();
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "Region Quads", MaLiLibPipelines.POSITION_COLOR_MASA_LEQUAL_DEPTH_OFFSET_1, BufferUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.start(() -> "minihud:region/quads", MaLiLibPipelines.POSITION_COLOR_MASA_LEQUAL_DEPTH_OFFSET_1);
 //        MatrixStack matrices = new MatrixStack();
 
 //        matrices.push();
@@ -165,7 +164,7 @@ public class OverlayRendererRegion extends OverlayRendererBase
         profiler.push("region_outlines");
         Color4f color = Configs.Colors.REGION_OVERLAY_COLOR.getColor();
         RenderObjectVbo ctx = this.renderObjects.get(1);
-        BufferBuilder builder = ctx.start(() -> "Region Lines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, BufferUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.start(() -> "minihud:region/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH);
 //        MatrixStack matrices = new MatrixStack();
 
 //        matrices.push();

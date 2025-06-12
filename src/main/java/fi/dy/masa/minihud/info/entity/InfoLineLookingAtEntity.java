@@ -36,6 +36,9 @@ public class InfoLineLookingAtEntity extends InfoLine
     }
 
     @Override
+    public boolean succeededType() { return false; }
+
+    @Override
     public List<Entry> parse(@Nonnull Context ctx)
     {
         List<Entry> list = new ArrayList<>();

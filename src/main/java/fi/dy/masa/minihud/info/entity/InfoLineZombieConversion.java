@@ -39,6 +39,9 @@ public class InfoLineZombieConversion extends InfoLine
     }
 
     @Override
+    public boolean succeededType() { return false; }
+
+    @Override
     public List<Entry> parse(@Nonnull Context ctx)
     {
         if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue() &&

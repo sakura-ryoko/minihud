@@ -5,16 +5,18 @@ import java.util.OptionalInt;
 import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
 
-import com.mojang.blaze3d.buffers.BufferType;
-import com.mojang.blaze3d.buffers.BufferUsage;
 import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.VertexSorter;
-import com.mojang.blaze3d.textures.GpuTexture;
+import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.render.BufferBuilder;
@@ -25,7 +27,6 @@ import net.minecraft.client.texture.ResourceTexture;
 import net.minecraft.client.texture.TextureContents;
 import net.minecraft.client.util.BufferAllocator;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.TriState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ColorHelper;
 import net.minecraft.util.math.Vec3d;
@@ -46,7 +47,6 @@ public class RenderObjectVbo
 {
     private Supplier<String> name;
     private RenderPipeline shader;
-    private BufferUsage usage;
     private GpuBuffer vertexBuffer;
     @Nullable private GpuBuffer indexBuffer;
     private RenderSystem.ShapeIndexBuffer shapeIndex;
@@ -64,7 +64,7 @@ public class RenderObjectVbo
     private boolean started;
     private int indexCount;
 
-    protected RenderObjectVbo(Supplier<String> name, RenderPipeline shader, BufferUsage usage)
+    protected RenderObjectVbo(Supplier<String> name, RenderPipeline shader)
     {
         this.name = name;
         this.alloc = new BufferAllocator(shader.getVertexFormat().getVertexSize() * 4);
@@ -74,7 +74,6 @@ public class RenderObjectVbo
         this.format = shader.getVertexFormat();
         this.drawMode = shader.getVertexFormatMode();
         this.shader = shader;
-        this.usage = usage;
         this.vertexBuffer = null;
         this.indexBuffer = null;
         this.sortState = null;
@@ -88,7 +87,7 @@ public class RenderObjectVbo
         this.started = true;
     }
 
-    public BufferBuilder start(Supplier<String> name, RenderPipeline shader, BufferUsage usage)
+    public BufferBuilder start(Supplier<String> name, RenderPipeline shader)
     {
         this.reset();
         this.name = name;
@@ -99,7 +98,6 @@ public class RenderObjectVbo
         this.format = shader.getVertexFormat();
         this.drawMode = shader.getVertexFormatMode();
         this.shader = shader;
-        this.usage = usage;
         this.vertexBuffer = null;
         this.indexBuffer = null;
         this.sortState = null;
@@ -124,11 +122,6 @@ public class RenderObjectVbo
     protected BufferBuilder getBuilder()
     {
         return this.builder;
-    }
-
-    public BufferUsage getUsage()
-    {
-        return this.usage;
     }
 
     public VertexFormat getVertexFormat()
@@ -274,19 +267,19 @@ public class RenderObjectVbo
 
             if (this.vertexBuffer == null)
             {
-                this.vertexBuffer = RenderSystem.getDevice().createBuffer(() -> this.name.get()+" VertexBuffer", BufferType.VERTICES, this.usage, expectedSize);
+                this.vertexBuffer = RenderSystem.getDevice().createBuffer(() -> this.name.get()+" VertexBuffer", 40, expectedSize);
             }
             else if (this.vertexBuffer.size() < expectedSize)
             {
                 this.vertexBuffer.close();
-                this.vertexBuffer = RenderSystem.getDevice().createBuffer(() -> this.name.get()+" VertexBuffer", BufferType.VERTICES, this.usage, expectedSize);
+                this.vertexBuffer = RenderSystem.getDevice().createBuffer(() -> this.name.get()+" VertexBuffer", 40, expectedSize);
             }
 
             CommandEncoder encoder = RenderSystem.getDevice().createCommandEncoder();
 
             if (!this.vertexBuffer.isClosed())
             {
-                encoder.writeToBuffer(this.vertexBuffer, meshData.getBuffer(), 0);
+                encoder.writeToBuffer(this.vertexBuffer.slice(), meshData.getBuffer());
             }
             else
             {
@@ -300,7 +293,7 @@ public class RenderObjectVbo
                 {
                     if (!this.indexBuffer.isClosed())
                     {
-                        encoder.writeToBuffer(this.indexBuffer, meshData.getSortedBuffer(), 0);
+                        encoder.writeToBuffer(this.indexBuffer.slice(), meshData.getSortedBuffer());
                     }
                 }
                 else
@@ -310,7 +303,7 @@ public class RenderObjectVbo
                         this.indexBuffer.close();
                     }
 
-                    this.indexBuffer = RenderSystem.getDevice().createBuffer(() -> this.name.get()+" IndexBuffer", BufferType.INDICES, this.usage, meshData.getSortedBuffer());
+                    this.indexBuffer = RenderSystem.getDevice().createBuffer(() -> this.name.get()+" IndexBuffer", 72, meshData.getSortedBuffer());
                 }
             }
             else if (this.indexBuffer != null)
@@ -404,13 +397,13 @@ public class RenderObjectVbo
         {
             if (this.indexBuffer == null)
             {
-                this.indexBuffer = RenderSystem.getDevice().createBuffer(() -> this.name.get()+" IndexBuffer", BufferType.INDICES, BufferUsage.STATIC_WRITE, buffer.getBuffer());
+                this.indexBuffer = RenderSystem.getDevice().createBuffer(() -> this.name.get()+" IndexBuffer", 72, buffer.getBuffer());
             }
             else
             {
                 if (!this.indexBuffer.isClosed())
                 {
-                    RenderSystem.getDevice().createCommandEncoder().writeToBuffer(this.indexBuffer, buffer.getBuffer(), 0);
+                    RenderSystem.getDevice().createCommandEncoder().writeToBuffer(this.indexBuffer.slice(), buffer.getBuffer());
                 }
             }
         }
@@ -441,8 +434,8 @@ public class RenderObjectVbo
                 {
                     if (this.texture != null)
                     {
-                        this.texture.setFilter(TriState.DEFAULT, false);
-                        RenderSystem.setShaderTexture(textureId, this.texture.getGlTexture());
+                        this.texture.setFilter(false, false);
+                        RenderSystem.setShaderTexture(textureId, this.texture.getGlTextureView());
                     }
 
                     break;
@@ -458,7 +451,7 @@ public class RenderObjectVbo
         {
             // Simple texture rebind since we already have a valid texture
             this.textureId = textureId;
-            RenderSystem.setShaderTexture(this.textureId, this.texture.getGlTexture());
+            RenderSystem.setShaderTexture(this.textureId, this.texture.getGlTextureView());
             return;
         }
 
@@ -609,35 +602,47 @@ public class RenderObjectVbo
     protected void draw(BuiltBuffer meshData) throws RuntimeException
     {
         this.ensureSafeNoBuffer();
-        this.draw(null, meshData, false, false, false);
+        this.draw(null, meshData, false, false, false, false);
     }
 
     protected void draw(BuiltBuffer meshData, boolean shouldResort) throws RuntimeException
     {
         this.ensureSafeNoBuffer();
-        this.draw(null, meshData, shouldResort, false, false);
+        this.draw(null, meshData, shouldResort, false, false, false);
     }
 
     protected void draw(BuiltBuffer meshData, boolean shouldResort, boolean setLineWidth) throws RuntimeException
     {
         this.ensureSafeNoBuffer();
-        this.draw(null, meshData, shouldResort,false, setLineWidth);
+        this.draw(null, meshData, shouldResort, false, setLineWidth, false);
+    }
+
+    protected void draw(BuiltBuffer meshData, boolean shouldResort, boolean setColor, boolean setLineWidth) throws RuntimeException
+    {
+        this.ensureSafeNoBuffer();
+        this.draw(null, meshData, shouldResort, setColor, setLineWidth, false);
+    }
+
+    protected void draw(BuiltBuffer meshData, boolean shouldResort, boolean setColor, boolean setLineWidth, boolean useOffset) throws RuntimeException
+    {
+        this.ensureSafeNoBuffer();
+        this.draw(null, meshData, shouldResort, setColor, setLineWidth, useOffset);
     }
 
     protected void draw(@Nullable Framebuffer otherFb, BuiltBuffer meshData, boolean shouldResort) throws RuntimeException
     {
         this.ensureSafeNoBuffer();
-        this.draw(otherFb, meshData, shouldResort, false, false);
+        this.draw(otherFb, meshData, shouldResort, false, false, false);
     }
 
     protected void draw(@Nullable Framebuffer otherFb, BuiltBuffer meshData, boolean shouldResort, boolean setLineWidth) throws RuntimeException
     {
         this.ensureSafeNoBuffer();
-        this.draw(otherFb, meshData, shouldResort, false, setLineWidth);
+        this.draw(otherFb, meshData, shouldResort, false, setLineWidth, false);
     }
 
     protected void draw(@Nullable Framebuffer otherFb, BuiltBuffer meshData, boolean shouldResort,
-                        boolean useOffset, boolean setLineWidth) throws RuntimeException
+                        boolean setColor, boolean setLineWidth, boolean useOffset) throws RuntimeException
     {
         this.ensureSafeNoBuffer();
 
@@ -660,69 +665,136 @@ public class RenderObjectVbo
             {
                 float[] rgba = new float[]{ColorHelper.getRedFloat(this.color), ColorHelper.getGreenFloat(this.color), ColorHelper.getBlueFloat(this.color), ColorHelper.getAlphaFloat(this.color)};
 
-                RenderSystem.setShaderColor(rgba[0], rgba[1], rgba[2], rgba[3]);
-                this.drawInternal(otherFb, useOffset, setLineWidth);
-                RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+//                RenderSystem.setShaderColor(rgba[0], rgba[1], rgba[2], rgba[3]);
+                this.drawInternal(otherFb, rgba, setColor, setLineWidth, useOffset);
+//                RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             }
         }
     }
 
-    protected void drawPost(@Nullable Framebuffer otherFb, boolean useOffset, boolean setLineWidth)
-            throws RuntimeException
+    protected void drawPost() throws RuntimeException
+    {
+        this.ensureSafeNoTexture();
+        this.drawPost(null, false, false, false);
+    }
+
+    protected void drawPost(boolean setLineWidth) throws RuntimeException
+    {
+        this.ensureSafeNoTexture();
+        this.drawPost(null, false, setLineWidth, false);
+    }
+
+    protected void drawPost(boolean setColor, boolean setLineWidth) throws RuntimeException
+    {
+        this.ensureSafeNoTexture();
+        this.drawPost(null, setColor, setLineWidth, false);
+    }
+
+    protected void drawPost(@Nullable Framebuffer otherFb, boolean setLineWidth) throws RuntimeException
+    {
+        this.ensureSafeNoTexture();
+        this.drawPost(otherFb, false, setLineWidth, false);
+    }
+
+    protected void drawPost(@Nullable Framebuffer otherFb, boolean setColor, boolean setLineWidth) throws RuntimeException
+    {
+        this.ensureSafeNoTexture();
+        this.drawPost(otherFb, setColor, setLineWidth, false);
+    }
+
+    protected void drawPost(@Nullable Framebuffer otherFb, boolean setColor, boolean setLineWidth, boolean useOffset) throws RuntimeException
     {
         if (this.indexCount > 0)
         {
             float[] rgba = new float[]{ColorHelper.getRedFloat(this.color), ColorHelper.getGreenFloat(this.color), ColorHelper.getBlueFloat(this.color), ColorHelper.getAlphaFloat(this.color)};
 
             //MiniHUD.LOGGER.warn("RenderContext#drawPost() [{}] --> drawInternal()", this.name.get());
-            RenderSystem.setShaderColor(rgba[0], rgba[1], rgba[2], rgba[3]);
-            this.drawInternal(otherFb, useOffset, setLineWidth);
-            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+//            RenderSystem.setShaderColor(rgba[0], rgba[1], rgba[2], rgba[3]);
+            this.drawInternal(otherFb, rgba, setColor, useOffset, setLineWidth);
+//            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         }
     }
 
-    private void drawInternal(@Nullable Framebuffer otherFb, boolean useOffset, boolean setLineWidth)
-            throws RuntimeException
+    private void drawInternal(@Nullable Framebuffer otherFb, float[] rgba, boolean setColor, boolean setLineWidth, boolean useOffset) throws RuntimeException
     {
         this.ensureSafeNoBuffer();
 
         if (RenderSystem.isOnRenderThread())
         {
+            Vector4f colorMod = new Vector4f(1f, 1f, 1f, 1f);
+            Vector3f modelOffset = new Vector3f();
+            Matrix4f texMatrix = new Matrix4f();
+            float line = 0.0f;
+
+            if (setColor)
+            {
+                colorMod.set(rgba);
+            }
+
+            if (setLineWidth)
+            {
+                line = this.lineWidth > 0.0f ? this.lineWidth : RenderSystem.getShaderLineWidth();
+            }
+
             if (useOffset)
             {
                 RenderSystem.setModelOffset(this.offset[0], this.offset[1], this.offset[2]);
+                modelOffset.set(this.offset);
             }
 
             Framebuffer mainFb = RenderUtils.fb();
-            GpuTexture texture1;
-            GpuTexture texture2;
+            GpuTextureView texture1;
+            GpuTextureView texture2;
 
             if (otherFb != null)
             {
-                texture1 = otherFb.getColorAttachment();
-                texture2 = otherFb.useDepthAttachment ? otherFb.getDepthAttachment() : null;
+                texture1 = otherFb.getColorAttachmentView();
+                texture2 = otherFb.useDepthAttachment ? otherFb.getDepthAttachmentView() : null;
             }
             else
             {
-                texture1 = mainFb.getColorAttachment();
-                texture2 = mainFb.useDepthAttachment ? mainFb.getDepthAttachment() : null;
+                texture1 = mainFb.getColorAttachmentView();
+                texture2 = mainFb.useDepthAttachment ? mainFb.getDepthAttachmentView() : null;
             }
 
             //MiniHUD.LOGGER.warn("RenderContext#drawInternal() [{}] --> new renderPass", this.name.get());
             GpuBuffer indexBuffer = this.shapeIndex.getIndexBuffer(this.indexCount);
 
+            GpuBufferSlice gpuSlice = RenderSystem.getDynamicUniforms()
+                                                  .write(
+                                                          RenderSystem.getModelViewMatrix(),
+                                                          colorMod,
+                                                          modelOffset,
+                                                          texMatrix,
+                                                          line);
+
             try (RenderPass pass = RenderSystem.getDevice()
                                                .createCommandEncoder()
-                                               .createRenderPass(texture1, OptionalInt.empty(),
-                                                                 texture2, OptionalDouble.empty()))
+                                               .createRenderPass(this.name,
+                                                       texture1, OptionalInt.empty(),
+                                                       texture2, OptionalDouble.empty()))
             {
                 //MiniHUD.LOGGER.warn("RenderContext#drawInternal() [{}] renderPass --> setPipeline() [{}]", this.name.get(), this.shader.getLocation().toString());
                 pass.setPipeline(this.shader);
+                RenderSystem.bindDefaultUniforms(pass);
+                pass.setUniform("DynamicTransforms", gpuSlice);
+
+                if (this.indexBuffer == null)
+                {
+                    pass.setIndexBuffer(indexBuffer, this.shapeIndex.getIndexType());
+                }
+                else
+                {
+                    pass.setIndexBuffer(this.indexBuffer, this.indexType);
+                }
+
+                //MiniHUD.LOGGER.warn("RenderContext#drawInternal() [{}] renderPass --> setVertexBuffer() [0]", this.name.get());
+                pass.setVertexBuffer(0, this.vertexBuffer);
 
                 if (this.textureId > -1 && this.textureId < 12 && this.texture != null)
                 {
 //                    MiniHUD.LOGGER.warn("RenderContext#drawInternal() [{}] renderPass --> bindSampler({}) [{}]", this.name.get(), this.textureId, this.texture.getGlTexture().getLabel());
-                    pass.bindSampler("Sampler"+this.textureId, this.texture.getGlTexture());
+                    pass.bindSampler("Sampler"+this.textureId, this.texture.getGlTextureView());
                 }
 
 //                for (int i = 0; i < 12; i++)
@@ -736,28 +808,8 @@ public class RenderObjectVbo
 //                    }
 //                }
 
-                if (setLineWidth)
-                {
-                    float width = this.lineWidth > 0.0f ? this.lineWidth : RenderSystem.getShaderLineWidth();
-                    //MiniHUD.LOGGER.warn("RenderContext#drawInternal() [{}] renderPass --> setUniform() // lineWidth [{}]", this.name.get(), width);
-                    pass.setUniform("LineWidth", width);
-                }
-
-                //MiniHUD.LOGGER.warn("RenderContext#drawInternal() [{}] renderPass --> setVertexBuffer() [0]", this.name.get());
-                pass.setVertexBuffer(0, this.vertexBuffer);
-
-                //MiniHUD.LOGGER.warn("RenderContext#drawInternal() [{}] renderPass --> setIndexBuffer() [{}]", this.name.get(), this.bufferIndex);
-                if (this.indexBuffer == null)
-                {
-                    pass.setIndexBuffer(indexBuffer, this.shapeIndex.getIndexType());
-                }
-                else
-                {
-                    pass.setIndexBuffer(this.indexBuffer, this.indexType);
-                }
-
                 //MiniHUD.LOGGER.warn("RenderContext#drawInternal() [{}] renderPass --> drawIndexed() [0, {}]", this.name.get(), this.bufferIndex);
-                pass.drawIndexed(0, this.indexCount);
+                pass.drawIndexed(0, 0, this.indexCount, 1);
             }
 
             //MiniHUD.LOGGER.warn("RenderContext#drawInternal() [{}] --> END", this.name.get());
@@ -811,9 +863,19 @@ public class RenderObjectVbo
         }
     }
 
-    private void ensureSafeTexture()
+    private void ensureSafeNoTexture() throws RuntimeException
     {
         this.ensureSafeNoBuffer();
+
+        if (this.vertexBuffer == null)
+        {
+            throw new RuntimeException("GpuBuffer not uploaded!");
+        }
+    }
+
+    private void ensureSafe()
+    {
+        this.ensureSafeNoTexture();
 
         if (this.texture == null)
         {

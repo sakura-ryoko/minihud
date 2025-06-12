@@ -45,13 +45,13 @@ import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
 import fi.dy.masa.malilib.util.InventoryUtils;
 import fi.dy.masa.malilib.util.WorldUtils;
 import fi.dy.masa.malilib.util.nbt.NbtKeys;
+import fi.dy.masa.malilib.util.nbt.NbtView;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.network.ServuxEntitiesHandler;
 import fi.dy.masa.minihud.network.ServuxEntitiesPacket;
 import fi.dy.masa.minihud.util.DataStorage;
-import fi.dy.masa.minihud.util.EntityUtils;
 
 @SuppressWarnings("deprecation")
 public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
@@ -538,18 +538,26 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
         if (this.getWorld() != null)
         {
             Entity entity = this.getWorld().getEntityById(entityId);
-            NbtCompound nbt = new NbtCompound();
 
-            if (entity != null && entity.saveSelfNbt(nbt))
+            if (entity != null)
             {
-                Pair<Entity, NbtCompound> pair = Pair.of(entity, nbt);
+                NbtView view = NbtView.getWriter(world.getRegistryManager());
+                entity.writeData(view.getWriter());
+                NbtCompound nbt = view.readNbt();
+                Identifier id = EntityType.getId(entity.getType());
 
-                synchronized (this.entityCache)
+                if (nbt != null && id != null)
                 {
-                    this.entityCache.put(entityId, Pair.of(System.currentTimeMillis(), pair));
-                }
+                    nbt.putString("id", id.toString());
+                    Pair<Entity, NbtCompound> pair = Pair.of(entity, nbt.copy());
 
-                return pair;
+                    synchronized (this.entityCache)
+                    {
+                        this.entityCache.put(entityId, Pair.of(System.currentTimeMillis(), pair));
+                    }
+
+                    return pair;
+                }
             }
         }
 
@@ -756,7 +764,8 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
                 this.blockEntityCache.put(pos, Pair.of(System.currentTimeMillis(), Pair.of(blockEntity, nbt)));
             }
 
-            blockEntity.read(nbt, this.getClientWorld().getRegistryManager());
+            NbtView view = NbtView.getReader(nbt, this.getClientWorld().getRegistryManager());
+            blockEntity.read(view.getReader());
             return blockEntity;
         }
 
@@ -786,11 +795,11 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
                         this.blockEntityCache.put(pos, Pair.of(System.currentTimeMillis(), Pair.of(blockEntity2, nbt)));
                     }
 
-                    if (Configs.Generic.ENTITY_DATA_LOAD_NBT.getBooleanValue())
-                    {
-                        blockEntity2.read(nbt, this.getClientWorld().getRegistryManager());
-                        this.getClientWorld().addBlockEntity(blockEntity2);
-                    }
+//                    if (Configs.Generic.ENTITY_DATA_LOAD_NBT.getBooleanValue())
+//                    {
+//                        blockEntity2.read(nbt, this.getClientWorld().getRegistryManager());
+//                        this.getClientWorld().addBlockEntity(blockEntity2);
+//                    }
 
                     return blockEntity2;
                 }
@@ -825,10 +834,10 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
                 this.entityCache.put(entityId, Pair.of(System.currentTimeMillis(), Pair.of(entity, nbt)));
             }
 
-            if (Configs.Generic.ENTITY_DATA_LOAD_NBT.getBooleanValue())
-            {
-                EntityUtils.loadNbtIntoEntity(entity, nbt);
-            }
+//            if (Configs.Generic.ENTITY_DATA_LOAD_NBT.getBooleanValue())
+//            {
+//                EntityUtils.loadNbtIntoEntity(entity, nbt);
+//            }
         }
         return entity;
     }

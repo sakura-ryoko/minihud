@@ -1,6 +1,5 @@
 package fi.dy.masa.minihud.renderer;
 
-import com.mojang.blaze3d.buffers.BufferUsage;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.BufferBuilder;
@@ -79,7 +78,7 @@ public class OverlayRendererHandheldBeaconRange extends OverlayRendererBase
     {
         if (RendererToggle.OVERLAY_BEACON_RANGE.getBooleanValue())
         {
-            this.calculateBeaconBoxForPlayer(entity.getEntityWorld(), entity, mc);
+            this.calculateBeaconBoxForPlayer(entity.getWorld(), entity, mc);
 
             if (this.hasData())
             {
@@ -113,7 +112,7 @@ public class OverlayRendererHandheldBeaconRange extends OverlayRendererBase
         Color4f color = OverlayRendererBeaconRange.getColorForLevel(this.level);
 
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "Held Beacon Quads", MaLiLibPipelines.POSITION_COLOR_MASA_LEQUAL_DEPTH_OFFSET_1, BufferUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.start(() -> "minihud:held_beacon/quads", MaLiLibPipelines.POSITION_COLOR_MASA_LEQUAL_DEPTH_OFFSET_1);
         MatrixStack matrices = new MatrixStack();
 
         matrices.push();
@@ -156,7 +155,7 @@ public class OverlayRendererHandheldBeaconRange extends OverlayRendererBase
         Color4f color = OverlayRendererBeaconRange.getColorForLevel(this.level);
 
         RenderObjectVbo ctx = this.renderObjects.get(1);
-        BufferBuilder builder = ctx.start(() -> "Held Beacon Lines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, BufferUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.start(() -> "minihud:held_beacon/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH);
 //        MatrixStack matrices = new MatrixStack();
 
 //        matrices.push();
@@ -210,24 +209,5 @@ public class OverlayRendererHandheldBeaconRange extends OverlayRendererBase
 
         this.box = new Box(minX, minY, minZ, maxX, maxY, maxZ);
         this.hasData = true;
-
-        /*
-        RenderSystem.disableCull();
-        RenderSystem.enableDepthTest();
-        RenderSystem.depthMask(false);
-        RenderSystem.polygonOffset(-3f, -3f);
-        RenderSystem.enablePolygonOffset();
-         */
-
-//        fi.dy.masa.malilib.render.RenderUtils.blend(true);
-//        fi.dy.masa.malilib.render.RenderUtils.color(1f, 1f, 1f, 1f);
-
-        /*
-        RenderSystem.polygonOffset(0f, 0f);
-        RenderSystem.disablePolygonOffset();
-        RenderSystem.enableCull();
-        RenderSystem.disableBlend();
-         */
-//        RenderUtils.blend(false);
     }
 }
