@@ -51,9 +51,4 @@ public class OverlayRenderer
     {
         RenderContainer.INSTANCE.reset();
     }
-
-    public static void reset()
-    {
-        RenderContainer.INSTANCE.reset();
-    }
 }
