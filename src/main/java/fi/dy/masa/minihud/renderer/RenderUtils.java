@@ -833,7 +833,7 @@ public class RenderUtils
             }
         }
 
-        HitResult trace = RayTraceUtils.getRayTraceFromEntity(world, cameraEntity, false);
+        HitResult trace = RayTraceUtils.getRayTraceFromEntity(cameraEntity.getWorld(), cameraEntity, false);
 
         BlockPos pos = null;
         Inventory inv = null;
