@@ -142,7 +142,7 @@ public class InventoryOverlayHandler implements IInventoryOverlayHandler
         Entity cameraEntity = EntityUtils.getCameraEntity();
         this.context = null;
 
-        if (mc.player == null || world == null)
+        if (mc.player == null || world == null || mc.world == null)
         {
             return null;
         }
@@ -164,7 +164,10 @@ public class InventoryOverlayHandler implements IInventoryOverlayHandler
             return null;
         }
 
-        HitResult trace = RayTraceUtils.getRayTraceFromEntity(cameraEntity.getWorld(), cameraEntity, RaycastContext.FluidHandling.NONE);
+        // FIXME
+//        HitResult trace = RayTraceUtils.getRayTraceFromEntity(cameraEntity.getWorld(), cameraEntity, RaycastContext.FluidHandling.NONE);
+        HitResult trace = mc.crosshairTarget;
+
         NbtCompound nbt = new NbtCompound();
 
         if (trace == null || trace.getType() == HitResult.Type.MISS)
