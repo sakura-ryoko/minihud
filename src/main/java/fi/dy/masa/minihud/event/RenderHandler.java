@@ -245,7 +245,6 @@ public class RenderHandler implements IRenderer
                 if (player != null)
                 {
                     Pair<Entity, NbtCompound> pair = EntitiesDataManager.getInstance().requestEntity(world, player.getId());
-                    NbtCompound nbt = new NbtCompound();
                     EnderChestInventory inv;
 
                     if (pair != null && pair.getRight() != null && pair.getRight().contains(NbtKeys.ENDER_ITEMS))
@@ -271,8 +270,9 @@ public class RenderHandler implements IRenderer
                     {
                         try (NbtInventory nbtInv = NbtInventory.fromInventory(inv))
                         {
-//                            nbt.put(NbtKeys.ENDER_ITEMS, inv.toNbtList(world.getRegistryManager()));
-                            nbt.copyFrom(nbtInv.toNbt(NbtList.TYPE, NbtKeys.ENDER_ITEMS));
+                            NbtCompound nbt = new NbtCompound();
+                            NbtList list = nbtInv.toNbtList();
+                            nbt.put(NbtKeys.ENDER_ITEMS, list);
                             fi.dy.masa.malilib.render.RenderUtils.renderNbtItemsPreview(drawContext, stack, nbt, x, y, false);
                         }
                         catch (Exception ignored) { }
@@ -584,40 +584,59 @@ public class RenderHandler implements IRenderer
         }
         else if (type == InfoToggle.SERVER_TPS)
         {
-            if (this.data.hasIntegratedServer() && (this.data.getIntegratedServer().getTicks() % 10) == 0)
+//            if (this.data.hasIntegratedServer() && (this.data.getIntegratedServer().getTicks() % 10) == 0)
+//            {
+//                this.data.updateIntegratedServerTPS();
+//            }
+//
+//            if (this.data.hasTPSData())
+//            {
+//                double tps = this.data.getServerTPS();
+//                double mspt = this.data.getServerMSPT();
+//                String rst = GuiBase.TXT_RST;
+//                String preTps = tps >= 20.0D ? GuiBase.TXT_GREEN : GuiBase.TXT_RED;
+//                String preMspt;
+//
+//                // Carpet server and integrated server have actual meaningful MSPT data available
+//                if (this.data.hasCarpetServer() || this.data.isSinglePlayer())
+//                {
+//                    if      (mspt <= 40) { preMspt = GuiBase.TXT_GREEN; }
+//                    else if (mspt <= 45) { preMspt = GuiBase.TXT_YELLOW; }
+//                    else if (mspt <= 50) { preMspt = GuiBase.TXT_GOLD; }
+//                    else                 { preMspt = GuiBase.TXT_RED; }
+//
+//                    this.addLineI18n("minihud.info_line.server_tps", preTps, tps, rst, preMspt, mspt, rst);
+//                }
+//                else
+//                {
+//                    if (mspt <= 51) { preMspt = GuiBase.TXT_GREEN; }
+//                    else            { preMspt = GuiBase.TXT_RED; }
+//
+//                    this.addLineI18n("minihud.info_line.server_tps.est", preTps, tps, rst, preMspt, mspt, rst);
+//                }
+//            }
+//            else
+//            {
+//                this.addLineI18n("minihud.info_line.server_tps.invalid");
+//            }
+            if (this.addedTypes.contains(type))
             {
-                this.data.updateIntegratedServerTPS();
+                return;
             }
 
-            if (this.data.hasTPSData())
+            // Make into a generic call
+            World bestWorld = WorldUtils.getBestWorld(mc);
+            InfoLine parser = type.initParser();
+
+            if (parser != null)
             {
-                double tps = this.data.getServerTPS();
-                double mspt = this.data.getServerMSPT();
-                String rst = GuiBase.TXT_RST;
-                String preTps = tps >= 20.0D ? GuiBase.TXT_GREEN : GuiBase.TXT_RED;
-                String preMspt;
+                InfoLine.Context ctx = new InfoLine.Context(bestWorld, null, null, null, null, null);
+                this.processEntries(parser.parse(ctx));
 
-                // Carpet server and integrated server have actual meaningful MSPT data available
-                if (this.data.hasCarpetServer() || this.data.isSinglePlayer())
+                if (parser.succeededType())
                 {
-                    if      (mspt <= 40) { preMspt = GuiBase.TXT_GREEN; }
-                    else if (mspt <= 45) { preMspt = GuiBase.TXT_YELLOW; }
-                    else if (mspt <= 50) { preMspt = GuiBase.TXT_GOLD; }
-                    else                 { preMspt = GuiBase.TXT_RED; }
-
-                    this.addLineI18n("minihud.info_line.server_tps", preTps, tps, rst, preMspt, mspt, rst);
+                    this.addedTypes.add(type);
                 }
-                else
-                {
-                    if (mspt <= 51) { preMspt = GuiBase.TXT_GREEN; }
-                    else            { preMspt = GuiBase.TXT_RED; }
-
-                    this.addLineI18n("minihud.info_line.server_tps.est", preTps, tps, rst, preMspt, mspt, rst);
-                }
-            }
-            else
-            {
-                this.addLineI18n("minihud.info_line.server_tps.invalid");
             }
         }
         else if (type == InfoToggle.SERVUX)

@@ -918,6 +918,8 @@
     "minihud.info_line.server_tps": "伺服器 TPS: %s%.1f%s MSPT: %s%.1f%s",
     "minihud.info_line.server_tps.est": "伺服器 TPS: %s%.1f%s (MSPT [估計]: %s%.1f%s)",
     "minihud.info_line.server_tps.invalid": "伺服器 TPS: <無可用資料>",
+    "minihud.info_line.server_tps.sprinting": " [§d§lSprinting§r]",
+    "minihud.info_line.server_tps.frozen": " [§b§lFrozen§r]",
     "minihud.info_line.servux": "Servux 版本: %s",
     "minihud.info_line.servux.entity_sync": "EntitySync: cB: %02d, pB: %02d, cE: %02d, pE: %02d",
     "minihud.info_line.servux.no_structures_hud": "HudSync: sR: %02d (%s), wS: %s",

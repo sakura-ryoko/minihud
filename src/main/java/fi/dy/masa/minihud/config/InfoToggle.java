@@ -51,7 +51,7 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     SPRINTING               ("infoSprinting",               null, false, ""),
 
     // Server
-    SERVER_TPS              ("infoServerTPS",               null, false, ""),
+    SERVER_TPS              ("infoServerTPS",               InfoLineTypes.SERVER_TPS, false, ""),
     SERVUX                  ("infoServux",                  null, false, true, ""),
     PING                    ("infoPing",                    null, false, ""),
 

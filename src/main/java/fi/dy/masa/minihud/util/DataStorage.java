@@ -49,6 +49,7 @@ import fi.dy.masa.malilib.util.JsonUtils;
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.malilib.util.data.Constants;
 import fi.dy.masa.malilib.util.position.PositionUtils;
+import fi.dy.masa.malilib.util.time.TickUtils;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.RendererToggle;
@@ -1009,11 +1010,17 @@ public class DataStorage
 
                 if (matcher.matches())
                 {
+                    if (!TickUtils.getInstance().isUsingDirectServerData())
+                    {
+                        TickUtils.getInstance().toggleUseDirectServerData(true);
+                    }
+
                     try
                     {
                         this.serverTPS = Double.parseDouble(matcher.group("tps"));
                         this.serverMSPT = Double.parseDouble(matcher.group("mspt"));
                         this.serverTPSValid = true;
+                        TickUtils.getInstance().updateNanoTickFromServerDirect(this.serverTPS, this.serverMSPT);
                         this.carpetServer = true;
                         return;
                     }

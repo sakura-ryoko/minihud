@@ -13,6 +13,7 @@ public class InfoLineTypes
 {
     // Generic
     public static final InfoLineType<InfoLineLoadedChunks>          LOADED_CHUNKS           = InfoLineType.build(InfoLineLoadedChunks::new,         InfoToggle.LOADED_CHUNKS_COUNT, List.of(InfoLineFlag.GENERIC));
+    public static final InfoLineType<InfoLineServerTPS>             SERVER_TPS              = InfoLineType.build(InfoLineServerTPS::new,            InfoToggle.SERVER_TPS, List.of(InfoLineFlag.GENERIC));
 
     // Block
     public static final InfoLineType<InfoLineLookingAtBlock>        LOOKING_AT_BLOCK        = InfoLineType.build(InfoLineLookingAtBlock::new,       InfoToggle.LOOKING_AT_BLOCK, List.of(InfoLineFlag.BLOCK));
