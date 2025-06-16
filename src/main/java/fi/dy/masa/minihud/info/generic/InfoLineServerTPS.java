@@ -33,7 +33,7 @@ public class InfoLineServerTPS extends InfoLine
     {
         List<Entry> list = new ArrayList<>();
 
-        if (TickUtils.getInstance().isValid())
+        if (TickUtils.isValid())
         {
             DataStorage data = DataStorage.getInstance();
             final double tps = TickUtils.getMeasuredTPS();
