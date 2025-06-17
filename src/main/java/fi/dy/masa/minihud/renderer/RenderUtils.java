@@ -23,6 +23,7 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.*;
+import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
 
 import fi.dy.masa.malilib.mixin.entity.IMixinAbstractHorseEntity;
@@ -30,11 +31,11 @@ import fi.dy.masa.malilib.render.InventoryOverlay;
 import fi.dy.masa.malilib.util.*;
 import fi.dy.masa.malilib.util.data.Color4f;
 import fi.dy.masa.malilib.util.game.BlockUtils;
+import fi.dy.masa.malilib.util.game.RayTraceUtils;
 import fi.dy.masa.malilib.util.position.PositionUtils;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.data.EntitiesDataManager;
 import fi.dy.masa.minihud.renderer.shapes.SideQuad;
-import fi.dy.masa.minihud.util.RayTraceUtils;
 import fi.dy.masa.minihud.util.ShapeRenderType;
 import fi.dy.masa.minihud.util.shape.SphereUtils;
 
@@ -1061,7 +1062,16 @@ public class RenderUtils
             }
         }
 
-        HitResult trace = RayTraceUtils.getRayTraceFromEntity(world, cameraEntity, false);
+        HitResult trace;
+
+        if (cameraEntity != mc.player)
+        {
+            trace = RayTraceUtils.getRayTraceFromEntity(mc.world, cameraEntity, RaycastContext.FluidHandling.NONE);
+        }
+        else
+        {
+            trace = mc.crosshairTarget;
+        }
 
         BlockPos pos = null;
         Inventory inv = null;
