@@ -272,6 +272,7 @@ public class RenderHandler implements IRenderer
                         {
                             NbtCompound nbt = new NbtCompound();
                             NbtList list = nbtInv.toNbtList();
+
                             nbt.put(NbtKeys.ENDER_ITEMS, list);
                             fi.dy.masa.malilib.render.RenderUtils.renderNbtItemsPreview(drawContext, stack, nbt, x, y, false);
                         }

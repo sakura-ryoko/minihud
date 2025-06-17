@@ -164,9 +164,16 @@ public class InventoryOverlayHandler implements IInventoryOverlayHandler
             return null;
         }
 
-        // FIXME
-//        HitResult trace = RayTraceUtils.getRayTraceFromEntity(cameraEntity.getWorld(), cameraEntity, RaycastContext.FluidHandling.NONE);
-        HitResult trace = mc.crosshairTarget;
+        HitResult trace;
+
+        if (cameraEntity != mc.player)
+        {
+            trace = RayTraceUtils.getRayTraceFromEntity(mc.world, cameraEntity, RaycastContext.FluidHandling.NONE);
+        }
+        else
+        {
+            trace = mc.crosshairTarget;
+        }
 
         NbtCompound nbt = new NbtCompound();
 
@@ -248,14 +255,23 @@ public class InventoryOverlayHandler implements IInventoryOverlayHandler
 
             if (world instanceof ServerWorld)
             {
-                NbtView view = NbtView.getWriter(world.getRegistryManager());
-                entity.writeData(view.getWriter());
-                nbt = view.readNbt() != null ? view.readNbt() : nbt;
-                Identifier id = EntityType.getId(entity.getType());
+                entity = world.getEntityById(entity.getId());
 
-                if (nbt != null && id != null)
+                if (entity != null)
                 {
-                    nbt.putString("id", id.toString());
+                    NbtView view = NbtView.getWriter(world.getRegistryManager());
+                    entity.writeData(view.getWriter());
+                    nbt = view.readNbt() != null ? view.readNbt() : nbt;
+                    Identifier id = EntityType.getId(entity.getType());
+
+                    if (nbt != null && id != null)
+                    {
+                        nbt.putString("id", id.toString());
+                    }
+                }
+                else
+                {
+                    return null;
                 }
             }
             else
