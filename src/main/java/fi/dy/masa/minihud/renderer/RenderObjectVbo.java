@@ -12,16 +12,15 @@ import org.joml.Vector4f;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.systems.CommandEncoder;
-import com.mojang.blaze3d.systems.RenderPass;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.systems.VertexSorter;
+import com.mojang.blaze3d.systems.*;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.gl.Framebuffer;
+import net.minecraft.client.gl.ScissorState;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.BuiltBuffer;
 import net.minecraft.client.render.Camera;
+import net.minecraft.client.texture.AbstractTexture;
 import net.minecraft.client.texture.NativeImage;
 import net.minecraft.client.texture.ResourceTexture;
 import net.minecraft.client.texture.TextureContents;
@@ -31,6 +30,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ColorHelper;
 import net.minecraft.util.math.Vec3d;
 
+import fi.dy.masa.malilib.MaLiLib;
 import fi.dy.masa.malilib.mixin.render.IMixinAbstractTexture;
 import fi.dy.masa.malilib.mixin.render.IMixinBufferBuilder;
 import fi.dy.masa.malilib.render.RenderUtils;
@@ -56,12 +56,14 @@ public class RenderObjectVbo
     private VertexFormat format;
     private VertexFormat.DrawMode drawMode;
     private ResourceTexture texture;
+    private AbstractTexture directTexture;
     @Nullable private BuiltBuffer.SortState sortState;
     private int textureId;
     private float[] offset;
     private float lineWidth;
     private int color;
     private boolean started;
+    private boolean uploaded;
     private int indexCount;
 
     protected RenderObjectVbo(Supplier<String> name, RenderPipeline shader)
@@ -85,6 +87,7 @@ public class RenderObjectVbo
         this.color = -1;
         this.lineWidth = 1.0f;
         this.started = true;
+        this.uploaded = false;
     }
 
     public BufferBuilder start(Supplier<String> name, RenderPipeline shader)
@@ -109,10 +112,13 @@ public class RenderObjectVbo
         this.color = -1;
         this.lineWidth = 1.0f;
         this.started = true;
+        this.uploaded = false;
         return this.builder;
     }
 
     protected boolean isStarted() { return this.started; }
+
+    protected boolean isUploaded() { return this.uploaded; }
 
     public String getName()
     {
@@ -248,7 +254,7 @@ public class RenderObjectVbo
 
     public void upload(BuiltBuffer meshData, boolean shouldResort) throws RuntimeException
     {
-        this.ensureSafeNoBuffer();
+        this.ensureSafeNoShader();
 
         if (RenderSystem.isOnRenderThread() && meshData != null)
         {
@@ -259,11 +265,11 @@ public class RenderObjectVbo
                 this.vertexBuffer.close();
             }
 
-//            if (this.indexBuffer != null)
-//            {
-//                this.indexBuffer.close();
-//                this.indexBuffer = null;
-//            }
+            if (this.indexBuffer != null)
+            {
+                this.indexBuffer.close();
+                this.indexBuffer = null;
+            }
 
             if (this.vertexBuffer == null)
             {
@@ -314,12 +320,13 @@ public class RenderObjectVbo
 
             this.indexCount = meshData.getDrawParameters().indexCount();
             this.indexType = meshData.getDrawParameters().indexType();
+            this.uploaded = true;
 //            meshData.close();
         }
     }
 
     /**
-     * UPLOAD/RESORTING PHASE --
+     * INDEX RESORTING PHASE --
      * -
      * This uploads the IndexBuffer for resorting
      */
@@ -395,15 +402,27 @@ public class RenderObjectVbo
 
         if (RenderSystem.isOnRenderThread())
         {
+            GpuDevice device = RenderSystem.tryGetDevice();
+
+            if (device == null)
+            {
+                MaLiLib.LOGGER.warn("RenderContext#uploadIndex: GpuDevice is null for renderer '{}'", this.name.get());
+                return;
+            }
+
             if (this.indexBuffer == null)
             {
-                this.indexBuffer = RenderSystem.getDevice().createBuffer(() -> this.name.get()+" IndexBuffer", 72, buffer.getBuffer());
+                this.indexBuffer = device.createBuffer(() -> this.name.get()+" IndexBuffer", 72, buffer.getBuffer());
             }
             else
             {
                 if (!this.indexBuffer.isClosed())
                 {
-                    RenderSystem.getDevice().createCommandEncoder().writeToBuffer(this.indexBuffer.slice(), buffer.getBuffer());
+                    device.createCommandEncoder().writeToBuffer(this.indexBuffer.slice(), buffer.getBuffer());
+                }
+                else
+                {
+                    throw new RuntimeException("Index Buffer is closed!");
                 }
             }
         }
@@ -492,8 +511,8 @@ public class RenderObjectVbo
             return false;
         }
 
-        if (((IMixinAbstractTexture) this.texture).malilib_getGlTexture() == null ||
-            this.texture.getGlTexture().isClosed())
+        if (((IMixinAbstractTexture) this.texture).malilib_getGlTextureView() == null ||
+            this.texture.getGlTextureView().isClosed())
         {
             this.texture.close();
             this.texture = null;
@@ -503,63 +522,29 @@ public class RenderObjectVbo
         return true;
     }
 
-//    private @Nullable NativeImageBackedTexture loadFile(Identifier texture)
-//    {
-//        try
-//        {
-//            InputStream inputStream = RenderUtils.mc().getResourceManager().open(texture);
-//
-//            try (NativeImage image = NativeImage.read(inputStream))
-//            {
-//                return new NativeImageBackedTexture(texture::toString, image.getWidth(), image.getHeight(), false);
-//            }
-//            catch (Exception err)
-//            {
-//                MiniHUD.LOGGER.error("Failed to read texture: '{}'; Exception: {}", texture.toString(), err.getMessage());
-//            }
-//        }
-//        catch (Exception err)
-//        {
-//            MiniHUD.LOGGER.error("Error opening input stream for texture: '{}'; Exception: {}", texture.toString(), err.getMessage());
-//        }
-//
-//        return null;
-//    }
+    public boolean bindTextureDirect(@Nonnull AbstractTexture texture, int textureId) throws RuntimeException
+    {
+        this.ensureSafeNoBuffer();
 
-//    private void dumpTexture(Identifier id)
-//    {
-//        Path dir = FileUtils.getConfigDirectoryAsPath().resolve(Reference.MOD_ID).resolve("textures");
-//
-//        try (TextureContents content = this.texture.loadContents(RenderUtils.mc().getResourceManager()))
-//        {
-//            if (!Files.isDirectory(dir))
-//            {
-//                Files.createDirectory(dir);
-//            }
-//
-//            content.image().writeTo(dir.resolve(FileNameUtils.generateSimpleSafeFileName(id.toString())));
-//        }
-//        catch (Exception err)
-//        {
-//            MiniHUD.LOGGER.error("bindTexture: Error saving debug texture for [{}]", id.toString());
-//        }
-//    }
+        if (textureId < 0 || textureId > 12)
+        {
+            throw new RuntimeException("Invalid textureId of: "+textureId);
+        }
 
-//    private void dumpTextureManager()
-//    {
-//        Path dir = FileUtils.getConfigDirectoryAsPath().resolve(Reference.MOD_ID).resolve("textures/manager_dump");
-//
-//        try
-//        {
-//            if (!Files.isDirectory(dir))
-//            {
-//                Files.createDirectory(dir);
-//            }
-//
-//            RenderUtils.tex().dumpDynamicTextures(dir);
-//        }
-//        catch (Exception ignored) {}
-//    }
+        this.directTexture = texture;
+        this.textureId = textureId;
+
+        if (((IMixinAbstractTexture) this.directTexture).malilib_getGlTextureView() == null ||
+                this.directTexture.getGlTextureView().isClosed())
+        {
+            this.directTexture.close();
+            this.directTexture = null;
+            return false;
+        }
+
+        RenderSystem.setShaderTexture(this.textureId, this.directTexture.getGlTextureView());
+        return true;
+    }
 
     protected void unbindTexture(@Nullable Identifier id)
     {
@@ -602,47 +587,53 @@ public class RenderObjectVbo
     protected void draw(BuiltBuffer meshData) throws RuntimeException
     {
         this.ensureSafeNoBuffer();
-        this.draw(null, meshData, false, false, false, false);
+        this.draw(null, meshData, false, false, false, false, false);
     }
 
     protected void draw(BuiltBuffer meshData, boolean shouldResort) throws RuntimeException
     {
         this.ensureSafeNoBuffer();
-        this.draw(null, meshData, shouldResort, false, false, false);
+        this.draw(null, meshData, shouldResort, false, false, false, false);
     }
 
     protected void draw(BuiltBuffer meshData, boolean shouldResort, boolean setLineWidth) throws RuntimeException
     {
         this.ensureSafeNoBuffer();
-        this.draw(null, meshData, shouldResort, false, setLineWidth, false);
+        this.draw(null, meshData, shouldResort, false, setLineWidth, false, false);
     }
 
     protected void draw(BuiltBuffer meshData, boolean shouldResort, boolean setColor, boolean setLineWidth) throws RuntimeException
     {
         this.ensureSafeNoBuffer();
-        this.draw(null, meshData, shouldResort, setColor, setLineWidth, false);
+        this.draw(null, meshData, shouldResort, setColor, setLineWidth, false, false);
     }
 
     protected void draw(BuiltBuffer meshData, boolean shouldResort, boolean setColor, boolean setLineWidth, boolean useOffset) throws RuntimeException
     {
         this.ensureSafeNoBuffer();
-        this.draw(null, meshData, shouldResort, setColor, setLineWidth, useOffset);
+        this.draw(null, meshData, shouldResort, setColor, setLineWidth, useOffset, false);
+    }
+
+    protected void draw(BuiltBuffer meshData, boolean shouldResort, boolean setColor, boolean setLineWidth, boolean useOffset, boolean useLightmapTex) throws RuntimeException
+    {
+        this.ensureSafeNoBuffer();
+        this.draw(null, meshData, shouldResort, setColor, setLineWidth, useOffset, useLightmapTex);
     }
 
     protected void draw(@Nullable Framebuffer otherFb, BuiltBuffer meshData, boolean shouldResort) throws RuntimeException
     {
         this.ensureSafeNoBuffer();
-        this.draw(otherFb, meshData, shouldResort, false, false, false);
+        this.draw(otherFb, meshData, shouldResort, false, false, false, false);
     }
 
     protected void draw(@Nullable Framebuffer otherFb, BuiltBuffer meshData, boolean shouldResort, boolean setLineWidth) throws RuntimeException
     {
         this.ensureSafeNoBuffer();
-        this.draw(otherFb, meshData, shouldResort, false, setLineWidth, false);
+        this.draw(otherFb, meshData, shouldResort, false, setLineWidth, false, false);
     }
 
     protected void draw(@Nullable Framebuffer otherFb, BuiltBuffer meshData, boolean shouldResort,
-                        boolean setColor, boolean setLineWidth, boolean useOffset) throws RuntimeException
+                        boolean setColor, boolean setLineWidth, boolean useOffset, boolean useLightmapTex) throws RuntimeException
     {
         this.ensureSafeNoBuffer();
 
@@ -666,7 +657,7 @@ public class RenderObjectVbo
                 float[] rgba = new float[]{ColorHelper.getRedFloat(this.color), ColorHelper.getGreenFloat(this.color), ColorHelper.getBlueFloat(this.color), ColorHelper.getAlphaFloat(this.color)};
 
 //                RenderSystem.setShaderColor(rgba[0], rgba[1], rgba[2], rgba[3]);
-                this.drawInternal(otherFb, rgba, setColor, setLineWidth, useOffset);
+                this.drawInternal(otherFb, rgba, setColor, setLineWidth, useOffset, useLightmapTex);
 //                RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             }
         }
@@ -675,49 +666,51 @@ public class RenderObjectVbo
     protected void drawPost() throws RuntimeException
     {
         this.ensureSafeNoTexture();
-        this.drawPost(null, false, false, false);
+        this.drawPost(null, false, false, false, false);
     }
 
     protected void drawPost(boolean setLineWidth) throws RuntimeException
     {
         this.ensureSafeNoTexture();
-        this.drawPost(null, false, setLineWidth, false);
+        this.drawPost(null, false, setLineWidth, false, false);
     }
 
     protected void drawPost(boolean setColor, boolean setLineWidth) throws RuntimeException
     {
         this.ensureSafeNoTexture();
-        this.drawPost(null, setColor, setLineWidth, false);
+        this.drawPost(null, setColor, setLineWidth, false, false);
     }
 
     protected void drawPost(@Nullable Framebuffer otherFb, boolean setLineWidth) throws RuntimeException
     {
         this.ensureSafeNoTexture();
-        this.drawPost(otherFb, false, setLineWidth, false);
+        this.drawPost(otherFb, false, setLineWidth, false, false);
     }
 
     protected void drawPost(@Nullable Framebuffer otherFb, boolean setColor, boolean setLineWidth) throws RuntimeException
     {
         this.ensureSafeNoTexture();
-        this.drawPost(otherFb, setColor, setLineWidth, false);
+        this.drawPost(otherFb, setColor, setLineWidth, false, false);
     }
 
-    protected void drawPost(@Nullable Framebuffer otherFb, boolean setColor, boolean setLineWidth, boolean useOffset) throws RuntimeException
+    protected void drawPost(@Nullable Framebuffer otherFb, boolean setColor, boolean setLineWidth, boolean useOffset, boolean useLightmapTex) throws RuntimeException
     {
+        this.ensureSafeNoTexture();
+
         if (this.indexCount > 0)
         {
             float[] rgba = new float[]{ColorHelper.getRedFloat(this.color), ColorHelper.getGreenFloat(this.color), ColorHelper.getBlueFloat(this.color), ColorHelper.getAlphaFloat(this.color)};
 
             //MiniHUD.LOGGER.warn("RenderContext#drawPost() [{}] --> drawInternal()", this.name.get());
 //            RenderSystem.setShaderColor(rgba[0], rgba[1], rgba[2], rgba[3]);
-            this.drawInternal(otherFb, rgba, setColor, useOffset, setLineWidth);
+            this.drawInternal(otherFb, rgba, setColor, useOffset, setLineWidth, useLightmapTex);
 //            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         }
     }
 
-    private void drawInternal(@Nullable Framebuffer otherFb, float[] rgba, boolean setColor, boolean setLineWidth, boolean useOffset) throws RuntimeException
+    private void drawInternal(@Nullable Framebuffer otherFb, float[] rgba, boolean setColor, boolean setLineWidth, boolean useOffset, boolean useLightmapTex) throws RuntimeException
     {
-        this.ensureSafeNoBuffer();
+        this.ensureSafeNoTexture();
 
         if (RenderSystem.isOnRenderThread())
         {
@@ -742,6 +735,14 @@ public class RenderObjectVbo
                 modelOffset.set(this.offset);
             }
 
+            GpuDevice device = RenderSystem.getDevice();
+
+            if (device == null)
+            {
+                MiniHUD.LOGGER.warn("RenderContext#drawInternal: GpuDevice is null for renderer '{}'", this.name.get());
+                return;
+            }
+
             Framebuffer mainFb = RenderUtils.fb();
             GpuTextureView texture1;
             GpuTextureView texture2;
@@ -760,6 +761,9 @@ public class RenderObjectVbo
             //MiniHUD.LOGGER.warn("RenderContext#drawInternal() [{}] --> new renderPass", this.name.get());
             GpuBuffer indexBuffer = this.shapeIndex.getIndexBuffer(this.indexCount);
 
+            //MiniHUD.LOGGER.warn("RenderContext#drawInternal() [{}] renderPass --> setUniform() // lineWidth [{}]", this.name.get(), width);
+//                pass.setUniform("LineWidth", width);
+
             GpuBufferSlice gpuSlice = RenderSystem.getDynamicUniforms()
                                                   .write(
                                                           RenderSystem.getModelViewMatrix(),
@@ -768,14 +772,21 @@ public class RenderObjectVbo
                                                           texMatrix,
                                                           line);
 
-            try (RenderPass pass = RenderSystem.getDevice()
-                                               .createCommandEncoder()
-                                               .createRenderPass(this.name,
-                                                       texture1, OptionalInt.empty(),
-                                                       texture2, OptionalDouble.empty()))
+            try (RenderPass pass = device.createCommandEncoder()
+                     .createRenderPass(this.name,
+                                       texture1, OptionalInt.empty(),
+                                       texture2, OptionalDouble.empty()))
             {
                 //MiniHUD.LOGGER.warn("RenderContext#drawInternal() [{}] renderPass --> setPipeline() [{}]", this.name.get(), this.shader.getLocation().toString());
                 pass.setPipeline(this.shader);
+
+                ScissorState scissorState = RenderSystem.getScissorStateForRenderTypeDraws();
+
+                if (scissorState.method_72091())
+                {
+                    pass.enableScissor(scissorState.method_72092(), scissorState.method_72093(), scissorState.method_72094(), scissorState.method_72095());
+                }
+
                 RenderSystem.bindDefaultUniforms(pass);
                 pass.setUniform("DynamicTransforms", gpuSlice);
 
@@ -791,11 +802,25 @@ public class RenderObjectVbo
                 //MiniHUD.LOGGER.warn("RenderContext#drawInternal() [{}] renderPass --> setVertexBuffer() [0]", this.name.get());
                 pass.setVertexBuffer(0, this.vertexBuffer);
 
-                if (this.textureId > -1 && this.textureId < 12 && this.texture != null)
+                if (this.textureId > -1 && this.textureId < 12)
                 {
-//                    MiniHUD.LOGGER.warn("RenderContext#drawInternal() [{}] renderPass --> bindSampler({}) [{}]", this.name.get(), this.textureId, this.texture.getGlTexture().getLabel());
-                    pass.bindSampler("Sampler"+this.textureId, this.texture.getGlTextureView());
+                    if (this.texture != null)
+                    {
+//                        MiniHUD.LOGGER.warn("RenderContext#drawInternal() [{}] renderPass --> bindSampler({}) [{}]", this.name.get(), this.textureId, this.texture.getGlTexture().getLabel());
+                        pass.bindSampler("Sampler" + this.textureId, this.texture.getGlTextureView());
+                    }
+                    else if (this.directTexture != null)
+                    {
+//                        MiniHUD.LOGGER.warn("RenderContext#drawInternal() [{}] renderPass --> bindSampler({}) [{}]", this.name.get(), this.textureId, this.directTexture.getGlTexture().getLabel());
+                        pass.bindSampler("Sampler" + this.textureId, this.directTexture.getGlTextureView());
+                    }
                 }
+
+                if (useLightmapTex)
+                {
+                    pass.bindSampler("Sampler2", RenderUtils.lightmap().getGlTextureView());
+                }
+
 
 //                for (int i = 0; i < 12; i++)
 //                {
@@ -850,6 +875,11 @@ public class RenderObjectVbo
         else if (this.builder == null)
         {
             throw new RuntimeException("Buffer Builder not valid!");
+        }
+
+        if (this.name.get().isEmpty())
+        {
+            this.name = () -> "RenderObjectVbo";
         }
     }
 
@@ -935,6 +965,7 @@ public class RenderObjectVbo
         this.color = -1;
         this.lineWidth = 1.0f;
         this.started = false;
+        this.uploaded = false;
     }
 
     protected void close()
@@ -944,6 +975,12 @@ public class RenderObjectVbo
             this.unbindTexture(this.texture.getId());
             this.texture.close();
             this.texture = null;
+        }
+
+        if (this.directTexture != null)
+        {
+            this.directTexture.close();
+            this.directTexture = null;
         }
 
         this.reset();
