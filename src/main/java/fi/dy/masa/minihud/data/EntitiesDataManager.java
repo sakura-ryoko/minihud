@@ -30,6 +30,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.BlockTags;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -61,7 +62,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
     public static EntitiesDataManager getInstance() { return INSTANCE; }
 
     private final static ServuxEntitiesHandler<ServuxEntitiesPacket.Payload> HANDLER = ServuxEntitiesHandler.getInstance();
-    private final static MinecraftClient mc = MinecraftClient.getInstance();
+    private final MinecraftClient mc;
     private boolean servuxServer = false;
     private boolean hasInValidServux = false;
     private String servuxVersion;
@@ -84,7 +85,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
     @Override
     public World getWorld()
     {
-        return WorldUtils.getBestWorld(mc);
+        return WorldUtils.getBestWorld(this.mc);
     }
 
     @Override
@@ -92,13 +93,16 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
     {
         if (this.clientWorld == null)
         {
-            clientWorld = mc.world;
+            this.clientWorld = this.mc.world;
         }
 
         return clientWorld;
     }
 
-    private EntitiesDataManager() { }
+    private EntitiesDataManager()
+    {
+        this.mc = MinecraftClient.getInstance();
+    }
 
     @Override
     public void onClientTick(MinecraftClient mc)
@@ -182,11 +186,11 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
         return ServuxEntitiesHandler.CHANNEL_ID;
     }
 
-    private static ClientPlayNetworkHandler getVanillaHandler()
+    private ClientPlayNetworkHandler getVanillaHandler()
     {
-        if (mc.player != null)
+        if (this.mc.player != null)
         {
-            return mc.player.networkHandler;
+            return this.mc.player.networkHandler;
         }
 
         return null;
@@ -289,7 +293,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
 
                 if ((nowTime - pair.getLeft()) > timeout || pair.getLeft() > nowTime)
                 {
-                    //MiniHUD.debugLog("entityCache: entity Id [{}] has timed out by [{}] ms", entityId, timeout);
+//                    MiniHUD.debugLog("entityCache: entity Id [{}] has timed out by [{}] ms", entityId, timeout);
                     this.entityCache.remove(entityId);
                 }
             }
@@ -356,7 +360,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
         if (ver != null && !ver.isEmpty())
         {
             this.servuxVersion = ver;
-            MiniHUD.debugLog("entityDataChannel: joining Servux version {}", ver);
+            MiniHUD.LOGGER.info("entityDataChannel: joining Servux version {}", ver);
         }
         else
         {
@@ -479,6 +483,11 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
                 }
             }
 
+            if (world instanceof ServerWorld)
+            {
+                return this.refreshBlockEntityFromWorld(world, pos);
+            }
+
             return this.blockEntityCache.get(pos).getRight();
         }
         else if (world.getBlockState(pos).getBlock() instanceof BlockEntityProvider)
@@ -489,7 +498,19 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
             {
                 this.pendingBlockEntitiesQueue.add(pos);
             }
+            else
+            {
+                return this.refreshBlockEntityFromWorld(world, pos);
+            }
+        }
 
+        return null;
+    }
+
+    private @Nullable Pair<BlockEntity, NbtCompound> refreshBlockEntityFromWorld(World world, BlockPos pos)
+    {
+        if (world != null && world.getBlockState(pos).hasBlockEntity())
+        {
             BlockEntity be = world.getWorldChunk(pos).getBlockEntity(pos);
 
             if (be != null)
@@ -526,6 +547,12 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
                 }
             }
 
+            // Refresh from Server World
+            if (world instanceof ServerWorld)
+            {
+                return this.refreshEntityFromWorld(world, entityId);
+            }
+
             return this.entityCache.get(entityId).getRight();
         }
 
@@ -535,10 +562,19 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
         {
             this.pendingEntitiesQueue.add(entityId);
         }
-
-        if (this.getWorld() != null)
+        else
         {
-            Entity entity = this.getWorld().getEntityById(entityId);
+            return this.refreshEntityFromWorld(world, entityId);
+        }
+
+        return null;
+    }
+
+    private @Nullable Pair<Entity, NbtCompound> refreshEntityFromWorld(World world, int entityId)
+    {
+        if (world != null)
+        {
+            Entity entity = world.getEntityById(entityId);
 
             if (entity != null)
             {
@@ -710,7 +746,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
             return;
         }
 
-        ClientPlayNetworkHandler handler = getVanillaHandler();
+        ClientPlayNetworkHandler handler = this.getVanillaHandler();
 
         if (handler != null)
         {
@@ -726,7 +762,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
             return;
         }
 
-        ClientPlayNetworkHandler handler = getVanillaHandler();
+        ClientPlayNetworkHandler handler = this.getVanillaHandler();
 
         if (handler != null)
         {
@@ -777,6 +813,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
             }
 
             NbtView view = NbtView.getReader(nbt, this.getClientWorld().getRegistryManager());
+
             blockEntity.read(view.getReader());
             return blockEntity;
         }
@@ -851,6 +888,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
 //                EntityUtils.loadNbtIntoEntity(entity, nbt);
 //            }
         }
+
         return entity;
     }
 

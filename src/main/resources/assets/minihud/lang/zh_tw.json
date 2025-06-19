@@ -953,6 +953,7 @@
     "minihud.info_line.weather.clear": "晴天",
     "minihud.info_line.weather.raining": "降雨",
     "minihud.info_line.weather.thundering": "雷暴",
+    "minihud.info_line.weather.invalid": "§cDisabled, or unknown§r",
     "minihud.info_line.zombie_conversion": "殭屍村民治療剩餘時間：%s",
     "minihud.label.axolotl_tooltip.label": "§7品種: ",
     "minihud.label.axolotl_tooltip.value": "%s [%s]",

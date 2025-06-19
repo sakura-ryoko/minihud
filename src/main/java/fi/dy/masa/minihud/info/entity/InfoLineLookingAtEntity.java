@@ -15,7 +15,6 @@ import net.minecraft.util.Util;
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.malilib.util.nbt.NbtEntityUtils;
 import fi.dy.masa.minihud.Reference;
-import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.info.InfoLine;
 import fi.dy.masa.minihud.mixin.entity.IMixinPassiveEntity;
@@ -43,8 +42,7 @@ public class InfoLineLookingAtEntity extends InfoLine
     {
         List<Entry> list = new ArrayList<>();
 
-        if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue() &&
-            ctx.ent() instanceof LivingEntity living && ctx.hasNbt())
+        if (ctx.ent() instanceof LivingEntity living && ctx.hasNbt())
         {
             Pair<Double, Double> healthPair = NbtEntityUtils.getHealthFromNbt(ctx.nbt());
             Pair<UUID, Boolean> ownerPair = NbtEntityUtils.getTamableOwner(ctx.nbt());

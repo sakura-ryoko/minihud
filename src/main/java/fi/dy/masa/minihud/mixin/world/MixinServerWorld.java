@@ -24,6 +24,7 @@ public class MixinServerWorld
         HudDataManager.getInstance().setSpawnChunkRadius(this.spawnChunkRadius - 1, true);
     }
 
+    // NOTE:  This is only valid when `doWeatherCycle` is enabled in the Game Rules.
     @Inject(method = "tickWeather()V", at = @At(value = "INVOKE",
                                                 target = "Lnet/minecraft/world/level/ServerWorldProperties;setRaining(Z)V"))
     private void minihud_onTickWeather(CallbackInfo ci,
@@ -38,6 +39,7 @@ public class MixinServerWorld
         this.worldProperties.setRaining(bl3);
          */
 
+//        MiniHUD.LOGGER.error("ThunderTime: [{}], RainTime: [{}], ClearTime: [{}], isThunder: [{}], isRain: [{}]", j, k, i, bl2, bl3);
         HudDataManager.getInstance().onServerWeatherTick(i, k, j, bl3, bl2);
     }
 }

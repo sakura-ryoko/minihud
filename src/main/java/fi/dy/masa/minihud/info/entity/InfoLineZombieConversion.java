@@ -16,7 +16,6 @@ import net.minecraft.world.World;
 
 import fi.dy.masa.malilib.util.nbt.NbtEntityUtils;
 import fi.dy.masa.minihud.Reference;
-import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.info.InfoLine;
 import fi.dy.masa.minihud.mixin.entity.IMixinSkeletonEntity;
@@ -44,8 +43,7 @@ public class InfoLineZombieConversion extends InfoLine
     @Override
     public List<Entry> parse(@Nonnull Context ctx)
     {
-        if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue() &&
-            ctx.hasNbt())
+        if (ctx.hasNbt())
         {
             EntityType<?> entityType = NbtEntityUtils.getEntityTypeFromNbt(ctx.nbt());
             if (entityType == null) return null;

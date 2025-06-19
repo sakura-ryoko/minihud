@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -15,6 +16,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import fi.dy.masa.malilib.util.StringUtils;
+import fi.dy.masa.malilib.util.WorldUtils;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.data.EntitiesDataManager;
@@ -42,6 +44,13 @@ public abstract class InfoLine
     public EntitiesDataManager getEntData() { return EntitiesDataManager.getInstance(); }
 
     public DataStorage getData() { return DataStorage.getInstance(); }
+
+    public MinecraftClient mc() { return MinecraftClient.getInstance(); }
+
+    public World getBestWorld()
+    {
+        return WorldUtils.getBestWorld(this.mc());
+    }
 
     public List<Entry> parse(@Nonnull Context ctx)
     {

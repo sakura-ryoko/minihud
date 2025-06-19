@@ -1,8 +1,30 @@
 package fi.dy.masa.minihud.data;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import javax.annotation.Nullable;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+
 import com.mojang.datafixers.util.Pair;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtList;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.recipe.PreparedRecipes;
+import net.minecraft.recipe.Recipe;
+import net.minecraft.recipe.RecipeEntry;
+import net.minecraft.recipe.RecipeManager;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.integrated.IntegratedServer;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.GameRules;
+import net.minecraft.world.World;
+
 import fi.dy.masa.malilib.config.options.ConfigBoolean;
 import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.network.ClientPlayHandler;
@@ -19,25 +41,6 @@ import fi.dy.masa.minihud.network.ServuxHudHandler;
 import fi.dy.masa.minihud.network.ServuxHudPacket;
 import fi.dy.masa.minihud.renderer.OverlayRendererSpawnChunks;
 import fi.dy.masa.minihud.util.DataStorage;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.recipe.PreparedRecipes;
-import net.minecraft.recipe.Recipe;
-import net.minecraft.recipe.RecipeEntry;
-import net.minecraft.recipe.RecipeManager;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-
-import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collection;
 
 public class HudDataManager
 {
@@ -118,18 +121,27 @@ public class HudDataManager
             this.preparedRecipes = PreparedRecipes.EMPTY;
             this.recipeCount = 0;
         }
+        else
+        {
+            MiniHUD.debugLog("HudDataStorage#reset() - dimension change or log-in");
+        }
 
-        this.isRaining = false;
-        this.isThundering = false;
-        this.clearWeatherTimer = -1;
-        this.rainWeatherTimer = -1;
-        this.thunderWeatherTimer = -1;
+        this.resetWeatherData();
 
         if (isLogout || !Configs.Generic.DONT_RESET_SEED_ON_DIMENSION_CHANGE.getBooleanValue())
         {
             this.worldSeedValid = false;
             this.worldSeed = 0;
         }
+    }
+
+    public void resetWeatherData()
+    {
+        this.isRaining = false;
+        this.isThundering = false;
+        this.clearWeatherTimer = -1;
+        this.rainWeatherTimer = -1;
+        this.thunderWeatherTimer = -1;
     }
 
     public void onWorldPre()
@@ -178,6 +190,7 @@ public class HudDataManager
         if (ver != null && !ver.isEmpty())
         {
             this.servuxVersion = ver;
+            MiniHUD.LOGGER.info("hudDataChannel: joining Servux version {}", ver);
         }
         else
         {
@@ -353,6 +366,18 @@ public class HudDataManager
         return 2;
     }
 
+    public boolean hasValidWeatherCycle()
+    {
+        if (DataStorage.getInstance().hasIntegratedServer())
+        {
+            IntegratedServer server = DataStorage.getInstance().getIntegratedServer();
+
+            return (server.getOverworld().getGameRules().getBoolean(GameRules.DO_WEATHER_CYCLE));
+        }
+
+        return this.getClearTime() >= 0 || this.getRainTime() >= 0 || this.getThunderTime() >= 0;
+    }
+
     public boolean isWeatherClear()
     {
         return !this.isWeatherRain() && !this.isWeatherThunder();
@@ -462,7 +487,6 @@ public class HudDataManager
         this.thunderWeatherTimer = thunderTime;
         this.isRaining = isRaining;
         this.isThundering = isThunder;
-        //System.out.printf("onServerWeatherTick - c: %d, r: %d, t: %d, iR: %s, iT: %s\n", clearTime, rainTime, thunderTime, isRaining, isThunder);
     }
 
     public void onHudDataSyncToggled(ConfigBoolean config)

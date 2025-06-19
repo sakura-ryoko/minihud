@@ -163,16 +163,6 @@ public class MobCapDataHandler
                             int cap = entry.getKey().getCapacity() * spawnableChunks / divisor;
                             data[category.ordinal()].setCurrentAndCap(current, cap);
                         }
-                        /*
-                        for (EntityCategory category : ENTITY_CATEGORIES)
-                        {
-                            SpawnGroup type = category.getVanillaCategory();
-                            int current = world.getEnticountEntities(type.getCreatureClass());
-
-                            int cap = type.getCapacity() * spawnableChunks / divisor;
-                            data[category.ordinal()].setCurrentAndCap(current, cap);
-                        }
-                         */
 
                         this.mc.execute(() ->
                         {

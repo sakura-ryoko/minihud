@@ -38,7 +38,6 @@ import net.minecraft.world.World;
 
 import fi.dy.masa.malilib.util.IntBoundingBox;
 import fi.dy.masa.malilib.util.StringUtils;
-import fi.dy.masa.malilib.util.data.Constants;
 import fi.dy.masa.malilib.util.nbt.NbtBlockUtils;
 import fi.dy.masa.malilib.util.time.DurationFormat;
 import fi.dy.masa.malilib.util.time.TimeFormat;
@@ -104,30 +103,20 @@ public class MiscUtils
 
     public static boolean isStructureWithinRange(@Nullable BlockBox bb, BlockPos playerPos, int maxRange)
     {
-        if (bb == null ||
-            playerPos.getX() < (bb.getMinX() - maxRange) ||
-            playerPos.getX() > (bb.getMaxX() + maxRange) ||
-            playerPos.getZ() < (bb.getMinZ() - maxRange) ||
-            playerPos.getZ() > (bb.getMaxZ() + maxRange))
-        {
-            return false;
-        }
-
-        return true;
+        return bb != null &&
+                playerPos.getX() >= (bb.getMinX() - maxRange) &&
+                playerPos.getX() <= (bb.getMaxX() + maxRange) &&
+                playerPos.getZ() >= (bb.getMinZ() - maxRange) &&
+                playerPos.getZ() <= (bb.getMaxZ() + maxRange);
     }
 
     public static boolean isStructureWithinRange(@Nullable IntBoundingBox bb, BlockPos playerPos, int maxRange)
     {
-        if (bb == null ||
-            playerPos.getX() < (bb.minX - maxRange) ||
-            playerPos.getX() > (bb.maxX + maxRange) ||
-            playerPos.getZ() < (bb.minZ - maxRange) ||
-            playerPos.getZ() > (bb.maxZ + maxRange))
-        {
-            return false;
-        }
-
-        return true;
+        return bb != null &&
+                playerPos.getX() >= (bb.minX - maxRange) &&
+                playerPos.getX() <= (bb.maxX + maxRange) &&
+                playerPos.getZ() >= (bb.minZ - maxRange) &&
+                playerPos.getZ() <= (bb.maxZ + maxRange);
     }
 
     public static boolean areBoxesEqual(IntBoundingBox bb1, IntBoundingBox bb2)
@@ -143,24 +132,21 @@ public class MiscUtils
 
     public static void addAxolotlTooltip(ItemStack stack, Consumer<Text> lines)
     {
-        NbtComponent entityData = stack.getComponents().get(DataComponentTypes.BUCKET_ENTITY_DATA);
+        AxolotlEntity.Variant variant = stack.getComponents().getOrDefault(DataComponentTypes.AXOLOTL_VARIANT, AxolotlEntity.Variant.LUCY);
 
-        if (entityData != null)
+//        MiniHUD.LOGGER.error("addAxolotlTooltip(): NBT: [{}]", nbt.toString());
+        int variantId = variant.getIndex();
+//        AxolotlEntity.Variant variant = AxolotlEntity.Variant.byIndex(variantId);
+        String variantName = variant.getId();
+        MutableText labelText = Text.translatable("minihud.label.axolotl_tooltip.label");
+        MutableText valueText = Text.translatable("minihud.label.axolotl_tooltip.value", variantName, variantId);
+
+        if (variantId < AXOLOTL_COLORS.length)
         {
-            NbtCompound tag = entityData.copyNbt();
-            int variantId = tag.getInt(AxolotlEntity.VARIANT_KEY, 0);
-            AxolotlEntity.Variant variant = AxolotlEntity.Variant.byIndex(variantId);
-            String variantName = variant.getId();
-            MutableText labelText = Text.translatable("minihud.label.axolotl_tooltip.label");
-            MutableText valueText = Text.translatable("minihud.label.axolotl_tooltip.value", variantName, variantId);
-
-            if (variantId < AXOLOTL_COLORS.length)
-            {
-                valueText.setStyle(Style.EMPTY.withColor(AXOLOTL_COLORS[variantId]));
-            }
-
-            lines.accept(labelText.append(valueText));
+            valueText.setStyle(Style.EMPTY.withColor(AXOLOTL_COLORS[variantId]));
         }
+
+        lines.accept(labelText.append(valueText));
     }
 
     public static void addBeeTooltip(ItemStack stack, Consumer<Text> lines)

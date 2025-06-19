@@ -82,7 +82,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
     {
         long now = System.currentTimeMillis();
 
-        if (now - this.lastTick > 50)
+        if ((now - this.lastTick) > 50)
         {
             this.lastTick = now;
 
@@ -115,7 +115,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
             {
                 if ((now - longPair.getLeft()) > timeout || longPair.getLeft() > now)
                 {
-                    //MiniHUD.debugLog("villagerOverlayCache: entity Id [{}] has timed out by [{}] ms", integer, timeout);
+//                    MiniHUD.debugLog("villagerOverlayCache: entity Id [{}] has timed out by [{}] ms", integer, timeout);
                     this.recentEntityData.remove(integer);
                 }
             }));
@@ -142,9 +142,11 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
             !pair.getRight().isEmpty() &&
             this.isNbtValid(pair.getRight()))
         {
+            long now = System.currentTimeMillis();
+
             synchronized (this.recentEntityData)
             {
-                this.recentEntityData.put(entityId, Pair.of(System.currentTimeMillis(), pair));
+                this.recentEntityData.put(entityId, Pair.of(now, pair));
             }
 
             return pair;
@@ -197,7 +199,11 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
             if (pair.getRight() != null && !pair.getRight().isEmpty())
             {
                 Pair<Integer, UUID> zombiePair = NbtEntityUtils.getZombieConversionTimerFromNbt(pair.getRight());
-                conversionTime = zombiePair != null ? zombiePair.getLeft() : -1;
+
+                if (zombiePair != null && zombiePair.getLeft() > -1)
+                {
+                    conversionTime = zombiePair.getLeft();
+                }
             }
             else if (pair.getLeft() != null && pair.getLeft() instanceof ZombieVillagerEntity zombert)
             {

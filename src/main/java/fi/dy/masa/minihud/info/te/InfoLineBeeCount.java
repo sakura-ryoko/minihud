@@ -14,7 +14,6 @@ import net.minecraft.world.World;
 
 import fi.dy.masa.malilib.util.nbt.NbtBlockUtils;
 import fi.dy.masa.minihud.Reference;
-import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.info.InfoLine;
 
@@ -38,8 +37,7 @@ public class InfoLineBeeCount extends InfoLine
     @Override
     public List<Entry> parse(@Nonnull Context ctx)
     {
-        if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue() &&
-            ctx.hasNbt())
+        if (ctx.hasNbt())
         {
             BlockEntityType<?> beType = NbtBlockUtils.getBlockEntityTypeFromNbt(ctx.nbt());
 

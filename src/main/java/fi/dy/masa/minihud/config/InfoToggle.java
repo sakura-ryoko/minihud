@@ -52,14 +52,14 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
 
     // Server
     SERVER_TPS              ("infoServerTPS",               InfoLineTypes.SERVER_TPS, false, ""),
-    SERVUX                  ("infoServux",                  null, false, true, ""),
+    SERVUX                  ("infoServux",                  InfoLineTypes.SERVUX, false, true, ""),
     PING                    ("infoPing",                    null, false, ""),
 
     // World
-    WEATHER                 ("infoWeather",                 null, false, true, ""),
+    WEATHER                 ("infoWeather",                 InfoLineTypes.WEATHER, false, true, ""),
     TIME_TOTAL_MODULO       ("infoTimeTotalModulo",         null, false, ""),
     TIME_DAY_MODULO         ("infoTimeDayModulo",           null, false, ""),
-    MOB_CAPS                ("infoMobCaps",                 null, false, true,""),
+    MOB_CAPS                ("infoMobCaps",                 InfoLineTypes.MOB_CAPS, false, true,""),
     PARTICLE_COUNT          ("infoParticleCount",           null, false, ""),
     DIFFICULTY              ("infoDifficulty",              null, false, ""),
     ENTITIES                ("infoEntities",                null, false, ""),

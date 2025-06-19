@@ -7,6 +7,7 @@ import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.info.InfoLine;
 
@@ -585,41 +586,6 @@ public class RenderHandler implements IRenderer
         }
         else if (type == InfoToggle.SERVER_TPS)
         {
-//            if (this.data.hasIntegratedServer() && (this.data.getIntegratedServer().getTicks() % 10) == 0)
-//            {
-//                this.data.updateIntegratedServerTPS();
-//            }
-//
-//            if (this.data.hasTPSData())
-//            {
-//                double tps = this.data.getServerTPS();
-//                double mspt = this.data.getServerMSPT();
-//                String rst = GuiBase.TXT_RST;
-//                String preTps = tps >= 20.0D ? GuiBase.TXT_GREEN : GuiBase.TXT_RED;
-//                String preMspt;
-//
-//                // Carpet server and integrated server have actual meaningful MSPT data available
-//                if (this.data.hasCarpetServer() || this.data.isSinglePlayer())
-//                {
-//                    if      (mspt <= 40) { preMspt = GuiBase.TXT_GREEN; }
-//                    else if (mspt <= 45) { preMspt = GuiBase.TXT_YELLOW; }
-//                    else if (mspt <= 50) { preMspt = GuiBase.TXT_GOLD; }
-//                    else                 { preMspt = GuiBase.TXT_RED; }
-//
-//                    this.addLineI18n("minihud.info_line.server_tps", preTps, tps, rst, preMspt, mspt, rst);
-//                }
-//                else
-//                {
-//                    if (mspt <= 51) { preMspt = GuiBase.TXT_GREEN; }
-//                    else            { preMspt = GuiBase.TXT_RED; }
-//
-//                    this.addLineI18n("minihud.info_line.server_tps.est", preTps, tps, rst, preMspt, mspt, rst);
-//                }
-//            }
-//            else
-//            {
-//                this.addLineI18n("minihud.info_line.server_tps.invalid");
-//            }
             if (this.addedTypes.contains(type))
             {
                 return;
@@ -642,116 +608,68 @@ public class RenderHandler implements IRenderer
         }
         else if (type == InfoToggle.SERVUX)
         {
-            if (EntitiesDataManager.getInstance().hasServuxServer())
+            if (this.addedTypes.contains(type))
             {
-                this.addLineI18n("minihud.info_line.servux",
-                                 EntitiesDataManager.getInstance().getServuxVersion());
-            }
-            else if (this.getDataStorage().hasServuxServer())
-            {
-                this.addLineI18n("minihud.info_line.servux",
-                                 this.getDataStorage().getServuxVersion());
-            }
-            else if (this.getHudData().hasServuxServer())
-            {
-                this.addLineI18n("minihud.info_line.servux",
-                                 this.getHudData().getServuxVersion());
-            }
-            else if (this.getDataStorage().hasIntegratedServer() == false &&
-                    !EntitiesDataManager.getInstance().hasServuxServer() &&
-                    !this.getHudData().hasServuxServer())
-            {
-                this.addLineI18n("minihud.info_line.servux.not_connected");
+                return;
             }
 
-            if (EntitiesDataManager.getInstance().hasServuxServer())
+            // Make into a generic call
+            World bestWorld = WorldUtils.getBestWorld(mc);
+            InfoLine parser = type.initParser();
+
+            if (parser != null)
             {
-                this.addLineI18n("minihud.info_line.servux.entity_sync",
-                                 EntitiesDataManager.getInstance().getBlockEntityCacheCount(),
-                                 EntitiesDataManager.getInstance().getPendingBlockEntitiesCount(),
-                                 EntitiesDataManager.getInstance().getEntityCacheCount(),
-                                 EntitiesDataManager.getInstance().getPendingEntitiesCount()
-                );
-            }
-            if (this.getDataStorage().hasServuxServer())
-            {
-                this.addLineI18n("minihud.info_line.servux.structures",
-                                 this.getDataStorage().getStrucutreCount(),
-                                 this.getHudData().getSpawnChunkRadius(),
-                                 this.getHudData().getWorldSpawn().toShortString(),
-                                 this.getHudData().isWorldSpawnKnown() ? StringUtils.translate("minihud.info_line.slime_chunk.yes") : StringUtils.translate("minihud.info_line.slime_chunk.no")
-                );
-            }
-            else if (this.getHudData().hasServuxServer())
-            {
-                this.addLineI18n("minihud.info_line.servux.no_structures_hud",
-                                 this.getHudData().getSpawnChunkRadius(),
-                                 this.getHudData().getWorldSpawn().toShortString(),
-                                 this.getHudData().isWorldSpawnKnown() ? StringUtils.translate("minihud.info_line.slime_chunk.yes") : StringUtils.translate("minihud.info_line.slime_chunk.no")
-                );
-            }
-            else if (this.getDataStorage().hasIntegratedServer())
-            {
-                this.addLineI18n("minihud.info_line.servux.structures_integrated",
-                                 this.getDataStorage().getStrucutreCount(),
-                                 this.getHudData().getSpawnChunkRadius(),
-                                 this.getHudData().getWorldSpawn().toShortString(),
-                                 this.getHudData().isWorldSpawnKnown() ? StringUtils.translate("minihud.info_line.slime_chunk.yes") : StringUtils.translate("minihud.info_line.slime_chunk.no")
-                );
+                InfoLine.Context ctx = new InfoLine.Context(bestWorld, null, null, null, null, null);
+                this.processEntries(parser.parse(ctx));
+
+                if (parser.succeededType())
+                {
+                    this.addedTypes.add(type);
+                }
             }
         }
         else if (type == InfoToggle.WEATHER)
         {
-            World bestWorld = WorldUtils.getBestWorld(mc);
-            String weatherType = "clear";
-            int weatherTime = -1;
-
-            if (bestWorld == null)
+            if (this.addedTypes.contains(type))
             {
                 return;
             }
-            if (this.getHudData().isWeatherThunder() && this.getHudData().isWeatherRain())
-            {
-                weatherType = "thundering";
-                weatherTime = this.getHudData().getThunderTime();
-            }
-            else if (this.getHudData().isWeatherRain())
-            {
-                weatherType = "raining";
-                weatherTime = this.getHudData().getRainTime();
-            }
-            else if (this.getHudData().isWeatherClear())
-            {
-                weatherType = "clear";
-                weatherTime = this.getHudData().getClearTime();
-            }
 
-            if (weatherTime < 1)
+            // Make into a generic call
+            World bestWorld = WorldUtils.getBestWorld(mc);
+            InfoLine parser = type.initParser();
+
+            if (parser != null)
             {
-                this.addLineI18n("minihud.info_line.weather", StringUtils.translate("minihud.info_line.weather." + weatherType), "");
-            }
-            else
-            {
-                // 50 = 1000 (ms/s) / 20 (ticks/s)
-                this.addLineI18n("minihud.info_line.weather",
-                                 StringUtils.translate("minihud.info_line.weather." + weatherType),
-                                 ", " + MiscUtils.formatDuration(weatherTime * 50L)
-                                 + " " + StringUtils.translate("minihud.info_line.remaining")
-                );
+                InfoLine.Context ctx = new InfoLine.Context(bestWorld, null, null, null, null, null);
+                this.processEntries(parser.parse(ctx));
+
+                if (parser.succeededType())
+                {
+                    this.addedTypes.add(type);
+                }
             }
         }
         else if (type == InfoToggle.MOB_CAPS)
         {
-            MobCapDataHandler mobCapData = this.data.getMobCapData();
-
-            if (mc.isIntegratedServerRunning() && (mc.getServer().getTicks() % 100) == 0)
+            if (this.addedTypes.contains(type))
             {
-                mobCapData.updateIntegratedServerMobCaps();
+                return;
             }
 
-            if (mobCapData.getHasValidData())
+            // Make into a generic call
+            World bestWorld = WorldUtils.getBestWorld(mc);
+            InfoLine parser = type.initParser();
+
+            if (parser != null)
             {
-                this.addLine(mobCapData.getFormattedInfoLine());
+                InfoLine.Context ctx = new InfoLine.Context(bestWorld, null, null, null, null, null);
+                this.processEntries(parser.parse(ctx));
+
+                if (parser.succeededType())
+                {
+                    this.addedTypes.add(type);
+                }
             }
         }
         else if (type == InfoToggle.PING)
@@ -1092,78 +1010,6 @@ public class RenderHandler implements IRenderer
                     this.addedTypes.add(type);
                 }
             }
-
-//            if (this.addedTypes.contains(InfoToggle.HORSE_SPEED) ||
-//                this.addedTypes.contains(InfoToggle.HORSE_JUMP))
-//            {
-//                return;
-//            }
-//
-//            World bestWorld = WorldUtils.getBestWorld(mc);
-//            Pair<Entity, NbtCompound> pair = this.getTargetEntity(bestWorld, mc);
-//            Entity vehicle;
-//
-//            if (pair == null)
-//            {
-//                vehicle = mc.player.getVehicle();
-//            }
-//            else
-//            {
-//                vehicle = pair.getLeft() == null ? mc.player.getVehicle() : pair.getLeft();
-//            }
-//
-//            if (vehicle instanceof AbstractHorseEntity == false)
-//            {
-//                return;
-//            }
-//
-//            AbstractHorseEntity horse = (AbstractHorseEntity) vehicle;
-//            String AnimalType = horse.getType().getName().getString();
-//            double speed = 0d;
-//            double jump = 0d;
-//
-//            if (pair != null && Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue() && !pair.getRight().isEmpty())
-//            {
-//                NbtCompound nbt = pair.getRight();
-//                EntityType<?> entityType = fi.dy.masa.malilib.util.nbt.NbtEntityUtils.getEntityTypeFromNbt(nbt);
-//
-//                if (entityType.equals(EntityType.CAMEL) ||
-//                    entityType.equals(EntityType.DONKEY) ||
-//                    entityType.equals(EntityType.HORSE) ||
-//                    entityType.equals(EntityType.LLAMA) ||
-//                    entityType.equals(EntityType.MULE) ||
-//                    entityType.equals(EntityType.SKELETON_HORSE) ||
-//                    entityType.equals(EntityType.TRADER_LLAMA) ||
-//                    entityType.equals(EntityType.ZOMBIE_HORSE))
-//                {
-//                    Pair<Double, Double> horsePair = NbtEntityUtils.getSpeedAndJumpStrengthFromNbt(nbt);
-//                    speed = horsePair.getLeft();
-//                    jump = horsePair.getRight();
-//                }
-//            }
-//            else
-//            {
-//                //speed = horse.getMovementSpeed() > 0 ? horse.getMovementSpeed() : horse.getAttributeValue(EntityAttributes.MOVEMENT_SPEED);
-//                speed = horse.getAttributeValue(EntityAttributes.MOVEMENT_SPEED);
-//                jump = horse.getAttributeValue(EntityAttributes.JUMP_STRENGTH);
-//            }
-//
-//            if (InfoToggle.HORSE_SPEED.getBooleanValue() && speed > 0d)
-//            {
-//                speed *= 42.1629629629629f;
-//                this.addLineI18n("minihud.info_line.horse_speed", AnimalType, speed);
-//                this.addedTypes.add(InfoToggle.HORSE_SPEED);
-//            }
-//            if (InfoToggle.HORSE_JUMP.getBooleanValue() && jump > 0d)
-//            {
-//                double calculatedJumpHeight =
-//                        -0.1817584952d * jump * jump * jump +
-//                                3.689713992d * jump * jump +
-//                                2.128599134d * jump +
-//                                -0.343930367;
-//                this.addLineI18n("minihud.info_line.horse_jump", AnimalType, calculatedJumpHeight);
-//                this.addedTypes.add(InfoToggle.HORSE_JUMP);
-//            }
         }
         else if (type == InfoToggle.ROTATION_YAW ||
                  type == InfoToggle.ROTATION_PITCH ||
@@ -1254,20 +1100,6 @@ public class RenderHandler implements IRenderer
                     this.addedTypes.add(type);
                 }
             }
-
-//            String chunksClient = mc.world.asString();
-//            World worldServer = WorldUtils.getBestWorld(mc);
-//
-//            if (worldServer != null && worldServer != mc.world)
-//            {
-//                int chunksServer = worldServer.getChunkManager().getLoadedChunkCount();
-//                int chunksServerTot = ((ServerChunkManager) worldServer.getChunkManager()).getTotalChunksLoadedCount();
-//                this.addLineI18n("minihud.info_line.loaded_chunks_count.server", chunksServer, chunksServerTot, chunksClient);
-//            }
-//            else
-//            {
-//                this.addLine(chunksClient);
-//            }
         }
         else if (type == InfoToggle.PANDA_GENE)
         {
@@ -1643,38 +1475,6 @@ public class RenderHandler implements IRenderer
                     return;
                 }
             }
-
-//            // Don't add the same line multiple times
-//            if (this.addedTypes.contains(InfoToggle.LOOKING_AT_BLOCK) ||
-//                this.addedTypes.contains(InfoToggle.LOOKING_AT_BLOCK_CHUNK))
-//            {
-//                return;
-//            }
-//
-//            if (mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.BLOCK)
-//            {
-//                BlockPos lookPos = ((BlockHitResult) mc.crosshairTarget).getBlockPos();
-//                String pre = "";
-//                StringBuilder str = new StringBuilder(128);
-//
-//                if (InfoToggle.LOOKING_AT_BLOCK.getBooleanValue())
-//                {
-//                    str.append(StringUtils.translate("minihud.info_line.looking_at_block", lookPos.getX(), lookPos.getY(), lookPos.getZ()));
-//                    pre = " // ";
-//                }
-//
-//                if (InfoToggle.LOOKING_AT_BLOCK_CHUNK.getBooleanValue())
-//                {
-//                    str.append(pre).append(StringUtils.translate("minihud.info_line.looking_at_block_chunk",
-//                            lookPos.getX() & 0xF, lookPos.getY() & 0xF, lookPos.getZ() & 0xF,
-//                            lookPos.getX() >> 4, lookPos.getY() >> 4, lookPos.getZ() >> 4));
-//                }
-//
-//                this.addLine(str.toString());
-//
-//                this.addedTypes.add(InfoToggle.LOOKING_AT_BLOCK);
-//                this.addedTypes.add(InfoToggle.LOOKING_AT_BLOCK_CHUNK);
-//            }
         }
         else if (type == InfoToggle.BLOCK_PROPS)
         {
@@ -1715,8 +1515,6 @@ public class RenderHandler implements IRenderer
         {
             return true;
         }
-
-        //System.out.printf("isEntityDataValid(): nbt: [%s]\n", nbt.toString());
 
         for (String key : nbt.getKeys())
         {
