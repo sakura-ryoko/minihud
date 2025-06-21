@@ -40,6 +40,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.EnderChestInventory;
 import net.minecraft.item.*;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
@@ -241,7 +242,6 @@ public class RenderHandler implements IRenderer
                 if (player != null)
                 {
                     Pair<Entity, NbtCompound> pair = EntitiesDataManager.getInstance().requestEntity(world, player.getId());
-                    NbtCompound nbt = new NbtCompound();
                     EnderChestInventory inv;
 
                     if (pair != null && pair.getRight() != null && pair.getRight().contains(NbtKeys.ENDER_ITEMS))
@@ -255,7 +255,10 @@ public class RenderHandler implements IRenderer
 
                     if (inv != null)
                     {
-                        nbt.put(NbtKeys.ENDER_ITEMS, inv.toNbtList(world.getRegistryManager()));
+                        NbtList list = inv.toNbtList(world.getRegistryManager());
+                        NbtCompound nbt = new NbtCompound();
+
+                        nbt.put(NbtKeys.ENDER_ITEMS, list);
                         RenderUtils.renderNbtItemsPreview(stack, nbt, x, y, false, drawContext);
                     }
                 }
