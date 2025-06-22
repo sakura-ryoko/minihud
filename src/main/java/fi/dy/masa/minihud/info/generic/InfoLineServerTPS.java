@@ -34,8 +34,10 @@ public class InfoLineServerTPS extends InfoLine
 
         if (TickUtils.isValid())
         {
-            final double tps = TickUtils.getMeasuredTPS();
-            final double mspt = TickUtils.getMeasuredMSPT();
+            // TickUtils constantly refreshes the Measures MSPT to be able to take over in the event the server stops;
+            // and it is required in order to calculate the isSprinting() correctly.
+            final double tps = TickUtils.hasDirectData() ? TickUtils.getDirectTPS() : TickUtils.getMeasuredTPS();
+            final double mspt = TickUtils.hasDirectData() ? TickUtils.getDirectMSPT() : TickUtils.getMeasuredMSPT();
 //            double actualTps = TickUtils.getActualTPS();
             boolean isSprinting = TickUtils.isSprinting();
             boolean isFrozen = TickUtils.isFrozen();
@@ -46,8 +48,10 @@ public class InfoLineServerTPS extends InfoLine
             String preMspt;
             String append = isSprinting ? this.qt(TPS_KEY+".sprinting") : (isFrozen ? this.qt(TPS_KEY+".frozen") : "");
 
-            if ((this.getData().hasCarpetServer() || this.getData().isSinglePlayer())
-                && !TickUtils.isEstimated())
+            if ((this.getData().hasCarpetServer() ||
+//                this.getHudData().hasServuxServer() ||
+                this.getData().isSinglePlayer())
+                && TickUtils.hasDirectData())
             {
                 if      (mspt <= 40) { preMspt = GuiBase.TXT_GREEN; }
                 else if (mspt <= 45) { preMspt = GuiBase.TXT_YELLOW; }
