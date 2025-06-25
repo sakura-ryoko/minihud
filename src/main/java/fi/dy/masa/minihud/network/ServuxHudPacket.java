@@ -17,7 +17,7 @@ public class ServuxHudPacket implements IClientPayloadData
     private Type packetType;
     private NbtCompound nbt;
     private PacketByteBuf buffer;
-    public static final int PROTOCOL_VERSION = 1;
+    public static final int PROTOCOL_VERSION = 2;
 
     private ServuxHudPacket(Type type)
     {
@@ -59,6 +59,26 @@ public class ServuxHudPacket implements IClientPayloadData
     public static ServuxHudPacket SpawnResponse(@Nullable NbtCompound nbt)
     {
         var packet = new ServuxHudPacket(Type.PACKET_S2C_SPAWN_DATA);
+        if (nbt != null)
+        {
+            packet.nbt.copyFrom(nbt);
+        }
+        return packet;
+    }
+
+    public static ServuxHudPacket DataLoggerRequest(@Nullable NbtCompound nbt)
+    {
+        var packet = new ServuxHudPacket(Type.PACKET_C2S_DATA_LOGGER_REQUEST);
+        if (nbt != null)
+        {
+            packet.nbt.copyFrom(nbt);
+        }
+        return packet;
+    }
+
+    public static ServuxHudPacket DataLoggerTick(@Nullable NbtCompound nbt)
+    {
+        var packet = new ServuxHudPacket(Type.PACKET_S2C_DATA_LOGGER_TICK);
         if (nbt != null)
         {
             packet.nbt.copyFrom(nbt);
@@ -189,7 +209,7 @@ public class ServuxHudPacket implements IClientPayloadData
                     MiniHUD.LOGGER.error("ServuxHudPacket#toPacket: error writing buffer data to packet: [{}]", e.getLocalizedMessage());
                 }
             }
-            case PACKET_C2S_METADATA_REQUEST, PACKET_S2C_METADATA, PACKET_C2S_SPAWN_DATA_REQUEST, PACKET_S2C_SPAWN_DATA, PACKET_S2C_WEATHER_TICK, PACKET_C2S_RECIPE_MANAGER_REQUEST ->
+            case PACKET_C2S_METADATA_REQUEST, PACKET_S2C_METADATA, PACKET_C2S_SPAWN_DATA_REQUEST, PACKET_S2C_SPAWN_DATA, PACKET_S2C_WEATHER_TICK, PACKET_C2S_RECIPE_MANAGER_REQUEST, PACKET_C2S_DATA_LOGGER_REQUEST, PACKET_S2C_DATA_LOGGER_TICK ->
             {
                 // Write NBT
                 try
@@ -279,6 +299,30 @@ public class ServuxHudPacket implements IClientPayloadData
                     MiniHUD.LOGGER.error("ServuxHudPacket#fromPacket: error reading Spawn Data Response from packet: [{}]", e.getLocalizedMessage());
                 }
             }
+            case PACKET_C2S_DATA_LOGGER_REQUEST ->
+            {
+                // Read Nbt
+                try
+                {
+                    return ServuxHudPacket.DataLoggerRequest(input.readNbt());
+                }
+                catch (Exception e)
+                {
+                    MiniHUD.LOGGER.error("ServuxHudPacket#fromPacket: error reading Data Logger Request from packet: [{}]", e.getLocalizedMessage());
+                }
+            }
+            case PACKET_S2C_DATA_LOGGER_TICK ->
+            {
+                // Read Nbt
+                try
+                {
+                    return ServuxHudPacket.DataLoggerTick(input.readNbt());
+                }
+                catch (Exception e)
+                {
+                    MiniHUD.LOGGER.error("ServuxHudPacket#fromPacket: error reading Data Logger Tick from packet: [{}]", e.getLocalizedMessage());
+                }
+            }
             case PACKET_S2C_WEATHER_TICK ->
             {
                 // Read Nbt
@@ -342,6 +386,8 @@ public class ServuxHudPacket implements IClientPayloadData
         PACKET_C2S_SPAWN_DATA_REQUEST(4),
         PACKET_S2C_WEATHER_TICK(5),
         PACKET_C2S_RECIPE_MANAGER_REQUEST(6),
+        PACKET_S2C_DATA_LOGGER_TICK(7),
+        PACKET_C2S_DATA_LOGGER_REQUEST(8),
         // For Packet Splitter (Oversize Packets, S2C)
         PACKET_S2C_NBT_RESPONSE_START(10),
         PACKET_S2C_NBT_RESPONSE_DATA(11);
