@@ -81,6 +81,7 @@ public abstract class ServuxHudHandler<T extends CustomPayload> implements IPlug
             }
             case PACKET_S2C_SPAWN_DATA -> HudDataManager.getInstance().receiveSpawnMetadata(packet.getCompound());
             case PACKET_S2C_WEATHER_TICK -> HudDataManager.getInstance().receiveWeatherData(packet.getCompound());
+            case PACKET_S2C_DATA_LOGGER_TICK -> HudDataManager.getInstance().receiveDataLogger(packet.getCompound());
             case PACKET_S2C_NBT_RESPONSE_DATA ->
             {
                 if (this.readingSessionKey == -1)

@@ -17,6 +17,7 @@ import fi.dy.masa.malilib.hotkeys.KeybindSettings;
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.Reference;
+import fi.dy.masa.minihud.data.HudDataManager;
 import fi.dy.masa.minihud.info.InfoLine;
 import fi.dy.masa.minihud.info.InfoLineFlag;
 import fi.dy.masa.minihud.info.InfoLineType;
@@ -399,6 +400,17 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     public void setBooleanValue(boolean value)
     {
         this.valueBoolean = value;
+    }
+
+    @Override
+    public void toggleBooleanValue()
+    {
+        IHotkeyTogglable.super.toggleBooleanValue();
+
+        if (this == InfoToggle.SERVER_TPS || this == InfoToggle.MOB_CAPS)
+        {
+            HudDataManager.getInstance().refreshDataLoggers();
+        }
     }
 
     @Override

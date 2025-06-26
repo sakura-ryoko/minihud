@@ -2,11 +2,14 @@ package fi.dy.masa.minihud.data;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Locale;
 import javax.annotation.Nullable;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
 import com.mojang.datafixers.util.Pair;
+import fi.dy.masa.malilib.util.time.TickUtils;
+import fi.dy.masa.minihud.config.InfoToggle;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
@@ -53,6 +56,7 @@ public class HudDataManager
     private boolean servuxServer;
     private boolean hasInValidServux;
     private String servuxVersion;
+    private int servuxProtocolVersion;
 
     private long worldSeed;
     private int spawnChunkRadius;
@@ -185,16 +189,18 @@ public class HudDataManager
         }
     }
 
-    public void setServuxVersion(String ver)
+    public void setServuxVersion(String ver, int protocol)
     {
         if (ver != null && !ver.isEmpty())
         {
             this.servuxVersion = ver;
+            this.servuxProtocolVersion = protocol;
             MiniHUD.LOGGER.info("hudDataChannel: joining Servux version {}", ver);
         }
         else
         {
             this.servuxVersion = "unknown";
+            this.servuxProtocolVersion = -1;
         }
     }
 
@@ -542,14 +548,15 @@ public class HudDataManager
         if (!this.servuxServer && !DataStorage.getInstance().hasIntegratedServer() &&
             this.shouldRegister)
         {
+            final int ver = data.getInt("version", -1);
             MiniHUD.debugLog("HudDataStorage#receiveMetadata(): received METADATA from Servux");
 
-            if (data.getInt("version", -1) != ServuxHudPacket.PROTOCOL_VERSION)
+            if (ver != ServuxHudPacket.PROTOCOL_VERSION)
             {
                 MiniHUD.LOGGER.warn("hudDataChannel: Mis-matched protocol version!");
             }
 
-            this.setServuxVersion(data.getString("servux", "?"));
+            this.setServuxVersion(data.getString("servux", "?"), ver);
             this.setWorldSpawn(new BlockPos(data.getInt("spawnPosX", 0), data.getInt("spawnPosY", 0), data.getInt("spawnPosZ", 0)));
             this.setSpawnChunkRadius(data.getInt("spawnChunkRadius", 2), true);
 
@@ -564,6 +571,7 @@ public class HudDataManager
             {
                 //this.registerChannel();
                 this.requestRecipeManager();
+//                this.refreshDataLoggers();
                 return true;
             }
             else
@@ -608,9 +616,10 @@ public class HudDataManager
     {
         if (!DataStorage.getInstance().hasIntegratedServer())
         {
+            final int ver = data.getInt("version", -1);
             MiniHUD.debugLog("HudDataStorage#receiveSpawnMetadata(): from Servux");
 
-            this.setServuxVersion(data.getString("servux", "?"));
+            this.setServuxVersion(data.getString("servux", "?"), ver);
             this.setWorldSpawn(new BlockPos(data.getInt("spawnPosX", 0), data.getInt("spawnPosY", 0), data.getInt("spawnPosZ", 0)));
             this.setSpawnChunkRadius(data.getInt("spawnChunkRadius", 2), true);
 
@@ -630,6 +639,70 @@ public class HudDataManager
             {
                 this.unregisterChannel();
                 this.shouldRegister = false;
+            }
+        }
+    }
+
+    public void refreshDataLoggers()
+    {
+        if (!DataStorage.getInstance().hasIntegratedServer() && this.hasServuxServer() &&
+            this.servuxProtocolVersion >= ServuxHudPacket.PROTOCOL_VERSION)
+        {
+            NbtCompound nbt = new NbtCompound();
+
+            MiniHUD.debugLog("refreshDataLoggers: []");
+
+            nbt.putBoolean(ServuxDataLogger.TPS.name(), InfoToggle.SERVER_TPS.getBooleanValue());
+            nbt.putBoolean(ServuxDataLogger.MOB_CAPS.name(), InfoToggle.MOB_CAPS.getBooleanValue());
+
+            HANDLER.encodeClientData(ServuxHudPacket.DataLoggerRequest(nbt));
+        }
+    }
+
+    public void receiveDataLogger(NbtCompound nbt)
+    {
+        if (this.hasServuxServer() && nbt != null && !nbt.isEmpty())
+        {
+            for (String key : nbt.getKeys())
+            {
+                ServuxDataLogger type = ServuxDataLogger.fromStringStatic(key);
+
+                if (type != null)
+                {
+                    NbtCompound entry = (NbtCompound) nbt.get(key, type.codec()).orElse(null);
+
+                    if (entry != null)
+                    {
+                        switch (type)
+                        {
+                            case TPS ->
+                            {
+                                ServuxTickData data = ServuxTickData.CODEC.decode(NbtOps.INSTANCE, entry).getPartialOrThrow()
+                                                                          .getFirst();
+
+                                // TODO
+                                MiniHUD.LOGGER.warn("Servux TPS: [{}], MSPT: [{}]",
+                                                    String.format(Locale.ROOT, "%.1f", data.tps()),
+                                                    String.format(Locale.ROOT, "%.1f", data.mspt())
+                                                   );
+
+//                                if (data != null)
+//                                {
+//                                    if (!TickUtils.getInstance().isUsingDirectServerData())
+//                                    {
+//                                        TickUtils.getInstance().toggleUseDirectServerData(true);
+//                                    }
+//
+//                                    TickUtils.getInstance().updateNanoTickFromServerDirect(data.mspt(), data.tps());
+//                                }
+                            }
+                            case MOB_CAPS ->
+                            {
+                                MiniHUD.LOGGER.error("receiveDataLogger: type: [{}], nbt: [{}]", type.asString(), entry.toString());
+                            }
+                        }
+                    }
+                }
             }
         }
     }
