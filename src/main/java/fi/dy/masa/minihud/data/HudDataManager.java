@@ -644,16 +644,22 @@ public class HudDataManager
 
     public void refreshDataLoggers()
     {
-        if (!DataStorage.getInstance().hasIntegratedServer() && this.hasServuxServer() &&
-            this.servuxProtocolVersion >= ServuxHudPacket.PROTOCOL_VERSION)
+        if (!DataStorage.getInstance().hasIntegratedServer() && this.hasServuxServer())
         {
-            NbtCompound nbt = new NbtCompound();
+            if (this.servuxProtocolVersion >= ServuxHudPacket.PROTOCOL_VERSION)
+            {
+                NbtCompound nbt = new NbtCompound();
 
-            MiniHUD.debugLog("refreshDataLoggers: []");
-            nbt.putBoolean(ServuxDataLogger.TPS.name(), InfoToggle.SERVER_TPS.getBooleanValue());
-            nbt.putBoolean(ServuxDataLogger.MOB_CAPS.name(), InfoToggle.MOB_CAPS.getBooleanValue());
+                MiniHUD.debugLog("refreshDataLoggers: TPS: [{}] / MobCaps: [{}]", InfoToggle.SERVER_TPS.getBooleanValue(), InfoToggle.MOB_CAPS.getBooleanValue());
+                nbt.putBoolean(ServuxDataLogger.TPS.name(), InfoToggle.SERVER_TPS.getBooleanValue());
+                nbt.putBoolean(ServuxDataLogger.MOB_CAPS.name(), InfoToggle.MOB_CAPS.getBooleanValue());
 
-            HANDLER.encodeClientData(ServuxHudPacket.DataLoggerRequest(nbt));
+                HANDLER.encodeClientData(ServuxHudPacket.DataLoggerRequest(nbt));
+            }
+            else
+            {
+                MiniHUD.LOGGER.warn("refreshDataLoggers: Incompatible Servux version detected!");
+            }
         }
     }
 
@@ -714,6 +720,8 @@ public class HudDataManager
 
                                 if (entry.contains(dimKey))
                                 {
+                                    // We are receiving MobCap Data for every dimension that is loaded;
+                                    // but we only care about the one that we are in.
                                     NbtCompound nbtEntry = entry.getCompoundOrEmpty(dimKey);
 
                                     try
