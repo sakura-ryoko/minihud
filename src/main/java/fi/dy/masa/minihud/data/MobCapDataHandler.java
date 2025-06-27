@@ -129,6 +129,14 @@ public class MobCapDataHandler
         }
     }
 
+    protected void setFromServuxData(MobCapData serverData, long worldTick)
+    {
+        if (this.subscribedServerData.getHasRecentValidData(worldTick) == false)
+        {
+            this.parsedServerData.setFromServuxMobCapData(serverData, worldTick);
+        }
+    }
+
     public void updateIntegratedServerMobCaps()
     {
         if (this.mc.isIntegratedServerRunning() && this.mc.world != null)

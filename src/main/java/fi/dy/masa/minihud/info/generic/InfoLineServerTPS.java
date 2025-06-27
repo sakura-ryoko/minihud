@@ -48,10 +48,10 @@ public class InfoLineServerTPS extends InfoLine
             String preMspt;
             String append = isSprinting ? this.qt(TPS_KEY+".sprinting") : (isFrozen ? this.qt(TPS_KEY+".frozen") : "");
 
-            if ((this.getData().hasCarpetServer() ||
-//                this.getHudData().hasServuxServer() ||
-                this.getData().isSinglePlayer())
-                && TickUtils.hasDirectData())
+            if ((this.getHudData().hasServuxServer() && TickUtils.hasServuxData()) ||
+                (this.getData().hasCarpetServer() && TickUtils.hasDirectData()) ||
+                (this.getData().isSinglePlayer() && this.getData().hasIntegratedServer())
+            )
             {
                 if      (mspt <= 40) { preMspt = GuiBase.TXT_GREEN; }
                 else if (mspt <= 45) { preMspt = GuiBase.TXT_YELLOW; }

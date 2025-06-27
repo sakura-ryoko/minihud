@@ -2,14 +2,11 @@ package fi.dy.masa.minihud.data;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Locale;
 import javax.annotation.Nullable;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
 import com.mojang.datafixers.util.Pair;
-import fi.dy.masa.malilib.util.time.TickUtils;
-import fi.dy.masa.minihud.config.InfoToggle;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
@@ -35,9 +32,11 @@ import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
 import fi.dy.masa.malilib.util.InfoUtils;
 import fi.dy.masa.malilib.util.JsonUtils;
 import fi.dy.masa.malilib.util.StringUtils;
+import fi.dy.masa.malilib.util.time.TickUtils;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.Configs;
+import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.config.RendererToggle;
 import fi.dy.masa.minihud.mixin.world.IMixinServerRecipeManager;
 import fi.dy.masa.minihud.network.ServuxHudHandler;
@@ -571,7 +570,7 @@ public class HudDataManager
             {
                 //this.registerChannel();
                 this.requestRecipeManager();
-//                this.refreshDataLoggers();
+                this.refreshDataLoggers();
                 return true;
             }
             else
@@ -651,7 +650,6 @@ public class HudDataManager
             NbtCompound nbt = new NbtCompound();
 
             MiniHUD.debugLog("refreshDataLoggers: []");
-
             nbt.putBoolean(ServuxDataLogger.TPS.name(), InfoToggle.SERVER_TPS.getBooleanValue());
             nbt.putBoolean(ServuxDataLogger.MOB_CAPS.name(), InfoToggle.MOB_CAPS.getBooleanValue());
 
@@ -663,6 +661,9 @@ public class HudDataManager
     {
         if (this.hasServuxServer() && nbt != null && !nbt.isEmpty())
         {
+            MinecraftClient mc = MinecraftClient.getInstance();
+            if (mc.world == null) return;
+
             for (String key : nbt.getKeys())
             {
                 ServuxDataLogger type = ServuxDataLogger.fromStringStatic(key);
@@ -677,28 +678,60 @@ public class HudDataManager
                         {
                             case TPS ->
                             {
-                                ServuxTickData data = ServuxTickData.CODEC.decode(NbtOps.INSTANCE, entry).getPartialOrThrow()
-                                                                          .getFirst();
+                                try
+                                {
+                                    ServuxTickData data = ServuxTickData.CODEC.decode(mc.world.getRegistryManager().getOps(NbtOps.INSTANCE), entry).getOrThrow().getFirst();
 
-                                // TODO
-                                MiniHUD.LOGGER.warn("Servux TPS: [{}], MSPT: [{}]",
-                                                    String.format(Locale.ROOT, "%.1f", data.tps()),
-                                                    String.format(Locale.ROOT, "%.1f", data.mspt())
-                                                   );
+//                                    MiniHUD.LOGGER.warn("Servux TPS: [{}], MSPT: [{}]",
+//                                                        String.format(Locale.ROOT, "%.1f", data.tps()),
+//                                                        String.format(Locale.ROOT, "%.1f", data.mspt())
+//                                                       );
 
-//                                if (data != null)
-//                                {
-//                                    if (!TickUtils.getInstance().isUsingDirectServerData())
-//                                    {
-//                                        TickUtils.getInstance().toggleUseDirectServerData(true);
-//                                    }
-//
-//                                    TickUtils.getInstance().updateNanoTickFromServerDirect(data.mspt(), data.tps());
-//                                }
+                                    if (data != null)
+                                    {
+                                        if (!TickUtils.getInstance().isUsingDirectServerData())
+                                        {
+                                            TickUtils.getInstance().toggleUseDirectServerData(true);
+                                        }
+
+                                        TickUtils.getInstance().updateNanoTickFromServux(data.tps(),
+                                                                                         data.mspt(),
+                                                                                         data.sprintTicks(),
+                                                                                         data.frozen(),
+                                                                                         data.sprinting(),
+                                                                                         data.stepping()
+                                        );
+                                    }
+                                }
+                                catch (Exception err)
+                                {
+                                    MiniHUD.LOGGER.error("receiveDataLogger: TPS / Exception; {}", err.getLocalizedMessage());
+                                }
                             }
                             case MOB_CAPS ->
                             {
-                                MiniHUD.LOGGER.error("receiveDataLogger: type: [{}], nbt: [{}]", type.asString(), entry.toString());
+                                String dimKey = mc.world.getRegistryKey().getValue().toString();
+
+                                if (entry.contains(dimKey))
+                                {
+                                    NbtCompound nbtEntry = entry.getCompoundOrEmpty(dimKey);
+
+                                    try
+                                    {
+                                        long worldTick = nbtEntry.getLong("WorldTick", mc.world.getTime());
+                                        nbtEntry.remove("WorldTick");       // Not to confuse the Deserializer
+                                        MobCapData serverData = MobCapData.CODEC.decode(mc.world.getRegistryManager().getOps(NbtOps.INSTANCE), nbtEntry).getOrThrow().getFirst();
+
+                                        if (serverData != null)
+                                        {
+                                            DataStorage.getInstance().getMobCapData().setFromServuxData(serverData, worldTick);
+                                        }
+                                    }
+                                    catch (Exception err)
+                                    {
+                                        MiniHUD.LOGGER.error("receiveDataLogger: MobCaps / Exception; {}", err.getLocalizedMessage());
+                                    }
+                                }
                             }
                         }
                     }

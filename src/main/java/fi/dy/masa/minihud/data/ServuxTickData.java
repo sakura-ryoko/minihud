@@ -6,7 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 public record ServuxTickData(double mspt,
                              double tps,
-                             double sprintTicks,
+                             long sprintTicks,
                              boolean frozen,
                              boolean sprinting,
                              boolean stepping
@@ -15,7 +15,7 @@ public record ServuxTickData(double mspt,
             (inst) -> inst.group(
                     PrimitiveCodec.DOUBLE.fieldOf("mspt").forGetter(ServuxTickData::mspt),
                     PrimitiveCodec.DOUBLE.fieldOf("tps").forGetter(ServuxTickData::tps),
-                    PrimitiveCodec.DOUBLE.fieldOf("sprintTicks").forGetter(ServuxTickData::sprintTicks),
+                    PrimitiveCodec.LONG.fieldOf("sprintTicks").forGetter(ServuxTickData::sprintTicks),
                     PrimitiveCodec.BOOL.fieldOf("frozen").forGetter(ServuxTickData::frozen),
                     PrimitiveCodec.BOOL.fieldOf("sprinting").forGetter(ServuxTickData::sprinting),
                     PrimitiveCodec.BOOL.fieldOf("stepping").forGetter(ServuxTickData::stepping)
