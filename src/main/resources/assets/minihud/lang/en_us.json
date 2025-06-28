@@ -814,7 +814,7 @@
     "minihud.info_line.block_pos.exception": "broken format string in 'blockPosFormat'",
     "minihud.info_line.chunk_pos": "Sub-Chunk: %d, %d, %d",
     "minihud.info_line.chunk_sections": "C: %d",
-    "minihud.info_line.chunk_updates": "TODO",
+    "minihud.info_line.chunk_updates": "Chunk updates: %d",
     "minihud.info_line.comparator_output_signal": "Comparator Output: §c§l%d§r",
     "minihud.info_line.coordinates.exception": "broken coordinate format string!",
     "minihud.info_line.coordinates.format": "XYZ: %.2f / %.4f / %.2f",
