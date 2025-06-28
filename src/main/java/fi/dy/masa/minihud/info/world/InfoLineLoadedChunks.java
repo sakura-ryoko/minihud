@@ -1,4 +1,4 @@
-package fi.dy.masa.minihud.info.generic;
+package fi.dy.masa.minihud.info.world;
 
 import java.util.ArrayList;
 import java.util.List;

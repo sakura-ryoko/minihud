@@ -33,6 +33,8 @@ public class InfoLineLookingAtChunk extends InfoLine
     @Override
     public List<Entry> parse(@NotNull InfoLine.Context ctx)
     {
+        if (ctx.world() == null) return null;
+
         return ctx.pos() != null ? this.parseBlockPos(ctx.world(), ctx.pos()) : null;
     }
 

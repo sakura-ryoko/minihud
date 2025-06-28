@@ -2,10 +2,10 @@ package fi.dy.masa.minihud.info.entity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.attribute.EntityAttributes;
@@ -38,11 +38,11 @@ public class InfoLineHorseSpeed extends InfoLine
     @Override
     public List<Entry> parse(@NotNull InfoLine.Context ctx)
     {
-        MinecraftClient mc = MinecraftClient.getInstance();
+        if (ctx.world() == null) return null;
 
-        if (mc.player != null)
+        if (this.mc().player != null)
         {
-            Entity vehicle = mc.player.getVehicle();
+            Entity vehicle = Objects.requireNonNull(this.mc().player).getVehicle();
 
             if (vehicle instanceof AbstractHorseEntity)
             {

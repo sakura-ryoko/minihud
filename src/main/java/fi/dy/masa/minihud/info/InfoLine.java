@@ -52,6 +52,11 @@ public abstract class InfoLine
         return WorldUtils.getBestWorld(this.mc());
     }
 
+    public World getClientWorld()
+    {
+        return this.mc().world;
+    }
+
     public List<Entry> parse(@Nonnull Context ctx)
     {
         return null;
@@ -111,7 +116,7 @@ public abstract class InfoLine
 
     public abstract boolean succeededType();
 
-    public record Context(@Nonnull World world, @Nullable Entity ent, @Nullable BlockEntity be, @Nullable BlockPos pos, @Nullable BlockState state, NbtCompound nbt)
+    public record Context(@Nullable World world, @Nullable Entity ent, @Nullable BlockEntity be, @Nullable BlockPos pos, @Nullable BlockState state, NbtCompound nbt)
     {
         public boolean hasEntity()
         {

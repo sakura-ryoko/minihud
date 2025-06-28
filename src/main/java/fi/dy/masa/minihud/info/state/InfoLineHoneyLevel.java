@@ -33,6 +33,8 @@ public class InfoLineHoneyLevel extends InfoLine
     @Override
     public List<Entry> parse(@Nonnull Context ctx)
     {
+        if (ctx.world() == null) return null;
+
         if (ctx.hasBlockState() && ctx.state() != null)
         {
             return this.parseBlockState(ctx.world(), ctx.state());

@@ -36,6 +36,8 @@ public class InfoLineLookingAtPlayerExp extends InfoLine
     @Override
     public List<Entry> parse(@Nonnull Context ctx)
     {
+        if (ctx.world() == null) return null;
+
         if (ctx.hasLiving() && ctx.hasNbt())
         {
             EntityType<?> entityType = NbtEntityUtils.getEntityTypeFromNbt(ctx.nbt());

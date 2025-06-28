@@ -75,11 +75,11 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
 
     // Chunk
     LOADED_CHUNKS_COUNT     ("infoLoadedChunksCount",       InfoLineTypes.LOADED_CHUNKS, false, ""),
-    CHUNK_SECTIONS          ("infoChunkSections",           null, false, ""),
-    CHUNK_SECTIONS_FULL     ("infoChunkSectionsLine",       null, false, ""),
-    CHUNK_UPDATES           ("infoChunkUpdates",            null, false, ""),
+    CHUNK_SECTIONS          ("infoChunkSections",           InfoLineTypes.CHUNK_SECTIONS, false, ""),
+    CHUNK_SECTIONS_FULL     ("infoChunkSectionsLine",       InfoLineTypes.CHUNK_SECTIONS_FULL, false, ""),
+    CHUNK_UPDATES           ("infoChunkUpdates",            InfoLineTypes.CHUNK_UPDATES, false, ""),
     REGION_FILE             ("infoRegionFile",              null, false, ""),
-    SLIME_CHUNK             ("infoSlimeChunk",              null, false, ""),
+    SLIME_CHUNK             ("infoSlimeChunk",              InfoLineTypes.SLIME_CHUNK, false, ""),
 
     // Block
     LOOKING_AT_BLOCK        ("infoLookingAtBlock",          InfoLineTypes.LOOKING_AT_BLOCK, false, ""),

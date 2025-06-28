@@ -32,6 +32,8 @@ public class InfoLineLookingAtBlock extends InfoLine
     @Override
     public List<Entry> parse(@NotNull InfoLine.Context ctx)
     {
+        if (ctx.world() == null) return null;
+
         if (InfoToggle.LOOKING_AT_BLOCK_CHUNK.getBooleanValue())
         {
             return null;

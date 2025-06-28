@@ -42,6 +42,8 @@ public class InfoLineLookingAtEffects extends InfoLine
     @Override
     public List<Entry> parse(@Nonnull InfoLine.Context ctx)
     {
+        if (ctx.world() == null) return null;
+
         if (ctx.hasLiving() && ctx.hasNbt())
         {
             EntityType<?> entityType = NbtEntityUtils.getEntityTypeFromNbt(ctx.nbt());

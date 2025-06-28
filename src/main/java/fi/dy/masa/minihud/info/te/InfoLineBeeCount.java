@@ -37,6 +37,8 @@ public class InfoLineBeeCount extends InfoLine
     @Override
     public List<Entry> parse(@Nonnull Context ctx)
     {
+        if (ctx.world() == null) return null;
+
         if (ctx.hasNbt())
         {
             BlockEntityType<?> beType = NbtBlockUtils.getBlockEntityTypeFromNbt(ctx.nbt());

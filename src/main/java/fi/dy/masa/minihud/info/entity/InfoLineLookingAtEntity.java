@@ -40,6 +40,7 @@ public class InfoLineLookingAtEntity extends InfoLine
     @Override
     public List<Entry> parse(@Nonnull Context ctx)
     {
+        if (ctx.world() == null) return null;
         List<Entry> list = new ArrayList<>();
 
         if (ctx.ent() instanceof LivingEntity living && ctx.hasNbt())

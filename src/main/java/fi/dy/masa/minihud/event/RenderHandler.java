@@ -1069,15 +1069,36 @@ public class RenderHandler implements IRenderer
         }
         else if (type == InfoToggle.CHUNK_SECTIONS)
         {
-            this.addLineI18n("minihud.info_line.chunk_sections", ((IMixinWorldRenderer) mc.worldRenderer).minihud_getRenderedChunksInvoker());
+            // Make into a generic call
+            InfoLine parser = type.initParser();
+
+            if (parser != null)
+            {
+                InfoLine.Context ctx = new InfoLine.Context(null, null, null, null, null, null);
+                this.processEntries(parser.parse(ctx));
+            }
         }
         else if (type == InfoToggle.CHUNK_SECTIONS_FULL)
         {
-            this.addLine(mc.worldRenderer.getChunksDebugString());
+            // Make into a generic call
+            InfoLine parser = type.initParser();
+
+            if (parser != null)
+            {
+                InfoLine.Context ctx = new InfoLine.Context(null, null, null, null, null, null);
+                this.processEntries(parser.parse(ctx));
+            }
         }
         else if (type == InfoToggle.CHUNK_UPDATES)
         {
-            this.addLine("TODO" /*String.format("Chunk updates: %d", ChunkRenderer.chunkUpdateCount)*/);
+            // Make into a generic call
+            InfoLine parser = type.initParser();
+
+            if (parser != null)
+            {
+                InfoLine.Context ctx = new InfoLine.Context(null, null, null, null, null, null);
+                this.processEntries(parser.parse(ctx));
+            }
         }
         else if (type == InfoToggle.LOADED_CHUNKS_COUNT)
         {
@@ -1216,32 +1237,14 @@ public class RenderHandler implements IRenderer
         }
         else if (type == InfoToggle.SLIME_CHUNK)
         {
-            if (MiscUtils.isOverworld(world) == false)
+            // Make into a generic call
+            InfoLine parser = type.initParser();
+
+            if (parser != null)
             {
-                return;
+                InfoLine.Context ctx = new InfoLine.Context(world, null, null, pos, null, null);
+                this.processEntries(parser.parse(ctx));
             }
-
-            String result;
-
-            if (this.getHudData().isWorldSeedKnown(world))
-            {
-                long seed = this.getHudData().getWorldSeed(world);
-
-                if (MiscUtils.canSlimeSpawnAt(pos.getX(), pos.getZ(), seed))
-                {
-                    result = StringUtils.translate("minihud.info_line.slime_chunk.yes");
-                }
-                else
-                {
-                    result = StringUtils.translate("minihud.info_line.slime_chunk.no");
-                }
-            }
-            else
-            {
-                result = StringUtils.translate("minihud.info_line.slime_chunk.no_seed");
-            }
-
-            this.addLineI18n("minihud.info_line.slime_chunk", result);
         }
         else if (type == InfoToggle.LOOKING_AT_ENTITY)
         {

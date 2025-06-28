@@ -37,6 +37,8 @@ public class InfoLineDolphinTreasure extends InfoLine
     @Override
     public List<Entry> parse(@NotNull InfoLine.Context ctx)
     {
+        if (ctx.world() == null) return null;
+
         if (ctx.hasNbt())
         {
             EntityType<?> entityType = NbtEntityUtils.getEntityTypeFromNbt(ctx.nbt());
