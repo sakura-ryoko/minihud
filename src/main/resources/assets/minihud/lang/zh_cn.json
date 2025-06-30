@@ -814,7 +814,7 @@
     "minihud.info_line.block_pos.exception": "“方块坐标格式（blockPosFormat）”格式字符串错误",
     "minihud.info_line.chunk_pos": "§r子区块坐标：%d, %d, %d",
     "minihud.info_line.chunk_sections": "区块分段：%d",
-    "minihud.info_line.chunk_updates": "Chunk updates: %d",
+    "minihud.info_line.chunk_updates": "区块更新：%d",
     "minihud.info_line.comparator_output_signal": "比较器输出：§c§l%d§r",
     "minihud.info_line.coordinates.exception": "坐标格式字符串错误！",
     "minihud.info_line.coordinates.format": "玩家坐标：%.2f / %.4f / %.2f",
