@@ -917,7 +917,7 @@
     "minihud.info_line.rotation_yaw": "偏航角：%.1f",
     "minihud.info_line.server_tps": "服务器TPS：%s%.1f%s MSPT：%s%.1f%s",
     "minihud.info_line.server_tps.est": "服务器TPS：%s%.1f%s（预估MSPT：%s%.1f%s）",
-    "minihud.info_line.server_tps.frozen": " [§b§l冰雪奇缘§r]",
+    "minihud.info_line.server_tps.frozen": " [§b§l冻结§r]",
     "minihud.info_line.server_tps.invalid": "服务器TPS：<无有效数据>",
     "minihud.info_line.server_tps.sprinting": " [§d§l短跑§r]",
     "minihud.info_line.servux": "Servux版本：%s",
