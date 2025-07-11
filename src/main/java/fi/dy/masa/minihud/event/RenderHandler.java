@@ -1023,16 +1023,16 @@ public class RenderHandler implements IRenderer
 
             if (parser != null)
             {
-                Pair<Entity, NbtCompound> entPair = this.getTargetEntity(bestWorld, mc);
+                Pair<Entity, NbtCompound> pair = this.getTargetEntity(bestWorld, mc);
                 InfoLine.Context ctx;
 
-                if (mc.player.hasVehicle() && entPair == null)
+                if (mc.player.hasVehicle() && pair == null)
                 {
                     ctx = new InfoLine.Context(bestWorld, mc.player.getVehicle(), null, null, null, null);
                 }
-                else if (entPair != null)
+                else if (pair != null)
                 {
-                    ctx = new InfoLine.Context(bestWorld, entPair.getLeft(), null, null, null, entPair.getRight());
+                    ctx = new InfoLine.Context(bestWorld, pair.getLeft(), null, null, null, pair.getRight());
                 }
                 else
                 {
@@ -1699,6 +1699,13 @@ public class RenderHandler implements IRenderer
         if (mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.ENTITY)
         {
             Entity lookedEntity = ((EntityHitResult) mc.crosshairTarget).getEntity();
+
+            // Don't return the player entity (Apparently this is a thing in modern Minecraft versions)
+            if (lookedEntity == null || lookedEntity.getId() == mc.player.getId())
+            {
+                return null;
+            }
+
             World bestWorld = WorldUtils.getBestWorld(mc);
             Pair<Entity, NbtCompound> pair = null;
 
