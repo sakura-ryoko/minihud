@@ -413,7 +413,7 @@ public class DataStorage
 
     public void onClientTickPre(MinecraftClient mc)
     {
-        if (mc.world != null)
+        if (mc.world != null && mc.world.getTime() > 0L)
         {
             int tick = (int) (mc.world.getTime() % this.blockBreakCounter.length);
             this.blockBreakCounter[tick] = 0;
@@ -422,7 +422,7 @@ public class DataStorage
 
     public void onPlayerBlockBreak(MinecraftClient mc)
     {
-        if (mc.world != null)
+        if (mc.world != null && mc.world.getTime() > 0L)
         {
             int tick = (int) (mc.world.getTime() % this.blockBreakCounter.length);
             ++this.blockBreakCounter[tick];

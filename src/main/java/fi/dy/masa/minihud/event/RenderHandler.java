@@ -605,6 +605,10 @@ public class RenderHandler implements IRenderer
                     this.addedTypes.add(type);
                 }
             }
+            else
+            {
+                return;
+            }
         }
         else if (type == InfoToggle.SERVUX)
         {
@@ -626,6 +630,10 @@ public class RenderHandler implements IRenderer
                 {
                     this.addedTypes.add(type);
                 }
+            }
+            else
+            {
+                return;
             }
         }
         else if (type == InfoToggle.WEATHER)
@@ -649,6 +657,10 @@ public class RenderHandler implements IRenderer
                     this.addedTypes.add(type);
                 }
             }
+            else
+            {
+                return;
+            }
         }
         else if (type == InfoToggle.MOB_CAPS)
         {
@@ -670,6 +682,10 @@ public class RenderHandler implements IRenderer
                 {
                     this.addedTypes.add(type);
                 }
+            }
+            else
+            {
+                return;
             }
         }
         else if (type == InfoToggle.PING)
@@ -895,6 +911,10 @@ public class RenderHandler implements IRenderer
                     return;
                 }
             }
+            else
+            {
+                return;
+            }
         }
         else if (type == InfoToggle.COMPARATOR_OUTPUT)
         {
@@ -920,6 +940,14 @@ public class RenderHandler implements IRenderer
                         return;
                     }
                 }
+                else
+                {
+                    return;
+                }
+            }
+            else
+            {
+                return;
             }
         }
         else if (type == InfoToggle.HONEY_LEVEL)
@@ -946,6 +974,10 @@ public class RenderHandler implements IRenderer
                     return;
                 }
             }
+            else
+            {
+                return;
+            }
         }
         else if (type == InfoToggle.FURNACE_XP)
         {
@@ -971,6 +1003,10 @@ public class RenderHandler implements IRenderer
                 {
                     return;
                 }
+            }
+            else
+            {
+                return;
             }
         }
         else if (type == InfoToggle.HORSE_SPEED ||
@@ -1009,6 +1045,10 @@ public class RenderHandler implements IRenderer
                 {
                     this.addedTypes.add(type);
                 }
+            }
+            else
+            {
+                return;
             }
         }
         else if (type == InfoToggle.ROTATION_YAW ||
@@ -1077,6 +1117,10 @@ public class RenderHandler implements IRenderer
                 InfoLine.Context ctx = new InfoLine.Context(null, null, null, null, null, null);
                 this.processEntries(parser.parse(ctx));
             }
+            else
+            {
+                return;
+            }
         }
         else if (type == InfoToggle.CHUNK_SECTIONS_FULL)
         {
@@ -1088,6 +1132,10 @@ public class RenderHandler implements IRenderer
                 InfoLine.Context ctx = new InfoLine.Context(null, null, null, null, null, null);
                 this.processEntries(parser.parse(ctx));
             }
+            else
+            {
+                return;
+            }
         }
         else if (type == InfoToggle.CHUNK_UPDATES)
         {
@@ -1098,6 +1146,10 @@ public class RenderHandler implements IRenderer
             {
                 InfoLine.Context ctx = new InfoLine.Context(null, null, null, null, null, null);
                 this.processEntries(parser.parse(ctx));
+            }
+            else
+            {
+                return;
             }
         }
         else if (type == InfoToggle.LOADED_CHUNKS_COUNT)
@@ -1120,6 +1172,10 @@ public class RenderHandler implements IRenderer
                 {
                     this.addedTypes.add(type);
                 }
+            }
+            else
+            {
+                return;
             }
         }
         else if (type == InfoToggle.PANDA_GENE)
@@ -1145,6 +1201,10 @@ public class RenderHandler implements IRenderer
                 {
                     return;
                 }
+            }
+            else
+            {
+                return;
             }
         }
         else if (type == InfoToggle.PARTICLE_COUNT)
@@ -1245,6 +1305,10 @@ public class RenderHandler implements IRenderer
                 InfoLine.Context ctx = new InfoLine.Context(world, null, null, pos, null, null);
                 this.processEntries(parser.parse(ctx));
             }
+            else
+            {
+                return;
+            }
         }
         else if (type == InfoToggle.LOOKING_AT_ENTITY)
         {
@@ -1270,6 +1334,10 @@ public class RenderHandler implements IRenderer
                     return;
                 }
             }
+            else
+            {
+                return;
+            }
         }
         else if (type == InfoToggle.ENTITY_VARIANT)
         {
@@ -1293,6 +1361,10 @@ public class RenderHandler implements IRenderer
                 {
                     return;
                 }
+            }
+            else
+            {
+                return;
             }
         }
         else if (type == InfoToggle.ENTITY_HOME_POS)
@@ -1318,6 +1390,10 @@ public class RenderHandler implements IRenderer
                     return;
                 }
             }
+            else
+            {
+                return;
+            }
         }
         else if (type == InfoToggle.LOOKING_AT_EFFECTS)
         {
@@ -1341,6 +1417,10 @@ public class RenderHandler implements IRenderer
                 {
                     return;
                 }
+            }
+            else
+            {
+                return;
             }
         }
         else if (type == InfoToggle.ZOMBIE_CONVERSION)
@@ -1366,6 +1446,10 @@ public class RenderHandler implements IRenderer
                     return;
                 }
             }
+            else
+            {
+                return;
+            }
         }
         else if (type == InfoToggle.DOLPHIN_TREASURE)
         {
@@ -1390,6 +1474,10 @@ public class RenderHandler implements IRenderer
                     return;
                 }
             }
+            else
+            {
+                return;
+            }
         }
         else if (type == InfoToggle.ENTITY_REG_NAME)
         {
@@ -1413,6 +1501,10 @@ public class RenderHandler implements IRenderer
                 {
                     return;
                 }
+            }
+            else
+            {
+                return;
             }
         }
         else if (type == InfoToggle.PLAYER_EXPERIENCE)
@@ -1444,6 +1536,10 @@ public class RenderHandler implements IRenderer
                 {
                     return;
                 }
+            }
+            else
+            {
+                return;
             }
         }
         else if (type == InfoToggle.LOOKING_AT_BLOCK ||
@@ -1478,6 +1574,10 @@ public class RenderHandler implements IRenderer
                     return;
                 }
             }
+            else
+            {
+                return;
+            }
         }
         else if (type == InfoToggle.BLOCK_PROPS)
         {
@@ -1505,9 +1605,15 @@ public class RenderHandler implements IRenderer
                         this.addedTypes.add(type);
                     }
                 }
+                else
+                {
+                    return;
+                }
             }
-
-//            this.getBlockProperties(mc);
+            else
+            {
+                return;
+            }
         }
     }
 
