@@ -2,6 +2,7 @@ package fi.dy.masa.minihud.info.entity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
@@ -38,6 +39,16 @@ public class InfoLineHorseJump extends InfoLine
     public List<Entry> parse(@NotNull InfoLine.Context ctx)
     {
         if (ctx.world() == null) return null;
+
+        if (this.mc().player != null)
+        {
+            Entity vehicle = Objects.requireNonNull(this.mc().player).getVehicle();
+
+            if (vehicle instanceof AbstractHorseEntity)
+            {
+                return this.parseEnt(ctx.world(), vehicle);
+            }
+        }
 
         if (ctx.hasLiving() && ctx.hasNbt())
         {
