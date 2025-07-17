@@ -188,6 +188,8 @@
     "minihud.config.generic.comment.villagerOfferPriceRange": "Show the price range of villager offers for enchanted books",
     "minihud.config.generic.comment.villagerOfferPriceThreshold": "Only show villager offers with prices below this ratio\nSet to 1.0 to display all offers",
     "minihud.config.generic.name.axolotlTooltips": "axolotlTooltips",
+    "minihud.config.generic.comment.entityDataSyncBackupOpenToLan": "Enable `§eentityDataSyncBackup§r` Open-To-Lan packet\nhandling override for other players",
+    "minihud.config.generic.name.entityDataSyncBackupOpenToLan": "entityDataSyncBackupOpenToLan",
     "minihud.config.generic.name.beeTooltips": "beeTooltips",
     "minihud.config.generic.name.biomeOverlayRange": "biomeOverlayRange",
     "minihud.config.generic.name.biomeOverlayRangeVertical": "biomeOverlayRangeVertical",
