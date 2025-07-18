@@ -124,6 +124,18 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
 
                 if (!Configs.Generic.ENTITY_DATA_SYNC_BACKUP.getBooleanValue())
                 {
+                    // Expire cached NBT and clear pending Queue if both are disabled
+                    if (!this.pendingBlockEntitiesQueue.isEmpty())
+                    {
+                        this.pendingBlockEntitiesQueue.clear();
+                    }
+
+                    if (!this.pendingEntitiesQueue.isEmpty())
+                    {
+                        this.pendingEntitiesQueue.clear();
+                    }
+
+//                    this.tickCache(now);
                     return;
                 }
             }
@@ -222,7 +234,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
             this.serverTickTime = now - (this.getCacheTimeout() + 5000L);
             this.tickCache(now);
             this.serverTickTime = now;
-            this.clientWorld = mc.world;
+            this.clientWorld = this.mc.world;
             this.checkOpStatus = true;
             this.lastOpCheck = now;
         }
@@ -264,7 +276,9 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
 
     public long getCacheTimeout()
     {
-        return (long) (MathHelper.clamp(Configs.Generic.ENTITY_DATA_SYNC_CACHE_TIMEOUT.getFloatValue(), 0.25f, 15.0f) * 1000L);
+        // Increase cache timeout when in Backup Mode.
+        int modifier = Configs.Generic.ENTITY_DATA_SYNC_BACKUP.getBooleanValue() ? 5 : 1;
+        return (long) (MathHelper.clamp((Configs.Generic.ENTITY_DATA_SYNC_CACHE_TIMEOUT.getFloatValue() * modifier), 0.25f, 15.0f) * 1000L);
     }
 
     private void tickCache(long nowTime)
@@ -353,6 +367,11 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
     public boolean hasServuxServer()
     {
         return this.servuxServer;
+    }
+
+    public boolean hasBackupStatus()
+    {
+        return Configs.Generic.ENTITY_DATA_SYNC_BACKUP.getBooleanValue() && this.hasOpStatus;
     }
 
     public void setServuxVersion(String ver)
@@ -499,7 +518,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
                 this.pendingBlockEntitiesQueue.add(pos);
             }
 
-            return this.refreshBlockEntityFromWorld(world, pos);
+            return this.refreshBlockEntityFromWorld(this.getClientWorld(), pos);
         }
 
         return null;
@@ -540,7 +559,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
             {
                 if (System.currentTimeMillis() - this.entityCache.get(entityId).getLeft() > this.getCacheRefresh())
                 {
-                    //MiniHUD.debugLog("requestEntity: entity Id [{}] requeue at [{}] ms", entityId, this.getCacheRefresh());
+//                    MiniHUD.debugLog("requestEntity: entity Id [{}] requeue at [{}] ms", entityId, this.getCacheRefresh());
                     this.pendingEntitiesQueue.add(entityId);
                 }
             }
@@ -548,9 +567,11 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
             // Refresh from Server World
             if (world instanceof ServerWorld)
             {
+//                MiniHUD.debugLog("requestEntity: entity Id [{}] refresh from local server", entityId);
                 return this.refreshEntityFromWorld(world, entityId);
             }
 
+//            MiniHUD.debugLog("requestEntity: entity Id [{}] get from cache", entityId);
             return this.entityCache.get(entityId).getRight();
         }
 
@@ -561,7 +582,8 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
             this.pendingEntitiesQueue.add(entityId);
         }
 
-        return this.refreshEntityFromWorld(world, entityId);
+//        MiniHUD.debugLog("requestEntity: entity Id [{}] refresh from world", entityId);
+        return this.refreshEntityFromWorld(this.getClientWorld(), entityId);
     }
 
     private @Nullable Pair<Entity, NbtCompound> refreshEntityFromWorld(World world, int entityId)
@@ -572,10 +594,12 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
 
             if (entity != null)
             {
-                NbtView view = NbtView.getWriter(world.getRegistryManager());
-                entity.writeData(view.getWriter());
-                NbtCompound nbt = view.readNbt();
                 Identifier id = EntityType.getId(entity.getType());
+                NbtView view = NbtView.getWriter(world.getRegistryManager());
+                NbtCompound nbt;
+
+                entity.writeData(view.getWriter());
+                nbt = view.readNbt();
 
                 if (nbt != null && id != null)
                 {

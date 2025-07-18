@@ -15,7 +15,6 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.world.World;
 
-import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.malilib.util.nbt.NbtEntityUtils;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
@@ -74,10 +73,10 @@ public class InfoLineLookingAtEffects extends InfoLine
             {
                 list.add(this.translate(EFFECTS_KEY,
                                         effectType.value().getName().getString(),
-                                        effect.getAmplifier() > 0 ? StringUtils.translate(EFFECTS_KEY+".amplifier", effect.getAmplifier() + 1) : "",
-                                        effect.isInfinite() ? StringUtils.translate(EFFECTS_KEY+".infinite") :
+                                        effect.getAmplifier() > 0 ? this.qt(EFFECTS_KEY+".amplifier", effect.getAmplifier() + 1) : "",
+                                        effect.isInfinite() ? this.qt(EFFECTS_KEY+".infinite") :
                                         MiscUtils.formatDuration((effect.getDuration() / 20) * 1000L),
-                                        StringUtils.translate(REMAINING_KEY)
+                                        this.qt(REMAINING_KEY)
                 ));
             }
         }
@@ -100,10 +99,10 @@ public class InfoLineLookingAtEffects extends InfoLine
                 {
                     list.add(this.translate(EFFECTS_KEY,
                                             effect.getEffectType().value().getName().getString(),
-                                            effect.getAmplifier() > 0 ? StringUtils.translate(EFFECTS_KEY + ".amplifier", effect.getAmplifier() + 1) : "",
-                                            effect.isInfinite() ? StringUtils.translate(EFFECTS_KEY + ".infinite") :
+                                            effect.getAmplifier() > 0 ? this.qt(EFFECTS_KEY + ".amplifier", effect.getAmplifier() + 1) : "",
+                                            effect.isInfinite() ? this.qt(EFFECTS_KEY + ".infinite") :
                                             MiscUtils.formatDuration((effect.getDuration() / 20) * 1000L),
-                                            StringUtils.translate(REMAINING_KEY)
+                                            this.qt(REMAINING_KEY)
                     ));
                 }
             }

@@ -12,7 +12,6 @@ import net.minecraft.entity.Tameable;
 import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.util.Util;
 
-import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.malilib.util.nbt.NbtEntityUtils;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
@@ -58,7 +57,7 @@ public class InfoLineLookingAtEntity extends InfoLine
                 health = living.getHealth();
             }
 
-            String entityLine = StringUtils.translate(LOOKING_KEY+".livingentity", living.getName().getString(), health, maxHealth);
+            String entityLine = this.qt(LOOKING_KEY+".livingentity", living.getName().getString(), health, maxHealth);
 
             if (ownerPair.getLeft() != Util.NIL_UUID)
             {
@@ -66,20 +65,20 @@ public class InfoLineLookingAtEntity extends InfoLine
 
                 if (owner != null)
                 {
-                    entityLine = entityLine + " - " + StringUtils.translate(LOOKING_KEY+".owner") + ": " + owner.getName().getLiteralString();
+                    entityLine = entityLine + " - " + this.qt(LOOKING_KEY+".owner") + ": " + owner.getName().getLiteralString();
                 }
             }
             if (agePair.getLeft() < 0)
             {
                 int untilGrown = agePair.getLeft() * (-1);
-                entityLine = entityLine+ " [" + MiscUtils.formatDuration(untilGrown * 50L) + " " + StringUtils.translate(REMAINING_KEY) + "]";
+                entityLine = entityLine+ " [" + MiscUtils.formatDuration(untilGrown * 50L) + " " + this.qt(REMAINING_KEY) + "]";
             }
 
             list.add(this.format(entityLine));
         }
         else if (ctx.ent() instanceof LivingEntity living)
         {
-            String entityLine = StringUtils.translate(LOOKING_KEY+".livingentity", living.getName().getString(), living.getHealth(), living.getMaxHealth());
+            String entityLine = this.qt(LOOKING_KEY+".livingentity", living.getName().getString(), living.getHealth(), living.getMaxHealth());
 
             if (living instanceof Tameable tamable)
             {
@@ -87,7 +86,7 @@ public class InfoLineLookingAtEntity extends InfoLine
 
                 if (owner != null)
                 {
-                    entityLine = entityLine + " - " + StringUtils.translate(LOOKING_KEY+".owner") + ": " + owner.getName().getLiteralString();
+                    entityLine = entityLine + " - " + this.qt(LOOKING_KEY+".owner") + ": " + owner.getName().getLiteralString();
                 }
             }
             if (living instanceof PassiveEntity passive)
@@ -95,7 +94,7 @@ public class InfoLineLookingAtEntity extends InfoLine
                 if (passive.getBreedingAge() < 0)
                 {
                     int untilGrown = ((IMixinPassiveEntity) passive).minihud_getRealBreedingAge() * (-1);
-                    entityLine = entityLine+ " [" + MiscUtils.formatDuration(untilGrown * 50L) + " " + StringUtils.translate(REMAINING_KEY) + "]";
+                    entityLine = entityLine+ " [" + MiscUtils.formatDuration(untilGrown * 50L) + " " + this.qt(REMAINING_KEY) + "]";
                 }
             }
 

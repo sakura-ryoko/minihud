@@ -57,7 +57,8 @@ public class InfoLineServux extends InfoLine
             list.add(this.translate(SERVUX_KEY+".not_connected"));
         }
 
-        if (this.getEntData().hasServuxServer())
+        if (this.getEntData().hasServuxServer() ||
+            this.getEntData().hasBackupStatus())
         {
             list.add(this.translate(SERVUX_KEY+".entity_sync",
                                     this.getEntData().getBlockEntityCacheCount(),
