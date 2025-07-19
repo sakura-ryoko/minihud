@@ -25,6 +25,7 @@ import fi.dy.masa.minihud.util.BlockGridMode;
 import fi.dy.masa.minihud.util.LightLevelMarkerMode;
 import fi.dy.masa.minihud.util.LightLevelNumberMode;
 import fi.dy.masa.minihud.util.LightLevelRenderCondition;
+import fi.dy.masa.minihud.util.SpeedUnits;
 
 public class Configs implements IConfigHandler
 {
@@ -126,6 +127,7 @@ public class Configs implements IConfigHandler
         public static final ConfigBoolean       SPAWN_REAL_OUTER_OVERLAY_ENABLED    = new ConfigBoolean("spawnRealOuterOverlayEnabled", false).apply(GENERIC_KEY);
         public static final ConfigBoolean       SPAWN_REAL_REDSTONE_OVERLAY_ENABLED = new ConfigBoolean("spawnRealRedstoneOverlayEnabled", false).apply(GENERIC_KEY);
         public static final ConfigInteger       SPAWNABLE_COLUMNS_OVERLAY_RADIUS    = new ConfigInteger("spawnableColumnHeightsOverlayRadius", 40, 0, 128).apply(GENERIC_KEY);
+        public static final ConfigOptionList    SPEED_UNITS                         = new ConfigOptionList("speedUnits", SpeedUnits.MPS).apply(GENERIC_KEY);
         public static final ConfigBoolean       STRUCTURES_RENDER_THROUGH           = new ConfigBoolean("structuresRenderThrough", false).apply(GENERIC_KEY);
         public static final ConfigInteger       TEXT_POS_X                          = new ConfigInteger("textPosX", 4, 0, 8192).apply(GENERIC_KEY);
         public static final ConfigInteger       TEXT_POS_Y                          = new ConfigInteger("textPosY", 4, 0, 8192).apply(GENERIC_KEY);
@@ -194,6 +196,7 @@ public class Configs implements IConfigHandler
                 SPAWN_PLAYER_REDSTONE_OVERLAY_ENABLED,
                 SPAWN_REAL_OUTER_OVERLAY_ENABLED,
                 SPAWN_REAL_REDSTONE_OVERLAY_ENABLED,
+                SPEED_UNITS,
                 STRUCTURES_RENDER_THROUGH,
                 USE_CUSTOMIZED_COORDINATES,
                 USE_FONT_SHADOW,
