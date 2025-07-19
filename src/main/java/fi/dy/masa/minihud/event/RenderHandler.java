@@ -94,6 +94,7 @@ import fi.dy.masa.minihud.renderer.OverlayRenderer;
 import fi.dy.masa.minihud.util.DataStorage;
 import fi.dy.masa.minihud.util.IServerEntityManager;
 import fi.dy.masa.minihud.util.MiscUtils;
+import fi.dy.masa.minihud.util.SpeedUnits;
 
 public class RenderHandler implements IRenderer
 {
@@ -435,6 +436,8 @@ public class RenderHandler implements IRenderer
 
         @SuppressWarnings("deprecation")
         boolean isChunkLoaded = mc.world.isChunkLoaded(pos);
+        
+        SpeedUnits speedUnits = (SpeedUnits) Configs.Generic.SPEED_UNITS.getOptionListValue();
 
         if (isChunkLoaded == false)
         {
@@ -1086,7 +1089,9 @@ public class RenderHandler implements IRenderer
                 double dy = entity.getY() - entity.lastRenderY;
                 double dz = entity.getZ() - entity.lastRenderZ;
                 double dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
-                str.append(pre).append(StringUtils.translate("minihud.info_line.speed", dist * 20));
+                str.append(pre).append(
+                    StringUtils.translate("minihud.info_line.speed_" + speedUnits.suffix,
+                        speedUnits.convert(dist * 20)));
             }
 
             this.addLine(str.toString());
@@ -1100,14 +1105,19 @@ public class RenderHandler implements IRenderer
             double dx = entity.getX() - entity.lastRenderX;
             double dy = entity.getY() - entity.lastRenderY;
             double dz = entity.getZ() - entity.lastRenderZ;
-            this.addLineI18n("minihud.info_line.speed_hv", Math.sqrt(dx * dx + dz * dz) * 20, dy * 20);
+            this.addLineI18n("minihud.info_line.speed_hv_" + speedUnits.suffix, 
+                speedUnits.convert(Math.sqrt(dx * dx + dz * dz) * 20),
+                speedUnits.convert(dy * 20));
         }
         else if (type == InfoToggle.SPEED_AXIS)
         {
             double dx = entity.getX() - entity.lastRenderX;
             double dy = entity.getY() - entity.lastRenderY;
             double dz = entity.getZ() - entity.lastRenderZ;
-            this.addLineI18n("minihud.info_line.speed_axis", dx * 20, dy * 20, dz * 20);
+            this.addLineI18n("minihud.info_line.speed_axis_" + speedUnits.suffix, 
+                speedUnits.convert(dx * 20),
+                speedUnits.convert(dy * 20),
+                speedUnits.convert(dz * 20));
         }
         else if (type == InfoToggle.CHUNK_SECTIONS)
         {
