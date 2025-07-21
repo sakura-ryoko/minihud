@@ -26,11 +26,11 @@ import fi.dy.masa.minihud.info.InfoLineTypes;
 public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
 {
     // Basic Info
-    FPS                     ("infoFPS",                     null, false, ""),
-    MEMORY_USAGE            ("infoMemoryUsage",             null, false, ""),
-    TIME_REAL               ("infoTimeIRL",                 null, true,  ""),
-    TIME_WORLD              ("infoTimeWorld",               null, false, ""),
-    TIME_WORLD_FORMATTED    ("infoWorldTimeFormatted",      null, false, ""),
+    FPS                     ("infoFPS",                     InfoLineTypes.FPS, false, ""),
+    MEMORY_USAGE            ("infoMemoryUsage",             InfoLineTypes.MEMORY, false, ""),
+    TIME_REAL               ("infoTimeIRL",                 InfoLineTypes.TIME_IRL, true,  ""),
+    TIME_WORLD              ("infoTimeWorld",               InfoLineTypes.TIME_WORLD, false, ""),
+    TIME_WORLD_FORMATTED    ("infoWorldTimeFormatted",      InfoLineTypes.TIME_WORLD_FORMATTED, false, ""),
 
     // Player (Camera)
     COORDINATES             ("infoCoordinates",             null, true,  ""),
@@ -58,11 +58,11 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
 
     // World
     WEATHER                 ("infoWeather",                 InfoLineTypes.WEATHER, false, true, ""),
-    TIME_TOTAL_MODULO       ("infoTimeTotalModulo",         null, false, ""),
-    TIME_DAY_MODULO         ("infoTimeDayModulo",           null, false, ""),
+    TIME_TOTAL_MODULO       ("infoTimeTotalModulo",         InfoLineTypes.TIME_TOTAL_MODULO, false, ""),
+    TIME_DAY_MODULO         ("infoTimeDayModulo",           InfoLineTypes.TIME_DAY_MODULO, false, ""),
     MOB_CAPS                ("infoMobCaps",                 InfoLineTypes.MOB_CAPS, false, true,""),
-    PARTICLE_COUNT          ("infoParticleCount",           null, false, ""),
-    DIFFICULTY              ("infoDifficulty",              null, false, ""),
+    PARTICLE_COUNT          ("infoParticleCount",           InfoLineTypes.PARTICLE_COUNT, false, ""),
+    DIFFICULTY              ("infoDifficulty",              InfoLineTypes.DIFFICULTY, false, ""),
     ENTITIES                ("infoEntities",                null, false, ""),
     ENTITIES_CLIENT_WORLD   ("infoEntitiesClientWorld",     null, false, ""),
     TILE_ENTITIES           ("infoTileEntities",            null, false, ""),

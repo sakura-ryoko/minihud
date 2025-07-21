@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nonnull;
 
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
+
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.info.InfoLine;
@@ -29,21 +32,31 @@ public class InfoLineSlimeChunk extends InfoLine
     @Override
     public List<Entry> parse(@Nonnull Context ctx)
     {
-        if (ctx.world() == null || ctx.pos() == null) return null;
+        if (this.getClientWorld() == null || ctx.pos() == null)
+        {
+            return null;
+        }
+
+        return this.parseBlockPos(ctx.world() == null ? this.getClientWorld() : ctx.world(), ctx.pos());
+    }
+
+    @Override
+    public List<Entry> parseBlockPos(@Nonnull World world, @Nonnull BlockPos pos)
+    {
         List<Entry> list = new ArrayList<>();
 
-        if (MiscUtils.isOverworld(ctx.world()) == false)
+        if (!MiscUtils.isOverworld(world))
         {
             return null;
         }
 
         String result;
 
-        if (this.getHudData().isWorldSeedKnown(ctx.world()))
+        if (this.getHudData().isWorldSeedKnown(world))
         {
-            long seed = this.getHudData().getWorldSeed(ctx.world());
+            long seed = this.getHudData().getWorldSeed(world);
 
-            if (MiscUtils.canSlimeSpawnAt(ctx.pos().getX(), ctx.pos().getZ(), seed))
+            if (MiscUtils.canSlimeSpawnAt(pos.getX(), pos.getZ(), seed))
             {
                 result = this.qt(SLIME_KEY+".yes");
             }

@@ -77,6 +77,7 @@ import fi.dy.masa.minihud.config.RendererToggle;
 import fi.dy.masa.minihud.data.EntitiesDataManager;
 import fi.dy.masa.minihud.data.HudDataManager;
 import fi.dy.masa.minihud.data.MobCapDataHandler;
+import fi.dy.masa.minihud.info.InfoLineChunkCache;
 import fi.dy.masa.minihud.mixin.*;
 import fi.dy.masa.minihud.mixin.world.IMixinServerWorld;
 import fi.dy.masa.minihud.renderer.InventoryOverlayHandler;
@@ -94,9 +95,9 @@ public class RenderHandler implements IRenderer
     private final DataStorage data;
     private final HudDataManager hudData;
     private final Date date;
-    private final Map<ChunkPos, CompletableFuture<OptionalChunk<Chunk>>> chunkFutures = new HashMap<>();
+//    private final Map<ChunkPos, CompletableFuture<OptionalChunk<Chunk>>> chunkFutures = new HashMap<>();
     private final Set<InfoToggle> addedTypes = new HashSet<>();
-    @Nullable private WorldChunk cachedClientChunk;
+//    @Nullable private WorldChunk cachedClientChunk;
     private long infoUpdateTime;
 
     private final List<StringHolder> lineWrappers = new ArrayList<>();
@@ -145,7 +146,8 @@ public class RenderHandler implements IRenderer
     {
         if (Configs.Generic.MAIN_RENDERING_TOGGLE.getBooleanValue() == false)
         {
-            this.resetCachedChunks();
+//            this.resetCachedChunks();
+            InfoLineChunkCache.INSTANCE.onReset();
             return;
         }
 
@@ -388,10 +390,12 @@ public class RenderHandler implements IRenderer
         this.lineWrappers.clear();
         this.addedTypes.clear();
 
-        if (this.chunkFutures.size() >= 4)
-        {
-            this.resetCachedChunks();
-        }
+//        if (this.chunkFutures.size() >= 4)
+//        {
+//            this.resetCachedChunks();
+//        }
+
+        InfoLineChunkCache.INSTANCE.onUpdate();
 
         // Get the info line order based on the configs
         List<LinePos> positions = new ArrayList<>();
@@ -494,98 +498,108 @@ public class RenderHandler implements IRenderer
 
         if (type == InfoToggle.FPS)
         {
-            this.addLineI18n("minihud.info_line.fps", mc.getCurrentFps());
+            // Make into a generic call
+            InfoLine parser = type.initParser();
+
+            if (parser != null)
+            {
+                InfoLine.Context ctx = new InfoLine.Context(null, null, null, null, null, null);
+                this.processEntries(parser.parse(ctx));
+            }
+            else
+            {
+                return;
+            }
         }
         else if (type == InfoToggle.MEMORY_USAGE)
         {
-            long memMax = Runtime.getRuntime().maxMemory();
-            long memTotal = Runtime.getRuntime().totalMemory();
-            long memFree = Runtime.getRuntime().freeMemory();
-            long memUsed = memTotal - memFree;
+            // Make into a generic call
+            InfoLine parser = type.initParser();
 
-            this.addLineI18n("minihud.info_line.memory_usage",
-                             memUsed * 100L / memMax,
-                             MiscUtils.bytesToMb(memUsed),
-                             MiscUtils.bytesToMb(memMax),
-                             memTotal * 100L / memMax,
-                             MiscUtils.bytesToMb(memTotal));
+            if (parser != null)
+            {
+                InfoLine.Context ctx = new InfoLine.Context(null, null, null, null, null, null);
+                this.processEntries(parser.parse(ctx));
+            }
+            else
+            {
+                return;
+            }
         }
         else if (type == InfoToggle.TIME_REAL)
         {
-            try
-            {
-                /*
-                SimpleDateFormat sdf = new SimpleDateFormat(Configs.Generic.DATE_FORMAT.getStringValue());
-                this.date.setTime(System.currentTimeMillis());
-                this.addLine(sdf.format(this.date));
-                 */
+            // Make into a generic call
+            InfoLine parser = type.initParser();
 
-                this.addLine(MiscUtils.formatDateNow());
-            }
-            catch (Exception e)
+            if (parser != null)
             {
-                this.addLineI18n("minihud.info_line.time.exception");
+                InfoLine.Context ctx = new InfoLine.Context(null, null, null, null, null, null);
+                this.processEntries(parser.parse(ctx));
+            }
+            else
+            {
+                return;
             }
         }
         else if (type == InfoToggle.TIME_WORLD)
         {
-            long current = world.getTimeOfDay();
-            long total = world.getTime();
-            this.addLineI18n("minihud.info_line.time_world", current, total);
+            // Make into a generic call
+            InfoLine parser = type.initParser();
+
+            if (parser != null)
+            {
+                InfoLine.Context ctx = new InfoLine.Context(world, null, null, null, null, null);
+                this.processEntries(parser.parse(ctx));
+            }
+            else
+            {
+                return;
+            }
         }
         else if (type == InfoToggle.TIME_WORLD_FORMATTED)
         {
-            try
+            // Make into a generic call
+            InfoLine parser = type.initParser();
+
+            if (parser != null)
             {
-                long timeDay = world.getTimeOfDay();
-                long day = (int) (timeDay / 24000);
-                // 1 tick = 3.6 seconds in MC (0.2777... seconds IRL)
-                int dayTicks = (int) (timeDay % 24000);
-                int hour = (int) ((dayTicks / 1000) + 6) % 24;
-                int min = (int) (dayTicks / 16.666666) % 60;
-                int sec = (int) (dayTicks / 0.277777) % 60;
-                int minIrl = (int) (dayTicks / 1200) % 20;
-                int secIrl = (int) (dayTicks / 20) % 60;
-                // Moonphase has 8 different states in MC
-                int moonNumber = (int) day % 8;
-                String moon;
-                if (moonNumber > 7)
-                {
-                    moon = StringUtils.translate("minihud.info_line.invalid_value");
-                }
-                else
-                {
-                    moon = StringUtils.translate("minihud.info_line.time_world_formatted.moon_" + moonNumber);
-                }
-
-                String str = Configs.Generic.DATE_FORMAT_MINECRAFT.getStringValue();
-                str = str.replace("{DAY}",  String.format("%d", day));
-                str = str.replace("{DAY_1}",String.format("%d", day + 1));
-                str = str.replace("{HOUR}", String.format("%02d", hour));
-                str = str.replace("{MIN}",  String.format("%02d", min));
-                str = str.replace("{SEC}",  String.format("%02d", sec));
-                str = str.replace("{MINIRL}", String.format("%02d", minIrl));
-                str = str.replace("{SECIRL}", String.format("%02d", secIrl));
-                str = str.replace("{MOON}",  String.format("%s", moon));
-
-                this.addLine(str);
+                InfoLine.Context ctx = new InfoLine.Context(world, null, null, null, null, null);
+                this.processEntries(parser.parse(ctx));
             }
-            catch (Exception e)
+            else
             {
-                this.addLineI18n("minihud.info_line.time.exception");
+                return;
             }
         }
         else if (type == InfoToggle.TIME_DAY_MODULO)
         {
-            int mod = Configs.Generic.TIME_DAY_DIVISOR.getIntegerValue();
-            long current = world.getTimeOfDay() % mod;
-            this.addLineI18n("minihud.info_line.time_day_modulo", mod, current);
+            // Make into a generic call
+            InfoLine parser = type.initParser();
+
+            if (parser != null)
+            {
+                InfoLine.Context ctx = new InfoLine.Context(world, null, null, null, null, null);
+                this.processEntries(parser.parse(ctx));
+            }
+            else
+            {
+                return;
+            }
         }
         else if (type == InfoToggle.TIME_TOTAL_MODULO)
         {
-            int mod = Configs.Generic.TIME_TOTAL_DIVISOR.getIntegerValue();
-            long current = world.getTime() % mod;
-            this.addLineI18n("minihud.info_line.time_total_modulo", mod, current);
+            // Make into a generic call
+            InfoLine parser = type.initParser();
+
+            if (parser != null)
+            {
+                InfoLine.Context ctx = new InfoLine.Context(world, null, null, null, null, null);
+                this.processEntries(parser.parse(ctx));
+            }
+            else
+            {
+                return;
+            }
         }
         else if (type == InfoToggle.SERVER_TPS)
         {
@@ -880,7 +894,8 @@ public class RenderHandler implements IRenderer
         }
         else if (type == InfoToggle.LIGHT_LEVEL)
         {
-            WorldChunk clientChunk = this.getClientChunk(chunkPos);
+//            WorldChunk clientChunk = this.getClientChunk(chunkPos);
+            WorldChunk clientChunk = InfoLineChunkCache.INSTANCE.getClientChunk(chunkPos);
 
             if (clientChunk.isEmpty() == false)
             {
@@ -1219,27 +1234,38 @@ public class RenderHandler implements IRenderer
         }
         else if (type == InfoToggle.PARTICLE_COUNT)
         {
-            this.addLineI18n("minihud.info_line.particle_count", mc.particleManager.getDebugString());
+            // Make into a generic call
+            InfoLine parser = type.initParser();
+
+            if (parser != null)
+            {
+                InfoLine.Context ctx = new InfoLine.Context(null, null, null, null, null, null);
+                this.processEntries(parser.parse(ctx));
+            }
+            else
+            {
+                return;
+            }
         }
         else if (type == InfoToggle.DIFFICULTY)
         {
-            long chunkInhabitedTime = 0L;
-            float moonPhaseFactor = 0.0F;
-            WorldChunk serverChunk = this.getChunk(chunkPos);
+            // Make into a generic call
+            InfoLine parser = type.initParser();
 
-            if (serverChunk != null)
+            if (parser != null)
             {
-                moonPhaseFactor = mc.world.getMoonSize();
-                chunkInhabitedTime = serverChunk.getInhabitedTime();
+                InfoLine.Context ctx = new InfoLine.Context(world, null, null, pos, null, null);
+                this.processEntries(parser.parse(ctx));
             }
-
-            LocalDifficulty diff = new LocalDifficulty(mc.world.getDifficulty(), mc.world.getTimeOfDay(), chunkInhabitedTime, moonPhaseFactor);
-            this.addLineI18n("minihud.info_line.difficulty",
-                    diff.getLocalDifficulty(), diff.getClampedLocalDifficulty(), mc.world.getTimeOfDay() / 24000L);
+            else
+            {
+                return;
+            }
         }
         else if (type == InfoToggle.BIOME)
         {
-            WorldChunk clientChunk = this.getClientChunk(chunkPos);
+//            WorldChunk clientChunk = this.getClientChunk(chunkPos);
+            WorldChunk clientChunk = InfoLineChunkCache.INSTANCE.getClientChunk(chunkPos);
 
             if (clientChunk.isEmpty() == false)
             {
@@ -1257,7 +1283,8 @@ public class RenderHandler implements IRenderer
         }
         else if (type == InfoToggle.BIOME_REG_NAME)
         {
-            WorldChunk clientChunk = this.getClientChunk(chunkPos);
+//            WorldChunk clientChunk = this.getClientChunk(chunkPos);
+            WorldChunk clientChunk = InfoLineChunkCache.INSTANCE.getClientChunk(chunkPos);
 
             if (clientChunk.isEmpty() == false)
             {
@@ -1722,14 +1749,16 @@ public class RenderHandler implements IRenderer
             if (bestWorld instanceof ServerWorld serverWorld)
             {
                 Entity serverEntity = serverWorld.getEntityById(lookedEntity.getId());
-                NbtView view = NbtView.getWriter(bestWorld.getRegistryManager());
-                serverEntity.writeData(view.getWriter());
-                NbtCompound nbt = view.readNbt();
-                Identifier id = EntityType.getId(serverEntity.getType());
+//                NbtView view = NbtView.getWriter(bestWorld.getRegistryManager());
+//                serverEntity.writeData(view.getWriter());
+//                NbtCompound nbt = view.readNbt();
+//                Identifier id = EntityType.getId(serverEntity.getType());
+                NbtCompound nbt = NbtEntityUtils.invokeEntityNbtDataNoPassengers(serverEntity, lookedEntity.getId());
 
-                if (nbt != null && id != null)
+//                if (nbt != null && id != null)
+                if (!nbt.isEmpty())
                 {
-                    nbt.putString("id", id.toString());
+//                    nbt.putString("id", id.toString());
                     pair = Pair.of(serverEntity, nbt);
                 }
             }
@@ -1857,76 +1886,77 @@ public class RenderHandler implements IRenderer
         }
     }
 
-    @Nullable
-    private WorldChunk getChunk(ChunkPos chunkPos)
-    {
-        CompletableFuture<OptionalChunk<Chunk>> future = this.chunkFutures.get(chunkPos);
+    // # Moved to InfoLineChunkCache
+//    @Nullable
+//    private WorldChunk getChunk(ChunkPos chunkPos)
+//    {
+//        CompletableFuture<OptionalChunk<Chunk>> future = this.chunkFutures.get(chunkPos);
+//
+//        if (future == null)
+//        {
+//            future = this.setupChunkFuture(chunkPos);
+//        }
+//
+//        OptionalChunk<Chunk> chunkResult = future.getNow(null);
+//        if (chunkResult == null)
+//        {
+//            return null;
+//        }
+//        else
+//        {
+//            Chunk chunk = chunkResult.orElse(null);
+//            if (chunk instanceof WorldChunk)
+//            {
+//                return (WorldChunk) chunk;
+//            }
+//            else
+//            {
+//                return null;
+//            }
+//        }
+//    }
 
-        if (future == null)
-        {
-            future = this.setupChunkFuture(chunkPos);
-        }
+//    private CompletableFuture<OptionalChunk<Chunk>> setupChunkFuture(ChunkPos chunkPos)
+//    {
+//        IntegratedServer server = this.getDataStorage().getIntegratedServer();
+//        CompletableFuture<OptionalChunk<Chunk>> future = null;
+//
+//        if (server != null)
+//        {
+//            ServerWorld world = server.getWorld(this.mc.world.getRegistryKey());
+//
+//            if (world != null)
+//            {
+//                future = world.getChunkManager().getChunkFutureSyncOnMainThread(chunkPos.x, chunkPos.z, ChunkStatus.FULL, false)
+//                        .thenApply((either) -> either.map((chunk) -> (WorldChunk) chunk) );
+//            }
+//        }
+//
+//        if (future == null)
+//        {
+//            future = CompletableFuture.completedFuture(OptionalChunk.of(this.getClientChunk(chunkPos)));
+//        }
+//
+//        this.chunkFutures.put(chunkPos, future);
+//
+//        return future;
+//    }
 
-        OptionalChunk<Chunk> chunkResult = future.getNow(null);
-        if (chunkResult == null)
-        {
-            return null;
-        }
-        else
-        {
-            Chunk chunk = chunkResult.orElse(null);
-            if (chunk instanceof WorldChunk)
-            {
-                return (WorldChunk) chunk;
-            }
-            else
-            {
-                return null;
-            }
-        }
-    }
+//    private WorldChunk getClientChunk(ChunkPos chunkPos)
+//    {
+//        if (this.cachedClientChunk == null || this.cachedClientChunk.getPos().equals(chunkPos) == false)
+//        {
+//            this.cachedClientChunk = this.mc.world.getChunk(chunkPos.x, chunkPos.z);
+//        }
+//
+//        return this.cachedClientChunk;
+//    }
 
-    private CompletableFuture<OptionalChunk<Chunk>> setupChunkFuture(ChunkPos chunkPos)
-    {
-        IntegratedServer server = this.getDataStorage().getIntegratedServer();
-        CompletableFuture<OptionalChunk<Chunk>> future = null;
-
-        if (server != null)
-        {
-            ServerWorld world = server.getWorld(this.mc.world.getRegistryKey());
-
-            if (world != null)
-            {
-                future = world.getChunkManager().getChunkFutureSyncOnMainThread(chunkPos.x, chunkPos.z, ChunkStatus.FULL, false)
-                        .thenApply((either) -> either.map((chunk) -> (WorldChunk) chunk) );
-            }
-        }
-
-        if (future == null)
-        {
-            future = CompletableFuture.completedFuture(OptionalChunk.of(this.getClientChunk(chunkPos)));
-        }
-
-        this.chunkFutures.put(chunkPos, future);
-
-        return future;
-    }
-
-    private WorldChunk getClientChunk(ChunkPos chunkPos)
-    {
-        if (this.cachedClientChunk == null || this.cachedClientChunk.getPos().equals(chunkPos) == false)
-        {
-            this.cachedClientChunk = this.mc.world.getChunk(chunkPos.x, chunkPos.z);
-        }
-
-        return this.cachedClientChunk;
-    }
-
-    private void resetCachedChunks()
-    {
-        this.chunkFutures.clear();
-        this.cachedClientChunk = null;
-    }
+//    private void resetCachedChunks()
+//    {
+//        this.chunkFutures.clear();
+//        this.cachedClientChunk = null;
+//    }
 
     private class StringHolder implements Comparable<StringHolder>
     {

@@ -8,22 +8,29 @@ import fi.dy.masa.minihud.info.generic.*;
 import fi.dy.masa.minihud.info.state.*;
 import fi.dy.masa.minihud.info.entity.*;
 import fi.dy.masa.minihud.info.te.*;
-import fi.dy.masa.minihud.info.generic.InfoLineChunkUpdates;
-import fi.dy.masa.minihud.info.world.InfoLineLoadedChunks;
-import fi.dy.masa.minihud.info.world.InfoLineSlimeChunk;
+import fi.dy.masa.minihud.info.world.*;
 
 public class InfoLineTypes
 {
     // Generic
+    public static final InfoLineType<InfoLineFPS>                   FPS                     = InfoLineType.build(InfoLineFPS::new,                  InfoToggle.FPS, List.of(InfoLineFlag.GENERIC));
+    public static final InfoLineType<InfoLineMemory>                MEMORY                  = InfoLineType.build(InfoLineMemory::new,               InfoToggle.MEMORY_USAGE, List.of(InfoLineFlag.GENERIC));
+    public static final InfoLineType<InfoLineTimeIRL>               TIME_IRL                = InfoLineType.build(InfoLineTimeIRL::new,              InfoToggle.TIME_REAL, List.of(InfoLineFlag.GENERIC));
     public static final InfoLineType<InfoLineChunkSections>         CHUNK_SECTIONS          = InfoLineType.build(InfoLineChunkSections::new,        InfoToggle.CHUNK_SECTIONS, List.of(InfoLineFlag.GENERIC));
     public static final InfoLineType<InfoLineChunkSectionsFull>     CHUNK_SECTIONS_FULL     = InfoLineType.build(InfoLineChunkSectionsFull::new,    InfoToggle.CHUNK_SECTIONS_FULL, List.of(InfoLineFlag.GENERIC));
     public static final InfoLineType<InfoLineChunkUpdates>          CHUNK_UPDATES           = InfoLineType.build(InfoLineChunkUpdates::new,         InfoToggle.CHUNK_UPDATES, List.of(InfoLineFlag.GENERIC));
+    public static final InfoLineType<InfoLineParticleCount>         PARTICLE_COUNT          = InfoLineType.build(InfoLineParticleCount::new,        InfoToggle.PARTICLE_COUNT, List.of(InfoLineFlag.GENERIC));
     public static final InfoLineType<InfoLineServerTPS>             SERVER_TPS              = InfoLineType.build(InfoLineServerTPS::new,            InfoToggle.SERVER_TPS, List.of(InfoLineFlag.GENERIC));
     public static final InfoLineType<InfoLineServux>                SERVUX                  = InfoLineType.build(InfoLineServux::new,               InfoToggle.SERVUX, List.of(InfoLineFlag.GENERIC));
     public static final InfoLineType<InfoLineWeather>               WEATHER                 = InfoLineType.build(InfoLineWeather::new,              InfoToggle.WEATHER, List.of(InfoLineFlag.GENERIC));
     public static final InfoLineType<InfoLineMobCaps>               MOB_CAPS                = InfoLineType.build(InfoLineMobCaps::new,              InfoToggle.MOB_CAPS, List.of(InfoLineFlag.GENERIC));
 
     // World / Best World
+    public static final InfoLineType<InfoLineTimeWorld>             TIME_WORLD              = InfoLineType.build(InfoLineTimeWorld::new,            InfoToggle.TIME_WORLD, List.of(InfoLineFlag.WORLD));
+    public static final InfoLineType<InfoLineTimeWorldFormatted>    TIME_WORLD_FORMATTED    = InfoLineType.build(InfoLineTimeWorldFormatted::new,   InfoToggle.TIME_WORLD_FORMATTED, List.of(InfoLineFlag.WORLD));
+    public static final InfoLineType<InfoLineTimeTotalModulo>       TIME_TOTAL_MODULO       = InfoLineType.build(InfoLineTimeTotalModulo::new,      InfoToggle.TIME_TOTAL_MODULO, List.of(InfoLineFlag.WORLD));
+    public static final InfoLineType<InfoLineTimeDayModulo>         TIME_DAY_MODULO         = InfoLineType.build(InfoLineTimeDayModulo::new,        InfoToggle.TIME_DAY_MODULO, List.of(InfoLineFlag.WORLD));
+    public static final InfoLineType<InfoLineDifficulty>            DIFFICULTY              = InfoLineType.build(InfoLineDifficulty::new,           InfoToggle.DIFFICULTY, List.of(InfoLineFlag.WORLD, InfoLineFlag.CHUNK_POS));
     public static final InfoLineType<InfoLineLoadedChunks>          LOADED_CHUNKS           = InfoLineType.build(InfoLineLoadedChunks::new,         InfoToggle.LOADED_CHUNKS_COUNT, List.of(InfoLineFlag.BEST_WORLD));
     public static final InfoLineType<InfoLineSlimeChunk>            SLIME_CHUNK             = InfoLineType.build(InfoLineSlimeChunk::new,           InfoToggle.SLIME_CHUNK, List.of(InfoLineFlag.WORLD, InfoLineFlag.POS));
 

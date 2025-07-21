@@ -45,6 +45,8 @@ public abstract class InfoLine
 
     public DataStorage getData() { return DataStorage.getInstance(); }
 
+    public InfoLineChunkCache getChunkCache() { return InfoLineChunkCache.INSTANCE; }
+
     public MinecraftClient mc() { return MinecraftClient.getInstance(); }
 
     public World getBestWorld()
@@ -88,6 +90,11 @@ public abstract class InfoLine
     }
 
     public List<Entry> parseBlockState(@Nonnull World world, @Nonnull BlockState state)
+    {
+        return null;
+    }
+
+    public List<Entry> parseWorld(@Nonnull World world)
     {
         return null;
     }

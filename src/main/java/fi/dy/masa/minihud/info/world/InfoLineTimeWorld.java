@@ -4,25 +4,24 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nonnull;
 
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.World;
 
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.info.InfoLine;
 
-public class InfoLineLoadedChunks extends InfoLine
+public class InfoLineTimeWorld extends InfoLine
 {
-    private static final String CHUNKS_KEY = Reference.MOD_ID+".info_line.loaded_chunks_count";
+    private static final String TIME_KEY = Reference.MOD_ID+".info_line.time_world";
 
-    public InfoLineLoadedChunks(InfoToggle type)
+    public InfoLineTimeWorld(InfoToggle type)
     {
         super(type);
     }
 
-    public InfoLineLoadedChunks()
+    public InfoLineTimeWorld()
     {
-        this(InfoToggle.LOADED_CHUNKS_COUNT);
+        this(InfoToggle.TIME_WORLD);
     }
 
     @Override
@@ -43,18 +42,8 @@ public class InfoLineLoadedChunks extends InfoLine
     public List<Entry> parseWorld(@Nonnull World world)
     {
         List<Entry> list = new ArrayList<>();
-        String chunksClient = this.getClientWorld().asString();
 
-        if (world instanceof ServerWorld sw)
-        {
-            int chunksServer = sw.getChunkManager().getLoadedChunkCount();
-            int chunksServerTot = sw.getChunkManager().getTotalChunksLoadedCount();
-            list.add(this.translate(CHUNKS_KEY+".server", chunksServer, chunksServerTot, chunksClient));
-        }
-        else
-        {
-            list.add(this.of(chunksClient));
-        }
+        list.add(this.translate(TIME_KEY, world.getTimeOfDay(), world.getTime()));
 
         return list;
     }
