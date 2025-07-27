@@ -407,7 +407,7 @@
     "minihud.config.info_toggle.name.infoRotationPitch": "정보 회전 피치",
     "minihud.config.info_toggle.name.infoRotationYaw": "정보 회전 요",
     "minihud.config.info_toggle.name.infoServerTPS": "정보 서버 TPS",
-    "minihud.config.info_toggle.name.infoServux": "정보 Servus",
+    "minihud.config.info_toggle.name.infoServux": "정보 Servux",
     "minihud.config.info_toggle.name.infoSlimeChunk": "정보 슬라임 청크",
     "minihud.config.info_toggle.name.infoSpeed": "정보 속도",
     "minihud.config.info_toggle.name.infoSpeedAxis": "정보 속도 축",
