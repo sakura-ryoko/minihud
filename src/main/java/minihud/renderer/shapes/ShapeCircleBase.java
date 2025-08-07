@@ -436,7 +436,7 @@ public abstract class ShapeCircleBase extends ShapeBase
         double x = (double) blockX + 0.5;
         double y = (double) blockY + 0.5;
         double z = (double) blockZ + 0.5;
-        double dist = this.effectiveCenter.squareDistanceTo(x, y, z);
+        double dist = this.effectiveCenter.getSquaredDistanceTo(x, y, z);
         double diff = this.radiusSq - dist;
 
         if (diff > 0)
@@ -447,7 +447,7 @@ public abstract class ShapeCircleBase extends ShapeBase
         double xAdj = (double) blockX + outSide.getXOffset() + 0.5;
         double yAdj = (double) blockY + outSide.getYOffset() + 0.5;
         double zAdj = (double) blockZ + outSide.getZOffset() + 0.5;
-        double distAdj = this.effectiveCenter.squareDistanceTo(xAdj, yAdj, zAdj);
+        double distAdj = this.effectiveCenter.getSquaredDistanceTo(xAdj, yAdj, zAdj);
         double diffAdj = this.radiusSq - distAdj;
 
         return diffAdj > 0 && Math.abs(diff) < Math.abs(diffAdj);

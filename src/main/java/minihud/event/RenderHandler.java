@@ -600,7 +600,7 @@ public class RenderHandler implements PostGameOverlayRenderer, PostItemTooltipRe
         else if (type == InfoLineToggle.DISTANCE)
         {
             Vec3d ref = DataStorage.getInstance().getDistanceReferencePoint();
-            double dist = Math.sqrt(ref.squareDistanceTo(x, y, z));
+            double dist = Math.sqrt(ref.getSquaredDistanceTo(x, y, z));
             this.addLine(String.format("Distance: %.2f (x: %.2f y: %.2f z: %.2f) [to x: %.2f y: %.2f z: %.2f]",
                     dist, x - ref.x, y - ref.y, z - ref.z, ref.x, ref.y, ref.z));
         }

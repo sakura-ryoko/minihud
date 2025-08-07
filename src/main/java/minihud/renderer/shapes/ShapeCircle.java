@@ -100,7 +100,7 @@ public class ShapeCircle extends ShapeCircleBase
         double x = axis == Direction.Axis.X ? this.effectiveCenter.x : (double) blockX + 0.5;
         double y = axis == Direction.Axis.Y ? this.effectiveCenter.y : (double) blockY + 0.5;
         double z = axis == Direction.Axis.Z ? this.effectiveCenter.z : (double) blockZ + 0.5;
-        double dist = this.effectiveCenter.squareDistanceTo(x, y, z);
+        double dist = this.effectiveCenter.getSquaredDistanceTo(x, y, z);
         double diff = this.radiusSq - dist;
 
         if (diff > 0)
@@ -111,7 +111,7 @@ public class ShapeCircle extends ShapeCircleBase
         double xAdj = axis == Direction.Axis.X ? this.effectiveCenter.x : (double) blockX + outSide.getXOffset() + 0.5;
         double yAdj = axis == Direction.Axis.Y ? this.effectiveCenter.y : (double) blockY + outSide.getYOffset() + 0.5;
         double zAdj = axis == Direction.Axis.Z ? this.effectiveCenter.z : (double) blockZ + outSide.getZOffset() + 0.5;
-        double distAdj = this.effectiveCenter.squareDistanceTo(xAdj, yAdj, zAdj);
+        double distAdj = this.effectiveCenter.getSquaredDistanceTo(xAdj, yAdj, zAdj);
         double diffAdj = this.radiusSq - distAdj;
 
         return diffAdj > 0 && Math.abs(diff) < Math.abs(diffAdj);

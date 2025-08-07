@@ -98,6 +98,6 @@ public class ShapeSpawnSphere extends ShapeSphereBlocky
         double dy = y + 1;
         double dz = z + 0.5;
 
-        return quadrantCenter.squareDistanceTo(dx, dy, dz) < maxDistSq || this.effectiveCenter.squareDistanceTo(dx, dy, dz) < maxDistSq;
+        return quadrantCenter.getSquaredDistanceTo(dx, dy, dz) < maxDistSq || this.effectiveCenter.getSquaredDistanceTo(dx, dy, dz) < maxDistSq;
     }
 }
