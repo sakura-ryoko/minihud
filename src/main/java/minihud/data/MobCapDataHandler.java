@@ -119,7 +119,7 @@ public class MobCapDataHandler
 
     protected long getWorldTick()
     {
-        return GameWrap.getCurrentWorldTick();
+        return GameWrap.getClientWorldTotalTick();
     }
 
     private void setPlayerListParsedData(EntityCategory type, int currentValue, int capValue, long worldTick)
