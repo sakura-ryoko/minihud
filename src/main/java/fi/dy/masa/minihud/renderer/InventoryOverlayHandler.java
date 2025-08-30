@@ -43,6 +43,7 @@ import fi.dy.masa.malilib.util.WorldUtils;
 import fi.dy.masa.malilib.util.game.RayTraceUtils;
 import fi.dy.masa.malilib.util.nbt.NbtBlockUtils;
 import fi.dy.masa.malilib.util.nbt.NbtEntityUtils;
+import fi.dy.masa.malilib.util.nbt.NbtInventory;
 import fi.dy.masa.malilib.util.nbt.NbtKeys;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.Configs;
@@ -476,11 +477,11 @@ public class InventoryOverlayHandler implements IInventoryOverlayHandler
             {
                 if (entity instanceof AbstractHorseEntity)
                 {
-                    inv2 = InventoryUtils.getNbtInventoryHorseFix(nbt, -1, entity.getRegistryManager());
+                    inv2 = InventoryUtils.getNbtInventoryHorseFix(nbt, inv.size(), entity.getRegistryManager());
                 }
                 else
                 {
-                    inv2 = InventoryUtils.getNbtInventory(nbt, -1, entity.getRegistryManager());
+                    inv2 = InventoryUtils.getNbtInventory(nbt, inv.size(), entity.getRegistryManager());
                 }
 
                 inv = null;
@@ -489,15 +490,15 @@ public class InventoryOverlayHandler implements IInventoryOverlayHandler
             else if (inv != null &&
                     nbt.contains(NbtKeys.EQUIPMENT) && nbt.contains(NbtKeys.EATING_HAY))
             {
-                inv2 = InventoryUtils.getNbtInventoryHorseFix(nbt, -1, entity.getRegistryManager());
+                inv2 = InventoryUtils.getNbtInventoryHorseFix(nbt, inv.size(), entity.getRegistryManager());
                 inv = null;
             }
             // Fix for empty Villager/Piglin inv
-            else if (inv != null && inv.size() == 8 &&
+            else if (inv != null && inv.size() == NbtInventory.VILLAGER_SIZE &&
                      nbt.contains(NbtKeys.INVENTORY) &&
                      !nbt.getListOrEmpty(NbtKeys.INVENTORY).isEmpty())
             {
-                inv2 = InventoryUtils.getNbtInventory(nbt, 8, entity.getRegistryManager());
+                inv2 = InventoryUtils.getNbtInventory(nbt, NbtInventory.VILLAGER_SIZE, entity.getRegistryManager());
                 inv = null;
             }
             else
