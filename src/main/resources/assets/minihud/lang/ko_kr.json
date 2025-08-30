@@ -865,6 +865,7 @@
     "minihud.info_line.facing.west.name": "서쪽",
     "minihud.info_line.fps": "%d fps",
     "minihud.info_line.furnace_xp": "화로 경험치: §b%d",
+    "minihud.info_line.gpu": "GPU: %s%%§r",
     "minihud.info_line.home_pos": "홈 위치: §b%s§r / 반경: §b%d",
     "minihud.info_line.honey_level": "꿀: §b%d",
     "minihud.info_line.horse_jump": "%s 점프: §b%.3f§r m",
