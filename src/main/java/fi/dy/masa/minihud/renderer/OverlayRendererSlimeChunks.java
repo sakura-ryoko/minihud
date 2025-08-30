@@ -106,7 +106,7 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
             return true;
         }
 
-        World world = entity.getWorld();
+        World world = entity.getEntityWorld();
         boolean isSeedKnown = HudDataManager.getInstance().isWorldSeedKnown(world);
         long seed = HudDataManager.getInstance().getWorldSeed(world);
 
@@ -268,7 +268,7 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
     private void calculateChunks(Entity entity, MinecraftClient mc)
     {
         HudDataManager data = HudDataManager.getInstance();
-        World world = entity.getWorld();
+        World world = entity.getEntityWorld();
         final int centerX = MathHelper.floor(entity.getX()) >> 4;
         final int centerZ = MathHelper.floor(entity.getZ()) >> 4;
         BlockPos.Mutable pos1 = new BlockPos.Mutable();

@@ -2,7 +2,6 @@ package fi.dy.masa.minihud.renderer;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.annotation.Nullable;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -10,12 +9,10 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.BuiltBuffer;
 import net.minecraft.entity.Entity;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.profiler.Profiler;
-import net.minecraft.world.GameRules;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.World;
 
@@ -139,7 +136,7 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
         {
             // OVERLAY_SPAWN_CHUNK_OVERLAY_PLAYER
             this.center = PositionUtils.getEntityBlockPos(entity);
-            spawnChunkRadius = getSimulationDistance();
+            spawnChunkRadius = this.getSimulationDistance();
 
             red = spawnChunkRadius + 1;
             yellow = spawnChunkRadius;
@@ -149,60 +146,74 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
             brownEnabled = Configs.Generic.SPAWN_PLAYER_OUTER_OVERLAY_ENABLED.getBooleanValue();
             yellowEnabled = Configs.Generic.SPAWN_PLAYER_REDSTONE_OVERLAY_ENABLED.getBooleanValue();
         }
-        else
-        {
-            // OVERLAY_SPAWN_CHUNK_OVERLAY_REAL
+		else
+		{
             this.center = data.getWorldSpawn();
-            spawnChunkRadius = data.getSpawnChunkRadius();
+			red = 0;
+			yellow = 0;
+			green = 0;
+			brown = 0;
 
-            if (spawnChunkRadius < 0)
-            {
-                spawnChunkRadius = getSpawnChunkRadius(mc.getServer());
-                data.setSpawnChunkRadiusIfUnknown(spawnChunkRadius);
-            }
-            if (spawnChunkRadius < 0)
-            {
-                spawnChunkRadius = 2;       // In case there is a sync/logic issue, use Default Value.
-            }
-            if (spawnChunkRadius == 0)
-            {
-                // We have nothing to render.
-                MiniHUD.LOGGER.warn("overlaySpawnChunkReal: toggling feature OFF since SPAWN_CHUNK_RADIUS is set to 0 (Nothing to render)");
-
-                RendererToggle.OVERLAY_SPAWN_CHUNK_OVERLAY_REAL.setBooleanValue(false);
-                this.needsUpdate = false;
-
-                return;
-            }
-
-            red = spawnChunkRadius + 1;
-            yellow = spawnChunkRadius;
-            green = spawnChunkRadius - 1;
-            brown = red + 11;
-
-            brownEnabled = Configs.Generic.SPAWN_REAL_OUTER_OVERLAY_ENABLED.getBooleanValue();
-            yellowEnabled = Configs.Generic.SPAWN_REAL_REDSTONE_OVERLAY_ENABLED.getBooleanValue();
-        }
+			brownEnabled = false;
+			yellowEnabled = false;
+		}
+//        else
+//        {
+//            // OVERLAY_SPAWN_CHUNK_OVERLAY_REAL
+//            this.center = data.getWorldSpawn();
+//            spawnChunkRadius = data.getSpawnChunkRadius();
+//
+//            if (spawnChunkRadius < 0)
+//            {
+//                spawnChunkRadius = getSpawnChunkRadius(mc.getServer());
+//                data.setSpawnChunkRadiusIfUnknown(spawnChunkRadius);
+//            }
+//            if (spawnChunkRadius < 0)
+//            {
+//                spawnChunkRadius = 2;       // In case there is a sync/logic issue, use Default Value.
+//            }
+//            if (spawnChunkRadius == 0)
+//            {
+//                // We have nothing to render.
+//                MiniHUD.LOGGER.warn("overlaySpawnChunkReal: toggling feature OFF since SPAWN_CHUNK_RADIUS is set to 0 (Nothing to render)");
+//
+//                RendererToggle.OVERLAY_SPAWN_CHUNK_OVERLAY_REAL.setBooleanValue(false);
+//                this.needsUpdate = false;
+//
+//                return;
+//            }
+//
+//            red = spawnChunkRadius + 1;
+//            yellow = spawnChunkRadius;
+//            green = spawnChunkRadius - 1;
+//            brown = red + 11;
+//
+//            brownEnabled = Configs.Generic.SPAWN_REAL_OUTER_OVERLAY_ENABLED.getBooleanValue();
+//            yellowEnabled = Configs.Generic.SPAWN_REAL_REDSTONE_OVERLAY_ENABLED.getBooleanValue();
+//        }
 
         Pair<BlockPos, BlockPos> corners;
 
-        if (brownEnabled)
-        {
-            corners = this.getSpawnChunkCorners(this.center, brown, mc.world);   // Org 22 (Brown / WorldGen Only)
-            this.boxesBrown = RenderUtils.calculateBoxes(corners.getLeft(), corners.getRight());
-        }
+		if (this.isPlayerFollowing)
+		{
+			if (brownEnabled)
+			{
+				corners = this.getSpawnChunkCorners(this.center, brown, mc.world);   // Org 22 (Brown / WorldGen Only)
+				this.boxesBrown = RenderUtils.calculateBoxes(corners.getLeft(), corners.getRight());
+			}
 
-        corners = this.getSpawnChunkCorners(this.center, red, mc.world);     // Org 11 (Red / Mob Caps Only)
-        this.boxesRed = RenderUtils.calculateBoxes(corners.getLeft(), corners.getRight());
+			corners = this.getSpawnChunkCorners(this.center, red, mc.world);     // Org 11 (Red / Mob Caps Only)
+			this.boxesRed = RenderUtils.calculateBoxes(corners.getLeft(), corners.getRight());
 
-        if (yellowEnabled)
-        {
-            corners = this.getSpawnChunkCorners(this.center, yellow, mc.world);     // Org 10 (Yellow / Redstone Processing)
-            this.boxesYellow = RenderUtils.calculateBoxes(corners.getLeft(), corners.getRight());
-        }
+			if (yellowEnabled)
+			{
+				corners = this.getSpawnChunkCorners(this.center, yellow, mc.world);     // Org 10 (Yellow / Redstone Processing)
+				this.boxesYellow = RenderUtils.calculateBoxes(corners.getLeft(), corners.getRight());
+			}
 
-        corners = this.getSpawnChunkCorners(this.center, green, mc.world);      // Org 9 (Green / Entity Processing)
-        this.boxesGreen = RenderUtils.calculateBoxes(corners.getLeft(), corners.getRight());
+			corners = this.getSpawnChunkCorners(this.center, green, mc.world);      // Org 9 (Green / Entity Processing)
+			this.boxesGreen = RenderUtils.calculateBoxes(corners.getLeft(), corners.getRight());
+		}
 
         this.hasData = true;
         this.render(cameraPos, mc, profiler);
@@ -212,7 +223,7 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
     @Override
     public boolean hasData()
     {
-        return this.hasData && !this.boxesGreen.isEmpty() && this.center != null;
+        return this.hasData && this.center != null;
     }
 
     @Override
@@ -231,40 +242,46 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
         }
 
         profiler.push("spawn_chunk_quads");
-        final Color4f colorEntity = this.isPlayerFollowing ?
-                Configs.Colors.SPAWN_PLAYER_ENTITY_OVERLAY_COLOR.getColor() :
-                Configs.Colors.SPAWN_REAL_ENTITY_OVERLAY_COLOR.getColor();
-        final Color4f colorRedstone = this.isPlayerFollowing ?
-                Configs.Colors.SPAWN_PLAYER_REDSTONE_OVERLAY_COLOR.getColor() :
-                Configs.Colors.SPAWN_REAL_REDSTONE_OVERLAY_COLOR.getColor();
-        final Color4f colorLazy = this.isPlayerFollowing ?
-                Configs.Colors.SPAWN_PLAYER_LAZY_OVERLAY_COLOR.getColor() :
-                Configs.Colors.SPAWN_REAL_LAZY_OVERLAY_COLOR.getColor();
-        final Color4f colorOuter = this.isPlayerFollowing ?
-                Configs.Colors.SPAWN_PLAYER_OUTER_OVERLAY_COLOR.getColor() :
-                Configs.Colors.SPAWN_REAL_OUTER_OVERLAY_COLOR.getColor();
+		final Color4f colorEntity = this.isPlayerFollowing ?
+									Configs.Colors.SPAWN_PLAYER_ENTITY_OVERLAY_COLOR.getColor() :
+									Configs.Colors.SPAWN_REAL_ENTITY_OVERLAY_COLOR.getColor();
+		final Color4f colorRedstone = this.isPlayerFollowing ?
+									  Configs.Colors.SPAWN_PLAYER_REDSTONE_OVERLAY_COLOR.getColor() :
+									  Color4f.WHITE;
+//		Configs.Colors.SPAWN_REAL_REDSTONE_OVERLAY_COLOR.getColor();
+		final Color4f colorLazy = this.isPlayerFollowing ?
+								  Configs.Colors.SPAWN_PLAYER_LAZY_OVERLAY_COLOR.getColor() :
+								  Color4f.WHITE;
+//		Configs.Colors.SPAWN_REAL_LAZY_OVERLAY_COLOR.getColor();
+		final Color4f colorOuter = this.isPlayerFollowing ?
+								   Configs.Colors.SPAWN_PLAYER_OUTER_OVERLAY_COLOR.getColor() :
+								   Color4f.WHITE;
+//		Configs.Colors.SPAWN_REAL_OUTER_OVERLAY_COLOR.getColor();
 
-        RenderObjectVbo ctx = this.renderObjects.getFirst();
+		RenderObjectVbo ctx = this.renderObjects.getFirst();
         BufferBuilder builder = ctx.start(() -> "minihud:spawn_chunk/quads", MaLiLibPipelines.MINIHUD_SHAPE_OFFSET);
 
         fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxSidesBatchedQuads(this.center, cameraPos, colorEntity, 0.001, builder);
 
-        for (Box entry : this.boxesBrown)
-        {
-            RenderUtils.renderWallQuads(entry, cameraPos, colorOuter, builder);
-        }
-        for (Box entry : this.boxesRed)
-        {
-            RenderUtils.renderWallQuads(entry, cameraPos, colorLazy, builder);
-        }
-        for (Box entry : this.boxesYellow)
-        {
-            RenderUtils.renderWallQuads(entry, cameraPos, colorRedstone, builder);
-        }
-        for (Box entry : this.boxesGreen)
-        {
-            RenderUtils.renderWallQuads(entry, cameraPos, colorEntity, builder);
-        }
+		if (this.isPlayerFollowing)
+		{
+			for (Box entry : this.boxesBrown)
+			{
+				RenderUtils.renderWallQuads(entry, cameraPos, colorOuter, builder);
+			}
+			for (Box entry : this.boxesRed)
+			{
+				RenderUtils.renderWallQuads(entry, cameraPos, colorLazy, builder);
+			}
+			for (Box entry : this.boxesYellow)
+			{
+				RenderUtils.renderWallQuads(entry, cameraPos, colorRedstone, builder);
+			}
+			for (Box entry : this.boxesGreen)
+			{
+				RenderUtils.renderWallQuads(entry, cameraPos, colorEntity, builder);
+			}
+		}
 
         try
         {
@@ -298,41 +315,48 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
         }
 
         profiler.push("spawn_chunk_outlines");
-        final Color4f colorEntity = this.isPlayerFollowing ?
-                Configs.Colors.SPAWN_PLAYER_ENTITY_OVERLAY_COLOR.getColor() :
-                Configs.Colors.SPAWN_REAL_ENTITY_OVERLAY_COLOR.getColor();
-        final Color4f colorRedstone = this.isPlayerFollowing ?
-                Configs.Colors.SPAWN_PLAYER_REDSTONE_OVERLAY_COLOR.getColor() :
-                Configs.Colors.SPAWN_REAL_REDSTONE_OVERLAY_COLOR.getColor();
-        final Color4f colorLazy = this.isPlayerFollowing ?
-                Configs.Colors.SPAWN_PLAYER_LAZY_OVERLAY_COLOR.getColor() :
-                Configs.Colors.SPAWN_REAL_LAZY_OVERLAY_COLOR.getColor();
-        final Color4f colorOuter = this.isPlayerFollowing ?
-                Configs.Colors.SPAWN_PLAYER_OUTER_OVERLAY_COLOR.getColor() :
-                Configs.Colors.SPAWN_REAL_OUTER_OVERLAY_COLOR.getColor();
+		final Color4f colorEntity = this.isPlayerFollowing ?
+									Configs.Colors.SPAWN_PLAYER_ENTITY_OVERLAY_COLOR.getColor() :
+									Configs.Colors.SPAWN_REAL_ENTITY_OVERLAY_COLOR.getColor();
+		final Color4f colorRedstone = this.isPlayerFollowing ?
+									  Configs.Colors.SPAWN_PLAYER_REDSTONE_OVERLAY_COLOR.getColor() :
+									  Color4f.WHITE;
+//		Configs.Colors.SPAWN_REAL_REDSTONE_OVERLAY_COLOR.getColor();
+		final Color4f colorLazy = this.isPlayerFollowing ?
+								  Configs.Colors.SPAWN_PLAYER_LAZY_OVERLAY_COLOR.getColor() :
+								  Color4f.WHITE;
+//		Configs.Colors.SPAWN_REAL_LAZY_OVERLAY_COLOR.getColor();
+		final Color4f colorOuter = this.isPlayerFollowing ?
+								   Configs.Colors.SPAWN_PLAYER_OUTER_OVERLAY_COLOR.getColor() :
+								   Color4f.WHITE;
+//		Configs.Colors.SPAWN_REAL_OUTER_OVERLAY_COLOR.getColor();
 
-        RenderObjectVbo ctx = this.renderObjects.get(1);
+
+		RenderObjectVbo ctx = this.renderObjects.get(1);
         BufferBuilder builder = ctx.start(() -> "minihud:spawn_chunk/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH);
 
         // The SpawnPos box looks better with white outlines.  You can't really see the `colorEntity` value
         fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(this.center, cameraPos, Color4f.WHITE, 0.001, builder);
 
-        for (Box entry : this.boxesBrown)
-        {
-            RenderUtils.renderWallOutlines(entry, 16, 16, true, cameraPos, colorOuter, builder);
-        }
-        for (Box entry : this.boxesRed)
-        {
-            RenderUtils.renderWallOutlines(entry, 16, 16, true, cameraPos, colorLazy, builder);
-        }
-        for (Box entry : this.boxesYellow)
-        {
-            RenderUtils.renderWallOutlines(entry, 16, 16, true, cameraPos, colorRedstone, builder);
-        }
-        for (Box entry : this.boxesGreen)
-        {
-            RenderUtils.renderWallOutlines(entry, 16, 16, true, cameraPos, colorEntity, builder);
-        }
+		if (this.isPlayerFollowing)
+		{
+			for (Box entry : this.boxesBrown)
+			{
+				RenderUtils.renderWallOutlines(entry, 16, 16, true, cameraPos, colorOuter, builder);
+			}
+			for (Box entry : this.boxesRed)
+			{
+				RenderUtils.renderWallOutlines(entry, 16, 16, true, cameraPos, colorLazy, builder);
+			}
+			for (Box entry : this.boxesYellow)
+			{
+				RenderUtils.renderWallOutlines(entry, 16, 16, true, cameraPos, colorRedstone, builder);
+			}
+			for (Box entry : this.boxesGreen)
+			{
+				RenderUtils.renderWallOutlines(entry, 16, 16, true, cameraPos, colorEntity, builder);
+			}
+		}
 
         try
         {
@@ -415,19 +439,20 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
         return minY;
     }
 
-    protected int getSpawnChunkRadius(@Nullable MinecraftServer server)
-    {
-        if (server != null)
-        {
-            return server.getOverworld().getGameRules().getInt(GameRules.SPAWN_CHUNK_RADIUS);
-        }
-        else if (HudDataManager.getInstance().isSpawnChunkRadiusKnown())
-        {
-            return HudDataManager.getInstance().getSpawnChunkRadius();
-        }
-
-        return 2;
-    }
+	// TODO remove from game
+//    protected int getSpawnChunkRadius(@Nullable MinecraftServer server)
+//    {
+//        if (server != null)
+//        {
+//            return server.getOverworld().getGameRules().getInt(GameRules.SPAWN_CHUNK_RADIUS);
+//        }
+//        else if (HudDataManager.getInstance().isSpawnChunkRadiusKnown())
+//        {
+//            return HudDataManager.getInstance().getSpawnChunkRadius();
+//        }
+//
+//        return 2;
+//    }
 
     protected int getSimulationDistance()
     {

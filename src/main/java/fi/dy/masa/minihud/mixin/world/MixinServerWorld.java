@@ -5,7 +5,6 @@ import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -15,13 +14,13 @@ import fi.dy.masa.minihud.data.HudDataManager;
 @Mixin(ServerWorld.class)
 public class MixinServerWorld
 {
-    @Shadow private int spawnChunkRadius;
+//    @Shadow private int spawnChunkRadius;
 
     @Inject(method = "setSpawnPos", at = @At("TAIL"))
     private void minihud_checkSpawnPos(BlockPos pos, float angle, CallbackInfo ci)
     {
         HudDataManager.getInstance().setWorldSpawn(pos);
-        HudDataManager.getInstance().setSpawnChunkRadius(this.spawnChunkRadius - 1, true);
+//        HudDataManager.getInstance().setSpawnChunkRadius(this.spawnChunkRadius - 1, true);
     }
 
     // NOTE:  This is only valid when `doWeatherCycle` is enabled in the Game Rules.

@@ -817,7 +817,7 @@ public class RenderUtils
         World world = WorldUtils.getBestWorld(mc);
         Entity cameraEntity = EntityUtils.getCameraEntity();
 
-        if (mc.player == null || world == null)
+        if (mc.player == null || world == null || cameraEntity == null)
         {
             return;
         }
@@ -834,7 +834,7 @@ public class RenderUtils
             }
         }
 
-        HitResult trace = RayTraceUtils.getRayTraceFromEntity(cameraEntity.getWorld(), cameraEntity, RaycastContext.FluidHandling.NONE);
+        HitResult trace = RayTraceUtils.getRayTraceFromEntity(cameraEntity.getEntityWorld(), cameraEntity, RaycastContext.FluidHandling.NONE);
 
         BlockPos pos = null;
         Inventory inv = null;
@@ -862,7 +862,7 @@ public class RenderUtils
         {
             Entity entity = ((EntityHitResult) trace).getEntity();
 
-            if (entity.getWorld().isClient &&
+            if (entity.getEntityWorld().isClient() &&
                 Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue())
             {
                 EntitiesDataManager.getInstance().requestEntity(world, entity.getId());

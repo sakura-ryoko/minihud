@@ -15,6 +15,8 @@ import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.block.entity.BeehiveBlockEntity;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.*;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.TypedEntityData;
 import net.minecraft.entity.passive.AxolotlEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
@@ -161,8 +163,8 @@ public class MiscUtils
 
             for (BeehiveBlockEntity.BeeData beeOccupant : beeList)
             {
-                NbtComponent beeData = beeOccupant.entityData();
-                NbtCompound beeTag = beeData.copyNbt();
+                TypedEntityData<EntityType<?>> beeData = beeOccupant.entityData();
+                NbtCompound beeTag = beeData.copyNbtWithoutId();
                 int beeTicks = beeOccupant.ticksInHive();
                 Optional<Text> beeName = Optional.empty();
                 int beeAge = -1;

@@ -59,7 +59,7 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
     DEBUG_OCTREEE                       ("debugOctreeEnabled",          ""),
     DEBUG_PATH_FINDING                  ("debugPathfindingEnabled",     true, ""),
     DEBUG_RAID_CENTER                   ("debugRaidCenterEnabled",      true, ""),
-    // todo
+    // todo fix
     //DEBUG_REDSTONE_UPDATE_ORDER         ("debugRedstoneUpdateOrder",    true, ""),
     DEBUG_SKYLIGHT                      ("debugSkylightEnabled",        ""),
     DEBUG_SOLID_FACES                   ("debugSolidFaceEnabled",       ""),

@@ -111,7 +111,7 @@ public abstract class MixinDebugInfoSender
     @Inject(method = "sendBrainDebugData", at = @At("HEAD"))
     private static void minihud_onSendBrainDebugData(LivingEntity living, CallbackInfo ci)
     {
-        if (living.getWorld() instanceof ServerWorld world)
+        if (living.getEntityWorld() instanceof ServerWorld world)
         {
             DebugDataManager.getInstance().sendBrainDebugData(world, living);
         }
@@ -121,7 +121,7 @@ public abstract class MixinDebugInfoSender
     @Inject(method = "sendBeeDebugData", at = @At("HEAD"))
     private static void minihud_onSendBeeDebugData(BeeEntity bee, CallbackInfo ci)
     {
-        if (bee.getWorld() instanceof ServerWorld world)
+        if (bee.getEntityWorld() instanceof ServerWorld world)
         {
             DebugDataManager.getInstance().sendBeeDebugData(world, bee);
         }
@@ -130,7 +130,7 @@ public abstract class MixinDebugInfoSender
     @Inject(method = "sendBreezeDebugData", at = @At("HEAD"))
     private static void minihud_onSendBreezeDebugData(BreezeEntity breeze, CallbackInfo ci)
     {
-        if (breeze.getWorld() instanceof ServerWorld world)
+        if (breeze.getEntityWorld() instanceof ServerWorld world)
         {
             DebugDataManager.getInstance().sendBreezeDebugData(world, breeze);
         }

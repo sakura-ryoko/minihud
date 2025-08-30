@@ -83,7 +83,7 @@ public class OverlayRendererRegion extends OverlayRendererBase
 
     private void calculateRegions(Entity entity)
     {
-        World world = entity.getWorld();
+        World world = entity.getEntityWorld();
         int minY = world != null ? world.getBottomY() : -64;
         int maxY = world != null ? world.getTopYInclusive() + 1 : 320;
         int rx = MathHelper.floor(entity.getX()) & ~0x1FF;

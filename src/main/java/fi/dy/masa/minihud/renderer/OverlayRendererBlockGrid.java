@@ -117,10 +117,10 @@ public class OverlayRendererBlockGrid extends OverlayRendererBase
                 this.renderLinesAll(cameraPos, this.lastUpdatePos, radius, color, builder);
                 break;
             case NON_AIR:
-                this.renderLinesNonAir(cameraPos, this.cameraEntity.getWorld(), this.lastUpdatePos, radius, color, builder);
+                this.renderLinesNonAir(cameraPos, this.cameraEntity.getEntityWorld(), this.lastUpdatePos, radius, color, builder);
                 break;
             case ADJACENT:
-                this.renderLinesAdjacentToNonAir(cameraPos, this.cameraEntity.getWorld(), this.lastUpdatePos, radius, color, builder);
+                this.renderLinesAdjacentToNonAir(cameraPos, this.cameraEntity.getEntityWorld(), this.lastUpdatePos, radius, color, builder);
                 break;
         }
 

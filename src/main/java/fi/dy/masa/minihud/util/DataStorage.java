@@ -47,7 +47,6 @@ import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
 import fi.dy.masa.malilib.util.InfoUtils;
 import fi.dy.masa.malilib.util.JsonUtils;
 import fi.dy.masa.malilib.util.StringUtils;
-import fi.dy.masa.malilib.util.data.Constants;
 import fi.dy.masa.malilib.util.position.PositionUtils;
 import fi.dy.masa.malilib.util.time.TickUtils;
 import fi.dy.masa.minihud.MiniHUD;
@@ -55,7 +54,7 @@ import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.RendererToggle;
 import fi.dy.masa.minihud.data.HudDataManager;
 import fi.dy.masa.minihud.data.MobCapDataHandler;
-import fi.dy.masa.minihud.mixin.IMixinMinecraftServer;
+import fi.dy.masa.minihud.mixin.server.IMixinMinecraftServer;
 import fi.dy.masa.minihud.network.ServuxStructuresHandler;
 import fi.dy.masa.minihud.network.ServuxStructuresPacket;
 import fi.dy.masa.minihud.renderer.*;
@@ -466,44 +465,44 @@ public class DataStorage
 
             return true;
         }
-        else if (parts.length > 0 && (parts[0].equals("minihud-spawnchunkradius") || parts[0].equals("/minihud-spawnchunkradius")))
-        {
-            if (parts.length == 2)
-            {
-                try
-                {
-                    int radius = Integer.parseInt(parts[1]);
-
-                    if (radius >= 0 && radius <= 32)
-                    {
-                        HudDataManager.getInstance().setSpawnChunkRadius(radius, true);
-                    }
-                    else
-                    {
-                        InfoUtils.printActionbarMessage("minihud.message.error.invalid_spawn_chunk_radius");
-                    }
-                }
-                catch (NumberFormatException e)
-                {
-                    InfoUtils.printActionbarMessage("minihud.message.error.invalid_spawn_chunk_radius");
-                }
-            }
-            else if (parts.length == 1)
-            {
-                if (HudDataManager.getInstance().isSpawnChunkRadiusKnown())
-                {
-                    int radius = HudDataManager.getInstance().getSpawnChunkRadius();
-                    String strRadius = radius > 0 ? GuiBase.TXT_GREEN + String.format("%d", radius) + GuiBase.TXT_RST : GuiBase.TXT_RED + String.format("%d", radius) + GuiBase.TXT_RST;
-                    InfoUtils.printActionbarMessage(StringUtils.translate("minihud.message.spawn_chunk_radius_is", strRadius));
-                }
-                else
-                {
-                    InfoUtils.printActionbarMessage("minihud.message.no_spawn_chunk_radius");
-                }
-            }
-
-            return true;
-        }
+//        else if (parts.length > 0 && (parts[0].equals("minihud-spawnchunkradius") || parts[0].equals("/minihud-spawnchunkradius")))
+//        {
+//            if (parts.length == 2)
+//            {
+//                try
+//                {
+//                    int radius = Integer.parseInt(parts[1]);
+//
+//                    if (radius >= 0 && radius <= 32)
+//                    {
+//                        HudDataManager.getInstance().setSpawnChunkRadius(radius, true);
+//                    }
+//                    else
+//                    {
+//                        InfoUtils.printActionbarMessage("minihud.message.error.invalid_spawn_chunk_radius");
+//                    }
+//                }
+//                catch (NumberFormatException e)
+//                {
+//                    InfoUtils.printActionbarMessage("minihud.message.error.invalid_spawn_chunk_radius");
+//                }
+//            }
+//            else if (parts.length == 1)
+//            {
+//                if (HudDataManager.getInstance().isSpawnChunkRadiusKnown())
+//                {
+//                    int radius = HudDataManager.getInstance().getSpawnChunkRadius();
+//                    String strRadius = radius > 0 ? GuiBase.TXT_GREEN + String.format("%d", radius) + GuiBase.TXT_RST : GuiBase.TXT_RED + String.format("%d", radius) + GuiBase.TXT_RST;
+//                    InfoUtils.printActionbarMessage(StringUtils.translate("minihud.message.spawn_chunk_radius_is", strRadius));
+//                }
+//                else
+//                {
+//                    InfoUtils.printActionbarMessage("minihud.message.no_spawn_chunk_radius");
+//                }
+//            }
+//
+//            return true;
+//        }
 
         return false;
     }
@@ -574,35 +573,35 @@ public class DataStorage
                     MiniHUD.LOGGER.warn("Failed to read the world spawn point from '{}'", text.getArgs(), e);
                 }
             }
-            else if (("commands.gamerule.set".equals(text.getKey()) || "commands.gamerule.query".equals(text.getKey())) && text.getArgs().length == 2)
-            {
-                try
-                {
-                    Object[] o = text.getArgs();
-                    String rule = o[0].toString();
-
-                    if (rule.equals("spawnChunkRadius"))
-                    {
-                        int value = Integer.parseInt(o[1].toString());
-
-                        if (HudDataManager.getInstance().getSpawnChunkRadius() != value)
-                        {
-                            MiniHUD.LOGGER.info("Received spawn chunk radius from the vanilla /gamerule command: {}", HudDataManager.getInstance().getSpawnChunkRadius());
-                            HudDataManager.getInstance().setSpawnChunkRadius(value, true);
-                        }
-                        else
-                        {
-                            int radius = HudDataManager.getInstance().getSpawnChunkRadius();
-                            String strRadius = radius > 0 ? GuiBase.TXT_GREEN + String.format("%d", radius) + GuiBase.TXT_RST : GuiBase.TXT_RED + String.format("%d", radius) + GuiBase.TXT_RST;
-                            InfoUtils.printActionbarMessage(StringUtils.translate("minihud.message.spawn_chunk_radius_is", strRadius));
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    MiniHUD.LOGGER.warn("Failed to read the spawn chunk radius from '{}'", text.getArgs(), e);
-                }
-            }
+//            else if (("commands.gamerule.set".equals(text.getKey()) || "commands.gamerule.query".equals(text.getKey())) && text.getArgs().length == 2)
+//            {
+//                try
+//                {
+//                    Object[] o = text.getArgs();
+//                    String rule = o[0].toString();
+//
+//                    if (rule.equals("spawnChunkRadius"))
+//                    {
+//                        int value = Integer.parseInt(o[1].toString());
+//
+//                        if (HudDataManager.getInstance().getSpawnChunkRadius() != value)
+//                        {
+//                            MiniHUD.LOGGER.info("Received spawn chunk radius from the vanilla /gamerule command: {}", HudDataManager.getInstance().getSpawnChunkRadius());
+//                            HudDataManager.getInstance().setSpawnChunkRadius(value, true);
+//                        }
+//                        else
+//                        {
+//                            int radius = HudDataManager.getInstance().getSpawnChunkRadius();
+//                            String strRadius = radius > 0 ? GuiBase.TXT_GREEN + String.format("%d", radius) + GuiBase.TXT_RST : GuiBase.TXT_RED + String.format("%d", radius) + GuiBase.TXT_RST;
+//                            InfoUtils.printActionbarMessage(StringUtils.translate("minihud.message.spawn_chunk_radius_is", strRadius));
+//                        }
+//                    }
+//                }
+//                catch (Exception e)
+//                {
+//                    MiniHUD.LOGGER.warn("Failed to read the spawn chunk radius from '{}'", text.getArgs(), e);
+//                }
+//            }
         }
     }
 
@@ -796,10 +795,10 @@ public class DataStorage
             {
                 HudDataManager.getInstance().setWorldSpawn(new BlockPos(data.getInt("spawnPosX", 0), data.getInt("spawnPosY", 0), data.getInt("spawnPosZ", 0)));
             }
-            if (data.contains("spawnChunkRadius"))
-            {
-                HudDataManager.getInstance().setSpawnChunkRadius(data.getInt("spawnChunkRadius", 2), true);
-            }
+//            if (data.contains("spawnChunkRadius"))
+//            {
+//                HudDataManager.getInstance().setSpawnChunkRadius(data.getInt("spawnChunkRadius", 2), true);
+//            }
             if (data.contains("worldSeed"))
             {
                 HudDataManager.getInstance().setWorldSeed(data.getLong("worldSeed", -1L));
@@ -861,7 +860,7 @@ public class DataStorage
     {
         if (this.mc.player == null || this.mc.getServer() == null) return;
 
-        final RegistryKey<World> worldId = this.mc.player.getWorld().getRegistryKey();
+        final RegistryKey<World> worldId = this.mc.player.getEntityWorld().getRegistryKey();
         final ServerWorld world = this.mc.getServer().getWorld(worldId);
 
         if (world != null)
@@ -1049,9 +1048,9 @@ public class DataStorage
         {
             HudDataManager.getInstance().setWorldSeed(JsonUtils.getLong(obj, "seed"));
         }
-        if (JsonUtils.hasInteger(obj, "spawn_chunk_radius"))
-        {
-            HudDataManager.getInstance().setSpawnChunkRadius(JsonUtils.getIntegerOrDefault(obj, "spawn_chunk_radius", 2), false);
-        }
+//        if (JsonUtils.hasInteger(obj, "spawn_chunk_radius"))
+//        {
+//            HudDataManager.getInstance().setSpawnChunkRadius(JsonUtils.getIntegerOrDefault(obj, "spawn_chunk_radius", 2), false);
+//        }
     }
 }

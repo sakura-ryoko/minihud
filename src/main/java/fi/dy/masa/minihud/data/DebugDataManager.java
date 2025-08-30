@@ -6,6 +6,8 @@ import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.hud.debug.DebugHudEntryVisibility;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.brain.*;
@@ -56,9 +58,9 @@ import fi.dy.masa.minihud.util.DataStorage;
 public class DebugDataManager
 {
     private static final DebugDataManager INSTANCE = new DebugDataManager();
-
     private final static ServuxDebugHandler<ServuxDebugPacket.Payload> HANDLER = ServuxDebugHandler.getInstance();
 
+	private final MinecraftClient mc;
     private boolean servuxServer;
     private boolean hasInValidServux;
     private String servuxVersion;
@@ -69,9 +71,10 @@ public class DebugDataManager
         this.servuxServer = false;
         this.hasInValidServux = false;
         this.servuxVersion = "";
+		this.mc = MinecraftClient.getInstance();
     }
 
-    public static DebugDataManager getInstance() {return INSTANCE;}
+    public static DebugDataManager getInstance() { return INSTANCE; }
 
     public void onGameInit()
     {
@@ -91,6 +94,7 @@ public class DebugDataManager
             HANDLER.reset(this.getNetworkChannel());
             HANDLER.resetFailures(this.getNetworkChannel());
 
+			// reset config
             this.servuxServer = false;
             this.hasInValidServux = false;
             this.servuxVersion = "";
@@ -122,7 +126,47 @@ public class DebugDataManager
         }
     }
 
-    public void setIsServuxServer()
+	public boolean isF3Enabled()
+	{
+		return this.mc.debugHudEntryList.isF3Enabled();
+	}
+
+	public boolean isDebugAlwaysEnabled(Identifier type)
+	{
+		return this.mc.debugHudEntryList.getVisibility(type) == DebugHudEntryVisibility.ALWAYS_ON;
+	}
+
+	public boolean toggleDebugAlwaysEnabled(Identifier type)
+	{
+		if (this.isDebugAlwaysEnabled(type))
+		{
+			this.mc.debugHudEntryList.setEntryVisibility(type, DebugHudEntryVisibility.NEVER);
+			return false;
+		}
+		else
+		{
+			this.mc.debugHudEntryList.setEntryVisibility(type, DebugHudEntryVisibility.ALWAYS_ON);
+			return true;
+		}
+	}
+
+	public boolean setDebugAlwaysEnabled(Identifier type, boolean enabled)
+	{
+		if (!enabled)
+		{
+			this.mc.debugHudEntryList.setEntryVisibility(type, DebugHudEntryVisibility.NEVER);
+			return false;
+		}
+		else if (enabled)
+		{
+			this.mc.debugHudEntryList.setEntryVisibility(type, DebugHudEntryVisibility.ALWAYS_ON);
+			return true;
+		}
+
+		return this.isDebugAlwaysEnabled(type);
+	}
+
+	public void setIsServuxServer()
     {
         this.servuxServer = true;
         if (this.hasInValidServux)
@@ -606,12 +650,12 @@ public class DebugDataManager
                 }
                 else if (memory.isTimed())
                 {
-                    String var10000 = this.format((ServerWorld) entity.getWorld(), object);
+                    String var10000 = this.format((ServerWorld) entity.getEntityWorld(), object);
                     string = var10000 + " (ttl: " + memory.getExpiry() + ")";
                 }
                 else
                 {
-                    string = this.format((ServerWorld) entity.getWorld(), object);
+                    string = this.format((ServerWorld) entity.getEntityWorld(), object);
                 }
             }
             else

@@ -10,6 +10,7 @@ import net.minecraft.world.World;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.info.InfoLine;
+import fi.dy.masa.minihud.util.IServerChunkLoading;
 
 public class InfoLineLoadedChunks extends InfoLine
 {
@@ -48,7 +49,7 @@ public class InfoLineLoadedChunks extends InfoLine
         if (world instanceof ServerWorld sw)
         {
             int chunksServer = sw.getChunkManager().getLoadedChunkCount();
-            int chunksServerTot = sw.getChunkManager().getTotalChunksLoadedCount();
+            int chunksServerTot = ((IServerChunkLoading) sw.getChunkManager().chunkLoadingManager).minihud_getTotalLoadedChunksCount();
             list.add(this.translate(CHUNKS_KEY+".server", chunksServer, chunksServerTot, chunksClient));
         }
         else

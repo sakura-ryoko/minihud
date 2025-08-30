@@ -78,7 +78,7 @@ public class OverlayRendererHandheldBeaconRange extends OverlayRendererBase
     {
         if (RendererToggle.OVERLAY_BEACON_RANGE.getBooleanValue())
         {
-            this.calculateBeaconBoxForPlayer(entity.getWorld(), entity, mc);
+            this.calculateBeaconBoxForPlayer(entity.getEntityWorld(), entity, mc);
 
             if (this.hasData())
             {

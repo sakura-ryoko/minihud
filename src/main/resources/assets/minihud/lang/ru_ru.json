@@ -925,10 +925,7 @@
     "minihud.info_line.server_tps.sprinting": " [§d§lSprinting§r]",
     "minihud.info_line.servux": "Servux Version: %s",
     "minihud.info_line.servux.entity_sync": "EntitySync: cB: %02d, pB: %02d, cE: %02d, pE: %02d",
-    "minihud.info_line.servux.no_structures_hud": "HudSync: sR: %02d (%s), wS: %s",
     "minihud.info_line.servux.not_connected": "Servux Version: §cnot_connected§r",
-    "minihud.info_line.servux.structures": "Structures: sC: %02d, sR: %02d (%s), wS: %s",
-    "minihud.info_line.servux.structures_integrated": "Structures (Integrated Server): sC: %02d, sR: %02d (%s), wS: %s",
     "minihud.info_line.slime_chunk": "Slime chunk: %s",
     "minihud.info_line.slime_chunk.no": "§cNO§r",
     "minihud.info_line.slime_chunk.no_seed": "<world seed not known>",
@@ -1041,6 +1038,5 @@
     "minihud.message.toggled_using_center_position": "Toggled %s %s, using the center position %s",
     "minihud.message.toggled_using_player_spawn": "Toggled %s %s, Simulation distance %s",
     "minihud.message.toggled_using_position": "Toggled %s %s, using the position %s",
-    "minihud.message.toggled_using_world_spawn": "Toggled %s %s, World spawn %s",
     "modmenu.descriptionTranslation.minihud": "Configurable \"mini-F3\" info lines, and various overlay renderers"
 }

@@ -481,7 +481,8 @@ public class RenderHandler implements IRenderer
     {
         MinecraftClient mc = this.mc;
         Entity entity = mc.getCameraEntity();
-        World world = entity.getWorld();
+        World world = entity != null ? entity.getEntityWorld() : null;
+		if (world == null || mc.world == null) return;
         double y = entity.getY();
         BlockPos pos = BlockPos.ofFloored(entity.getX(), y, entity.getZ());
         ChunkPos chunkPos = new ChunkPos(pos);

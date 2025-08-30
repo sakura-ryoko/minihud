@@ -7,7 +7,7 @@ import javax.annotation.Nonnull;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.info.InfoLine;
-import fi.dy.masa.minihud.mixin.IMixinWorldRenderer;
+import fi.dy.masa.minihud.mixin.render.IMixinWorldRenderer;
 
 public class InfoLineChunkSections extends InfoLine
 {

@@ -87,7 +87,7 @@ public abstract class BaseBlockRangeOverlay<T extends BlockEntity> extends Overl
         if (mc.world == null) return;
 
         this.hasData = this.fetchAllTargetBlockEntityPositions(mc.world, entity.getBlockPos(), mc);
-        this.world = entity.getWorld();
+        this.world = entity.getEntityWorld();
 
 //        LOGGER.debug("update(): hasData: {} // positions: {}", this.hasData, this.blockPositions.size());
 

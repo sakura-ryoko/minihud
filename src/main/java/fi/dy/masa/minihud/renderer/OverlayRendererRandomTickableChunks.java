@@ -124,7 +124,7 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
 
                 if (!chunks.contains(posAdj))
                 {
-                    Box bb = this.calculateChunkEdge(pos, side, entity.getWorld());
+                    Box bb = this.calculateChunkEdge(pos, side, entity.getEntityWorld());
 
                     if (bb != null)
                     {

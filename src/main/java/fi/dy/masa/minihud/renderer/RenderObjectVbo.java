@@ -731,7 +731,7 @@ public class RenderObjectVbo
 
             if (useOffset)
             {
-                RenderSystem.setModelOffset(this.offset[0], this.offset[1], this.offset[2]);
+//                RenderSystem.setModelOffset(this.offset[0], this.offset[1], this.offset[2]);
                 modelOffset.set(this.offset);
             }
 
@@ -821,7 +821,6 @@ public class RenderObjectVbo
                     pass.bindSampler("Sampler2", RenderUtils.lightmap().getGlTextureView());
                 }
 
-
 //                for (int i = 0; i < 12; i++)
 //                {
 //                    GpuTexture drawableTexture = RenderSystem.getShaderTexture(i);
@@ -839,10 +838,10 @@ public class RenderObjectVbo
 
             //MiniHUD.LOGGER.warn("RenderContext#drawInternal() [{}] --> END", this.name.get());
 
-            if (useOffset)
-            {
-                RenderSystem.resetModelOffset();
-            }
+//            if (useOffset)
+//            {
+//                RenderSystem.resetModelOffset();
+//            }
         }
     }
 
