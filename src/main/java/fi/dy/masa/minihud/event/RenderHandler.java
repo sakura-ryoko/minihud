@@ -9,6 +9,7 @@ import javax.annotation.Nullable;
 
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.Reference;
+import fi.dy.masa.minihud.data.DebugDataManager;
 import fi.dy.masa.minihud.info.InfoLine;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -151,7 +152,8 @@ public class RenderHandler implements IRenderer
             return;
         }
 
-        if (mc.getDebugHud().shouldShowDebugHud() == false &&
+		if (DebugDataManager.getInstance().shouldShowDebugHudFix() == false &&
+//        if (mc.getDebugHud().shouldShowDebugHud() == false &&
             mc.player != null && mc.options.hudHidden == false &&
             (Configs.Generic.REQUIRE_SNEAK.getBooleanValue() == false || mc.player.isSneaking()) &&
             Configs.Generic.REQUIRED_KEY.getKeybind().isKeybindHeld())
@@ -512,6 +514,21 @@ public class RenderHandler implements IRenderer
                 return;
             }
         }
+		else if (type == InfoToggle.GPU)
+		{
+			// Make into a generic call
+			InfoLine parser = type.initParser();
+
+			if (parser != null)
+			{
+				InfoLine.Context ctx = new InfoLine.Context(null, null, null, null, null, null);
+				this.processEntries(parser.parse(ctx));
+			}
+			else
+			{
+				return;
+			}
+		}
         else if (type == InfoToggle.MEMORY_USAGE)
         {
             // Make into a generic call

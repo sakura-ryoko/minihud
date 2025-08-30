@@ -8,6 +8,7 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.hud.debug.DebugHudEntryVisibility;
+import net.minecraft.client.gui.hud.debug.DebugHudProfile;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.brain.*;
@@ -164,6 +165,41 @@ public class DebugDataManager
 		}
 
 		return this.isDebugAlwaysEnabled(type);
+	}
+
+	/**
+	 * This patches the 'shouldShowDebugHud' so that the Chunk Borders, etc do not effect the MiniHUD Info Lines.
+	 * @return (True|False)
+	 */
+	public boolean shouldShowDebugHudFix()
+	{
+		DebugHudProfile profile = this.mc.debugHudEntryList;
+		Collection<Identifier> list = profile.getVisibleEntries();
+
+		return (profile.isF3Enabled() || !this.checkVisibleEntries(list))
+				&& (!this.mc.options.hudHidden || this.mc.currentScreen != null);
+	}
+
+	private boolean checkVisibleEntries(Collection<Identifier> list)
+	{
+		if (list.isEmpty()) return true;
+		for (Identifier entry : list)
+		{
+			// Whitelist the Debug Renderer ones (see DebugHudEntries)
+			switch (entry.getPath())
+			{
+				case "entity_hitboxes" -> { continue; }
+				case "chunk_borders" -> { continue; }
+				case "3d_crosshair" -> { continue; }
+				case "chunk_section_paths" -> { continue; }
+				case "chunk_section_octree" -> { continue; }
+				case "chunk_section_visibility" -> { continue; }
+				default -> { return false; }
+			}
+		}
+
+		// Means it's safe, as if it were empty
+		return true;
 	}
 
 	public void setIsServuxServer()

@@ -43,6 +43,7 @@
         "network.MixinClientCommonNetworkHandler",
         "network.MixinClientPlayerInteractionManager",
         "network.MixinClientPlayNetworkHandler",
+        "render.IGlTimer",
         "render.IMixinWorldRenderer"
     ],
     "server": [],

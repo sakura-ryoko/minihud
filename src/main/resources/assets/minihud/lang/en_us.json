@@ -864,6 +864,7 @@
     "minihud.info_line.facing.west": "Negative X",
     "minihud.info_line.facing.west.name": "WEST",
     "minihud.info_line.fps": "%d fps",
+    "minihud.info_line.gpu": "GPU: %s%%§r",
     "minihud.info_line.furnace_xp": "Furnace XP: §b%d",
     "minihud.info_line.honey_level": "Honey: §b%d",
     "minihud.info_line.horse_jump": "%s Jump: §b%.3f§r m",

@@ -27,6 +27,7 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
 {
     // Basic Info
     FPS                     ("infoFPS",                     InfoLineTypes.FPS, false, ""),
+	GPU                     ("infoGPU",                     InfoLineTypes.GPU, false, ""),
     MEMORY_USAGE            ("infoMemoryUsage",             InfoLineTypes.MEMORY, false, ""),
     TIME_REAL               ("infoTimeIRL",                 InfoLineTypes.TIME_IRL, true,  ""),
     TIME_WORLD              ("infoTimeWorld",               InfoLineTypes.TIME_WORLD, false, ""),

@@ -14,6 +14,7 @@ public class InfoLineTypes
 {
     // Generic
     public static final InfoLineType<InfoLineFPS>                   FPS                     = InfoLineType.build(InfoLineFPS::new,                  InfoToggle.FPS, List.of(InfoLineFlag.GENERIC));
+	public static final InfoLineType<InfoLineGPU>                   GPU                     = InfoLineType.build(InfoLineGPU::new,                  InfoToggle.GPU, List.of(InfoLineFlag.GENERIC));
     public static final InfoLineType<InfoLineMemory>                MEMORY                  = InfoLineType.build(InfoLineMemory::new,               InfoToggle.MEMORY_USAGE, List.of(InfoLineFlag.GENERIC));
     public static final InfoLineType<InfoLineTimeIRL>               TIME_IRL                = InfoLineType.build(InfoLineTimeIRL::new,              InfoToggle.TIME_REAL, List.of(InfoLineFlag.GENERIC));
     public static final InfoLineType<InfoLineChunkSections>         CHUNK_SECTIONS          = InfoLineType.build(InfoLineChunkSections::new,        InfoToggle.CHUNK_SECTIONS, List.of(InfoLineFlag.GENERIC));
