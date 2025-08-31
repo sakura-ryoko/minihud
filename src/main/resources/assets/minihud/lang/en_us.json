@@ -102,7 +102,7 @@
     "minihud.config.generic.comment.dateFormatMinecraft": "The format string for the Minecraft time.\nThe supported placeholders are: {DAY_1}, {DAY}, {HOUR}, {MIN}, {SEC}, {MINIRL}, {SECIRL}, {MOON}.\n{DAY_1} starts the day counter from 1, {DAY} starts from 0.",
     "minihud.config.generic.comment.dateFormatString": "The format string for real time, see the Java DateTimeFormatter\nclass Syntax for the format patterns, if needed.",
     "minihud.config.generic.comment.dateFormatType": "The format real time using the selected formatter options:\nRegular (§6Default§r): '§a2025-02-02_13.55.44§r' (§eyyyy-MM-dd_HH.mm.ss§r) \nISO Local: '§a2025-02-02T13:55:44.0939044§r' (§eyyyy-MM-ddTHH:mm:ss.n§r)\nISO Offset: '§a2025-02-02T13:55:44.0939044-05:00§r' (§eyyyy-MM-ddTHH:mm:ss.nZ§r)\nRFC1123: '§aSun, 2 Feb 2025 13:55:44 -0500§r' (§eEEE, dd MMM yyyy HH:mm:ss +HHMM§r) \nFormatted: This option uses the \"§bdateFormatString§r\" as input.",
-    "minihud.config.generic.comment.copperAgingMode": "The format mode of the remaining time for the Copper Golem Aging info Line.",
+    "minihud.config.generic.comment.copperAgingMode": "The format display of the remaining time for the\nCopper Golem Aging info Line.",
     "minihud.config.generic.comment.debugDevelopmentMode": "Enables the Vanilla Development Mode toggle",
     "minihud.config.generic.comment.debugMessages": "Enables some debug messages in the game console",
     "minihud.config.generic.comment.debugRendererPathFindingEnablePointWidth": "If true, then the vanilla pathfinding debug renderer\nwill render the path point width boxes.",
