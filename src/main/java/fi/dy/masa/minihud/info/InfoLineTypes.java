@@ -60,4 +60,5 @@ public class InfoLineTypes
     public static final InfoLineType<InfoLineHomePos>               HOME_POS                = InfoLineType.build(InfoLineHomePos::new,              InfoToggle.ENTITY_HOME_POS, List.of(InfoLineFlag.WORLD, InfoLineFlag.ENTITY));
     public static final InfoLineType<InfoLineHorseJump>             HORSE_JUMP              = InfoLineType.build(InfoLineHorseJump::new,            InfoToggle.HORSE_JUMP, List.of(InfoLineFlag.WORLD, InfoLineFlag.VEHICLE, InfoLineFlag.ENTITY));
     public static final InfoLineType<InfoLineHorseSpeed>            HORSE_SPEED             = InfoLineType.build(InfoLineHorseSpeed::new,           InfoToggle.HORSE_SPEED, List.of(InfoLineFlag.WORLD, InfoLineFlag.VEHICLE, InfoLineFlag.ENTITY));
+	public static final InfoLineType<InfoLineCopperAging>           COPPER_AGING            = InfoLineType.build(InfoLineCopperAging::new, 			InfoToggle.ENTITY_COPPER_AGING, List.of(InfoLineFlag.WORLD, InfoLineFlag.ENTITY));
 }

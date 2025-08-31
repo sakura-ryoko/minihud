@@ -103,6 +103,7 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     DOLPHIN_TREASURE        ("infoDolphinTreasure",         InfoLineTypes.DOLPHIN_TREASURE, false, ""),
     ENTITY_VARIANT          ("infoEntityVariant",           InfoLineTypes.ENTITY_VARIANT, false, ""),
     ENTITY_HOME_POS         ("infoEntityHomePos",           InfoLineTypes.HOME_POS, false, ""),
+	ENTITY_COPPER_AGING		("infoEntityCopperAging",       InfoLineTypes.COPPER_AGING, false, ""),
     ;
 
     public static final ImmutableList<InfoToggle> VALUES = ImmutableList.copyOf(values());

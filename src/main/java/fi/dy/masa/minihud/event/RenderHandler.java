@@ -1450,6 +1450,34 @@ public class RenderHandler implements IRenderer
                 return;
             }
         }
+		else if (type == InfoToggle.ENTITY_COPPER_AGING)
+		{
+			InfoLine parser = type.initParser();
+
+			if (parser != null)
+			{
+				Pair<Entity, NbtCompound> pair = this.getTargetEntity(world, mc);
+
+				if (pair != null)
+				{
+					InfoLine.Context ctx = new InfoLine.Context(world, pair.getLeft(), null, null, null, pair.getRight());
+					this.processEntries(parser.parse(ctx));
+
+					if (parser.succeededType())
+					{
+						this.addedTypes.add(type);
+					}
+				}
+				else
+				{
+					return;
+				}
+			}
+			else
+			{
+				return;
+			}
+		}
         else if (type == InfoToggle.LOOKING_AT_EFFECTS)
         {
             InfoLine parser = type.initParser();

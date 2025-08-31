@@ -13,6 +13,7 @@
         "debug.IMixinMobEntity",
         "debug.MixinDebugInfoSender",
         "debug.MixinPath",
+        "entity.IMixinCopperGolemEntity",
         "entity.IMixinEntity",
         "entity.IMixinLeashable",
         "entity.IMixinPassiveEntity",
