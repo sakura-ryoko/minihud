@@ -838,7 +838,7 @@
     "minihud.info_line.entity_copper_aging.aging": "铜傀儡：§b%s§r / %s",
     "minihud.info_line.entity_copper_aging.game_time": "MC: (%s 天), %s:%s:%s",
     "minihud.info_line.entity_copper_aging.not_aging": "铜傀儡：§b%s§r",
-    "minihud.info_line.entity_copper_aging.real_time": "§e剩余时间：%s§r",
+    "minihud.info_line.entity_copper_aging.real_time": "§e%s 剩余§r",
     "minihud.info_line.entity_copper_aging.ticks": "Ticks: %s",
     "minihud.info_line.entity_copper_aging.waxed": "铜傀儡：§b%s§r [§6§l已涂蜡§r]",
     "minihud.info_line.entity_reg_name": "实体注册名：%s",
@@ -1058,6 +1058,6 @@
     "minihud.message.toggled_using_center_position": "已切换 %s %s，使用中心坐标 %s",
     "minihud.message.toggled_using_player_spawn": "已切换 %s %s，模拟距离 %s",
     "minihud.message.toggled_using_position": "已切换 %s %s，使用坐标 %s",
-    "minihud.message.toggled_using_world_spawn": "已切换 %s %s，世界出生点 %s",
+    "minihud.message.toggled_using_world_spawn": "已切换 %s %s，使用世界出生点 %s",
     "modmenu.descriptionTranslation.minihud": "可配置的“mini-F3”信息行和各种覆盖渲染器"
 }
