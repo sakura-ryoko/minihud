@@ -55,7 +55,7 @@ public class InputHandler implements IKeybindProvider, IMouseInputHandler
     }
 
     @Override
-    public boolean onMouseScroll(int mouseX, int mouseY, double dWheel)
+    public boolean onMouseScroll(double mouseX, double mouseY, double dWheel)
     {
         // Not in a GUI
         if (GuiUtils.getCurrentScreen() == null && dWheel != 0)

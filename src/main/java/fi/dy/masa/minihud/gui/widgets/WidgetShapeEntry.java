@@ -2,6 +2,7 @@ package fi.dy.masa.minihud.gui.widgets;
 
 import java.util.List;
 
+import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 
 import fi.dy.masa.malilib.gui.GuiBase;
@@ -62,9 +63,9 @@ public class WidgetShapeEntry extends WidgetListEntryBase<ShapeBase>
     }
 
     @Override
-    public boolean canSelectAt(int mouseX, int mouseY, int mouseButton)
+    public boolean canSelectAt(Click click)
     {
-        return super.canSelectAt(mouseX, mouseY, mouseButton) && mouseX < this.buttonsStartX;
+        return super.canSelectAt(click) && click.x() < this.buttonsStartX;
     }
 
     @Override
