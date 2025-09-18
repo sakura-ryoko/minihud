@@ -46,6 +46,22 @@ public class ShapeBox extends ShapeBase
     public ShapeBox()
     {
         super(ShapeType.BOX, Configs.Colors.SHAPE_BOX.getColor());
+        this.inizializeBox();
+    }
+    
+    public ShapeBox(ShapeType type)
+    {
+        super(type,Configs.Colors.SHAPE_BOX.getColor());
+        this.inizializeBox();
+    }
+
+    public ShapeBox(ShapeType type, Color4f color)
+    {
+        super(type,color);
+        this.inizializeBox();
+    }
+
+    protected void inizializeBox(){
         this.box = DEFAULT_BOX;
         this.renderPerimeter = DEFAULT_BOX;
         this.corner1 = Vec3d.ZERO;
