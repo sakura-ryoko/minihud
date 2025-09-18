@@ -16,23 +16,13 @@ import fi.dy.masa.minihud.util.DebugInfoUtils;
 public abstract class MixinDebugRenderer
 {
     @Inject(method = "render", at = @At("RETURN"))
-    private void renderDebugRenderers(MatrixStack matrices, Frustum frustum, VertexConsumerProvider.Immediate immediate, double cameraX, double cameraY, double cameraZ, CallbackInfo ci)
+    private void renderDebugRenderers(MatrixStack matrices, Frustum frustum,
+                                      VertexConsumerProvider.Immediate vertexConsumers, double cameraX, double cameraY,
+                                      double cameraZ, boolean bl, CallbackInfo ci)
     {
         if (Configs.Generic.MAIN_RENDERING_TOGGLE.getBooleanValue())
         {
-            DebugInfoUtils.renderVanillaDebug(matrices, frustum, immediate, cameraX, cameraY, cameraZ);
+            DebugInfoUtils.renderVanillaDebug(matrices, frustum, vertexConsumers, cameraX, cameraY, cameraZ);
         }
     }
-//
-//    @Inject(method = "toggleShowChunkBorder", at = @At("RETURN"))
-//    private void renderDebugToggleChunkBorders(CallbackInfoReturnable<Boolean> cir)
-//    {
-//        DebugInfoUtils.onToggleVanillaDebugChunkBorder(cir.getReturnValue());
-//    }
-//
-//    @Inject(method = "toggleShowOctree", at = @At("RETURN"))
-//    private void renderDebugToggleOctree(CallbackInfoReturnable<Boolean> cir)
-//    {
-//        DebugInfoUtils.onToggleVanillaDebugOctree(cir.getReturnValue());
-//    }
 }

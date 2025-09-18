@@ -67,12 +67,13 @@ public class InfoLineServux extends InfoLine
                                     this.getEntData().getPendingEntitiesCount()
             ));
         }
+
         if (this.getData().hasServuxServer())
         {
             list.add(this.translate(SERVUX_KEY+".structures",
                                     this.getData().getStrucutreCount(),
 //                                    this.getHudData().getSpawnChunkRadius(),
-                                    this.getHudData().getWorldSpawn().toShortString(),
+                                    this.getHudData().getWorldSpawnAsString(),
                                     this.getHudData().isWorldSpawnKnown()
                                         ? this.qt(YES_KEY)
                                         : this.qt(NO_KEY)
@@ -82,7 +83,7 @@ public class InfoLineServux extends InfoLine
         {
             list.add(this.translate(SERVUX_KEY+".no_structures_hud",
 //                                    this.getHudData().getSpawnChunkRadius(),
-                                    this.getHudData().getWorldSpawn().toShortString(),
+                                    this.getHudData().getWorldSpawnAsString(),
                                     this.getHudData().isWorldSpawnKnown()
                                         ? this.qt(YES_KEY)
                                         : this.qt(NO_KEY)
@@ -93,7 +94,7 @@ public class InfoLineServux extends InfoLine
             list.add(this.translate(SERVUX_KEY+".structures_integrated",
                                     this.getData().getStrucutreCount(),
 //                                    this.getHudData().getSpawnChunkRadius(),
-                                    this.getHudData().getWorldSpawn().toShortString(),
+                                    this.getHudData().getWorldSpawnAsString(),
                                     this.getHudData().isWorldSpawnKnown()
                                         ? this.qt(YES_KEY)
                                         : this.qt(NO_KEY)

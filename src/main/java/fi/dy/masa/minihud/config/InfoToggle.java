@@ -121,6 +121,7 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     private int linePosition;
     static private int nextDefaultLinePosition;
     private final boolean serverDataRequired;
+    private boolean dirty = false;
 
     private static int getNextDefaultLinePosition()
     {
@@ -379,6 +380,33 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     public void setComment(String s)
     {
         this.comment = s;
+    }
+
+    @Override
+    public boolean isDirty()
+    {
+        return this.dirty;
+    }
+
+    @Override
+    public void markDirty()
+    {
+        this.dirty = true;
+    }
+
+    @Override
+    public void markClean()
+    {
+        this.dirty = false;
+    }
+
+    @Override
+    public void checkIfClean()
+    {
+        if (this.isDirty())
+        {
+            this.markClean();
+        }
     }
 
     private static String buildTranslateName(String name, String type)

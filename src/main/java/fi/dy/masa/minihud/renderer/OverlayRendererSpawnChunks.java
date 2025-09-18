@@ -148,7 +148,7 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
         }
 		else
 		{
-            this.center = data.getWorldSpawn();
+            this.center = data.getWorldSpawn().pos();
 			red = 0;
 			yellow = 0;
 			green = 0;

@@ -31,7 +31,7 @@ public abstract class MixinMinecraftClient
 			at = @At(value = "INVOKE",
 					 target = "Lnet/minecraft/util/profiler/Profiler;swap(Ljava/lang/String;)V",
 					 shift = At.Shift.BEFORE,
-					 ordinal = 4))
+					 ordinal = 7))
 	private void minihud_updateGpuPercentForInfoLine2(boolean tick, CallbackInfo ci)
 	{
 		InfoLineProfiler.INSTANCE.GPUStage2();
@@ -49,7 +49,7 @@ public abstract class MixinMinecraftClient
 	@Inject(method = "render",
 			at = @At(value = "INVOKE",
 					 target = "Lnet/minecraft/util/profiler/Profiler;push(Ljava/lang/String;)V",
-					 ordinal = 5))
+					 ordinal = 3))
 	private void minihud_updateGpuPercentForInfoLine4(boolean tick, CallbackInfo ci)
 	{
 		InfoLineProfiler.INSTANCE.GPUStage4();

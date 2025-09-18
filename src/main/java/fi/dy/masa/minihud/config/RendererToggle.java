@@ -38,37 +38,38 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
     OVERLAY_VILLAGER_INFO               ("overlayVillagerInfo",         true, ""),
     SHAPE_RENDERER                      ("shapeRenderer",               ""),
 
-    DEBUG_DATA_MAIN_TOGGLE              ("debugDataMainToggle",         true, ""),
-    DEBUG_BEEDATA                       ("debugBeeDataEnabled",         true, ""),
-    DEBUG_BRAIN                         ("debugBrainEnabled",           true, ""),
-    DEBUG_BREEZE_JUMP                   ("debugBreezeJumpEnabled",      true, ""),
+//    DEBUG_DATA_MAIN_TOGGLE              ("debugDataMainToggle",         true, ""),
+//    DEBUG_BEEDATA                       ("debugBeeDataEnabled",         true, ""),
+//    DEBUG_BRAIN                         ("debugBrainEnabled",           true, ""),
+//    DEBUG_BREEZE_JUMP                   ("debugBreezeJumpEnabled",      true, ""),
     DEBUG_CHUNK_BORDER                  ("debugChunkBorder",            ""),
     // todo not needed
     //DEBUG_CHUNK_DEBUG                   ("debugChunkDebug",             ""),
     DEBUG_CHUNK_INFO                    ("debugChunkInfo",              ""),
-    DEBUG_CHUNK_LOADING                 ("debugChunkLoading",           true, ""),
+//    DEBUG_CHUNK_LOADING                 ("debugChunkLoading",           true, ""),
     DEBUG_CHUNK_OCCLUSION               ("debugChunkOcclusion",         ""),
-    DEBUG_COLLISION_BOXES               ("debugCollisionBoxEnabled",    ""),
-    DEBUG_HEIGHTMAP                     ("debugHeightmapEnabled",       ""),
-    DEBUG_LIGHT                         ("debugLightEnabled",           ""),
-    DEBUG_NEIGHBOR_UPDATES              ("debugNeighborsUpdateEnabled", true, ""),
+//    DEBUG_COLLISION_BOXES               ("debugCollisionBoxEnabled",    ""),
+//    DEBUG_HEIGHTMAP                     ("debugHeightmapEnabled",       ""),
+//    DEBUG_LIGHT                         ("debugLightEnabled",           ""),
+//    DEBUG_NEIGHBOR_UPDATES              ("debugNeighborsUpdateEnabled", true, ""),
     // todo not needed
     //DEBUG_GAME_TEST                     ("debugGameTestEnabled",        true, ""),
-    DEBUG_GAME_EVENT                    ("debugGameEventsEnabled",      true,""),
-    DEBUG_GOAL_SELECTOR                 ("debugGoalSelectorEnabled",    true, ""),
+//    DEBUG_GAME_EVENT                    ("debugGameEventsEnabled",      true,""),
+//    DEBUG_GOAL_SELECTOR                 ("debugGoalSelectorEnabled",    true, ""),
     DEBUG_OCTREEE                       ("debugOctreeEnabled",          ""),
-    DEBUG_PATH_FINDING                  ("debugPathfindingEnabled",     true, ""),
-    DEBUG_RAID_CENTER                   ("debugRaidCenterEnabled",      true, ""),
+//    DEBUG_PATH_FINDING                  ("debugPathfindingEnabled",     true, ""),
+//    DEBUG_RAID_CENTER                   ("debugRaidCenterEnabled",      true, ""),
     // todo fix
     //DEBUG_REDSTONE_UPDATE_ORDER         ("debugRedstoneUpdateOrder",    true, ""),
-    DEBUG_SKYLIGHT                      ("debugSkylightEnabled",        ""),
-    DEBUG_SOLID_FACES                   ("debugSolidFaceEnabled",       ""),
-    DEBUG_STRUCTURES                    ("debugStructuresEnabled",      true, ""),
-    DEBUG_SUPPORTING_BLOCK              ("debugSupportingBlock",        ""),
-    DEBUG_WATER                         ("debugWaterEnabled",           ""),
-    DEBUG_VILLAGE                       ("debugVillageEnabled",         true, ""),
-    DEBUG_VILLAGE_SECTIONS              ("debugVillageSectionsEnabled", true, ""),
-    DEBUG_WORLDGEN                      ("debugWorldGenEnabled",        true, "");
+//    DEBUG_SKYLIGHT                      ("debugSkylightEnabled",        ""),
+//    DEBUG_SOLID_FACES                   ("debugSolidFaceEnabled",       ""),
+//    DEBUG_STRUCTURES                    ("debugStructuresEnabled",      true, ""),
+//    DEBUG_SUPPORTING_BLOCK              ("debugSupportingBlock",        ""),
+//    DEBUG_WATER                         ("debugWaterEnabled",           ""),
+//    DEBUG_VILLAGE                       ("debugVillageEnabled",         true, ""),
+//    DEBUG_VILLAGE_SECTIONS              ("debugVillageSectionsEnabled", true, ""),
+//    DEBUG_WORLDGEN                      ("debugWorldGenEnabled",        true, ""),
+    ;
 
     public static final ImmutableList<RendererToggle> VALUES = ImmutableList.copyOf(values());
     private static final String RENDER_KEY = Reference.MOD_ID+".config.render_toggle";
@@ -82,6 +83,7 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
     private boolean valueBoolean;
     private final boolean serverDataRequired;
     @Nullable private IValueChangeCallback<IConfigBoolean> callback;
+    private boolean dirty;
 
     RendererToggle(String name, String defaultHotkey)
     {
@@ -321,6 +323,34 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
     }
 
     @Override
+    public boolean isDirty()
+    {
+        return this.dirty;
+    }
+
+    @Override
+    public void markDirty()
+    {
+        this.dirty = true;
+    }
+
+    @Override
+    public void markClean()
+    {
+        this.dirty = false;
+    }
+
+    @Override
+    public void checkIfClean()
+    {
+        if (this.isDirty())
+        {
+            this.markClean();
+            this.onValueChanged();
+        }
+    }
+
+    @Override
     public boolean getBooleanValue()
     {
         return this.valueBoolean;
@@ -386,7 +416,13 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
     @Override
     public void resetToDefault()
     {
+        boolean oldValue = this.valueBoolean;
         this.valueBoolean = this.defaultValueBoolean;
+
+        if (oldValue != this.valueBoolean)
+        {
+            this.onValueChanged();
+        }
     }
 
     private static String buildTranslateName(String name, String type)
@@ -399,7 +435,7 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
     {
         try
         {
-            this.valueBoolean = Boolean.parseBoolean(value);
+            this.setBooleanValue(Boolean.parseBoolean(value));
         }
         catch (Exception e)
         {
@@ -414,7 +450,7 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
         {
             if (element.isJsonPrimitive())
             {
-                this.valueBoolean = element.getAsBoolean();
+                this.setBooleanValue(element.getAsBoolean());
             }
             else
             {

@@ -1,12 +1,22 @@
 package fi.dy.masa.minihud.data;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import javax.annotation.Nullable;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-
 import com.mojang.datafixers.util.Pair;
+import fi.dy.masa.malilib.config.options.ConfigBoolean;
+import fi.dy.masa.malilib.network.ClientPlayHandler;
+import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
+import fi.dy.masa.malilib.util.JsonUtils;
+import fi.dy.masa.malilib.util.time.TickUtils;
+import fi.dy.masa.minihud.MiniHUD;
+import fi.dy.masa.minihud.Reference;
+import fi.dy.masa.minihud.config.Configs;
+import fi.dy.masa.minihud.config.InfoToggle;
+import fi.dy.masa.minihud.mixin.world.IMixinServerRecipeManager;
+import fi.dy.masa.minihud.network.ServuxHudHandler;
+import fi.dy.masa.minihud.network.ServuxHudPacket;
+import fi.dy.masa.minihud.renderer.OverlayRendererSpawnChunks;
+import fi.dy.masa.minihud.util.DataStorage;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
@@ -22,23 +32,13 @@ import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.GlobalPos;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 
-import fi.dy.masa.malilib.config.options.ConfigBoolean;
-import fi.dy.masa.malilib.network.ClientPlayHandler;
-import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
-import fi.dy.masa.malilib.util.JsonUtils;
-import fi.dy.masa.malilib.util.time.TickUtils;
-import fi.dy.masa.minihud.MiniHUD;
-import fi.dy.masa.minihud.Reference;
-import fi.dy.masa.minihud.config.Configs;
-import fi.dy.masa.minihud.config.InfoToggle;
-import fi.dy.masa.minihud.mixin.world.IMixinServerRecipeManager;
-import fi.dy.masa.minihud.network.ServuxHudHandler;
-import fi.dy.masa.minihud.network.ServuxHudPacket;
-import fi.dy.masa.minihud.renderer.OverlayRendererSpawnChunks;
-import fi.dy.masa.minihud.util.DataStorage;
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collection;
 
 public class HudDataManager
 {
@@ -55,7 +55,7 @@ public class HudDataManager
 
     private long worldSeed;
 //    private int spawnChunkRadius;
-    private BlockPos worldSpawn;
+    private GlobalPos worldSpawn;
 
     private boolean worldSeedValid;
 //    private boolean spawnChunkRadiusValid;
@@ -77,7 +77,7 @@ public class HudDataManager
         this.servuxVersion = "";
         this.worldSeed = -1;
 //        this.spawnChunkRadius = -1;
-        this.worldSpawn = BlockPos.ORIGIN;
+        this.worldSpawn = new GlobalPos(World.OVERWORLD, BlockPos.ORIGIN);
         this.worldSeedValid = false;
 //        this.spawnChunkRadiusValid = false;
         this.worldSpawnValid = false;
@@ -114,7 +114,7 @@ public class HudDataManager
             this.hasInValidServux = false;
             this.servuxVersion = "";
 //            this.spawnChunkRadius = -1;
-            this.worldSpawn = BlockPos.ORIGIN;
+            this.worldSpawn = new GlobalPos(World.OVERWORLD, BlockPos.ORIGIN);
             this.worldSpawnValid = false;
 //            this.spawnChunkRadiusValid = false;
             this.preparedRecipes = PreparedRecipes.EMPTY;
@@ -221,12 +221,12 @@ public class HudDataManager
         this.worldSeedValid = true;
     }
 
-    public void setWorldSpawn(BlockPos spawn)
+    public void setWorldSpawn(GlobalPos spawn)
     {
         if (!this.worldSpawn.equals(spawn))
         {
             OverlayRendererSpawnChunks.INSTANCE_REAL.setNeedsUpdate();
-            MiniHUD.debugLog("HudDataStorage#setWorldSpawn(): set world spawn [{}] -> [{}]", this.worldSpawn.toShortString(), spawn.toShortString());
+            MiniHUD.debugLog("HudDataStorage#setWorldSpawn(): set world spawn [{}] -> [{}]", this.getWorldSpawnAsString(), this.getWorldSpawnAsString(spawn));
         }
         this.worldSpawn = spawn;
         this.worldSpawnValid = true;
@@ -257,7 +257,7 @@ public class HudDataManager
 //        }
 //    }
 
-    public void setWorldSpawnIfUnknown(BlockPos spawn)
+    public void setWorldSpawnIfUnknown(GlobalPos spawn)
     {
         if (!this.worldSpawnValid)
         {
@@ -347,9 +347,21 @@ public class HudDataManager
         return this.worldSpawnValid;
     }
 
-    public BlockPos getWorldSpawn()
+    public GlobalPos getWorldSpawn()
     {
         return this.worldSpawn;
+    }
+
+    public String getWorldSpawnAsString()
+    {
+        GlobalPos pos = this.getWorldSpawn();
+
+        return String.format("[%s: %d, %d, %d]", pos.dimension().getValue().toString(), pos.pos().getX(), pos.pos().getY(), pos.pos().getZ());
+    }
+
+    public String getWorldSpawnAsString(GlobalPos pos)
+    {
+        return String.format("[%s: %d, %d, %d]", pos.dimension().getValue().toString(), pos.pos().getX(), pos.pos().getY(), pos.pos().getZ());
     }
 
 //    public boolean isSpawnChunkRadiusKnown()
@@ -538,6 +550,16 @@ public class HudDataManager
         }
     }
 
+    public RegistryKey<World> getWorldType(String in)
+    {
+        return switch (in)
+        {
+            case "minecraft:the_nether" -> World.NETHER;
+            case "minecraft:the_end" -> World.END;
+            default -> World.OVERWORLD;
+        };
+    }
+
     public boolean receiveMetadata(NbtCompound data)
     {
         if (!this.servuxServer && !DataStorage.getInstance().hasIntegratedServer() &&
@@ -552,7 +574,11 @@ public class HudDataManager
             }
 
             this.setServuxVersion(data.getString("servux", "?"), ver);
-            this.setWorldSpawn(new BlockPos(data.getInt("spawnPosX", 0), data.getInt("spawnPosY", 0), data.getInt("spawnPosZ", 0)));
+            this.setWorldSpawn(
+                    new GlobalPos(
+                            this.getWorldType(data.getString("spawnDimension").orElse(World.OVERWORLD.getValue().toString())),
+                            new BlockPos(data.getInt("spawnPosX", 0), data.getInt("spawnPosY", 0), data.getInt("spawnPosZ", 0)))
+            );
 //            this.setSpawnChunkRadius(data.getInt("spawnChunkRadius", 2), true);
 
             if (data.contains("worldSeed"))
@@ -615,7 +641,11 @@ public class HudDataManager
             MiniHUD.debugLog("HudDataStorage#receiveSpawnMetadata(): from Servux");
 
             this.setServuxVersion(data.getString("servux", "?"), ver);
-            this.setWorldSpawn(new BlockPos(data.getInt("spawnPosX", 0), data.getInt("spawnPosY", 0), data.getInt("spawnPosZ", 0)));
+            this.setWorldSpawn(
+                    new GlobalPos(
+                            this.getWorldType(data.getString("spawnDimension").orElse(World.OVERWORLD.getValue().toString())),
+                            new BlockPos(data.getInt("spawnPosX", 0), data.getInt("spawnPosY", 0), data.getInt("spawnPosZ", 0)))
+            );
 //            this.setSpawnChunkRadius(data.getInt("spawnChunkRadius", 2), true);
 
             if (data.contains("worldSeed"))

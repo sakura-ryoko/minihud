@@ -76,11 +76,11 @@ public class KeyCallbacks
 
         RendererToggle.SHAPE_RENDERER.setValueChangeCallback(RendererCallbacks::onShapeRendererToggled);
 
-        RendererToggle.DEBUG_DATA_MAIN_TOGGLE.setValueChangeCallback(RendererCallbacks::onDebugServiceToggled);
+//        RendererToggle.DEBUG_DATA_MAIN_TOGGLE.setValueChangeCallback(RendererCallbacks::onDebugServiceToggled);
         RendererToggle.DEBUG_CHUNK_BORDER.setValueChangeCallback(DebugInfoUtils::toggleDebugRenderer);
         RendererToggle.DEBUG_CHUNK_INFO.setValueChangeCallback(DebugInfoUtils::toggleDebugRenderer);
         RendererToggle.DEBUG_CHUNK_OCCLUSION.setValueChangeCallback(DebugInfoUtils::toggleDebugRenderer);
-        RendererToggle.DEBUG_NEIGHBOR_UPDATES.setValueChangeCallback(DebugInfoUtils::toggleDebugRenderer);
+//        RendererToggle.DEBUG_NEIGHBOR_UPDATES.setValueChangeCallback(DebugInfoUtils::toggleDebugRenderer);
         //RendererToggle.DEBUG_PATH_FINDING.setValueChangeCallback(DebugInfoUtils::toggleDebugRenderer);
         RendererToggle.DEBUG_OCTREEE.setValueChangeCallback(DebugInfoUtils::toggleDebugRenderer);
     }

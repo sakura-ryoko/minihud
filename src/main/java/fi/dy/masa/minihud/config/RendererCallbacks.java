@@ -1,27 +1,18 @@
 package fi.dy.masa.minihud.config;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-
 import fi.dy.masa.malilib.config.IConfigBoolean;
 import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.util.EntityUtils;
 import fi.dy.masa.malilib.util.InfoUtils;
 import fi.dy.masa.malilib.util.StringUtils;
-import fi.dy.masa.minihud.data.DebugDataManager;
 import fi.dy.masa.minihud.data.HudDataManager;
-import fi.dy.masa.minihud.renderer.OverlayRendererBeaconRange;
-import fi.dy.masa.minihud.renderer.OverlayRendererBiomeBorders;
-import fi.dy.masa.minihud.renderer.OverlayRendererConduitRange;
-import fi.dy.masa.minihud.renderer.OverlayRendererLightLevel;
-import fi.dy.masa.minihud.renderer.OverlayRendererRandomTickableChunks;
-import fi.dy.masa.minihud.renderer.OverlayRendererRegion;
-import fi.dy.masa.minihud.renderer.OverlayRendererSlimeChunks;
-import fi.dy.masa.minihud.renderer.OverlayRendererSpawnChunks;
+import fi.dy.masa.minihud.renderer.*;
 import fi.dy.masa.minihud.renderer.shapes.ShapeManager;
 import fi.dy.masa.minihud.util.DataStorage;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.entity.Entity;
+import net.minecraft.util.math.GlobalPos;
+import net.minecraft.util.math.Vec3d;
 
 public class RendererCallbacks
 {
@@ -129,7 +120,7 @@ public class RendererCallbacks
         {
             if (config.getBooleanValue())
             {
-                BlockPos spawn = HudDataManager.getInstance().getWorldSpawn();
+                GlobalPos spawn = HudDataManager.getInstance().getWorldSpawn();
 //                int radius = HudDataManager.getInstance().getSpawnChunkRadius();
                 String green = GuiBase.TXT_GREEN;
 //                String red = GuiBase.TXT_RED;
@@ -161,7 +152,9 @@ public class RendererCallbacks
                     OverlayRendererSpawnChunks.INSTANCE_REAL.setNeedsUpdate();
 
                     String strStatus = green + StringUtils.translate("malilib.message.value.on") + rst;
-                    String strPos = String.format("x: %d, y: %d, z: %d", spawn.getX(), spawn.getY(), spawn.getZ());
+                    String strPos = String.format("[%s] x: %d, y: %d, z: %d",
+                                                  spawn.dimension().getValue().toString(),
+                                                  spawn.pos().getX(), spawn.pos().getY(), spawn.pos().getZ());
                     message = StringUtils.translate("minihud.message.toggled_using_world_spawn", config.getPrettyName(), strStatus, strPos);
 
 //                    RendererToggle.OVERLAY_SPAWN_CHUNK_OVERLAY_REAL.setBooleanValue(false);
@@ -204,24 +197,24 @@ public class RendererCallbacks
         }
     }
 
-    public static void onDebugServiceToggled(IConfigBoolean config)
-    {
-        MinecraftClient mc = MinecraftClient.getInstance();
-
-        if (mc != null && mc.player != null)
-        {
-            if (!mc.isIntegratedServerRunning() && !DataStorage.getInstance().hasIntegratedServer())
-            {
-                if (config.getBooleanValue())
-                {
-                    DebugDataManager.getInstance().registerDebugService();
-                    DebugDataManager.getInstance().requestMetadata();
-                }
-                else
-                {
-                    DebugDataManager.getInstance().unregisterDebugService();
-                }
-            }
-        }
-    }
+//    public static void onDebugServiceToggled(IConfigBoolean config)
+//    {
+//        MinecraftClient mc = MinecraftClient.getInstance();
+//
+//        if (mc != null && mc.player != null)
+//        {
+//            if (!mc.isIntegratedServerRunning() && !DataStorage.getInstance().hasIntegratedServer())
+//            {
+//                if (config.getBooleanValue())
+//                {
+//                    DebugDataManager.getInstance().registerDebugService();
+//                    DebugDataManager.getInstance().requestMetadata();
+//                }
+//                else
+//                {
+//                    DebugDataManager.getInstance().unregisterDebugService();
+//                }
+//            }
+//        }
+//    }
 }

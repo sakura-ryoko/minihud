@@ -1,17 +1,14 @@
 package fi.dy.masa.minihud.info;
 
-import java.util.concurrent.atomic.AtomicInteger;
-import javax.annotation.Nullable;
-
-import org.jetbrains.annotations.ApiStatus;
-
+import fi.dy.masa.minihud.config.InfoToggle;
+import fi.dy.masa.minihud.mixin.render.IGlTimer;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.GlTimer;
 import net.minecraft.client.gui.hud.debug.DebugHudEntries;
 import net.minecraft.util.Util;
+import org.jetbrains.annotations.ApiStatus;
 
-import fi.dy.masa.minihud.config.InfoToggle;
-import fi.dy.masa.minihud.mixin.render.IGlTimer;
+import javax.annotation.Nullable;
 
 public class InfoLineProfiler
 {
@@ -33,11 +30,7 @@ public class InfoLineProfiler
 
 	private int getGPUQueryId()
 	{
-		AtomicInteger result = new AtomicInteger();
-
-		GlTimer.getInstance().ifPresent(timer -> result.set(((IGlTimer) timer).minihud_getQueryId()));
-
-		return result.get();
+        return ((IGlTimer) GlTimer.getInstance()).minihud_getQueryId();
 	}
 
 	@ApiStatus.Internal
@@ -52,7 +45,7 @@ public class InfoLineProfiler
 		if ((this.glQuery == null || this.glQuery.isResultAvailable()) && this.getGPUQueryId() == 0)
 		{
 			this.measurementEnable = true;
-			GlTimer.getInstance().ifPresent(GlTimer::beginProfile);
+			GlTimer.getInstance().beginProfile();
 		}
 		else
 		{
@@ -71,7 +64,7 @@ public class InfoLineProfiler
 
 		if (this.measurementEnable && this.getGPUQueryId() != 0)
 		{
-			GlTimer.getInstance().ifPresent(timer -> this.glQuery = timer.endProfile());
+			GlTimer.getInstance().endProfile();
 		}
 		else
 		{
