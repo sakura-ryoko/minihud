@@ -775,7 +775,7 @@
     "minihud.gui.hover.shape.margin_value": "§7邊距：§6%s",
     "minihud.gui.hover.shape.radius_value": "§7半徑：§6%s",
     "minihud.gui.hover.shape.type_value": "§7型別：§b%s",
-    "minihud.gui.label.center_colon": "中心",
+    "minihud.gui.label.center_colon": "中心:",
     "minihud.gui.label.color": "顏色：",
     "minihud.gui.label.display_name_colon": "顯示名稱：",
     "minihud.gui.label.height_colon": "高度：",

@@ -787,8 +787,6 @@
     "minihud.gui.label.shape.block_snap": "Block snap: %s",
     "minihud.gui.label.shape.box.corner_1": "Corner 1",
     "minihud.gui.label.shape.box.corner_2": "Corner 2",
-    "minihud.gui.label.shape.box.corner_2": "Corner 2",
-
     "minihud.gui.label.shape.centered_box.center": "Center",
     "minihud.gui.label.shape.centered_box.width": "Width",
     "minihud.gui.label.shape.centered_box.height": "Height",
