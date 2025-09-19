@@ -14,10 +14,10 @@ public class MixinServerWorld
 {
 //    @Shadow private int spawnChunkRadius;
 
-    @Inject(method = "setSpawnPos", at = @At("TAIL"))
-    private void minihud_checkSpawnPos(WorldProperties.class_12064 arg, CallbackInfo ci)
+    @Inject(method = "setSpawnPoint", at = @At("TAIL"))
+    private void minihud_checkSpawnPos(WorldProperties.SpawnPoint spawnPoint, CallbackInfo ci)
     {
-        HudDataManager.getInstance().setWorldSpawn(arg.globalPos());
+        HudDataManager.getInstance().setWorldSpawn(spawnPoint.globalPos());
 //        HudDataManager.getInstance().setSpawnChunkRadius(this.spawnChunkRadius - 1, true);
     }
 
