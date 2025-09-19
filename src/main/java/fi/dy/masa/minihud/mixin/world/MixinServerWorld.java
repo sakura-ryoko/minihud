@@ -1,7 +1,7 @@
 package fi.dy.masa.minihud.mixin.world;
 
 import com.llamalad7.mixinextras.sugar.Local;
-import fi.dy.masa.minihud.data.HudDataManager;
+
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.WorldProperties;
 import org.spongepowered.asm.mixin.Mixin;
@@ -9,14 +9,17 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import fi.dy.masa.minihud.data.HudDataManager;
+
 @Mixin(ServerWorld.class)
 public class MixinServerWorld
 {
 //    @Shadow private int spawnChunkRadius;
 
     @Inject(method = "setSpawnPoint", at = @At("TAIL"))
-    private void minihud_checkSpawnPos(WorldProperties.SpawnPoint spawnPoint, CallbackInfo ci)
+    private void minihud_setSpawnPos(WorldProperties.SpawnPoint spawnPoint, CallbackInfo ci)
     {
+//		MiniHUD.LOGGER.error("minihud_checkSpawnPos() [ServerWorld] --> [{}]", spawnPoint.globalPos().toString());
         HudDataManager.getInstance().setWorldSpawn(spawnPoint.globalPos());
 //        HudDataManager.getInstance().setSpawnChunkRadius(this.spawnChunkRadius - 1, true);
     }

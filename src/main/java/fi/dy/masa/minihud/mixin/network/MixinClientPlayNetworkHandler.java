@@ -1,11 +1,5 @@
 package fi.dy.masa.minihud.mixin.network;
 
-import fi.dy.masa.minihud.config.Configs;
-import fi.dy.masa.minihud.data.EntitiesDataManager;
-import fi.dy.masa.minihud.data.HudDataManager;
-import fi.dy.masa.minihud.mixin.world.IMixinChunkDeltaUpdateS2CPacket;
-import fi.dy.masa.minihud.util.DataStorage;
-import fi.dy.masa.minihud.util.NotificationUtils;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.network.packet.s2c.play.GameJoinS2CPacket;
 import net.minecraft.network.packet.s2c.play.NbtQueryResponseS2CPacket;
@@ -14,6 +8,13 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import fi.dy.masa.minihud.config.Configs;
+import fi.dy.masa.minihud.data.EntitiesDataManager;
+import fi.dy.masa.minihud.data.HudDataManager;
+import fi.dy.masa.minihud.mixin.world.IMixinChunkDeltaUpdateS2CPacket;
+import fi.dy.masa.minihud.util.DataStorage;
+import fi.dy.masa.minihud.util.NotificationUtils;
 
 @Mixin(ClientPlayNetworkHandler.class)
 public abstract class MixinClientPlayNetworkHandler
@@ -59,9 +60,8 @@ public abstract class MixinClientPlayNetworkHandler
     @Inject(method = "onPlayerSpawnPosition", at = @At("RETURN"))
     private void minihud_onSetSpawn(PlayerSpawnPositionS2CPacket packet, CallbackInfo ci)
     {
-//        MiniHUD.LOGGER.error("onPlayerSpawnPosition() [PACKET]");
-        // FIXME --> Mojang bug here, as this sends the default GlobalPos
-//        HudDataManager.getInstance().setWorldSpawnIfUnknown(packet.respawnData().globalPos());
+//        MiniHUD.LOGGER.error("onPlayerSpawnPosition() [PACKET] --> [{}]", packet.respawnData().globalPos().toString());
+        HudDataManager.getInstance().setWorldSpawn(packet.respawnData().globalPos());
     }
 
     @Inject(method = "onGameJoin", at = @At("RETURN"))
