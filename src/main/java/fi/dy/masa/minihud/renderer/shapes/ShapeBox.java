@@ -36,8 +36,51 @@ public class ShapeBox extends ShapeBase
 
     public ShapeBox()
     {
-        super(ShapeType.BOX, Configs.Colors.SHAPE_BOX.getColor());
+        this(ShapeType.BOX, Configs.Colors.SHAPE_BOX.getColor());
     }
+    
+    public ShapeBox(ShapeType type)
+    {
+        this(type, Configs.Colors.SHAPE_BOX.getColor());
+    }
+
+    public ShapeBox(ShapeType type, Color4f color)
+    {
+        super(type, color);
+        this.initializeBox();
+    }
+
+    protected void initializeBox()
+	{
+        this.box = DEFAULT_BOX;
+        this.renderPerimeter = DEFAULT_BOX;
+        this.corner1 = Vec3d.ZERO;
+        this.corner2 = Vec3d.ZERO;
+        this.enabledSidesMask = 0x3F;
+        this.maxDimensions = MAX_DIMENSIONS;
+        this.gridEnabled = true;
+        this.gridSize = new Vec3d(16.0, 16.0, 16.0);
+        this.gridStartOffset = Vec3d.ZERO;
+        this.gridEndOffset = Vec3d.ZERO;
+        this.renderBox = null;
+        this.hasData = false;
+        this.useCulling = true;
+    }
+
+	@Override
+	public void onShapeInit()
+	{
+		Entity cameraEntity = EntityUtils.getCameraEntity();
+
+		if (cameraEntity != null &&
+			this.getCorner1() == Vec3d.ZERO)
+		{
+			Vec3d pos = cameraEntity.getPos();
+			this.corner1 = pos;
+			this.corner2 = pos.add(this.gridSize);
+			this.setBoxFromCorners();
+		}
+	}
 
     public Box getBox()
     {
