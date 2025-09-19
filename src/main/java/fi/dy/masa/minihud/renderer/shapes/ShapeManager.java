@@ -43,6 +43,7 @@ public class ShapeManager
 
     public void addShape(ShapeBase shape)
     {
+		shape.onShapeInit();
         this.shapes.add(shape);
 
         RenderContainer.INSTANCE.addRenderer(shape);

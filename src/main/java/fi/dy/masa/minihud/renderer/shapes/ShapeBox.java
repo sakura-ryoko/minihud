@@ -9,10 +9,7 @@ import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.BuiltBuffer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.*;
 import net.minecraft.util.profiler.Profiler;
 
 import fi.dy.masa.malilib.render.MaLiLibPipelines;
@@ -46,7 +43,22 @@ public class ShapeBox extends ShapeBase
 
     public ShapeBox()
     {
-        super(ShapeType.BOX, Configs.Colors.SHAPE_BOX.getColor());
+        this(ShapeType.BOX, Configs.Colors.SHAPE_BOX.getColor());
+    }
+    
+    public ShapeBox(ShapeType type)
+    {
+        this(type, Configs.Colors.SHAPE_BOX.getColor());
+    }
+
+    public ShapeBox(ShapeType type, Color4f color)
+    {
+        super(type, color);
+        this.initializeBox();
+    }
+
+    protected void initializeBox()
+	{
         this.box = DEFAULT_BOX;
         this.renderPerimeter = DEFAULT_BOX;
         this.corner1 = Vec3d.ZERO;
@@ -61,6 +73,21 @@ public class ShapeBox extends ShapeBase
         this.hasData = false;
         this.useCulling = true;
     }
+
+	@Override
+	public void onShapeInit()
+	{
+		Entity cameraEntity = EntityUtils.getCameraEntity();
+
+		if (cameraEntity != null &&
+			this.getCorner1() == Vec3d.ZERO)
+		{
+			Vec3d pos = cameraEntity.getPos();
+			this.corner1 = pos;
+			this.corner2 = pos.add(this.gridSize);
+			this.setBoxFromCorners();
+		}
+	}
 
     public Box getBox()
     {

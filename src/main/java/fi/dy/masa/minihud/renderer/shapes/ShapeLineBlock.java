@@ -34,6 +34,7 @@ public class ShapeLineBlock extends ShapeBlocky
     protected Vec3d endPos = Vec3d.ZERO;
     protected Vec3d effectiveStartPos = Vec3d.ZERO;
     protected Vec3d effectiveEndPos = Vec3d.ZERO;
+	protected Vec3d initialSize = new Vec3d(16.0D, 16.0D, 16.0D);
 
     private boolean hasData;
 
@@ -45,6 +46,24 @@ public class ShapeLineBlock extends ShapeBlocky
         this.hasData = false;
         this.useCulling = true;
     }
+
+	@Override
+	public void onShapeInit()
+	{
+		super.onShapeInit();
+
+		Entity cameraEntity = EntityUtils.getCameraEntity();
+
+		if (cameraEntity != null &&
+			this.startPos == Vec3d.ZERO)
+		{
+			Vec3d pos = cameraEntity.getPos();
+
+			this.startPos = pos;
+			this.endPos = pos.add(this.initialSize);
+			this.updateEffectivePositions();
+		}
+	}
 
     public Vec3d getStartPos()
     {
