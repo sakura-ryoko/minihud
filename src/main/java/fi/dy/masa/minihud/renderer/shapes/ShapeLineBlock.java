@@ -33,7 +33,7 @@ public class ShapeLineBlock extends ShapeBlocky
     protected Vec3d endPos = Vec3d.ZERO;
     protected Vec3d effectiveStartPos = Vec3d.ZERO;
     protected Vec3d effectiveEndPos = Vec3d.ZERO;
-	protected Vec3d initialSize = new Vec3d(16.0, 16, 16);
+	protected Vec3d initialSize = new Vec3d(16.0D, 16.0D, 16.0D);
 
     private boolean hasData;
 
