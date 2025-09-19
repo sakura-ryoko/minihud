@@ -8,7 +8,7 @@ import fi.dy.masa.malilib.util.StringUtils;
 public enum ShapeType
 {
     BOX                     ("box",                     "minihud.label.shapes.box",                     ShapeBox::new),
-    CENTERED_BOX            ("centered_box",            "minihud.label.shapes.centered_box",   ShapeCenteredBox::new),
+    CENTERED_BOX            ("centered_box",            "minihud.label.shapes.centered_box",   			ShapeCenteredBox::new),
     CIRCLE                  ("circle",                  "minihud.label.shapes.circle",                  ShapeCircle::new),
     BLOCK_LINE              ("block_line",              "minihud.label.shapes.block_line",              ShapeLineBlock::new),
     SPHERE_BLOCKY           ("sphere_blocky",           "minihud.label.shapes.sphere_blocky",           ShapeSphereBlocky::new),

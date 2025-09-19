@@ -223,7 +223,8 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         this.addButton(btn, (b, mb) -> this.setPositionFromCamera(shape::setCenter));    
     }
 
-    private void createShapeEditorElementsBoxWithDimension(int xIn, int yIn){
+    private void createShapeEditorElementsBoxWithDimension(int xIn, int yIn)
+	{
         ShapeCenteredBox shape = (ShapeCenteredBox) this.shape;
 
         int x = xIn;
