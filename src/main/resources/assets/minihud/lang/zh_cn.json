@@ -1050,7 +1050,7 @@
     "minihud.message.error.invalid_spawn_chunk_radius": "出生区块半径解析失败（0 < 32）",
     "minihud.message.error.shapes.select_shape_from_dropdown": "请从下拉列表中选择要创建的形状类型",
     "minihud.message.no_seed": "MiniHUD：未知世界种子",
-    "minihud.message.no_spawn_chunk_radius": "MiniHUD：未知出生区块半径（默认值2）",
+    "minihud.message.no_spawn_chunk_radius": "MiniHUD：未知出生区块半径（默认值 OFF）",
     "minihud.message.seed_is": "MiniHUD当前设置的世界种子为'%s'",
     "minihud.message.seed_set": "MiniHUD：世界种子已设为'%s'",
     "minihud.message.spawn_chunk_radius_is": "MiniHUD当前设置的出生区块半径为'%s'",
