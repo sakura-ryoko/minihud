@@ -31,7 +31,7 @@ public class ShapeCenteredBox extends ShapeBox
 		if (cameraEntity != null &&
 			this.center == Vec3d.ZERO)
 		{
-			this.setCenter(cameraEntity.getPos());
+			this.setCenter(cameraEntity.getEntityPos());
 		}
 	}
 

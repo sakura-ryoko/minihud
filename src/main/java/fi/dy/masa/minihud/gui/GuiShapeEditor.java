@@ -540,7 +540,7 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
 
         if (entity != null)
         {
-            consumer.accept(entity.getPos());
+            consumer.accept(entity.getEntityPos());
             this.initGui();
         }
     }

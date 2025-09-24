@@ -56,7 +56,7 @@ public class ShapeLineBlock extends ShapeBlocky
 		if (cameraEntity != null &&
 			this.startPos == Vec3d.ZERO)
 		{
-			Vec3d pos = cameraEntity.getPos();
+			Vec3d pos = cameraEntity.getEntityPos();
 
 			this.startPos = pos;
 			this.endPos = pos.add(this.initialSize);

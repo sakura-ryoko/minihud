@@ -392,7 +392,7 @@ public class DataStorage
         // Only update the renderers when blocks change near the camera
         if (entity != null)
         {
-            Vec3d pos = entity.getPos();
+            Vec3d pos = entity.getEntityPos();
 
             if (Math.abs(pos.x - (chunkX << 4) - 8) <= 48D || Math.abs(pos.z - (chunkZ << 4) - 8) <= 48D)
             {

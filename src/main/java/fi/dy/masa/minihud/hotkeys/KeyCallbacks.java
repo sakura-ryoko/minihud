@@ -113,13 +113,13 @@ public class KeyCallbacks
 
                 if (shape != null)
                 {
-                    shape.moveToPosition(entity.getPos());
+                    shape.moveToPosition(entity.getEntityPos());
                 }
             }
             else if (key == Configs.Generic.SET_DISTANCE_REFERENCE_POINT.getKeybind())
             {
                 Entity entity = mc.getCameraEntity() != null ? mc.getCameraEntity() : mc.player;
-                DataStorage.getInstance().setDistanceReferencePoint(entity.getPos());
+                DataStorage.getInstance().setDistanceReferencePoint(entity.getEntityPos());
             }
             else if (key == Configs.Generic.SHAPE_EDITOR.getKeybind())
             {

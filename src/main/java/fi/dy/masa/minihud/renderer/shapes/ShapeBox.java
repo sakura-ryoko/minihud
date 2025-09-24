@@ -81,7 +81,7 @@ public class ShapeBox extends ShapeBase
 		if (cameraEntity != null &&
 			this.getCorner1() == Vec3d.ZERO)
 		{
-			Vec3d pos = cameraEntity.getPos();
+			Vec3d pos = cameraEntity.getEntityPos();
 			this.corner1 = pos;
 			this.corner2 = pos.add(this.gridSize);
 			this.setBoxFromCorners();
@@ -205,7 +205,7 @@ public class ShapeBox extends ShapeBase
     public boolean shouldRender(MinecraftClient mc)
     {
         Entity entity = EntityUtils.getCameraEntity();
-        return super.shouldRender(mc) && entity != null && this.renderPerimeter.contains(entity.getPos());
+        return super.shouldRender(mc) && entity != null && this.renderPerimeter.contains(entity.getEntityPos());
     }
 
     @Override

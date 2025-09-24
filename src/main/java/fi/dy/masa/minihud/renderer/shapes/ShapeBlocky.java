@@ -76,7 +76,7 @@ public abstract class ShapeBlocky extends ShapeBase
     public boolean shouldRender(MinecraftClient mc)
     {
         Entity entity = EntityUtils.getCameraEntity();
-        return super.shouldRender(mc) && entity != null && this.renderPerimeter.contains(entity.getPos());
+        return super.shouldRender(mc) && entity != null && this.renderPerimeter.contains(entity.getEntityPos());
     }
 
 //    @Override

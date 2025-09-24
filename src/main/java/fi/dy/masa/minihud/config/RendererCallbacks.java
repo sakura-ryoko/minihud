@@ -58,7 +58,7 @@ public class RendererCallbacks
 
         if (config.getBooleanValue() && entity != null)
         {
-            Vec3d pos = entity.getPos();
+            Vec3d pos = entity.getEntityPos();
             OverlayRendererRandomTickableChunks.INSTANCE_FIXED.setNewPos(pos);
             String green = GuiBase.TXT_GREEN;
             String rst = GuiBase.TXT_RST;

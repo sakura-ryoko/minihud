@@ -33,7 +33,7 @@ public abstract class ShapeCircleBase extends ShapeBlocky
 
         if (entity != null)
         {
-            Vec3d center = entity.getPos();
+            Vec3d center = entity.getEntityPos();
             center = new Vec3d(Math.floor(center.x) + 0.5, Math.floor(center.y), Math.floor(center.z) + 0.5);
             this.setCenter(center);
         }
