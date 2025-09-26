@@ -62,8 +62,8 @@ public class ShapeBox extends ShapeBase
         this.gridSize = new Vec3d(16.0, 16.0, 16.0);
         this.gridStartOffset = Vec3d.ZERO;
         this.gridEndOffset = Vec3d.ZERO;
-        this.renderBox = null;
-        this.hasData = false;
+//        this.renderBox = null;
+//        this.hasData = false;
         this.useCulling = true;
     }
 
