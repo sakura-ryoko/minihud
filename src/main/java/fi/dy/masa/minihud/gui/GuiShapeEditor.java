@@ -7,6 +7,7 @@ import java.util.function.DoubleSupplier;
 import java.util.function.IntConsumer;
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
+
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.entity.Entity;
@@ -38,15 +39,8 @@ import fi.dy.masa.malilib.util.PositionUtils;
 import fi.dy.masa.malilib.util.PositionUtils.CoordinateType;
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.minihud.gui.GuiConfigs.ConfigGuiTab;
-import fi.dy.masa.minihud.renderer.shapes.ShapeBase;
-import fi.dy.masa.minihud.renderer.shapes.ShapeBlocky;
-import fi.dy.masa.minihud.renderer.shapes.ShapeBox;
-import fi.dy.masa.minihud.renderer.shapes.ShapeCircle;
-import fi.dy.masa.minihud.renderer.shapes.ShapeCircleBase;
-import fi.dy.masa.minihud.renderer.shapes.ShapeLineBlock;
-import fi.dy.masa.minihud.renderer.shapes.ShapeSpawnSphere;
-import fi.dy.masa.minihud.renderer.shapes.ShapeType;
 import fi.dy.masa.minihud.util.ShapeRenderType;
+import fi.dy.masa.minihud.renderer.shapes.*;
 
 public class GuiShapeEditor extends GuiRenderLayerEditBase
 {
