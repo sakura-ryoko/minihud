@@ -121,7 +121,7 @@ public class RendererCallbacks
             if (config.getBooleanValue())
             {
                 GlobalPos spawn = HudDataManager.getInstance().getWorldSpawn();
-//                int radius = HudDataManager.getInstance().getSpawnChunkRadius();
+                int radius = HudDataManager.getInstance().getSpawnChunkRadius();
                 String green = GuiBase.TXT_GREEN;
 //                String red = GuiBase.TXT_RED;
                 String rst = GuiBase.TXT_RST;
@@ -132,23 +132,23 @@ public class RendererCallbacks
 //                    HudDataManager.getInstance().setSpawnChunkRadius(2, true);   // 1.20.5 Vanilla Default
 //                    radius = 2;
 //                }
-//                if (radius > 0)
-//                {
-//                    String strStatus = green + StringUtils.translate("malilib.message.value.on") + rst;
-//                    String strPos = String.format("x: %d, y: %d, z: %d [R: %d]", spawn.getX(), spawn.getY(), spawn.getZ(), radius);
-//                    message = StringUtils.translate("minihud.message.toggled_using_world_spawn", config.getPrettyName(), strStatus, strPos);
-//
-//                    if (mc.isIntegratedServerRunning() == false && HudDataManager.getInstance().hasServuxServer())
-//                    {
-//                        HudDataManager.getInstance().requestSpawnMetadata();
-//                    }
-//                    else
-//                    {
-//                        OverlayRendererSpawnChunks.INSTANCE_REAL.setNeedsUpdate();
-//                    }
-//                }
-//                else
-//                {
+                if (radius > 0)
+                {
+                    String strStatus = green + StringUtils.translate("malilib.message.value.on") + rst;
+                    String strPos = String.format("x: %d, y: %d, z: %d [R: %d]", spawn.pos().getX(), spawn.pos().getY(), spawn.pos().getZ(), radius);
+                    message = StringUtils.translate("minihud.message.toggled_using_world_spawn", config.getPrettyName(), strStatus, strPos);
+
+                    if (mc.isIntegratedServerRunning() == false && HudDataManager.getInstance().hasServuxServer())
+                    {
+                        HudDataManager.getInstance().requestSpawnMetadata();
+                    }
+                    else
+                    {
+                        OverlayRendererSpawnChunks.INSTANCE_REAL.setNeedsUpdate();
+                    }
+                }
+                else
+                {
                     OverlayRendererSpawnChunks.INSTANCE_REAL.setNeedsUpdate();
 
                     String strStatus = green + StringUtils.translate("malilib.message.value.on") + rst;
@@ -158,7 +158,7 @@ public class RendererCallbacks
                     message = StringUtils.translate("minihud.message.toggled_using_world_spawn", config.getPrettyName(), strStatus, strPos);
 
 //                    RendererToggle.OVERLAY_SPAWN_CHUNK_OVERLAY_REAL.setBooleanValue(false);
-//                }
+                }
 
                 InfoUtils.printActionbarMessage(message);
             }

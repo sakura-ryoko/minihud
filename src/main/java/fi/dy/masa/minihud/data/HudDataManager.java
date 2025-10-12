@@ -4,9 +4,12 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.mojang.datafixers.util.Pair;
 import fi.dy.masa.malilib.config.options.ConfigBoolean;
+import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.network.ClientPlayHandler;
 import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
+import fi.dy.masa.malilib.util.InfoUtils;
 import fi.dy.masa.malilib.util.JsonUtils;
+import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.malilib.util.time.TickUtils;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.Reference;
@@ -54,11 +57,11 @@ public class HudDataManager
     private int servuxProtocolVersion;
 
     private long worldSeed;
-//    private int spawnChunkRadius;
+    private int spawnChunkRadius;
     private GlobalPos worldSpawn;
 
     private boolean worldSeedValid;
-//    private boolean spawnChunkRadiusValid;
+    private boolean spawnChunkRadiusValid;
     private boolean worldSpawnValid;
 
     private boolean isRaining;
@@ -76,10 +79,10 @@ public class HudDataManager
         this.hasInValidServux = false;
         this.servuxVersion = "";
         this.worldSeed = -1;
-//        this.spawnChunkRadius = -1;
+        this.spawnChunkRadius = -1;
         this.worldSpawn = new GlobalPos(World.OVERWORLD, BlockPos.ORIGIN);
         this.worldSeedValid = false;
-//        this.spawnChunkRadiusValid = false;
+        this.spawnChunkRadiusValid = false;
         this.worldSpawnValid = false;
         this.isRaining = false;
         this.isThundering = false;
@@ -113,10 +116,10 @@ public class HudDataManager
             this.servuxServer = false;
             this.hasInValidServux = false;
             this.servuxVersion = "";
-//            this.spawnChunkRadius = -1;
+            this.spawnChunkRadius = -1;
             this.worldSpawn = new GlobalPos(World.OVERWORLD, BlockPos.ORIGIN);
             this.worldSpawnValid = false;
-//            this.spawnChunkRadiusValid = false;
+            this.spawnChunkRadiusValid = false;
             this.preparedRecipes = PreparedRecipes.EMPTY;
             this.recipeCount = 0;
         }
@@ -232,30 +235,30 @@ public class HudDataManager
         this.worldSpawnValid = true;
     }
 
-//    public void setSpawnChunkRadius(int radius, boolean message)
-//    {
-//        if (radius >= 0 && radius <= 32)
-//        {
-//            if (this.spawnChunkRadius != radius)
-//            {
-//                if (message)
-//                {
-//                    String strRadius = radius > 0 ? GuiBase.TXT_GREEN + String.format("%d", radius) + GuiBase.TXT_RST : GuiBase.TXT_RED + String.format("%d", radius) + GuiBase.TXT_RST;
-//                    InfoUtils.printActionbarMessage(StringUtils.translate("minihud.message.spawn_chunk_radius_set", strRadius));
-//                }
-//
-//                OverlayRendererSpawnChunks.INSTANCE_REAL.setNeedsUpdate();
-//                MiniHUD.debugLog("HudDataStorage#setSpawnChunkRadius(): set spawn chunk radius [{}] -> [{}]", this.spawnChunkRadius, radius);
-//            }
-//            this.spawnChunkRadius = radius;
-//            this.spawnChunkRadiusValid = true;
-//        }
-//        else
-//        {
-//            this.spawnChunkRadius = -1;
-//            this.spawnChunkRadiusValid = false;
-//        }
-//    }
+    public void setSpawnChunkRadius(int radius, boolean message)
+    {
+        if (radius > 0 && radius <= 32)
+        {
+            if (this.spawnChunkRadius != radius)
+            {
+                if (message)
+                {
+                    String strRadius = GuiBase.TXT_GREEN + String.format("%d", radius) + GuiBase.TXT_RST;
+                    InfoUtils.printActionbarMessage(StringUtils.translate("minihud.message.spawn_chunk_radius_set", strRadius));
+                }
+
+                OverlayRendererSpawnChunks.INSTANCE_REAL.setNeedsUpdate();
+                MiniHUD.debugLog("HudDataStorage#setSpawnChunkRadius(): set spawn chunk radius [{}] -> [{}]", this.spawnChunkRadius, radius);
+            }
+            this.spawnChunkRadius = radius;
+            this.spawnChunkRadiusValid = true;
+        }
+        else
+        {
+            this.spawnChunkRadius = -1;
+            this.spawnChunkRadiusValid = false;
+        }
+    }
 
     public void setWorldSpawnIfUnknown(GlobalPos spawn)
     {
@@ -266,14 +269,14 @@ public class HudDataManager
         }
     }
 
-//    public void setSpawnChunkRadiusIfUnknown(int radius)
-//    {
-//        if (!this.spawnChunkRadiusValid)
-//        {
-//            this.setSpawnChunkRadius(radius, true);
-//            OverlayRendererSpawnChunks.INSTANCE_REAL.setNeedsUpdate();
-//        }
-//    }
+    public void setSpawnChunkRadiusIfUnknown(int radius)
+    {
+        if (!this.spawnChunkRadiusValid)
+        {
+            this.setSpawnChunkRadius(radius, true);
+            OverlayRendererSpawnChunks.INSTANCE_REAL.setNeedsUpdate();
+        }
+    }
 
     public boolean isWorldSeedKnown(World world)
     {
@@ -364,20 +367,20 @@ public class HudDataManager
         return String.format("[%s: %d, %d, %d]", pos.dimension().getValue().toString(), pos.pos().getX(), pos.pos().getY(), pos.pos().getZ());
     }
 
-//    public boolean isSpawnChunkRadiusKnown()
-//    {
-//        return this.spawnChunkRadiusValid;
-//    }
+    public boolean isSpawnChunkRadiusKnown()
+    {
+        return this.spawnChunkRadiusValid;
+    }
 
-//    public int getSpawnChunkRadius()
-//    {
-//        if (this.spawnChunkRadius > -1)
-//        {
-//            return this.spawnChunkRadius;
-//        }
-//
-//        return 2;
-//    }
+    public int getSpawnChunkRadius()
+    {
+        if (this.spawnChunkRadius > -1)
+        {
+            return this.spawnChunkRadius;
+        }
+
+        return -1;
+    }
 
     public boolean hasValidWeatherCycle()
     {
@@ -904,10 +907,10 @@ public class HudDataManager
         {
             obj.add("seed", new JsonPrimitive(this.worldSeed));
         }
-//        if (this.isSpawnChunkRadiusKnown())
-//        {
-//            obj.add("spawn_chunk_radius", new JsonPrimitive(this.spawnChunkRadius));
-//        }
+        if (this.isSpawnChunkRadiusKnown())
+        {
+            obj.add("spawn_chunk_radius", new JsonPrimitive(this.spawnChunkRadius));
+        }
 
         return obj;
     }
@@ -932,9 +935,9 @@ public class HudDataManager
                 this.setWorldSeed(seedTmp);
             }
         }
-//        if (JsonUtils.hasInteger(obj, "spawn_chunk_radius"))
-//        {
-//            int spawnRadiusTmp = JsonUtils.getIntegerOrDefault(obj, "spawn_chunk_radius", 2);
+        if (JsonUtils.hasInteger(obj, "spawn_chunk_radius"))
+        {
+            int spawnRadiusTmp = JsonUtils.getIntegerOrDefault(obj, "spawn_chunk_radius", -1);
 //
 //            if (DataStorage.getInstance().hasIntegratedServer() && this.isSpawnChunkRadiusKnown() && this.spawnChunkRadius != spawnRadiusTmp)
 //            {
@@ -945,6 +948,11 @@ public class HudDataManager
 //                this.setSpawnChunkRadius(spawnRadiusTmp, false);
 //            }
 //
+	        if (this.spawnChunkRadius != spawnRadiusTmp && spawnRadiusTmp > 0)
+	        {
+				this.setSpawnChunkRadius(spawnRadiusTmp, false);
+	        }
+
 //            // Force RenderToggle OFF if SPAWN_CHUNK_RADIUS is set to 0
 //            if (this.getSpawnChunkRadius() == 0 && RendererToggle.OVERLAY_SPAWN_CHUNK_OVERLAY_REAL.getBooleanValue())
 //            {
@@ -952,6 +960,6 @@ public class HudDataManager
 //                RendererToggle.OVERLAY_SPAWN_CHUNK_OVERLAY_REAL.setBooleanValue(false);
 //                OverlayRendererSpawnChunks.INSTANCE_REAL.setNeedsUpdate();
 //            }
-//        }
+        }
     }
 }

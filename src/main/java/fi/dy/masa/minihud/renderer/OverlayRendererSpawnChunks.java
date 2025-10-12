@@ -146,23 +146,13 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
             brownEnabled = Configs.Generic.SPAWN_PLAYER_OUTER_OVERLAY_ENABLED.getBooleanValue();
             yellowEnabled = Configs.Generic.SPAWN_PLAYER_REDSTONE_OVERLAY_ENABLED.getBooleanValue();
         }
-		else
-		{
+        else if (data.isSpawnChunkRadiusKnown() &&
+		         data.getSpawnChunkRadius() > 0)
+        {
+            // OVERLAY_SPAWN_CHUNK_OVERLAY_REAL
             this.center = data.getWorldSpawn().pos();
-			red = 0;
-			yellow = 0;
-			green = 0;
-			brown = 0;
+            spawnChunkRadius = data.getSpawnChunkRadius();
 
-			brownEnabled = false;
-			yellowEnabled = false;
-		}
-//        else
-//        {
-//            // OVERLAY_SPAWN_CHUNK_OVERLAY_REAL
-//            this.center = data.getWorldSpawn();
-//            spawnChunkRadius = data.getSpawnChunkRadius();
-//
 //            if (spawnChunkRadius < 0)
 //            {
 //                spawnChunkRadius = getSpawnChunkRadius(mc.getServer());
@@ -182,19 +172,30 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
 //
 //                return;
 //            }
-//
-//            red = spawnChunkRadius + 1;
-//            yellow = spawnChunkRadius;
-//            green = spawnChunkRadius - 1;
-//            brown = red + 11;
-//
-//            brownEnabled = Configs.Generic.SPAWN_REAL_OUTER_OVERLAY_ENABLED.getBooleanValue();
-//            yellowEnabled = Configs.Generic.SPAWN_REAL_REDSTONE_OVERLAY_ENABLED.getBooleanValue();
-//        }
+
+            red = spawnChunkRadius + 1;
+            yellow = spawnChunkRadius;
+            green = spawnChunkRadius - 1;
+            brown = red + 11;
+
+            brownEnabled = Configs.Generic.SPAWN_REAL_OUTER_OVERLAY_ENABLED.getBooleanValue();
+            yellowEnabled = Configs.Generic.SPAWN_REAL_REDSTONE_OVERLAY_ENABLED.getBooleanValue();
+        }
+        else
+        {
+	        this.center = data.getWorldSpawn().pos();
+	        red = 0;
+	        yellow = 0;
+	        green = 0;
+	        brown = 0;
+
+	        brownEnabled = false;
+	        yellowEnabled = false;
+        }
 
         Pair<BlockPos, BlockPos> corners;
 
-		if (this.isPlayerFollowing)
+		if (this.isPlayerFollowing || data.isSpawnChunkRadiusKnown())
 		{
 			if (brownEnabled)
 			{
@@ -247,23 +248,20 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
 									Configs.Colors.SPAWN_REAL_ENTITY_OVERLAY_COLOR.getColor();
 		final Color4f colorRedstone = this.isPlayerFollowing ?
 									  Configs.Colors.SPAWN_PLAYER_REDSTONE_OVERLAY_COLOR.getColor() :
-									  Color4f.WHITE;
-//		Configs.Colors.SPAWN_REAL_REDSTONE_OVERLAY_COLOR.getColor();
+									  Configs.Colors.SPAWN_REAL_REDSTONE_OVERLAY_COLOR.getColor();
 		final Color4f colorLazy = this.isPlayerFollowing ?
 								  Configs.Colors.SPAWN_PLAYER_LAZY_OVERLAY_COLOR.getColor() :
-								  Color4f.WHITE;
-//		Configs.Colors.SPAWN_REAL_LAZY_OVERLAY_COLOR.getColor();
+								  Configs.Colors.SPAWN_REAL_LAZY_OVERLAY_COLOR.getColor();
 		final Color4f colorOuter = this.isPlayerFollowing ?
 								   Configs.Colors.SPAWN_PLAYER_OUTER_OVERLAY_COLOR.getColor() :
-								   Color4f.WHITE;
-//		Configs.Colors.SPAWN_REAL_OUTER_OVERLAY_COLOR.getColor();
+								   Configs.Colors.SPAWN_REAL_OUTER_OVERLAY_COLOR.getColor();
 
 		RenderObjectVbo ctx = this.renderObjects.getFirst();
         BufferBuilder builder = ctx.start(() -> "minihud:spawn_chunk/quads", MaLiLibPipelines.MINIHUD_SHAPE_OFFSET);
 
         fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxSidesBatchedQuads(this.center, cameraPos, colorEntity, 0.001, builder);
 
-		if (this.isPlayerFollowing)
+		if (this.isPlayerFollowing || HudDataManager.getInstance().isSpawnChunkRadiusKnown())
 		{
 			for (Box entry : this.boxesBrown)
 			{
@@ -320,16 +318,13 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
 									Configs.Colors.SPAWN_REAL_ENTITY_OVERLAY_COLOR.getColor();
 		final Color4f colorRedstone = this.isPlayerFollowing ?
 									  Configs.Colors.SPAWN_PLAYER_REDSTONE_OVERLAY_COLOR.getColor() :
-									  Color4f.WHITE;
-//		Configs.Colors.SPAWN_REAL_REDSTONE_OVERLAY_COLOR.getColor();
+									  Configs.Colors.SPAWN_REAL_REDSTONE_OVERLAY_COLOR.getColor();
 		final Color4f colorLazy = this.isPlayerFollowing ?
 								  Configs.Colors.SPAWN_PLAYER_LAZY_OVERLAY_COLOR.getColor() :
-								  Color4f.WHITE;
-//		Configs.Colors.SPAWN_REAL_LAZY_OVERLAY_COLOR.getColor();
+								  Configs.Colors.SPAWN_REAL_LAZY_OVERLAY_COLOR.getColor();
 		final Color4f colorOuter = this.isPlayerFollowing ?
 								   Configs.Colors.SPAWN_PLAYER_OUTER_OVERLAY_COLOR.getColor() :
-								   Color4f.WHITE;
-//		Configs.Colors.SPAWN_REAL_OUTER_OVERLAY_COLOR.getColor();
+								   Configs.Colors.SPAWN_REAL_OUTER_OVERLAY_COLOR.getColor();
 
 
 		RenderObjectVbo ctx = this.renderObjects.get(1);
@@ -338,7 +333,7 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
         // The SpawnPos box looks better with white outlines.  You can't really see the `colorEntity` value
         fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(this.center, cameraPos, Color4f.WHITE, 0.001, builder);
 
-		if (this.isPlayerFollowing)
+		if (this.isPlayerFollowing || HudDataManager.getInstance().isSpawnChunkRadiusKnown())
 		{
 			for (Box entry : this.boxesBrown)
 			{
@@ -438,21 +433,6 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
 
         return minY;
     }
-
-	// TODO remove from game
-//    protected int getSpawnChunkRadius(@Nullable MinecraftServer server)
-//    {
-//        if (server != null)
-//        {
-//            return server.getOverworld().getGameRules().getInt(GameRules.SPAWN_CHUNK_RADIUS);
-//        }
-//        else if (HudDataManager.getInstance().isSpawnChunkRadiusKnown())
-//        {
-//            return HudDataManager.getInstance().getSpawnChunkRadius();
-//        }
-//
-//        return 2;
-//    }
 
     protected int getSimulationDistance()
     {

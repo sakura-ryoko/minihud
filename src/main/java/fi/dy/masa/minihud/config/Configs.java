@@ -122,8 +122,8 @@ public class Configs implements IConfigHandler
         public static final ConfigBoolean       SORT_LINES_REVERSED                 = new ConfigBoolean("sortLinesReversed", false).apply(GENERIC_KEY);
         public static final ConfigBoolean       SPAWN_PLAYER_OUTER_OVERLAY_ENABLED  = new ConfigBoolean("spawnPlayerOuterOverlayEnabled", false).apply(GENERIC_KEY);
         public static final ConfigBoolean       SPAWN_PLAYER_REDSTONE_OVERLAY_ENABLED= new ConfigBoolean("spawnPlayerRedstoneOverlayEnabled", false).apply(GENERIC_KEY);
-//        public static final ConfigBoolean       SPAWN_REAL_OUTER_OVERLAY_ENABLED    = new ConfigBoolean("spawnRealOuterOverlayEnabled", false).apply(GENERIC_KEY);
-//        public static final ConfigBoolean       SPAWN_REAL_REDSTONE_OVERLAY_ENABLED = new ConfigBoolean("spawnRealRedstoneOverlayEnabled", false).apply(GENERIC_KEY);
+        public static final ConfigBoolean       SPAWN_REAL_OUTER_OVERLAY_ENABLED    = new ConfigBoolean("spawnRealOuterOverlayEnabled", false).apply(GENERIC_KEY);
+        public static final ConfigBoolean       SPAWN_REAL_REDSTONE_OVERLAY_ENABLED = new ConfigBoolean("spawnRealRedstoneOverlayEnabled", false).apply(GENERIC_KEY);
         public static final ConfigInteger       SPAWNABLE_COLUMNS_OVERLAY_RADIUS    = new ConfigInteger("spawnableColumnHeightsOverlayRadius", 40, 0, 128).apply(GENERIC_KEY);
         public static final ConfigOptionList    SPEED_UNITS                         = new ConfigOptionList("speedUnits", SpeedUnits.MPS).apply(GENERIC_KEY);
         public static final ConfigBoolean       STRUCTURES_RENDER_THROUGH           = new ConfigBoolean("structuresRenderThrough", false).apply(GENERIC_KEY);
@@ -193,8 +193,8 @@ public class Configs implements IConfigHandler
                 SORT_LINES_REVERSED,
                 SPAWN_PLAYER_OUTER_OVERLAY_ENABLED,
                 SPAWN_PLAYER_REDSTONE_OVERLAY_ENABLED,
-//                SPAWN_REAL_OUTER_OVERLAY_ENABLED,
-//                SPAWN_REAL_REDSTONE_OVERLAY_ENABLED,
+                SPAWN_REAL_OUTER_OVERLAY_ENABLED,
+                SPAWN_REAL_REDSTONE_OVERLAY_ENABLED,
                 SPEED_UNITS,
                 STRUCTURES_RENDER_THROUGH,
                 USE_CUSTOMIZED_COORDINATES,
@@ -309,9 +309,9 @@ public class Configs implements IConfigHandler
         public static final ConfigColor SPAWN_PLAYER_LAZY_OVERLAY_COLOR         = new ConfigColor("spawnPlayerLazyOverlayColor",        "#30D030D0").apply(COLORS_KEY);
         public static final ConfigColor SPAWN_PLAYER_OUTER_OVERLAY_COLOR        = new ConfigColor("spawnPlayerOuterOverlayColor",       "#306900D2").apply(COLORS_KEY);
         public static final ConfigColor SPAWN_REAL_ENTITY_OVERLAY_COLOR         = new ConfigColor("spawnRealEntityOverlayColor",        "#3030FF20").apply(COLORS_KEY);
-//        public static final ConfigColor SPAWN_REAL_REDSTONE_OVERLAY_COLOR       = new ConfigColor("spawnRealRedstoneOverlayColor",      "#30F8D641").apply(COLORS_KEY);
-//        public static final ConfigColor SPAWN_REAL_LAZY_OVERLAY_COLOR           = new ConfigColor("spawnRealLazyOverlayColor",          "#30FF3020").apply(COLORS_KEY);
-//        public static final ConfigColor SPAWN_REAL_OUTER_OVERLAY_COLOR          = new ConfigColor("spawnRealOuterOverlayColor",         "#309D581A").apply(COLORS_KEY);
+        public static final ConfigColor SPAWN_REAL_REDSTONE_OVERLAY_COLOR       = new ConfigColor("spawnRealRedstoneOverlayColor",      "#30F8D641").apply(COLORS_KEY);
+        public static final ConfigColor SPAWN_REAL_LAZY_OVERLAY_COLOR           = new ConfigColor("spawnRealLazyOverlayColor",          "#30FF3020").apply(COLORS_KEY);
+        public static final ConfigColor SPAWN_REAL_OUTER_OVERLAY_COLOR          = new ConfigColor("spawnRealOuterOverlayColor",         "#309D581A").apply(COLORS_KEY);
         public static final ConfigColor SPAWNABLE_COLUMNS_OVERLAY_COLOR         = new ConfigColor("spawnableColumnHeightsOverlayColor", "#A0FF00FF").apply(COLORS_KEY);
         public static final ConfigColor TEXT_BACKGROUND_COLOR                   = new ConfigColor("textBackgroundColor",                "#A0505050").apply(COLORS_KEY);
         public static final ConfigColor TEXT_COLOR                              = new ConfigColor("textColor",                          "#FFE0E0E0").apply(COLORS_KEY);
@@ -351,9 +351,9 @@ public class Configs implements IConfigHandler
                 SPAWN_PLAYER_LAZY_OVERLAY_COLOR,
                 SPAWN_PLAYER_OUTER_OVERLAY_COLOR,
                 SPAWN_REAL_ENTITY_OVERLAY_COLOR,
-//                SPAWN_REAL_REDSTONE_OVERLAY_COLOR,
-//                SPAWN_REAL_LAZY_OVERLAY_COLOR,
-//                SPAWN_REAL_OUTER_OVERLAY_COLOR,
+                SPAWN_REAL_REDSTONE_OVERLAY_COLOR,
+                SPAWN_REAL_LAZY_OVERLAY_COLOR,
+                SPAWN_REAL_OUTER_OVERLAY_COLOR,
                 SPAWNABLE_COLUMNS_OVERLAY_COLOR,
                 TEXT_BACKGROUND_COLOR,
                 TEXT_COLOR
