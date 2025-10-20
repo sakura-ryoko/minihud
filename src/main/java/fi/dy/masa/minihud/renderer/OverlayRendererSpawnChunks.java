@@ -69,7 +69,7 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
     {
         return this.toggle.getBooleanValue() &&
                 (this.isPlayerFollowing ||
-                 (mc.world != null && MiscUtils.isOverworld(mc.world) &&
+                 (mc.world != null &&
                  HudDataManager.getInstance().isWorldSpawnKnown()));
     }
 
@@ -147,32 +147,12 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
             yellowEnabled = Configs.Generic.SPAWN_PLAYER_REDSTONE_OVERLAY_ENABLED.getBooleanValue();
         }
         else if (data.isSpawnChunkRadiusKnown() &&
-		         data.getSpawnChunkRadius() > 0)
+		         data.getSpawnChunkRadius() > 0 &&
+				 data.getWorldSpawn().dimension().equals(mc.world.getRegistryKey()))
         {
             // OVERLAY_SPAWN_CHUNK_OVERLAY_REAL
             this.center = data.getWorldSpawn().pos();
             spawnChunkRadius = data.getSpawnChunkRadius();
-
-//            if (spawnChunkRadius < 0)
-//            {
-//                spawnChunkRadius = getSpawnChunkRadius(mc.getServer());
-//                data.setSpawnChunkRadiusIfUnknown(spawnChunkRadius);
-//            }
-//            if (spawnChunkRadius < 0)
-//            {
-//                spawnChunkRadius = 2;       // In case there is a sync/logic issue, use Default Value.
-//            }
-//            if (spawnChunkRadius == 0)
-//            {
-//                // We have nothing to render.
-//                MiniHUD.LOGGER.warn("overlaySpawnChunkReal: toggling feature OFF since SPAWN_CHUNK_RADIUS is set to 0 (Nothing to render)");
-//
-//                RendererToggle.OVERLAY_SPAWN_CHUNK_OVERLAY_REAL.setBooleanValue(false);
-//                this.needsUpdate = false;
-//
-//                return;
-//            }
-
             red = spawnChunkRadius + 1;
             yellow = spawnChunkRadius;
             green = spawnChunkRadius - 1;
@@ -183,14 +163,23 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
         }
         else
         {
-	        this.center = data.getWorldSpawn().pos();
-	        red = 0;
-	        yellow = 0;
-	        green = 0;
-	        brown = 0;
+			if (data.getWorldSpawn().dimension().equals(mc.world.getRegistryKey()))
+			{
+				this.center = data.getWorldSpawn().pos();
+				red = 0;
+				yellow = 0;
+				green = 0;
+				brown = 0;
 
-	        brownEnabled = false;
-	        yellowEnabled = false;
+				brownEnabled = false;
+				yellowEnabled = false;
+			}
+			else
+			{
+				this.hasData = false;
+				this.needsUpdate = false;
+				return;
+			}
         }
 
         Pair<BlockPos, BlockPos> corners;
