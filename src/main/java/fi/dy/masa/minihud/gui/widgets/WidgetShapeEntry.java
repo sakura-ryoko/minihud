@@ -1,10 +1,8 @@
 package fi.dy.masa.minihud.gui.widgets;
 
 import java.util.List;
-
-import net.minecraft.client.gui.Click;
-import net.minecraft.client.gui.DrawContext;
-
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.input.MouseButtonEvent;
 import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.gui.button.ButtonBase;
 import fi.dy.masa.malilib.gui.button.ButtonGeneric;
@@ -63,13 +61,13 @@ public class WidgetShapeEntry extends WidgetListEntryBase<ShapeBase>
     }
 
     @Override
-    public boolean canSelectAt(Click click)
+    public boolean canSelectAt(MouseButtonEvent click)
     {
         return super.canSelectAt(click) && click.x() < this.buttonsStartX;
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, boolean selected)
+    public void render(GuiGraphics context, int mouseX, int mouseY, boolean selected)
     {
 //        RenderUtils.color(1f, 1f, 1f, 1f);
 
@@ -104,7 +102,7 @@ public class WidgetShapeEntry extends WidgetListEntryBase<ShapeBase>
     }
 
     @Override
-    public void postRenderHovered(DrawContext context, int mouseX, int mouseY, boolean selected)
+    public void postRenderHovered(GuiGraphics context, int mouseX, int mouseY, boolean selected)
     {
         super.postRenderHovered(context, mouseX, mouseY, selected);
 

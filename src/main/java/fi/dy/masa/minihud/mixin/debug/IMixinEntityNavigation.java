@@ -1,12 +1,12 @@
 package fi.dy.masa.minihud.mixin.debug;
 
+import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
-import net.minecraft.entity.ai.pathing.EntityNavigation;
 
-@Mixin(EntityNavigation.class)
+@Mixin(PathNavigation.class)
 public interface IMixinEntityNavigation
 {
-    @Accessor("nodeReachProximity")
+    @Accessor("maxDistanceToWaypoint")
     float minihud_getMaxDistanceToWaypoint();
 }

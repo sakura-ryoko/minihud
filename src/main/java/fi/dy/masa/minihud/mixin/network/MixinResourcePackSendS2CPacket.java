@@ -1,9 +1,9 @@
 package fi.dy.masa.minihud.mixin.network;
 
-import net.minecraft.network.packet.s2c.common.ResourcePackSendS2CPacket;
+import net.minecraft.network.protocol.common.ClientboundResourcePackPushPacket;
 import org.spongepowered.asm.mixin.Mixin;
 
-@Mixin(ResourcePackSendS2CPacket.class)
+@Mixin(ClientboundResourcePackPushPacket.class)
 public class MixinResourcePackSendS2CPacket
 {
     /*

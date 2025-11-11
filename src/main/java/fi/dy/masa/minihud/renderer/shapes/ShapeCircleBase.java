@@ -1,14 +1,12 @@
 package fi.dy.masa.minihud.renderer.shapes;
 
 import java.util.List;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.Vec3;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
-
 import fi.dy.masa.malilib.util.*;
 import fi.dy.masa.malilib.util.data.Color4f;
 
@@ -20,8 +18,8 @@ public abstract class ShapeCircleBase extends ShapeBlocky
     private double maxRadius = DEFAULT_MAX_RADIUS;
     private double radius;
     private double radiusSq;
-    private Vec3d center = Vec3d.ZERO;
-    private Vec3d effectiveCenter = Vec3d.ZERO;
+    private Vec3 center = Vec3.ZERO;
+    private Vec3 effectiveCenter = Vec3.ZERO;
 
     public ShapeCircleBase(ShapeType type, Color4f color, double radius)
     {
@@ -33,38 +31,38 @@ public abstract class ShapeCircleBase extends ShapeBlocky
 
         if (entity != null)
         {
-            Vec3d center = entity.getEntityPos();
-            center = new Vec3d(Math.floor(center.x) + 0.5, Math.floor(center.y), Math.floor(center.z) + 0.5);
+            Vec3 center = entity.position();
+            center = new Vec3(Math.floor(center.x) + 0.5, Math.floor(center.y), Math.floor(center.z) + 0.5);
             this.setCenter(center);
         }
         else
         {
-            this.setCenter(Vec3d.ZERO);
+            this.setCenter(Vec3.ZERO);
         }
     }
 
-    public Vec3d getCenter()
+    public Vec3 getCenter()
     {
         return this.center;
     }
 
-    public Vec3d getEffectiveCenter()
+    public Vec3 getEffectiveCenter()
     {
         return this.effectiveCenter;
     }
 
-    public void setCenter(Vec3d center)
+    public void setCenter(Vec3 center)
     {
         this.center = center;
         this.updateEffectiveCenter();
     }
 
     @Override
-    public void moveToPosition(Vec3d pos)
+    public void moveToPosition(Vec3 pos)
     {
         this.setCenter(pos);
         InfoUtils.printActionbarMessage(String.format("Moved shape to %.1f %.1f %.1f",
-                                                      pos.getX(), pos.getY(), pos.getZ()));
+                                                      pos.x(), pos.y(), pos.z()));
     }
 
     public double getRadius()
@@ -101,7 +99,7 @@ public abstract class ShapeCircleBase extends ShapeBlocky
 
     protected BlockPos getCenterBlock()
     {
-        return BlockPos.ofFloored(this.effectiveCenter);
+        return BlockPos.containing(this.effectiveCenter);
     }
 
     @Override
@@ -124,16 +122,21 @@ public abstract class ShapeCircleBase extends ShapeBlocky
     {
         JsonObject obj = super.toJson();
 
-        obj.add("center", JsonUtils.vec3dToJson(this.center));
-        obj.add("main_axis", new JsonPrimitive(this.mainAxis.name()));
-        obj.add("radius", new JsonPrimitive(this.getRadius()));
+		if (obj != null)
+		{
+			obj.add("center", JsonUtils.vec3dToJson(this.center));
+			obj.add("main_axis", new JsonPrimitive(this.mainAxis.name()));
+			obj.add("radius", new JsonPrimitive(this.getRadius()));
 
-        if (this.maxRadius != DEFAULT_MAX_RADIUS)
-        {
-            obj.add("max_radius", new JsonPrimitive(this.maxRadius));
-        }
+			if (this.maxRadius != DEFAULT_MAX_RADIUS)
+			{
+				obj.add("max_radius", new JsonPrimitive(this.maxRadius));
+			}
 
-        return obj;
+			return obj;
+		}
+
+		return new JsonObject();
     }
 
     @Override
@@ -167,7 +170,7 @@ public abstract class ShapeCircleBase extends ShapeBlocky
             this.setRadius(JsonUtils.getDouble(obj, "radius"));
         }
 
-        Vec3d center = JsonUtils.vec3dFromJson(obj, "center");
+        Vec3 center = JsonUtils.vec3dFromJson(obj, "center");
 
         if (center != null)
         {
@@ -180,7 +183,7 @@ public abstract class ShapeCircleBase extends ShapeBlocky
     {
         List<String> lines = super.getWidgetHoverLines();
         BlockSnap snap = this.getBlockSnap();
-        Vec3d c = this.center;
+        Vec3 c = this.center;
 
         lines.add(StringUtils.translate("minihud.gui.hover.shape.radius_value", this.getRadius()));
         lines.add(StringUtils.translate("minihud.gui.hover.shape.center_value", d2(c.x), d2(c.y), d2(c.z)));

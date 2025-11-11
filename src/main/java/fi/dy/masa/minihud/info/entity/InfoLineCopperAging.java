@@ -2,16 +2,14 @@ package fi.dy.masa.minihud.info.entity;
 
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.animal.coppergolem.CopperGolem;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.WeatheringCopper;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
-
-import net.minecraft.block.Oxidizable;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.passive.CopperGolemEntity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.world.World;
-
 import fi.dy.masa.malilib.util.nbt.NbtEntityUtils;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.Configs;
@@ -55,41 +53,41 @@ public class InfoLineCopperAging extends InfoLine
     }
 
     @Override
-    public List<Entry> parseNbt(@NotNull World world, @NotNull EntityType<?> entityType, @NotNull NbtCompound nbt)
+    public List<Entry> parseNbt(@NotNull Level world, @NotNull EntityType<?> entityType, @NotNull CompoundTag nbt)
     {
         List<Entry> list = new ArrayList<>();
-        Pair<Oxidizable.OxidationLevel, Long> pair = NbtEntityUtils.getWeatheringDataFromNbt(nbt);
-		Oxidizable.OxidationLevel level = pair.getLeft();
+        Pair<WeatheringCopper.WeatherState, Long> pair = NbtEntityUtils.getWeatheringDataFromNbt(nbt);
+		WeatheringCopper.WeatherState level = pair.getLeft();
 		final long age = pair.getRight();
 
 		// Waxed (-2L)
 		if (age == -2L)
 		{
 			list.add(this.translate(COPPER_KEY+".waxed",
-									level.asString()
+									level.getSerializedName()
 			));
 		}
 		else if (age == -1)
 		{
 			list.add(this.translate(COPPER_KEY+".not_aging",
-									level.asString()
+									level.getSerializedName()
 			));
 		}
 		else
 		{
-			final long diff = (world.getTimeOfDay() - age) * -1;
+			final long diff = (world.getDayTime() - age) * -1;
 			final String formatted = this.formatCountdown(diff);
 
 			if (formatted.isEmpty())
 			{
 				list.add(this.translate(COPPER_KEY+".not_aging",
-										level.asString()
+										level.getSerializedName()
 				));
 			}
 			else
 			{
 				list.add(this.translate(COPPER_KEY + ".aging",
-										level.asString(),
+										level.getSerializedName(),
 										formatted
 				));
 			}
@@ -99,43 +97,43 @@ public class InfoLineCopperAging extends InfoLine
     }
 
     @Override
-    public List<Entry> parseEnt(@NotNull World world, @NotNull Entity ent)
+    public List<Entry> parseEnt(@NotNull Level world, @NotNull Entity ent)
     {
         List<Entry> list = new ArrayList<>();
 
-        if (ent instanceof CopperGolemEntity cge)
+        if (ent instanceof CopperGolem cge)
         {
-			Oxidizable.OxidationLevel level = cge.getOxidationLevel();
+			WeatheringCopper.WeatherState level = cge.getWeatherState();
 			final long age = ((IMixinCopperGolemEntity) cge).minihud_getNextOxidationAge();
 
 			// Waxed (-2L)
 			if (age == -2L)
 			{
 				list.add(this.translate(COPPER_KEY+".waxed",
-										level.asString()
+										level.getSerializedName()
 				));
 			}
 			else if (age == -1)
 			{
 				list.add(this.translate(COPPER_KEY+".not_aging",
-										level.asString()
+										level.getSerializedName()
 				));
 			}
 			else
 			{
-				final long diff = (world.getTimeOfDay() - age) * -1;
+				final long diff = (world.getDayTime() - age) * -1;
 				final String formatted = this.formatCountdown(diff);
 
 				if (formatted.isEmpty())
 				{
 					list.add(this.translate(COPPER_KEY+".not_aging",
-											level.asString()
+											level.getSerializedName()
 					));
 				}
 				else
 				{
 					list.add(this.translate(COPPER_KEY + ".aging",
-											level.asString(),
+											level.getSerializedName(),
 											formatted
 					));
 				}

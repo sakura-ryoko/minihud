@@ -2,15 +2,13 @@ package fi.dy.masa.minihud.info.entity;
 
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.animal.Dolphin;
+import net.minecraft.world.level.Level;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
-
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.passive.DolphinEntity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.world.World;
-
 import fi.dy.masa.malilib.util.nbt.NbtEntityUtils;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
@@ -51,7 +49,7 @@ public class InfoLineDolphinTreasure extends InfoLine
     }
 
     @Override
-    public List<Entry> parseNbt(@NotNull World world, @NotNull EntityType<?> entityType, @NotNull NbtCompound nbt)
+    public List<Entry> parseNbt(@NotNull Level world, @NotNull EntityType<?> entityType, @NotNull CompoundTag nbt)
     {
         Pair<Integer, Boolean> dolphiPair = NbtEntityUtils.getDolphinDataFromNbt(nbt);
         List<Entry> list = new ArrayList<>();
@@ -88,13 +86,13 @@ public class InfoLineDolphinTreasure extends InfoLine
     }
 
     @Override
-    public List<Entry> parseEnt(@NotNull World world, @NotNull Entity ent)
+    public List<Entry> parseEnt(@NotNull Level world, @NotNull Entity ent)
     {
         List<Entry> list = new ArrayList<>();
 
-        if (ent instanceof DolphinEntity dolphin)
+        if (ent instanceof Dolphin dolphin)
         {
-            int dryTime = dolphin.getMoistness();
+            int dryTime = dolphin.getMoistnessLevel();
 
             /*
             if (dryTime == 2400)

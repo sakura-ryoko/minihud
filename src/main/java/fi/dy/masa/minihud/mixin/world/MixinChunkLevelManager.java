@@ -4,14 +4,13 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import net.minecraft.server.world.ChunkLevelManager;
-
 import fi.dy.masa.minihud.util.DataStorage;
+import net.minecraft.server.level.DistanceManager;
 
-@Mixin(ChunkLevelManager.class)
+@Mixin(DistanceManager.class)
 public class MixinChunkLevelManager
 {
-    @Inject(method = "setSimulationDistance", at = @At("TAIL"))
+    @Inject(method = "updateSimulationDistance", at = @At("TAIL"))
     private void minihud_getSimulationDistance(int distance, CallbackInfo ci)
     {
         if (distance > 0)

@@ -2,20 +2,18 @@ package fi.dy.masa.minihud.renderer;
 
 import java.util.HashMap;
 import java.util.List;
-
-import net.minecraft.block.entity.BeaconBlockEntity;
-import net.minecraft.block.entity.BeamEmitter;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.BuiltBuffer;
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.profiler.Profiler;
-import net.minecraft.world.World;
-
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BeaconBeamOwner;
+import net.minecraft.world.level.block.entity.BeaconBlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.phys.Vec3;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.MeshData;
 import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.data.Color4f;
 import fi.dy.masa.minihud.MiniHUD;
@@ -43,10 +41,10 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
     }
 
     @Override
-    protected void updateBlockRange(World world, BlockPos pos, BeaconBlockEntity be, Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
+    protected void updateBlockRange(Level world, BlockPos pos, BeaconBlockEntity be, Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
-        List<BeamEmitter.BeamSegment> segments = ((IMixinBeaconBlockEntity) be).minihud_getBeamEmitter();
-        RegistryEntry<StatusEffect> primary = ((IMixinBeaconBlockEntity) be).minihud_getPrimary();
+        List<BeaconBeamOwner.Section> segments = ((IMixinBeaconBlockEntity) be).minihud_getBeamEmitter();
+        Holder<MobEffect> primary = ((IMixinBeaconBlockEntity) be).minihud_getPrimary();
 //        RegistryEntry<StatusEffect> secondary = ((IMixinBeaconBlockEntity) be).minihud_getSecondary();
         final int level = ((IMixinBeaconBlockEntity) be).minihud_getLevel();
 
@@ -71,7 +69,7 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
     }
 
     @Override
-    protected void renderBlockRange(World world, Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
+    protected void renderBlockRange(Level world, Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
         this.renderThrough = false;
 
@@ -93,9 +91,9 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
         this.positions.clear();
     }
 
-    private void renderQuads(World world, Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
+    private void renderQuads(Level world, Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
-        if (mc.world == null || mc.player == null)
+        if (mc.level == null || mc.player == null)
         {
             return;
         }
@@ -132,7 +130,7 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
 
         try
         {
-            BuiltBuffer meshData = builder.endNullable();
+            MeshData meshData = builder.build();
 
             if (meshData != null)
             {
@@ -155,9 +153,9 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
         profiler.pop();
     }
 
-    private void renderOutlines(World world, Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
+    private void renderOutlines(Level world, Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
-        if (mc.world == null || mc.player == null)
+        if (mc.level == null || mc.player == null)
         {
             return;
         }
@@ -195,7 +193,7 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
 
         try
         {
-            BuiltBuffer meshData = builder.endNullable();
+            MeshData meshData = builder.build();
 
             if (meshData != null)
             {

@@ -2,17 +2,15 @@ package fi.dy.masa.minihud.renderer;
 
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.Vec3;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
-
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.BuiltBuffer;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.profiler.Profiler;
-
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.MeshData;
 import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.IntBoundingBox;
 import fi.dy.masa.malilib.util.data.Color4f;
@@ -44,7 +42,7 @@ public class OverlayRendererStructures extends OverlayRendererBase
     }
 
     @Override
-    public boolean shouldRender(MinecraftClient mc)
+    public boolean shouldRender(Minecraft mc)
     {
         if (!RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue())
         {
@@ -63,7 +61,7 @@ public class OverlayRendererStructures extends OverlayRendererBase
     }
 
     @Override
-    public boolean needsUpdate(Entity entity, MinecraftClient mc)
+    public boolean needsUpdate(Entity entity, Minecraft mc)
     {
         int hysteresis = 16;
 
@@ -74,9 +72,9 @@ public class OverlayRendererStructures extends OverlayRendererBase
     }
 
     @Override
-    public void update(Vec3d cameraPos, Entity entity, MinecraftClient mc, Profiler profiler)
+    public void update(Vec3 cameraPos, Entity entity, Minecraft mc, ProfilerFiller profiler)
     {
-        int maxRange = (mc.options.getViewDistance().getValue() + 4) * 16;
+        int maxRange = (mc.options.renderDistance().get() + 4) * 16;
         this.structures = this.getStructuresToRender(this.lastUpdatePos, maxRange);
         this.hasData = !this.structures.isEmpty();
         this.renderThrough = Configs.Generic.STRUCTURES_RENDER_THROUGH.getBooleanValue();
@@ -103,7 +101,7 @@ public class OverlayRendererStructures extends OverlayRendererBase
     }
 
     @Override
-    public void render(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
+    public void render(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
         this.allocateBuffers();
         this.renderStructureMain(cameraPos, mc, profiler);
@@ -111,9 +109,9 @@ public class OverlayRendererStructures extends OverlayRendererBase
 //        this.renderStructureSubSurface(cameraPos, mc, profiler);
     }
 
-    private void renderStructureMain(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
+    private void renderStructureMain(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
-        if (mc.world == null || mc.player == null)
+        if (mc.level == null || mc.player == null)
         {
             return;
         }
@@ -137,7 +135,7 @@ public class OverlayRendererStructures extends OverlayRendererBase
 
         try
         {
-            BuiltBuffer meshData = builder.endNullable();
+            MeshData meshData = builder.build();
 
             if (meshData != null)
             {
@@ -160,9 +158,9 @@ public class OverlayRendererStructures extends OverlayRendererBase
         profiler.pop();
     }
 
-    private void renderStructureComponents(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
+    private void renderStructureComponents(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
-        if (mc.world == null || mc.player == null)
+        if (mc.level == null || mc.player == null)
         {
             return;
         }
@@ -196,7 +194,7 @@ public class OverlayRendererStructures extends OverlayRendererBase
 
         try
         {
-            BuiltBuffer meshData = builder.endNullable();
+            MeshData meshData = builder.build();
 
             if (meshData != null)
             {

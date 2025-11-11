@@ -15,17 +15,16 @@ import fi.dy.masa.minihud.renderer.OverlayRendererVillagerInfo;
 import fi.dy.masa.minihud.renderer.RenderContainer;
 import fi.dy.masa.minihud.renderer.shapes.ShapeManager;
 import fi.dy.masa.minihud.util.DataStorage;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.world.ClientWorld;
-
 import javax.annotation.Nullable;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class WorldLoadListener implements IWorldLoadListener
 {
     @Override
-    public void onWorldLoadPre(@Nullable ClientWorld worldBefore, @Nullable ClientWorld worldAfter, MinecraftClient mc)
+    public void onWorldLoadPre(@Nullable ClientLevel worldBefore, @Nullable ClientLevel worldAfter, Minecraft mc)
     {
         // Save the settings before the integrated server gets shut down
         if (worldBefore != null)
@@ -48,7 +47,7 @@ public class WorldLoadListener implements IWorldLoadListener
     }
 
     @Override
-    public void onWorldLoadPost(@Nullable ClientWorld worldBefore, @Nullable ClientWorld worldAfter, MinecraftClient mc)
+    public void onWorldLoadPost(@Nullable ClientLevel worldBefore, @Nullable ClientLevel worldAfter, Minecraft mc)
     {
         // Clear the cached data
         DataStorage.getInstance().reset(worldAfter == null);
@@ -70,7 +69,7 @@ public class WorldLoadListener implements IWorldLoadListener
             this.readStoredDataPerDimension();
             OverlayRenderer.resetRenderTimeout();
             DataStorage.getInstance().onWorldJoin();
-            DataStorage.getInstance().setWorldRegistryManager(worldAfter.getRegistryManager());
+            DataStorage.getInstance().setWorldRegistryManager(worldAfter.registryAccess());
             HudDataManager.getInstance().onWorldJoin();
             EntitiesDataManager.getInstance().onWorldJoin();
 //            DebugDataManager.getInstance().onWorldJoin();

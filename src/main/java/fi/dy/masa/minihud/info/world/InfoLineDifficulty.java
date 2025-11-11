@@ -3,13 +3,11 @@ package fi.dy.masa.minihud.info.world;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nonnull;
-
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.LocalDifficulty;
-import net.minecraft.world.World;
-import net.minecraft.world.chunk.WorldChunk;
-
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.DifficultyInstance;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.chunk.LevelChunk;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.info.InfoLine;
@@ -44,25 +42,25 @@ public class InfoLineDifficulty extends InfoLine
     }
 
     @Override
-    public List<Entry> parseBlockPos(@Nonnull World world, @Nonnull BlockPos pos)
+    public List<Entry> parseBlockPos(@Nonnull Level world, @Nonnull BlockPos pos)
     {
         List<Entry> list = new ArrayList<>();
         long chunkInhabitedTime = 0L;
         float moonPhaseFactor = 0.0F;
         ChunkPos chunkPos = new ChunkPos(pos);
 //            WorldChunk serverChunk = this.getChunk(chunkPos);
-        WorldChunk serverChunk = InfoLineChunkCache.INSTANCE.getChunk(chunkPos);
+        LevelChunk serverChunk = InfoLineChunkCache.INSTANCE.getChunk(chunkPos);
 
         if (serverChunk != null)
         {
-            moonPhaseFactor = world.getMoonSize();
+            moonPhaseFactor = world.getMoonBrightness();
             chunkInhabitedTime = serverChunk.getInhabitedTime();
         }
 
-        LocalDifficulty diff = new LocalDifficulty(world.getDifficulty(), world.getTimeOfDay(), chunkInhabitedTime, moonPhaseFactor);
+        DifficultyInstance diff = new DifficultyInstance(world.getDifficulty(), world.getDayTime(), chunkInhabitedTime, moonPhaseFactor);
 
         list.add(this.translate(DIFF_KEY,
-                                diff.getLocalDifficulty(), diff.getClampedLocalDifficulty(), world.getTimeOfDay() / 24000L)
+                                diff.getEffectiveDifficulty(), diff.getSpecialMultiplier(), world.getDayTime() / 24000L)
         );
 
         return list;

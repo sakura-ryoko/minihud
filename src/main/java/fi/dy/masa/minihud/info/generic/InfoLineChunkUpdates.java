@@ -36,12 +36,12 @@ public class InfoLineChunkUpdates extends InfoLine
             return null;
         }
 
-        if (mc().worldRenderer.getChunkBuilder() != null)
+        if (mc().levelRenderer.getSectionRenderDispatcher() != null)
         {
             // This should never throw, but just being careful.
             try
             {
-                list.add(this.translate(CHUNKS_KEY, Objects.requireNonNull(mc().worldRenderer.getChunkBuilder()).getChunksToUpload()));
+                list.add(this.translate(CHUNKS_KEY, Objects.requireNonNull(mc().levelRenderer.getSectionRenderDispatcher()).getToUpload()));
             }
             catch (Exception ignored) { }
         }

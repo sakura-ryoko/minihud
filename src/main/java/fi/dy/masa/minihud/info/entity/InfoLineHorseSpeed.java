@@ -3,16 +3,14 @@ package fi.dy.masa.minihud.info.entity;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.level.Level;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
-
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.passive.AbstractHorseEntity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.world.World;
-
 import fi.dy.masa.malilib.util.nbt.NbtEntityUtils;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
@@ -44,7 +42,7 @@ public class InfoLineHorseSpeed extends InfoLine
         {
             Entity vehicle = Objects.requireNonNull(this.mc().player).getVehicle();
 
-            if (vehicle instanceof AbstractHorseEntity)
+            if (vehicle instanceof AbstractHorse)
             {
                 return this.parseEnt(ctx.world(), vehicle);
             }
@@ -67,10 +65,10 @@ public class InfoLineHorseSpeed extends InfoLine
     }
 
     @Override
-    public List<Entry> parseNbt(@NotNull World world, @NotNull EntityType<?> entityType, @NotNull NbtCompound nbt)
+    public List<Entry> parseNbt(@NotNull Level world, @NotNull EntityType<?> entityType, @NotNull CompoundTag nbt)
     {
         List<Entry> list = new ArrayList<>();
-        String horseType = entityType.getName().getString();
+        String horseType = entityType.getDescription().getString();
 
         if (entityType.equals(EntityType.CAMEL) ||
             entityType.equals(EntityType.DONKEY) ||
@@ -96,14 +94,14 @@ public class InfoLineHorseSpeed extends InfoLine
     }
 
     @Override
-    public List<Entry> parseEnt(@NotNull World world, @NotNull Entity ent)
+    public List<Entry> parseEnt(@NotNull Level world, @NotNull Entity ent)
     {
         List<Entry> list = new ArrayList<>();
 
-        if (ent instanceof AbstractHorseEntity horse)
+        if (ent instanceof AbstractHorse horse)
         {
-            String horseType = horse.getType().getName().getString();
-            double speed = horse.getAttributeValue(EntityAttributes.MOVEMENT_SPEED);
+            String horseType = horse.getType().getDescription().getString();
+            double speed = horse.getAttributeValue(Attributes.MOVEMENT_SPEED);
 
             if (speed > 0d)
             {

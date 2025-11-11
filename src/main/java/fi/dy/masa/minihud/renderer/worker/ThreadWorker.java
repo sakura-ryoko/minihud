@@ -1,9 +1,9 @@
 package fi.dy.masa.minihud.renderer.worker;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.util.crash.CrashReport;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.util.DataStorage;
+import net.minecraft.CrashReport;
+import net.minecraft.client.Minecraft;
 
 public class ThreadWorker implements Runnable
 {
@@ -30,8 +30,8 @@ public class ThreadWorker implements Runnable
             }
             catch (Throwable throwable)
             {
-                CrashReport crashreport = CrashReport.create(throwable, "MiniHUD worker thread");
-                MinecraftClient.getInstance().setCrashReportSupplier(MinecraftClient.getInstance().addDetailsToCrashReport(crashreport));
+                CrashReport crashreport = CrashReport.forThrowable(throwable, "MiniHUD worker thread");
+                Minecraft.getInstance().delayCrashRaw(Minecraft.getInstance().fillReport(crashreport));
                 return;
             }
         }

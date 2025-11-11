@@ -2,21 +2,19 @@ package fi.dy.masa.minihud.renderer.shapes;
 
 import java.util.List;
 import java.util.function.LongConsumer;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import com.google.gson.JsonObject;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.MeshData;
 import it.unimi.dsi.fastutil.longs.Long2ByteOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.BuiltBuffer;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.profiler.Profiler;
-
 import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.*;
 import fi.dy.masa.malilib.util.position.PositionUtils;
@@ -29,11 +27,11 @@ import fi.dy.masa.minihud.util.shape.SphereUtils;
 
 public class ShapeLineBlock extends ShapeBlocky
 {
-    protected Vec3d startPos = Vec3d.ZERO;
-    protected Vec3d endPos = Vec3d.ZERO;
-    protected Vec3d effectiveStartPos = Vec3d.ZERO;
-    protected Vec3d effectiveEndPos = Vec3d.ZERO;
-	protected Vec3d initialSize = new Vec3d(16.0D, 16.0D, 16.0D);
+    protected Vec3 startPos = Vec3.ZERO;
+    protected Vec3 endPos = Vec3.ZERO;
+    protected Vec3 effectiveStartPos = Vec3.ZERO;
+    protected Vec3 effectiveEndPos = Vec3.ZERO;
+	protected Vec3 initialSize = new Vec3(16.0D, 16.0D, 16.0D);
 
     private boolean hasData;
 
@@ -54,9 +52,9 @@ public class ShapeLineBlock extends ShapeBlocky
 		Entity cameraEntity = EntityUtils.getCameraEntity();
 
 		if (cameraEntity != null &&
-			this.startPos == Vec3d.ZERO)
+			this.startPos == Vec3.ZERO)
 		{
-			Vec3d pos = cameraEntity.getEntityPos();
+			Vec3 pos = cameraEntity.position();
 
 			this.startPos = pos;
 			this.endPos = pos.add(this.initialSize);
@@ -64,37 +62,37 @@ public class ShapeLineBlock extends ShapeBlocky
 		}
 	}
 
-    public Vec3d getStartPos()
+    public Vec3 getStartPos()
     {
         return this.effectiveStartPos;
     }
 
-    public Vec3d getEndPos()
+    public Vec3 getEndPos()
     {
         return this.effectiveEndPos;
     }
 
-    public void setStartPos(Vec3d startPos)
+    public void setStartPos(Vec3 startPos)
     {
         this.startPos = startPos;
         this.updateEffectivePositions();
     }
 
-    public void setEndPos(Vec3d endPos)
+    public void setEndPos(Vec3 endPos)
     {
         this.endPos = endPos;
         this.updateEffectivePositions();
     }
 
     @Override
-    public void moveToPosition(Vec3d pos)
+    public void moveToPosition(Vec3 pos)
     {
-        Vec3d diff = this.endPos.subtract(this.startPos);
+        Vec3 diff = this.endPos.subtract(this.startPos);
         this.startPos = pos;
         this.endPos = pos.add(diff);
         this.updateEffectivePositions();
         InfoUtils.printActionbarMessage(String.format("Moved shape to %.1f %.1f %.1f",
-                                                      pos.getX(), pos.getY(), pos.getZ()));
+                                                      pos.x(), pos.y(), pos.z()));
     }
 
     @Override
@@ -105,7 +103,7 @@ public class ShapeLineBlock extends ShapeBlocky
     }
 
     @Override
-    public void update(Vec3d cameraPos, Entity entity, MinecraftClient mc, Profiler profiler)
+    public void update(Vec3 cameraPos, Entity entity, Minecraft mc, ProfilerFiller profiler)
     {
         this.hasData = true;
         this.render(cameraPos, mc, profiler);
@@ -119,7 +117,7 @@ public class ShapeLineBlock extends ShapeBlocky
     }
 
     @Override
-    public void render(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
+    public void render(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
         this.allocateBuffers(this.renderLines);
         this.renderQuads(cameraPos, mc, profiler);
@@ -130,9 +128,9 @@ public class ShapeLineBlock extends ShapeBlocky
         }
     }
 
-    private void renderQuads(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
+    private void renderQuads(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
-        if (mc.world == null || mc.player == null)
+        if (mc.level == null || mc.player == null)
         {
             return;
         }
@@ -147,7 +145,7 @@ public class ShapeLineBlock extends ShapeBlocky
 
         try
         {
-            BuiltBuffer meshData = builder.endNullable();
+            MeshData meshData = builder.build();
 
             if (meshData != null)
             {
@@ -170,9 +168,9 @@ public class ShapeLineBlock extends ShapeBlocky
         profiler.pop();
     }
 
-    private void renderOutlines(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
+    private void renderOutlines(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
-        if (mc.world == null || mc.player == null || !this.renderLines)
+        if (mc.level == null || mc.player == null || !this.renderLines)
         {
             return;
         }
@@ -187,7 +185,7 @@ public class ShapeLineBlock extends ShapeBlocky
 
         try
         {
-            BuiltBuffer meshData = builder.endNullable();
+            MeshData meshData = builder.build();
 
             if (meshData != null)
             {
@@ -215,8 +213,8 @@ public class ShapeLineBlock extends ShapeBlocky
     public List<String> getWidgetHoverLines()
     {
         List<String> lines = super.getWidgetHoverLines();
-        Vec3d s = this.startPos;
-        Vec3d e = this.endPos;
+        Vec3 s = this.startPos;
+        Vec3 e = this.endPos;
 
         lines.add(StringUtils.translate("minihud.gui.label.shape.line.start", d2(s.x), d2(s.y), d2(s.z)));
         lines.add(StringUtils.translate("minihud.gui.label.shape.line.end",   d2(e.x), d2(e.y), d2(e.z)));
@@ -228,9 +226,15 @@ public class ShapeLineBlock extends ShapeBlocky
     public JsonObject toJson()
     {
         JsonObject obj = super.toJson();
-        obj.add("start", JsonUtils.vec3dToJson(this.startPos));
-        obj.add("end", JsonUtils.vec3dToJson(this.endPos));
-        return obj;
+
+		if (obj != null)
+		{
+			obj.add("start", JsonUtils.vec3dToJson(this.startPos));
+			obj.add("end", JsonUtils.vec3dToJson(this.endPos));
+			return obj;
+		}
+
+		return new JsonObject();
     }
 
     @Override
@@ -238,8 +242,8 @@ public class ShapeLineBlock extends ShapeBlocky
     {
         super.fromJson(obj);
 
-        Vec3d startPos = JsonUtils.vec3dFromJson(obj, "start");
-        Vec3d endPos = JsonUtils.vec3dFromJson(obj, "end");
+        Vec3 startPos = JsonUtils.vec3dFromJson(obj, "start");
+        Vec3 endPos = JsonUtils.vec3dFromJson(obj, "end");
 
         if (startPos != null)
         {
@@ -257,14 +261,14 @@ public class ShapeLineBlock extends ShapeBlocky
     protected void updateRenderPerimeter()
     {
         double range = 512;
-        double minX = Math.min(this.effectiveStartPos.getX(), this.effectiveEndPos.getX()) - range;
-        double minY = Math.min(this.effectiveStartPos.getY(), this.effectiveEndPos.getY()) - range;
-        double minZ = Math.min(this.effectiveStartPos.getZ(), this.effectiveEndPos.getZ()) - range;
-        double maxX = Math.max(this.effectiveStartPos.getX(), this.effectiveEndPos.getX()) + range;
-        double maxY = Math.max(this.effectiveStartPos.getY(), this.effectiveEndPos.getY()) + range;
-        double maxZ = Math.max(this.effectiveStartPos.getZ(), this.effectiveEndPos.getZ()) + range;
+        double minX = Math.min(this.effectiveStartPos.x(), this.effectiveEndPos.x()) - range;
+        double minY = Math.min(this.effectiveStartPos.y(), this.effectiveEndPos.y()) - range;
+        double minZ = Math.min(this.effectiveStartPos.z(), this.effectiveEndPos.z()) - range;
+        double maxX = Math.max(this.effectiveStartPos.x(), this.effectiveEndPos.x()) + range;
+        double maxY = Math.max(this.effectiveStartPos.y(), this.effectiveEndPos.y()) + range;
+        double maxZ = Math.max(this.effectiveStartPos.z(), this.effectiveEndPos.z()) + range;
 
-        this.renderPerimeter = new Box(minX, minY, minZ, maxX, maxY, maxZ);
+        this.renderPerimeter = new AABB(minX, minY, minZ, maxX, maxY, maxZ);
     }
 
     protected void updateEffectivePositions()
@@ -275,7 +279,7 @@ public class ShapeLineBlock extends ShapeBlocky
         this.setNeedsUpdate();
     }
 
-    protected void renderLineShapeQuads(Vec3d cameraPos, BufferBuilder builder)
+    protected void renderLineShapeQuads(Vec3 cameraPos, BufferBuilder builder)
     {
         final double maxDist = 30000;
 
@@ -301,7 +305,7 @@ public class ShapeLineBlock extends ShapeBlocky
         }
     }
 
-    protected void renderLineShapeLines(Vec3d cameraPos,
+    protected void renderLineShapeLines(Vec3 cameraPos,
 //                                        BufferBuilder builder, MatrixStack.Entry e)
                                         BufferBuilder builder)
     {
@@ -331,7 +335,7 @@ public class ShapeLineBlock extends ShapeBlocky
 
     protected LongConsumer getLinePositionCollector(LongOpenHashSet positionsOut)
     {
-        IntBoundingBox box = this.layerRange.getExpandedBox(this.mc.world, 0);
+        IntBoundingBox box = this.layerRange.getExpandedBox(this.mc.level, 0);
 
         LongConsumer positionCollector = (pos) -> {
             if (box.containsPos(pos))
@@ -348,9 +352,9 @@ public class ShapeLineBlock extends ShapeBlocky
         Long2ObjectOpenHashMap<SideQuad> strips = new Long2ObjectOpenHashMap<>();
         Long2ByteOpenHashMap handledPositions = new Long2ByteOpenHashMap();
         Direction[] sides = PositionUtils.ALL_DIRECTIONS;
-        double lengthX = Math.abs(this.effectiveEndPos.getX() - this.effectiveStartPos.getX());
-        double lengthY = Math.abs(this.effectiveEndPos.getY() - this.effectiveStartPos.getY());
-        double lengthZ = Math.abs(this.effectiveEndPos.getZ() - this.effectiveStartPos.getZ());
+        double lengthX = Math.abs(this.effectiveEndPos.x() - this.effectiveStartPos.x());
+        double lengthY = Math.abs(this.effectiveEndPos.y() - this.effectiveStartPos.y());
+        double lengthZ = Math.abs(this.effectiveEndPos.z() - this.effectiveStartPos.z());
         Direction mainAxisHor = lengthX >= lengthZ ? Direction.WEST : Direction.NORTH;
         Direction mainAxisAll = lengthY >= lengthX && lengthY >= lengthZ ? Direction.DOWN : mainAxisHor;
 

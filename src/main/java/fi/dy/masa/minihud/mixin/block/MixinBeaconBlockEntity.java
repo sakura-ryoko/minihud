@@ -8,18 +8,18 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BeaconBlockEntity;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 import fi.dy.masa.minihud.renderer.OverlayRendererBeaconRange;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BeaconBlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
 
 @Mixin(BeaconBlockEntity.class)
 public abstract class MixinBeaconBlockEntity extends BlockEntity
 {
-    @Shadow int level;
+    @Shadow int levels;
     @Unique private int levelPre = -1;
 
     private MixinBeaconBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state)
@@ -27,32 +27,32 @@ public abstract class MixinBeaconBlockEntity extends BlockEntity
         super(type, pos, state);
     }
 
-    @Inject(method = "markRemoved", at = @At("RETURN"))
+    @Inject(method = "setRemoved", at = @At("RETURN"))
     private void minihud_onRemoved(CallbackInfo ci)
     {
-        OverlayRendererBeaconRange.INSTANCE.onBlockStatusChange(this.getPos());
+        OverlayRendererBeaconRange.INSTANCE.onBlockStatusChange(this.getBlockPos());
     }
 
     @Inject(method = "tick",
             at = @At(value = "INVOKE",
-                     target = "Lnet/minecraft/world/World;getTime()J"))
-    private static void minihud_onUpdateSegmentsPre(World world, BlockPos pos, BlockState state, BeaconBlockEntity blockEntity, CallbackInfo ci)
+                     target = "Lnet/minecraft/world/level/Level;getGameTime()J"))
+    private static void minihud_onUpdateSegmentsPre(Level world, BlockPos pos, BlockState state, BeaconBlockEntity blockEntity, CallbackInfo ci)
     {
         if (((MixinBeaconBlockEntity) (Object) blockEntity).levelPre != -1)
         {
-            if (((MixinBeaconBlockEntity) (Object) blockEntity).levelPre != ((MixinBeaconBlockEntity) (Object) blockEntity).level)
+            if (((MixinBeaconBlockEntity) (Object) blockEntity).levelPre != ((MixinBeaconBlockEntity) (Object) blockEntity).levels)
             {
-                ((MixinBeaconBlockEntity) (Object) blockEntity).levelPre = ((MixinBeaconBlockEntity) (Object) blockEntity).level;
+                ((MixinBeaconBlockEntity) (Object) blockEntity).levelPre = ((MixinBeaconBlockEntity) (Object) blockEntity).levels;
             }
         }
     }
 
     @Inject(method = "tick",
             at = @At(value = "FIELD", opcode = Opcodes.PUTFIELD, shift = At.Shift.AFTER,
-                     target = "Lnet/minecraft/block/entity/BeaconBlockEntity;level:I", ordinal = 0))
-    private static void minihud_onUpdateSegmentsPost(World world, BlockPos pos, BlockState state, BeaconBlockEntity blockEntity, CallbackInfo ci)
+                     target = "Lnet/minecraft/world/level/block/entity/BeaconBlockEntity;levels:I", ordinal = 0))
+    private static void minihud_onUpdateSegmentsPost(Level world, BlockPos pos, BlockState state, BeaconBlockEntity blockEntity, CallbackInfo ci)
     {
-        int newLevel = ((MixinBeaconBlockEntity) (Object) blockEntity).level;
+        int newLevel = ((MixinBeaconBlockEntity) (Object) blockEntity).levels;
 
         if (((MixinBeaconBlockEntity) (Object) blockEntity).levelPre != newLevel)
         {
@@ -61,8 +61,8 @@ public abstract class MixinBeaconBlockEntity extends BlockEntity
         }
     }
 
-    @Inject(method = "updateLevel", at = @At("RETURN"))
-    private static void minihud_onUpdateLevel(World world, int x, int y, int z, CallbackInfoReturnable<Integer> cir)
+    @Inject(method = "updateBase", at = @At("RETURN"))
+    private static void minihud_onUpdateLevel(Level world, int x, int y, int z, CallbackInfoReturnable<Integer> cir)
     {
         BlockPos pos = new BlockPos(x, y, z);
         OverlayRendererBeaconRange.INSTANCE.onBlockStatusChange(pos);

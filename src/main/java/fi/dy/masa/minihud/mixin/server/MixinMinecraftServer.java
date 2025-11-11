@@ -1,7 +1,7 @@
 package fi.dy.masa.minihud.mixin.server;
 
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.WorldProperties;
+import net.minecraft.world.level.storage.LevelData;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -13,7 +13,7 @@ import fi.dy.masa.minihud.data.HudDataManager;
 @Mixin(MinecraftServer.class)
 public abstract class MixinMinecraftServer
 {
-	@Shadow public abstract WorldProperties.SpawnPoint getSpawnPoint();
+	@Shadow public abstract LevelData.RespawnData getRespawnData();
 
 	// TODO really not needed
 //	@Inject(method = "tick", at = @At("TAIL"))
@@ -23,15 +23,15 @@ public abstract class MixinMinecraftServer
 //    }
 
 
-	@Inject(method = "prepareStartRegion",
+	@Inject(method = "prepareLevels",
 			at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/server/MinecraftServer;updateMobSpawnOptions()V",
+            target = "Lnet/minecraft/server/MinecraftServer;updateMobSpawningFlags()V",
 			shift = At.Shift.BEFORE)
     )
     private void minihud_onPrepareStartRegion(CallbackInfo ci)
     {
 //		MiniHUD.LOGGER.error("minihud_onPrepareStartRegion() [StartRegion] --> [{}]", this.getSpawnPos().toString());
-		HudDataManager.getInstance().setWorldSpawn(this.getSpawnPoint().globalPos());
+		HudDataManager.getInstance().setWorldSpawn(this.getRespawnData().globalPos());
 //        HudDataManager.getInstance().setSpawnChunkRadius(i, true);
     }
 }

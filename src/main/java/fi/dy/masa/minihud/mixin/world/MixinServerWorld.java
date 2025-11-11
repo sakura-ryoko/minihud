@@ -1,23 +1,22 @@
 package fi.dy.masa.minihud.mixin.world;
 
 import com.llamalad7.mixinextras.sugar.Local;
-
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.world.WorldProperties;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import fi.dy.masa.minihud.data.HudDataManager;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.storage.LevelData;
 
-@Mixin(ServerWorld.class)
+@Mixin(ServerLevel.class)
 public class MixinServerWorld
 {
 //    @Shadow private int spawnChunkRadius;
 
-    @Inject(method = "setSpawnPoint", at = @At("TAIL"))
-    private void minihud_setSpawnPos(WorldProperties.SpawnPoint spawnPoint, CallbackInfo ci)
+    @Inject(method = "setRespawnData", at = @At("TAIL"))
+    private void minihud_setSpawnPos(LevelData.RespawnData spawnPoint, CallbackInfo ci)
     {
 //		MiniHUD.LOGGER.error("minihud_checkSpawnPos() [ServerWorld] --> [{}]", spawnPoint.globalPos().toString());
         HudDataManager.getInstance().setWorldSpawn(spawnPoint.globalPos());
@@ -25,8 +24,8 @@ public class MixinServerWorld
     }
 
     // NOTE:  This is only valid when `doWeatherCycle` is enabled in the Game Rules.
-    @Inject(method = "tickWeather()V", at = @At(value = "INVOKE",
-                                                target = "Lnet/minecraft/world/level/ServerWorldProperties;setRaining(Z)V"))
+    @Inject(method = "advanceWeatherCycle()V", at = @At(value = "INVOKE",
+                                                target = "Lnet/minecraft/world/level/storage/ServerLevelData;setRaining(Z)V"))
     private void minihud_onTickWeather(CallbackInfo ci,
                                        @Local(ordinal = 0) int i, @Local(ordinal = 1) int j, @Local(ordinal = 2) int k,
                                        @Local(ordinal = 1) boolean bl2, @Local(ordinal = 2) boolean bl3)

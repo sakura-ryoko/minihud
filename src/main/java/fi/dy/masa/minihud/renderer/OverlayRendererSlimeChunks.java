@@ -2,21 +2,19 @@ package fi.dy.masa.minihud.renderer;
 
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
+import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.BuiltBuffer;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.profiler.Profiler;
-import net.minecraft.world.World;
-
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.MeshData;
+import com.mojang.blaze3d.vertex.PoseStack;
 import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.EntityUtils;
 import fi.dy.masa.malilib.util.JsonUtils;
@@ -37,7 +35,7 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
     protected long seed;
     protected double topY;
 
-    private final List<Box> slimeChunks;
+    private final List<AABB> slimeChunks;
     private boolean hasData;
 
     protected OverlayRendererSlimeChunks()
@@ -91,22 +89,22 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
     }
 
     @Override
-    public boolean shouldRender(MinecraftClient mc)
+    public boolean shouldRender(Minecraft mc)
     {
-        return RendererToggle.OVERLAY_SLIME_CHUNKS_OVERLAY.getBooleanValue() && mc.world != null &&
-                HudDataManager.getInstance().isWorldSeedKnown(mc.world) &&
-                MiscUtils.isOverworld(mc.world);
+        return RendererToggle.OVERLAY_SLIME_CHUNKS_OVERLAY.getBooleanValue() && mc.level != null &&
+                HudDataManager.getInstance().isWorldSeedKnown(mc.level) &&
+                MiscUtils.isOverworld(mc.level);
     }
 
     @Override
-    public boolean needsUpdate(Entity entity, MinecraftClient mc)
+    public boolean needsUpdate(Entity entity, Minecraft mc)
     {
         if (this.needsUpdate)
         {
             return true;
         }
 
-        World world = entity.getEntityWorld();
+        Level world = entity.level();
         boolean isSeedKnown = HudDataManager.getInstance().isWorldSeedKnown(world);
         long seed = HudDataManager.getInstance().getWorldSeed(world);
 
@@ -124,7 +122,7 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
     }
 
     @Override
-    public void update(Vec3d cameraPos, Entity entity, MinecraftClient mc, Profiler profiler)
+    public void update(Vec3 cameraPos, Entity entity, Minecraft mc, ProfilerFiller profiler)
     {
         this.calculateChunks(entity, mc);
 
@@ -147,16 +145,16 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
     }
 
     @Override
-    public void render(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
+    public void render(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
         this.allocateBuffers();
         this.renderQuads(cameraPos, mc, profiler);
         this.renderOutlines(cameraPos, mc, profiler);
     }
 
-    private void renderQuads(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
+    private void renderQuads(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
-        if (mc.world == null || mc.player == null)
+        if (mc.level == null || mc.player == null)
         {
             return;
         }
@@ -166,11 +164,11 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
         RenderObjectVbo ctx = this.renderObjects.getFirst();
         BufferBuilder builder = ctx.start(() -> "minihud:slime_chunk/quads", this.renderThrough ? MaLiLibPipelines.POSITION_COLOR_MASA_NO_DEPTH_NO_CULL : MaLiLibPipelines.POSITION_COLOR_MASA_LEQUAL_DEPTH_OFFSET_1);
         // MaLiLibPipelines.POSITION_COLOR_LESSER_DEPTH
-        MatrixStack matrices = new MatrixStack();
+        PoseStack matrices = new PoseStack();
 
-        matrices.push();
+        matrices.pushPose();
 
-        for (Box bb : this.slimeChunks)
+        for (AABB bb : this.slimeChunks)
         {
             float x1 = (float)(bb.minX - cameraPos.x);
             float y1 = (float)(bb.minY - cameraPos.y);
@@ -184,7 +182,7 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
 
         try
         {
-            BuiltBuffer meshData = builder.endNullable();
+            MeshData meshData = builder.build();
 
             if (meshData != null)
             {
@@ -203,13 +201,13 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
             MiniHUD.LOGGER.error("OverlayRendererSlimeChunks#renderQuads(): Exception; {}", err.getMessage());
         }
 
-        matrices.pop();
+        matrices.popPose();
         profiler.pop();
     }
 
-    private void renderOutlines(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
+    private void renderOutlines(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
-        if (mc.world == null || mc.player == null)
+        if (mc.level == null || mc.player == null)
         {
             return;
         }
@@ -223,7 +221,7 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
 //        matrices.push();
 //        MatrixStack.Entry e = matrices.peek();
 
-        for (Box bb : this.slimeChunks)
+        for (AABB bb : this.slimeChunks)
         {
             float x1 = (float)(bb.minX - cameraPos.x);
             float y1 = (float)(bb.minY - cameraPos.y);
@@ -237,7 +235,7 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
 
         try
         {
-            BuiltBuffer meshData = builder.endNullable();
+            MeshData meshData = builder.build();
 
             if (meshData != null)
             {
@@ -265,14 +263,14 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
         this.hasData = false;
     }
 
-    private void calculateChunks(Entity entity, MinecraftClient mc)
+    private void calculateChunks(Entity entity, Minecraft mc)
     {
         HudDataManager data = HudDataManager.getInstance();
-        World world = entity.getEntityWorld();
-        final int centerX = MathHelper.floor(entity.getX()) >> 4;
-        final int centerZ = MathHelper.floor(entity.getZ()) >> 4;
-        BlockPos.Mutable pos1 = new BlockPos.Mutable();
-        BlockPos.Mutable pos2 = new BlockPos.Mutable();
+        Level world = entity.level();
+        final int centerX = Mth.floor(entity.getX()) >> 4;
+        final int centerZ = Mth.floor(entity.getZ()) >> 4;
+        BlockPos.MutableBlockPos pos1 = new BlockPos.MutableBlockPos();
+        BlockPos.MutableBlockPos pos2 = new BlockPos.MutableBlockPos();
 
         this.topY = this.overlayTopY;
         this.wasSeedKnown = data.isWorldSeedKnown(world);
@@ -282,14 +280,14 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
 
         if (this.wasSeedKnown)
         {
-            int r = MathHelper.clamp(Configs.Generic.SLIME_CHUNK_OVERLAY_RADIUS.getIntegerValue(), -1, 40);
+            int r = Mth.clamp(Configs.Generic.SLIME_CHUNK_OVERLAY_RADIUS.getIntegerValue(), -1, 40);
 
             if (r == -1)
             {
-                r = mc.options.getViewDistance().getValue();
+                r = mc.options.renderDistance().get();
             }
 
-            int minY = world != null ? world.getBottomY() : -64;
+            int minY = world != null ? world.getMinY() : -64;
             int topY = (int) Math.floor(this.topY);
             int count = 0;
 
@@ -305,7 +303,7 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
                         pos1.set( cx << 4,       minY,  cz << 4      );
                         pos2.set((cx << 4) + 15, topY, (cz << 4) + 15);
 
-                        Box bb = Box.enclosing(pos1, pos2);
+                        AABB bb = AABB.encapsulatingFullBlocks(pos1, pos2);
 
                         if (!this.slimeChunks.contains(bb))
                         {

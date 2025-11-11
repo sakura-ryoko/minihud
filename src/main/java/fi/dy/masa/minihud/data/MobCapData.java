@@ -2,16 +2,15 @@ package fi.dy.masa.minihud.data;
 
 import java.util.Arrays;
 import java.util.List;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-
+import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.entity.MobCategory;
 import com.google.common.collect.ImmutableList;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.PrimitiveCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.entity.SpawnGroup;
-import net.minecraft.util.StringIdentifiable;
-
 import fi.dy.masa.minihud.MiniHUD;
 
 public class MobCapData
@@ -323,24 +322,24 @@ public class MobCapData
         }
     }
 
-    public enum EntityCategory implements StringIdentifiable
+    public enum EntityCategory implements StringRepresentable
     {
-        MONSTER                     ("monster",                     SpawnGroup.MONSTER),
-        CREATURE                    ("creature",                    SpawnGroup.CREATURE),
-        AMBIENT                     ("ambient",                     SpawnGroup.AMBIENT),
-        AXOLOTLS                    ("axolotls",                    SpawnGroup.AXOLOTLS),
-        UNDERGROUND_WATER_CREATURE  ("underground_water_creature",  SpawnGroup.UNDERGROUND_WATER_CREATURE),
-        WATER_CREATURE              ("water_creature",              SpawnGroup.WATER_CREATURE),
-        WATER_AMBIENT               ("water_ambient",               SpawnGroup.WATER_AMBIENT),
-        MISC                        ("misc",                        SpawnGroup.MISC);
+        MONSTER                     ("monster",                     MobCategory.MONSTER),
+        CREATURE                    ("creature",                    MobCategory.CREATURE),
+        AMBIENT                     ("ambient",                     MobCategory.AMBIENT),
+        AXOLOTLS                    ("axolotls",                    MobCategory.AXOLOTLS),
+        UNDERGROUND_WATER_CREATURE  ("underground_water_creature",  MobCategory.UNDERGROUND_WATER_CREATURE),
+        WATER_CREATURE              ("water_creature",              MobCategory.WATER_CREATURE),
+        WATER_AMBIENT               ("water_ambient",               MobCategory.WATER_AMBIENT),
+        MISC                        ("misc",                        MobCategory.MISC);
 
-        public static final EnumCodec<EntityCategory> CODEC = StringIdentifiable.createCodec(EntityCategory::values);
+        public static final EnumCodec<EntityCategory> CODEC = StringRepresentable.fromEnum(EntityCategory::values);
         public static final ImmutableList<EntityCategory> VALUES = ImmutableList.copyOf(values());
 
-        private final SpawnGroup vanillaCategory;
+        private final MobCategory vanillaCategory;
         private final String name;
 
-        EntityCategory(String name, SpawnGroup vanillaCategory)
+        EntityCategory(String name, MobCategory vanillaCategory)
         {
             this.name = name;
             this.vanillaCategory = vanillaCategory;
@@ -352,17 +351,17 @@ public class MobCapData
         }
 
         @Override
-        public String asString()
+        public @Nonnull String getSerializedName()
         {
             return this.name;
         }
 
-        public SpawnGroup getVanillaCategory()
+        public MobCategory getVanillaCategory()
         {
             return this.vanillaCategory;
         }
 
-        public static EntityCategory fromVanillaCategory(SpawnGroup type)
+        public static EntityCategory fromVanillaCategory(MobCategory type)
         {
             return switch (type)
             {

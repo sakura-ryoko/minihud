@@ -1,6 +1,6 @@
 package fi.dy.masa.minihud.mixin.debug;
 
-import net.minecraft.entity.ai.pathing.Path;
+import net.minecraft.world.level.pathfinder.Path;
 import org.spongepowered.asm.mixin.Mixin;
 
 @Mixin(Path.class)

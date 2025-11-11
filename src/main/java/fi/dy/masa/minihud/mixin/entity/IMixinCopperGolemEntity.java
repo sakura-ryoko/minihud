@@ -1,12 +1,12 @@
 package fi.dy.masa.minihud.mixin.entity;
 
-import net.minecraft.entity.passive.CopperGolemEntity;
+import net.minecraft.world.entity.animal.coppergolem.CopperGolem;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-@Mixin(CopperGolemEntity.class)
+@Mixin(CopperGolem.class)
 public interface IMixinCopperGolemEntity
 {
-	@Accessor("nextOxidationAge")
+	@Accessor("nextWeatheringTick")
 	long minihud_getNextOxidationAge();
 }

@@ -3,13 +3,16 @@ package fi.dy.masa.minihud.renderer.shapes;
 import java.util.List;
 import com.google.gson.JsonObject;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.BuiltBuffer;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.*;
-import net.minecraft.util.profiler.Profiler;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.MeshData;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.Direction;
+import net.minecraft.util.Mth;
+import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.EntityUtils;
@@ -23,21 +26,21 @@ import fi.dy.masa.minihud.renderer.RenderObjectVbo;
 
 public class ShapeBox extends ShapeBase
 {
-    public static final Box DEFAULT_BOX = new Box(0, 0, 0, 1, 1, 1);
+    public static final AABB DEFAULT_BOX = new AABB(0, 0, 0, 1, 1, 1);
     protected static final double MAX_DIMENSIONS = 10000.0;
 
-    protected Box box;
-    protected Box renderPerimeter;
-    protected Vec3d corner1;
-    protected Vec3d corner2;
+    protected AABB box;
+    protected AABB renderPerimeter;
+    protected Vec3 corner1;
+    protected Vec3 corner2;
     protected int enabledSidesMask;
     protected double maxDimensions;
     protected boolean gridEnabled;
-    protected Vec3d gridSize;
-    protected Vec3d gridStartOffset;
-    protected Vec3d gridEndOffset;
+    protected Vec3 gridSize;
+    protected Vec3 gridStartOffset;
+    protected Vec3 gridEndOffset;
 
-    private Box renderBox;
+    private AABB renderBox;
     private boolean hasData;
 
     public ShapeBox()
@@ -60,14 +63,14 @@ public class ShapeBox extends ShapeBase
 	{
         this.box = DEFAULT_BOX;
         this.renderPerimeter = DEFAULT_BOX;
-        this.corner1 = Vec3d.ZERO;
-        this.corner2 = Vec3d.ZERO;
+        this.corner1 = Vec3.ZERO;
+        this.corner2 = Vec3.ZERO;
         this.enabledSidesMask = 0x3F;
         this.maxDimensions = MAX_DIMENSIONS;
         this.gridEnabled = true;
-        this.gridSize = new Vec3d(16.0, 16.0, 16.0);
-        this.gridStartOffset = Vec3d.ZERO;
-        this.gridEndOffset = Vec3d.ZERO;
+        this.gridSize = new Vec3(16.0, 16.0, 16.0);
+        this.gridStartOffset = Vec3.ZERO;
+        this.gridEndOffset = Vec3.ZERO;
         this.renderBox = null;
         this.hasData = false;
         this.useCulling = true;
@@ -79,16 +82,16 @@ public class ShapeBox extends ShapeBase
 		Entity cameraEntity = EntityUtils.getCameraEntity();
 
 		if (cameraEntity != null &&
-			this.getCorner1() == Vec3d.ZERO)
+			this.getCorner1() == Vec3.ZERO)
 		{
-			Vec3d pos = cameraEntity.getEntityPos();
+			Vec3 pos = cameraEntity.position();
 			this.corner1 = pos;
 			this.corner2 = pos.add(this.gridSize);
 			this.setBoxFromCorners();
 		}
 	}
 
-    public Box getBox()
+    public AABB getBox()
     {
         return this.box;
     }
@@ -103,38 +106,38 @@ public class ShapeBox extends ShapeBase
         return this.gridEnabled;
     }
 
-    public Vec3d getGridSize()
+    public Vec3 getGridSize()
     {
         return this.gridSize;
     }
 
-    public Vec3d getGridStartOffset()
+    public Vec3 getGridStartOffset()
     {
         return this.gridStartOffset;
     }
 
-    public Vec3d getGridEndOffset()
+    public Vec3 getGridEndOffset()
     {
         return this.gridEndOffset;
     }
 
-    public Vec3d getCorner1()
+    public Vec3 getCorner1()
     {
         return this.corner1;
     }
 
-    public Vec3d getCorner2()
+    public Vec3 getCorner2()
     {
         return this.corner2;
     }
 
-    public void setCorner1(Vec3d corner1)
+    public void setCorner1(Vec3 corner1)
     {
         this.corner1 = corner1;
         this.setBoxFromCorners();
     }
 
-    public void setCorner2(Vec3d corner2)
+    public void setCorner2(Vec3 corner2)
     {
         this.corner2 = corner2;
         this.setBoxFromCorners();
@@ -142,15 +145,15 @@ public class ShapeBox extends ShapeBase
 
     protected void setBoxFromCorners()
     {
-        Box box = new Box(this.corner1, this.corner2);
+        AABB box = new AABB(this.corner1, this.corner2);
         this.box = this.clampBox(box, this.maxDimensions);
 
-        double margin = MinecraftClient.getInstance().options.getViewDistance().getValue() * 16 * 2;
-        this.renderPerimeter = box.expand(margin);
+        double margin = Minecraft.getInstance().options.renderDistance().get() * 16 * 2;
+        this.renderPerimeter = box.inflate(margin);
         this.setNeedsUpdate();
     }
 
-    protected Box clampBox(Box box, double maxSize)
+    protected AABB clampBox(AABB box, double maxSize)
     {
         if (Math.abs(box.maxX - box.minX) > maxSize ||
             Math.abs(box.maxY - box.minY) > maxSize ||
@@ -174,44 +177,44 @@ public class ShapeBox extends ShapeBase
         this.setNeedsUpdate();
     }
 
-    public void setGridSize(Vec3d gridSize)
+    public void setGridSize(Vec3 gridSize)
     {
-        double x = MathHelper.clamp(gridSize.x, 0.5, 1024);
-        double y = MathHelper.clamp(gridSize.y, 0.5, 1024);
-        double z = MathHelper.clamp(gridSize.z, 0.5, 1024);
-        this.gridSize = new Vec3d(x, y, z);
+        double x = Mth.clamp(gridSize.x, 0.5, 1024);
+        double y = Mth.clamp(gridSize.y, 0.5, 1024);
+        double z = Mth.clamp(gridSize.z, 0.5, 1024);
+        this.gridSize = new Vec3(x, y, z);
         this.setNeedsUpdate();
     }
 
-    public void setGridStartOffset(Vec3d gridStartOffset)
+    public void setGridStartOffset(Vec3 gridStartOffset)
     {
-        double x = MathHelper.clamp(gridStartOffset.x, 0.0, 1024);
-        double y = MathHelper.clamp(gridStartOffset.y, 0.0, 1024);
-        double z = MathHelper.clamp(gridStartOffset.z, 0.0, 1024);
-        this.gridStartOffset = new Vec3d(x, y, z);
+        double x = Mth.clamp(gridStartOffset.x, 0.0, 1024);
+        double y = Mth.clamp(gridStartOffset.y, 0.0, 1024);
+        double z = Mth.clamp(gridStartOffset.z, 0.0, 1024);
+        this.gridStartOffset = new Vec3(x, y, z);
         this.setNeedsUpdate();
     }
 
-    public void setGridEndOffset(Vec3d gridEndOffset)
+    public void setGridEndOffset(Vec3 gridEndOffset)
     {
-        double x = MathHelper.clamp(gridEndOffset.x, 0.0, 1024);
-        double y = MathHelper.clamp(gridEndOffset.y, 0.0, 1024);
-        double z = MathHelper.clamp(gridEndOffset.z, 0.0, 1024);
-        this.gridEndOffset = new Vec3d(x, y, z);
+        double x = Mth.clamp(gridEndOffset.x, 0.0, 1024);
+        double y = Mth.clamp(gridEndOffset.y, 0.0, 1024);
+        double z = Mth.clamp(gridEndOffset.z, 0.0, 1024);
+        this.gridEndOffset = new Vec3(x, y, z);
         this.setNeedsUpdate();
     }
 
     @Override
-    public boolean shouldRender(MinecraftClient mc)
+    public boolean shouldRender(Minecraft mc)
     {
         Entity entity = EntityUtils.getCameraEntity();
-        return super.shouldRender(mc) && entity != null && this.renderPerimeter.contains(entity.getEntityPos());
+        return super.shouldRender(mc) && entity != null && this.renderPerimeter.contains(entity.position());
     }
 
     @Override
-    public void update(Vec3d cameraPos, Entity entity, MinecraftClient mc, Profiler profiler)
+    public void update(Vec3 cameraPos, Entity entity, Minecraft mc, ProfilerFiller profiler)
     {
-        this.renderBox = this.box.offset(-cameraPos.x, -cameraPos.y, -cameraPos.z);
+        this.renderBox = this.box.move(-cameraPos.x, -cameraPos.y, -cameraPos.z);
         this.hasData = true;
         this.render(cameraPos, mc, profiler);
         this.needsUpdate = false;
@@ -224,7 +227,7 @@ public class ShapeBox extends ShapeBase
     }
 
     @Override
-    public void render(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
+    public void render(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
         this.allocateBuffers(this.renderLines);
         this.renderBoxQuads(cameraPos, mc, profiler);
@@ -243,9 +246,9 @@ public class ShapeBox extends ShapeBase
         this.hasData = false;
     }
 
-    protected void renderBoxQuads(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
+    protected void renderBoxQuads(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
-        if (mc.world == null || mc.player == null)
+        if (mc.level == null || mc.player == null)
         {
             return;
         }
@@ -253,9 +256,9 @@ public class ShapeBox extends ShapeBase
         profiler.push("box_quads");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
         BufferBuilder builder = ctx.start(() -> "minihud:box/quads", this.renderThroughShape ? MaLiLibPipelines.MINIHUD_SHAPE_NO_DEPTH_OFFSET : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET);
-        MatrixStack matrices = new MatrixStack();
+        PoseStack matrices = new PoseStack();
 
-        matrices.push();
+        matrices.pushPose();
 
         for (Direction side : PositionUtils.ALL_DIRECTIONS)
         {
@@ -267,7 +270,7 @@ public class ShapeBox extends ShapeBase
 
         try
         {
-            BuiltBuffer meshData = builder.endNullable();
+            MeshData meshData = builder.build();
 
             if (meshData != null)
             {
@@ -286,13 +289,13 @@ public class ShapeBox extends ShapeBase
             MiniHUD.LOGGER.error("ShapeBox#renderBoxQuads(): Exception; {}", err.getMessage());
         }
 
-        matrices.pop();
+        matrices.popPose();
         profiler.pop();
     }
 
-    protected void renderBoxOutlines(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
+    protected void renderBoxOutlines(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
-        if (mc.world == null || mc.player == null || !this.renderLines)
+        if (mc.level == null || mc.player == null || !this.renderLines)
         {
             return;
         }
@@ -303,10 +306,10 @@ public class ShapeBox extends ShapeBase
 
         RenderObjectVbo ctx = this.renderObjects.get(1);
         BufferBuilder builder = ctx.start(() -> "minihud:box/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH);
-        MatrixStack matrices = new MatrixStack();
+        PoseStack matrices = new PoseStack();
 
-        matrices.push();
-        MatrixStack.Entry e = matrices.peek();
+        matrices.pushPose();
+        PoseStack.Pose e = matrices.last();
 
         this.renderBoxEnabledEdgeLines(this.renderBox, this.colorLines, this.enabledSidesMask, builder, e);
 
@@ -317,7 +320,7 @@ public class ShapeBox extends ShapeBase
 
         try
         {
-            BuiltBuffer meshData = builder.endNullable();
+            MeshData meshData = builder.build();
 
             if (meshData != null)
             {
@@ -331,11 +334,11 @@ public class ShapeBox extends ShapeBase
             MiniHUD.LOGGER.error("OverlayRendererRegion#renderOutlines(): Exception; {}", err.getMessage());
         }
 
-        matrices.pop();
+        matrices.popPose();
         profiler.pop();
     }
 
-    protected void renderGridLines(Box box, Color4f color, BufferBuilder builder, MatrixStack.Entry e)
+    protected void renderGridLines(AABB box, Color4f color, BufferBuilder builder, PoseStack.Pose e)
     {
         if (isSideEnabled(Direction.DOWN, this.enabledSidesMask))
         {
@@ -368,7 +371,7 @@ public class ShapeBox extends ShapeBase
         }
     }
 
-    protected void renderGridLinesX(Box box, double x, Color4f color, BufferBuilder buffer, MatrixStack.Entry e)
+    protected void renderGridLinesX(AABB box, double x, Color4f color, BufferBuilder buffer, PoseStack.Pose e)
     {
         double end = box.maxY - this.gridEndOffset.y;
         double min = box.minZ + this.gridStartOffset.z;
@@ -376,8 +379,8 @@ public class ShapeBox extends ShapeBase
 
         for (double y = box.minY + this.gridStartOffset.y; y <= end; y += this.gridSize.y)
         {
-            buffer.vertex(e, (float) x, (float) y, (float) min).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
-            buffer.vertex(e, (float) x, (float) y, (float) max).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, (float) x, (float) y, (float) min).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, (float) x, (float) y, (float) max).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
         }
 
         end = box.maxZ - this.gridEndOffset.z;
@@ -386,12 +389,12 @@ public class ShapeBox extends ShapeBase
 
         for (double z = box.minZ + this.gridStartOffset.z; z <= end; z += this.gridSize.z)
         {
-            buffer.vertex(e, (float) x, (float) min, (float) z).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
-            buffer.vertex(e, (float) x, (float) max, (float) z).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, (float) x, (float) min, (float) z).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, (float) x, (float) max, (float) z).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
         }
     }
 
-    protected void renderGridLinesY(Box box, double y, Color4f color, BufferBuilder buffer, MatrixStack.Entry e)
+    protected void renderGridLinesY(AABB box, double y, Color4f color, BufferBuilder buffer, PoseStack.Pose e)
     {
         double end = box.maxX - this.gridEndOffset.x;
         double min = box.minZ + this.gridStartOffset.z;
@@ -399,8 +402,8 @@ public class ShapeBox extends ShapeBase
 
         for (double x = box.minX + this.gridStartOffset.x; x <= end; x += this.gridSize.x)
         {
-            buffer.vertex(e, (float) x, (float) y, (float) min).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
-            buffer.vertex(e, (float) x, (float) y, (float) max).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, (float) x, (float) y, (float) min).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, (float) x, (float) y, (float) max).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
         }
 
         end = box.maxZ - this.gridEndOffset.z;
@@ -409,12 +412,12 @@ public class ShapeBox extends ShapeBase
 
         for (double z = box.minZ + this.gridStartOffset.z; z <= end; z += this.gridSize.z)
         {
-            buffer.vertex(e, (float) min, (float) y, (float) z).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
-            buffer.vertex(e, (float) max, (float) y, (float) z).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, (float) min, (float) y, (float) z).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, (float) max, (float) y, (float) z).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
         }
     }
 
-    protected void renderGridLinesZ(Box box, double z, Color4f color, BufferBuilder buffer, MatrixStack.Entry e)
+    protected void renderGridLinesZ(AABB box, double z, Color4f color, BufferBuilder buffer, PoseStack.Pose e)
     {
         double end = box.maxX - this.gridEndOffset.x;
         double min = box.minY + this.gridStartOffset.y;
@@ -422,8 +425,8 @@ public class ShapeBox extends ShapeBase
 
         for (double x = box.minX + this.gridStartOffset.x; x <= end; x += this.gridSize.x)
         {
-            buffer.vertex(e, (float) x, (float) min, (float) z).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
-            buffer.vertex(e, (float) x, (float) max, (float) z).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, (float) x, (float) min, (float) z).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, (float) x, (float) max, (float) z).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
         }
 
         end = box.maxY - this.gridEndOffset.y;
@@ -432,8 +435,8 @@ public class ShapeBox extends ShapeBase
 
         for (double y = box.minY + this.gridStartOffset.y; y <= end; y += this.gridSize.y)
         {
-            buffer.vertex(e, (float) min, (float) y, (float) z).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
-            buffer.vertex(e, (float) max, (float) y, (float) z).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, (float) min, (float) y, (float) z).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, (float) max, (float) y, (float) z).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
         }
     }
 
@@ -444,10 +447,10 @@ public class ShapeBox extends ShapeBase
 
     public static boolean isSideEnabled(Direction side, int enabledSidesMask)
     {
-        return (enabledSidesMask & (1 << side.getIndex())) != 0;
+        return (enabledSidesMask & (1 << side.get3DDataValue())) != 0;
     }
 
-    public static void renderBoxSideQuad(Box box, Direction side, Color4f color, BufferBuilder buffer)
+    public static void renderBoxSideQuad(AABB box, Direction side, Color4f color, BufferBuilder buffer)
     {
         float minX = (float) box.minX;
         float minY = (float) box.minY;
@@ -459,50 +462,50 @@ public class ShapeBox extends ShapeBase
         switch (side)
         {
             case DOWN:
-                buffer.vertex(minX, minY, minZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(maxX, minY, minZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(maxX, minY, maxZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(minX, minY, maxZ).color(color.r, color.g, color.b, color.a);
+                buffer.addVertex(minX, minY, minZ).setColor(color.r, color.g, color.b, color.a);
+                buffer.addVertex(maxX, minY, minZ).setColor(color.r, color.g, color.b, color.a);
+                buffer.addVertex(maxX, minY, maxZ).setColor(color.r, color.g, color.b, color.a);
+                buffer.addVertex(minX, minY, maxZ).setColor(color.r, color.g, color.b, color.a);
                 break;
 
             case UP:
-                buffer.vertex(minX, maxY, minZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(minX, maxY, maxZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(maxX, maxY, maxZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(maxX, maxY, minZ).color(color.r, color.g, color.b, color.a);
+                buffer.addVertex(minX, maxY, minZ).setColor(color.r, color.g, color.b, color.a);
+                buffer.addVertex(minX, maxY, maxZ).setColor(color.r, color.g, color.b, color.a);
+                buffer.addVertex(maxX, maxY, maxZ).setColor(color.r, color.g, color.b, color.a);
+                buffer.addVertex(maxX, maxY, minZ).setColor(color.r, color.g, color.b, color.a);
                 break;
 
             case NORTH:
-                buffer.vertex(minX, minY, minZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(minX, maxY, minZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(maxX, maxY, minZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(maxX, minY, minZ).color(color.r, color.g, color.b, color.a);
+                buffer.addVertex(minX, minY, minZ).setColor(color.r, color.g, color.b, color.a);
+                buffer.addVertex(minX, maxY, minZ).setColor(color.r, color.g, color.b, color.a);
+                buffer.addVertex(maxX, maxY, minZ).setColor(color.r, color.g, color.b, color.a);
+                buffer.addVertex(maxX, minY, minZ).setColor(color.r, color.g, color.b, color.a);
                 break;
 
             case SOUTH:
-                buffer.vertex(minX, minY, maxZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(maxX, minY, maxZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(maxX, maxY, maxZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(minX, maxY, maxZ).color(color.r, color.g, color.b, color.a);
+                buffer.addVertex(minX, minY, maxZ).setColor(color.r, color.g, color.b, color.a);
+                buffer.addVertex(maxX, minY, maxZ).setColor(color.r, color.g, color.b, color.a);
+                buffer.addVertex(maxX, maxY, maxZ).setColor(color.r, color.g, color.b, color.a);
+                buffer.addVertex(minX, maxY, maxZ).setColor(color.r, color.g, color.b, color.a);
                 break;
 
             case WEST:
-                buffer.vertex(minX, minY, minZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(minX, minY, maxZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(minX, maxY, maxZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(minX, maxY, minZ).color(color.r, color.g, color.b, color.a);
+                buffer.addVertex(minX, minY, minZ).setColor(color.r, color.g, color.b, color.a);
+                buffer.addVertex(minX, minY, maxZ).setColor(color.r, color.g, color.b, color.a);
+                buffer.addVertex(minX, maxY, maxZ).setColor(color.r, color.g, color.b, color.a);
+                buffer.addVertex(minX, maxY, minZ).setColor(color.r, color.g, color.b, color.a);
                 break;
 
             case EAST:
-                buffer.vertex(maxX, minY, minZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(maxX, maxY, minZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(maxX, maxY, maxZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(maxX, minY, maxZ).color(color.r, color.g, color.b, color.a);
+                buffer.addVertex(maxX, minY, minZ).setColor(color.r, color.g, color.b, color.a);
+                buffer.addVertex(maxX, maxY, minZ).setColor(color.r, color.g, color.b, color.a);
+                buffer.addVertex(maxX, maxY, maxZ).setColor(color.r, color.g, color.b, color.a);
+                buffer.addVertex(maxX, minY, maxZ).setColor(color.r, color.g, color.b, color.a);
                 break;
         }
     }
 
-    protected void renderBoxEnabledEdgeLines(Box box, Color4f color, int enabledSidesMask, BufferBuilder buffer, MatrixStack.Entry e)
+    protected void renderBoxEnabledEdgeLines(AABB box, Color4f color, int enabledSidesMask, BufferBuilder buffer, PoseStack.Pose e)
     {
         boolean down  = isSideEnabled(Direction.DOWN,   enabledSidesMask);
         boolean up    = isSideEnabled(Direction.UP,     enabledSidesMask);
@@ -521,76 +524,76 @@ public class ShapeBox extends ShapeBase
         // Lines along the x-axis
         if (down || north)
         {
-            buffer.vertex(e, minX, minY, minZ).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
-            buffer.vertex(e, maxX, minY, minZ).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, minX, minY, minZ).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, maxX, minY, minZ).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
         }
 
         if (up || north)
         {
-            buffer.vertex(e, minX, maxY, minZ).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
-            buffer.vertex(e, maxX, maxY, minZ).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, minX, maxY, minZ).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, maxX, maxY, minZ).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
         }
 
         if (down || south)
         {
-            buffer.vertex(e, minX, minY, maxZ).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
-            buffer.vertex(e, maxX, minY, maxZ).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, minX, minY, maxZ).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, maxX, minY, maxZ).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
         }
 
         if (up || south)
         {
-            buffer.vertex(e, minX, maxY, maxZ).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
-            buffer.vertex(e, maxX, maxY, maxZ).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, minX, maxY, maxZ).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, maxX, maxY, maxZ).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
         }
 
         // Lines along the z-axis
         if (down || west)
         {
-            buffer.vertex(e, minX, minY, minZ).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
-            buffer.vertex(e, minX, minY, maxZ).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, minX, minY, minZ).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, minX, minY, maxZ).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
         }
 
         if (up || west)
         {
-            buffer.vertex(e, minX, maxY, minZ).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
-            buffer.vertex(e, minX, maxY, maxZ).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, minX, maxY, minZ).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, minX, maxY, maxZ).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
         }
 
         if (down || east)
         {
-            buffer.vertex(e, maxX, minY, minZ).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
-            buffer.vertex(e, maxX, minY, maxZ).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, maxX, minY, minZ).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, maxX, minY, maxZ).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
         }
 
         if (up || east)
         {
-            buffer.vertex(e, maxX, maxY, minZ).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
-            buffer.vertex(e, maxX, maxY, maxZ).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, maxX, maxY, minZ).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, maxX, maxY, maxZ).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
         }
 
         // Lines along the y-axis
         if (north || west)
         {
-            buffer.vertex(e, minX, minY, minZ).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
-            buffer.vertex(e, minX, maxY, minZ).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, minX, minY, minZ).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, minX, maxY, minZ).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
         }
 
         if (south || west)
         {
-            buffer.vertex(e, minX, minY, maxZ).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
-            buffer.vertex(e, minX, maxY, maxZ).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, minX, minY, maxZ).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, minX, maxY, maxZ).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
         }
 
         if (north || east)
         {
-            buffer.vertex(e, maxX, minY, minZ).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
-            buffer.vertex(e, maxX, maxY, minZ).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, maxX, minY, minZ).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, maxX, maxY, minZ).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
         }
 
         if (south || east)
         {
-            buffer.vertex(e, maxX, minY, maxZ).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
-            buffer.vertex(e, maxX, maxY, maxZ).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, maxX, minY, maxZ).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, maxX, maxY, maxZ).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
         }
     }
 
@@ -598,7 +601,7 @@ public class ShapeBox extends ShapeBase
     public List<String> getWidgetHoverLines()
     {
         List<String> lines = super.getWidgetHoverLines();
-        Box box = this.box;
+        AABB box = this.box;
         lines.add(StringUtils.translate("minihud.gui.label.shape.box.min_corner", box.minX, box.minY, box.minZ));
         lines.add(StringUtils.translate("minihud.gui.label.shape.box.max_corner", box.maxX, box.maxY, box.maxZ));
         return lines;
@@ -609,16 +612,21 @@ public class ShapeBox extends ShapeBase
     {
         JsonObject obj = super.toJson();
 
-        obj.addProperty("enabled_sides", this.enabledSidesMask);
-        obj.addProperty("grid_enabled", this.gridEnabled);
-        obj.add("grid_size",         JsonUtils.vec3dToJson(this.gridSize));
-        obj.add("grid_start_offset", JsonUtils.vec3dToJson(this.gridStartOffset));
-        obj.add("grid_end_offset",   JsonUtils.vec3dToJson(this.gridEndOffset));
+		if (obj != null)
+		{
+			obj.addProperty("enabled_sides", this.enabledSidesMask);
+			obj.addProperty("grid_enabled", this.gridEnabled);
+			obj.add("grid_size", JsonUtils.vec3dToJson(this.gridSize));
+			obj.add("grid_start_offset", JsonUtils.vec3dToJson(this.gridStartOffset));
+			obj.add("grid_end_offset", JsonUtils.vec3dToJson(this.gridEndOffset));
 
-        obj.add("corner1", JsonUtils.vec3dToJson(this.corner1));
-        obj.add("corner2", JsonUtils.vec3dToJson(this.corner2));
+			obj.add("corner1", JsonUtils.vec3dToJson(this.corner1));
+			obj.add("corner2", JsonUtils.vec3dToJson(this.corner2));
 
-        return obj;
+			return obj;
+		}
+
+		return new JsonObject();
     }
 
     @Override
@@ -632,12 +640,12 @@ public class ShapeBox extends ShapeBase
         this.gridStartOffset = JsonUtils.vec3dFromJson(obj, "grid_start_offset");
         this.gridEndOffset   = JsonUtils.vec3dFromJson(obj, "grid_end_offset");
 
-        if (this.gridSize == null)        { this.gridSize = new Vec3d(16.0, 16.0, 16.0); }
-        if (this.gridStartOffset == null) { this.gridStartOffset = Vec3d.ZERO; }
-        if (this.gridEndOffset == null)   { this.gridEndOffset = Vec3d.ZERO; }
+        if (this.gridSize == null)        { this.gridSize = new Vec3(16.0, 16.0, 16.0); }
+        if (this.gridStartOffset == null) { this.gridStartOffset = Vec3.ZERO; }
+        if (this.gridEndOffset == null)   { this.gridEndOffset = Vec3.ZERO; }
 
-        Vec3d corner1 = JsonUtils.vec3dFromJson(obj, "corner1");
-        Vec3d corner2 = JsonUtils.vec3dFromJson(obj, "corner2");
+        Vec3 corner1 = JsonUtils.vec3dFromJson(obj, "corner1");
+        Vec3 corner2 = JsonUtils.vec3dFromJson(obj, "corner2");
 
         if (corner1 != null && corner2 != null)
         {
@@ -653,8 +661,8 @@ public class ShapeBox extends ShapeBase
             double maxY = JsonUtils.getDoubleOrDefault(obj, "maxY", 0);
             double maxZ = JsonUtils.getDoubleOrDefault(obj, "maxZ", 0);
 
-            this.corner1 = new Vec3d(minX, minY, minZ);
-            this.corner2 = new Vec3d(maxX, maxY, maxZ);
+            this.corner1 = new Vec3(minX, minY, minZ);
+            this.corner2 = new Vec3(maxX, maxY, maxZ);
         }
 
         this.setBoxFromCorners();

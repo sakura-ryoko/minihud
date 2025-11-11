@@ -1,11 +1,10 @@
 package fi.dy.masa.minihud.data;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.hud.debug.DebugHudEntryVisibility;
-import net.minecraft.client.gui.hud.debug.DebugHudProfile;
-import net.minecraft.util.Identifier;
-
 import java.util.Collection;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.debug.DebugScreenEntryList;
+import net.minecraft.client.gui.components.debug.DebugScreenEntryStatus;
+import net.minecraft.resources.ResourceLocation;
 
 //@SuppressWarnings({"unchecked", "deprecation"})
 @Deprecated
@@ -14,7 +13,7 @@ public class DebugDataManager
     private static final DebugDataManager INSTANCE = new DebugDataManager();
 //    private final static ServuxDebugHandler<ServuxDebugPacket.Payload> HANDLER = ServuxDebugHandler.getInstance();
 //
-	private final MinecraftClient mc;
+	private final Minecraft mc;
     private boolean servuxServer;
     private boolean hasInValidServux;
     private String servuxVersion;
@@ -25,7 +24,7 @@ public class DebugDataManager
         this.servuxServer = false;
         this.hasInValidServux = false;
         this.servuxVersion = "";
-		this.mc = MinecraftClient.getInstance();
+		this.mc = Minecraft.getInstance();
     }
 
     public static DebugDataManager getInstance() { return INSTANCE; }
@@ -82,38 +81,38 @@ public class DebugDataManager
 
 	public boolean isF3Enabled()
 	{
-		return this.mc.debugHudEntryList.isF3Enabled();
+		return this.mc.debugEntries.isF3Visible();
 	}
 
-	public boolean isDebugAlwaysEnabled(Identifier type)
+	public boolean isDebugAlwaysEnabled(ResourceLocation type)
 	{
-		return this.mc.debugHudEntryList.getVisibility(type) == DebugHudEntryVisibility.ALWAYS_ON;
+		return this.mc.debugEntries.getStatus(type) == DebugScreenEntryStatus.ALWAYS_ON;
 	}
 
-	public boolean toggleDebugAlwaysEnabled(Identifier type)
+	public boolean toggleDebugAlwaysEnabled(ResourceLocation type)
 	{
 		if (this.isDebugAlwaysEnabled(type))
 		{
-			this.mc.debugHudEntryList.setEntryVisibility(type, DebugHudEntryVisibility.NEVER);
+			this.mc.debugEntries.setStatus(type, DebugScreenEntryStatus.NEVER);
 			return false;
 		}
 		else
 		{
-			this.mc.debugHudEntryList.setEntryVisibility(type, DebugHudEntryVisibility.ALWAYS_ON);
+			this.mc.debugEntries.setStatus(type, DebugScreenEntryStatus.ALWAYS_ON);
 			return true;
 		}
 	}
 
-	public boolean setDebugAlwaysEnabled(Identifier type, boolean enabled)
+	public boolean setDebugAlwaysEnabled(ResourceLocation type, boolean enabled)
 	{
 		if (!enabled)
 		{
-			this.mc.debugHudEntryList.setEntryVisibility(type, DebugHudEntryVisibility.NEVER);
+			this.mc.debugEntries.setStatus(type, DebugScreenEntryStatus.NEVER);
 			return false;
 		}
 		else if (enabled)
 		{
-			this.mc.debugHudEntryList.setEntryVisibility(type, DebugHudEntryVisibility.ALWAYS_ON);
+			this.mc.debugEntries.setStatus(type, DebugScreenEntryStatus.ALWAYS_ON);
 			return true;
 		}
 
@@ -126,17 +125,17 @@ public class DebugDataManager
 	 */
 	public boolean shouldShowDebugHudFix()
 	{
-		DebugHudProfile profile = this.mc.debugHudEntryList;
-		Collection<Identifier> list = profile.getVisibleEntries();
+		DebugScreenEntryList profile = this.mc.debugEntries;
+		Collection<ResourceLocation> list = profile.getCurrentlyEnabled();
 
-		return (profile.isF3Enabled() || !this.checkVisibleEntries(list))
-				&& (!this.mc.options.hudHidden || this.mc.currentScreen != null);
+		return (profile.isF3Visible() || !this.checkVisibleEntries(list))
+				&& (!this.mc.options.hideGui || this.mc.screen != null);
 	}
 
-	private boolean checkVisibleEntries(Collection<Identifier> list)
+	private boolean checkVisibleEntries(Collection<ResourceLocation> list)
 	{
 		if (list.isEmpty()) return true;
-		for (Identifier entry : list)
+		for (ResourceLocation entry : list)
 		{
 			// Whitelist the Debug Renderer ones (see DebugHudEntries)
 			switch (entry.getPath())

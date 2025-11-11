@@ -1,9 +1,46 @@
 package fi.dy.masa.minihud.util;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import javax.annotation.Nullable;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Queues;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.gson.JsonObject;
+
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.server.IntegratedServer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.GlobalPos;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.Vec3i;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.contents.PlainTextContents;
+import net.minecraft.network.chat.contents.TranslatableContents;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.TickTask;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.chunk.ChunkAccess;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
+import net.minecraft.world.level.levelgen.structure.Structure;
+import net.minecraft.world.level.levelgen.structure.StructureStart;
+import net.minecraft.world.phys.Vec3;
 
 import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.network.ClientPlayHandler;
@@ -25,37 +62,6 @@ import fi.dy.masa.minihud.renderer.*;
 import fi.dy.masa.minihud.renderer.shapes.ShapeManager;
 import fi.dy.masa.minihud.renderer.worker.ChunkTask;
 import fi.dy.masa.minihud.renderer.worker.ThreadWorker;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.Entity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.registry.*;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.ServerTask;
-import net.minecraft.server.integrated.IntegratedServer;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.structure.StructureStart;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.PlainTextContent;
-import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableTextContent;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.*;
-import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.ChunkStatus;
-import net.minecraft.world.gen.structure.Structure;
-
-import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.PriorityBlockingQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class DataStorage
 {
@@ -84,12 +90,12 @@ public class DataStorage
     private BlockPos lastStructureUpdatePos;
     private double serverTPS;
     private double serverMSPT;
-    private Vec3d distanceReferencePoint = Vec3d.ZERO;
+    private Vec3 distanceReferencePoint = Vec3.ZERO;
     private final int[] blockBreakCounter = new int[100];
     private final ArrayListMultimap<StructureType, StructureData> structures = ArrayListMultimap.create();
-    private final MinecraftClient mc = MinecraftClient.getInstance();
+    private final Minecraft mc = Minecraft.getInstance();
     private IntegratedServer integratedServer;
-    private DynamicRegistryManager registryManager = DynamicRegistryManager.EMPTY;
+    private RegistryAccess registryManager = RegistryAccess.EMPTY;
     private final PriorityBlockingQueue<ChunkTask> taskQueue = Queues.newPriorityBlockingQueue();
     private final Thread workerThread;
     private final ThreadWorker worker;
@@ -112,7 +118,7 @@ public class DataStorage
         HANDLER.registerPlayPayload(ServuxStructuresPacket.Payload.ID, ServuxStructuresPacket.Payload.CODEC, IPluginClientPlayHandler.BOTH_CLIENT);
     }
 
-    public Identifier getNetworkChannel() { return ServuxStructuresHandler.CHANNEL_ID; }
+    public ResourceLocation getNetworkChannel() { return ServuxStructuresHandler.CHANNEL_ID; }
 
     public IPluginClientPlayHandler<ServuxStructuresPacket.Payload> getNetworkHandler() { return HANDLER; }
 
@@ -145,7 +151,7 @@ public class DataStorage
             this.servuxServer = false;
             this.hasInValidServux = false;
             this.structureDataTimeout = 30 * 20;
-            this.registryManager = DynamicRegistryManager.EMPTY;
+            this.registryManager = RegistryAccess.EMPTY;
             this.carpetServer = false;
             this.setHasIntegratedServer(false, null);
         }
@@ -239,7 +245,7 @@ public class DataStorage
     {
         if (this.mc != null)
         {
-            return this.mc.isInSingleplayer();
+            return this.mc.isLocalServer();
         }
 
         return false;
@@ -282,27 +288,27 @@ public class DataStorage
      * Set this at WorldLoadPost
      * @param manager ()
      */
-    public void setWorldRegistryManager(DynamicRegistryManager manager)
+    public void setWorldRegistryManager(RegistryAccess manager)
     {
-        if (manager != null && manager != DynamicRegistryManager.EMPTY)
+        if (manager != null && manager != RegistryAccess.EMPTY)
         {
             this.registryManager = manager;
         }
         else
         {
-            this.registryManager = DynamicRegistryManager.EMPTY;
+            this.registryManager = RegistryAccess.EMPTY;
         }
     }
 
-    public DynamicRegistryManager getWorldRegistryManager()
+    public RegistryAccess getWorldRegistryManager()
     {
-        if (this.registryManager != DynamicRegistryManager.EMPTY)
+        if (this.registryManager != RegistryAccess.EMPTY)
         {
             return this.registryManager;
         }
         else
         {
-            return DynamicRegistryManager.EMPTY;
+            return RegistryAccess.EMPTY;
         }
     }
 
@@ -376,12 +382,12 @@ public class DataStorage
         this.structureRendererNeedsUpdate = true;
     }
 
-    public Vec3d getDistanceReferencePoint()
+    public Vec3 getDistanceReferencePoint()
     {
         return this.distanceReferencePoint;
     }
 
-    public void setDistanceReferencePoint(Vec3d pos)
+    public void setDistanceReferencePoint(Vec3 pos)
     {
         this.distanceReferencePoint = pos;
         String str = String.format("x: %.2f, y: %.2f, z: %.2f", pos.x, pos.y, pos.z);
@@ -390,12 +396,12 @@ public class DataStorage
 
     public void markChunkForHeightmapCheck(int chunkX, int chunkZ)
     {
-        Entity entity = MinecraftClient.getInstance().getCameraEntity();
+        Entity entity = Minecraft.getInstance().getCameraEntity();
 
         // Only update the renderers when blocks change near the camera
         if (entity != null)
         {
-            Vec3d pos = entity.getEntityPos();
+            Vec3 pos = entity.position();
 
             if (Math.abs(pos.x - (chunkX << 4) - 8) <= 48D || Math.abs(pos.z - (chunkZ << 4) - 8) <= 48D)
             {
@@ -405,20 +411,20 @@ public class DataStorage
         }
     }
 
-    public void onClientTickPre(MinecraftClient mc)
+    public void onClientTickPre(Minecraft mc)
     {
-        if (mc.world != null && mc.world.getTime() > 0L)
+        if (mc.level != null && mc.level.getGameTime() > 0L)
         {
-            int tick = (int) (mc.world.getTime() % this.blockBreakCounter.length);
+            int tick = (int) (mc.level.getGameTime() % this.blockBreakCounter.length);
             this.blockBreakCounter[tick] = 0;
         }
     }
 
-    public void onPlayerBlockBreak(MinecraftClient mc)
+    public void onPlayerBlockBreak(Minecraft mc)
     {
-        if (mc.world != null && mc.world.getTime() > 0L)
+        if (mc.level != null && mc.level.getGameTime() > 0L)
         {
-            int tick = (int) (mc.world.getTime() % this.blockBreakCounter.length);
+            int tick = (int) (mc.level.getGameTime() % this.blockBreakCounter.length);
             ++this.blockBreakCounter[tick];
         }
     }
@@ -504,10 +510,10 @@ public class DataStorage
         return false;
     }
 
-    public void onChatMessage(Text message)
+    public void onChatMessage(Component message)
     {
-        if (message instanceof MutableText mutableText &&
-            mutableText.getContent() instanceof TranslatableTextContent text)
+        if (message instanceof MutableComponent mutableText &&
+            mutableText.getContents() instanceof TranslatableContents text)
         {
             // The vanilla "/seed" command
             if ("commands.seed.success".equals(text.getKey()) && text.getArgs().length == 1)
@@ -517,10 +523,10 @@ public class DataStorage
                     //String str = message.getString();
                     //int i1 = str.indexOf("[");
                     //int i2 = str.indexOf("]");
-                    MutableText m = (MutableText) text.getArgs()[0];
-                    TranslatableTextContent t = (TranslatableTextContent) m.getContent();
-                    PlainTextContent.Literal l = (PlainTextContent.Literal) ((MutableText) t.getArgs()[0]).getContent();
-                    String str = l.string();
+                    MutableComponent m = (MutableComponent) text.getArgs()[0];
+                    TranslatableContents t = (TranslatableContents) m.getContents();
+                    PlainTextContents.LiteralContents l = (PlainTextContents.LiteralContents) ((MutableComponent) t.getArgs()[0]).getContents();
+                    String str = l.text();
 
                     //if (i1 != -1 && i2 != -1)
                     {
@@ -561,7 +567,7 @@ public class DataStorage
 //                    float yaw = Float.parseFloat(o[4].toString());
 //                    String dim = o[5].toString();
 
-                    RegistryKey<World> key = this.mc.world != null ? this.mc.world.getRegistryKey() : World.OVERWORLD;
+                    ResourceKey<Level> key = this.mc.level != null ? this.mc.level.dimension() : Level.OVERWORLD;
                     GlobalPos newSpawn = new GlobalPos(key, new BlockPos(x, y, z));
                     HudDataManager.getInstance().setWorldSpawn(newSpawn);
 
@@ -610,7 +616,7 @@ public class DataStorage
     {
         // Carpet server sends the TPS and MSPT values via the player list footer data,
         // and for single player the data is grabbed directly from the integrated server.
-        if (this.carpetServer == false && this.mc.isInSingleplayer() == false)
+        if (this.carpetServer == false && this.mc.isLocalServer() == false)
         {
             long currentTime = System.nanoTime();
 
@@ -634,9 +640,9 @@ public class DataStorage
 
     public void updateIntegratedServerTPS()
     {
-        if (this.mc != null && this.mc.player != null && this.mc.getServer() != null)
+        if (this.mc != null && this.mc.player != null && this.mc.getSingleplayerServer() != null)
         {
-            this.serverMSPT = MiscUtils.longAverage(this.mc.getServer().getTickTimes()) / 1000000D;
+            this.serverMSPT = MiscUtils.longAverage(this.mc.getSingleplayerServer().getTickTimesNanos()) / 1000000D;
             this.serverTPS = this.serverMSPT <= 50 ? 20D : (1000D / this.serverMSPT);
             this.serverTPSValid = true;
         }
@@ -716,18 +722,18 @@ public class DataStorage
 
     public void updateStructureData()
     {
-        if (this.mc != null && this.mc.world != null && this.mc.player != null)
+        if (this.mc != null && this.mc.level != null && this.mc.player != null)
         {
-            long currentTime = this.mc.world.getTime();
+            long currentTime = this.mc.level.getGameTime();
 
             if ((currentTime % 20) == 0)
             {
-                if (this.mc.isIntegratedServerRunning())
+                if (this.mc.hasSingleplayerServer())
                 {
                     if (RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue())
                     {
                         BlockPos playerPos = PositionUtils.getEntityBlockPos(this.mc.player);
-                        final int maxRange = this.mc.options.getClampedViewDistance() + 2;
+                        final int maxRange = this.mc.options.getEffectiveRenderDistance() + 2;
                         final int hysteresis = 16;
 
                         if (this.structuresNeedUpdating(playerPos, hysteresis))
@@ -740,7 +746,7 @@ public class DataStorage
                 {
                     this.removeExpiredStructures(currentTime, this.structureDataTimeout);
                 }
-                else if (this.shouldRegisterStructureChannel && this.mc.getNetworkHandler() != null)
+                else if (this.shouldRegisterStructureChannel && this.mc.getConnection() != null)
                 {
                     if (RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue())
                     {
@@ -764,7 +770,7 @@ public class DataStorage
             {
                 MiniHUD.debugLog("DataStorage#registerStructureChannel(): sending STRUCTURES_REGISTER to Servux");
 
-                NbtCompound nbt = new NbtCompound();
+                CompoundTag nbt = new CompoundTag();
                 nbt.putString("version", Reference.MOD_STRING);
 
                 HANDLER.encodeStructuresPacket(new ServuxStructuresPacket(ServuxStructuresPacket.Type.PACKET_C2S_STRUCTURES_REGISTER, nbt));
@@ -778,26 +784,26 @@ public class DataStorage
         // Will re-add if they update it
     }
 
-    public boolean receiveServuxStrucutresMetadata(NbtCompound data)
+    public boolean receiveServuxStrucutresMetadata(CompoundTag data)
     {
         if (this.servuxServer == false && this.hasIntegratedServer == false &&
             this.shouldRegisterStructureChannel)
         {
             MiniHUD.debugLog("DataStorage#receiveServuxStrucutresMetadata(): received METADATA from Servux");
 
-            if (data.getInt("version", -1) != ServuxStructuresPacket.PROTOCOL_VERSION)
+            if (data.getIntOr("version", -1) != ServuxStructuresPacket.PROTOCOL_VERSION)
             {
                 MiniHUD.LOGGER.warn("structureChannel: Mis-matched protocol version!");
             }
-            this.servuxTimeout = data.getInt("timeout", 300);
-            this.setServuxVersion(data.getString("servux", "?"));
+            this.servuxTimeout = data.getIntOr("timeout", 300);
+            this.setServuxVersion(data.getStringOr("servux", "?"));
             // Backwards compat only
             if (data.contains("spawnPosX"))
             {
                 HudDataManager.getInstance().setWorldSpawn(
                         new GlobalPos(
-                                World.OVERWORLD,
-                                new BlockPos(data.getInt("spawnPosX", 0), data.getInt("spawnPosY", 0), data.getInt("spawnPosZ", 0)))
+                                Level.OVERWORLD,
+                                new BlockPos(data.getIntOr("spawnPosX", 0), data.getIntOr("spawnPosY", 0), data.getIntOr("spawnPosZ", 0)))
                 );
             }
 //            if (data.contains("spawnChunkRadius"))
@@ -806,7 +812,7 @@ public class DataStorage
 //            }
             if (data.contains("worldSeed"))
             {
-                HudDataManager.getInstance().setWorldSeed(data.getLong("worldSeed", -1L));
+                HudDataManager.getInstance().setWorldSeed(data.getLongOr("worldSeed", -1L));
             }
             this.setIsServuxServer();
 
@@ -833,7 +839,7 @@ public class DataStorage
             {
                 MiniHUD.debugLog("DataStorage#unregisterStructureChannel(): for {}", this.servuxVersion != null ? this.servuxVersion : "<unknown>");
 
-                HANDLER.encodeStructuresPacket(new ServuxStructuresPacket(ServuxStructuresPacket.Type.PACKET_C2S_STRUCTURES_UNREGISTER, new NbtCompound()));
+                HANDLER.encodeStructuresPacket(new ServuxStructuresPacket(ServuxStructuresPacket.Type.PACKET_C2S_STRUCTURES_UNREGISTER, new CompoundTag()));
                 HANDLER.reset(HANDLER.getPayloadChannel());
             }
         }
@@ -863,16 +869,16 @@ public class DataStorage
 
     private void updateStructureDataFromIntegratedServer(final BlockPos playerPos, final int maxRange)
     {
-        if (this.mc.player == null || this.mc.getServer() == null) return;
+        if (this.mc.player == null || this.mc.getSingleplayerServer() == null) return;
 
-        final RegistryKey<World> worldId = this.mc.player.getEntityWorld().getRegistryKey();
-        final ServerWorld world = this.mc.getServer().getWorld(worldId);
+        final ResourceKey<Level> worldId = this.mc.player.level().dimension();
+        final ServerLevel world = this.mc.getSingleplayerServer().getLevel(worldId);
 
         if (world != null)
         {
-            MinecraftServer server = this.mc.getServer();
+            MinecraftServer server = this.mc.getSingleplayerServer();
 
-            ((IMixinMinecraftServer) server).minihud_send(new ServerTask(server.getTicks(), () ->
+            ((IMixinMinecraftServer) server).minihud_send(new TickTask(server.getTickCount(), () ->
             {
                 synchronized (this.structures)
                 {
@@ -892,7 +898,7 @@ public class DataStorage
         this.structuresNeedUpdating = false;
     }
 
-    public void addOrUpdateStructuresFromServer(NbtList structures, boolean isServux)
+    public void addOrUpdateStructuresFromServer(ListTag structures, boolean isServux)
     {
         if (isServux == false)
         {
@@ -905,7 +911,7 @@ public class DataStorage
         {
             this.structureDataTimeout = this.servuxTimeout + 300;
 
-            long currentTime = this.mc.world.getTime();
+            long currentTime = this.mc.level.getGameTime();
             final int count = structures.size();
             final int oldCount = this.structures.size();
 
@@ -913,7 +919,7 @@ public class DataStorage
 
             for (int i = 0; i < count; ++i)
             {
-                NbtCompound tag = structures.getCompoundOrEmpty(i);
+                CompoundTag tag = structures.getCompoundOrEmpty(i);
                 StructureData data = StructureData.fromStructureStartTag(tag, currentTime);
 
                 if (data != null)
@@ -949,7 +955,7 @@ public class DataStorage
         }
     }
 
-    private void addStructureDataFromGenerator(ServerWorld world, BlockPos playerPos, int maxChunkRange)
+    private void addStructureDataFromGenerator(ServerLevel world, BlockPos playerPos, int maxChunkRange)
     {
         int lastCount = this.structures.size();
 
@@ -965,7 +971,7 @@ public class DataStorage
             for (int cx = minCX; cx <= maxCX; ++cx)
             {
                 // Don't load the chunk
-                Chunk chunk;
+                ChunkAccess chunk;
                 try
                 {
                      chunk = world.getChunk(cx, cz, ChunkStatus.STRUCTURE_REFERENCES, false);
@@ -980,15 +986,15 @@ public class DataStorage
                     continue;
                 }
 
-                for (Map.Entry<Structure, StructureStart> entry : chunk.getStructureStarts().entrySet())
+                for (Map.Entry<Structure, StructureStart> entry : chunk.getAllStarts().entrySet())
                 {
                     Structure structure = entry.getKey();
                     StructureStart start = entry.getValue();
-                    Identifier id = world.getRegistryManager().getOrThrow(RegistryKeys.STRUCTURE).getId(structure);
+                    ResourceLocation id = world.registryAccess().lookupOrThrow(Registries.STRUCTURE).getKey(structure);
                     StructureType type = StructureType.fromStructureId(id != null ? id.toString() : "?");
 
                     if (type.isEnabled() &&
-                        start.hasChildren() &&
+                        start.isValid() &&
                         MiscUtils.isStructureWithinRange(start.getBoundingBox(), playerPos, maxChunkRange << 4))
                     {
                         this.structures.put(type, StructureData.fromStructureStart(type, start));
@@ -1001,11 +1007,11 @@ public class DataStorage
         this.structureRendererNeedsUpdate = true;
     }
 
-    public void handleCarpetServerTPSData(Text textComponent)
+    public void handleCarpetServerTPSData(Component textComponent)
     {
         if (textComponent.getString().isEmpty() == false)
         {
-            String text = Formatting.strip(textComponent.getString());
+            String text = ChatFormatting.stripFormatting(textComponent.getString());
             String[] lines = text.split("\n");
 
             for (String line : lines)
@@ -1045,8 +1051,8 @@ public class DataStorage
 
     public void fromJson(JsonObject obj)
     {
-        Vec3d pos = JsonUtils.vec3dFromJson(obj, "distance_pos");
-        this.distanceReferencePoint = Objects.requireNonNullElse(pos, Vec3d.ZERO);
+        Vec3 pos = JsonUtils.vec3dFromJson(obj, "distance_pos");
+        this.distanceReferencePoint = Objects.requireNonNullElse(pos, Vec3.ZERO);
 
         // Backwards compat
         if (JsonUtils.hasLong(obj, "seed"))

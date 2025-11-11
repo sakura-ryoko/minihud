@@ -34,7 +34,7 @@ public class InfoLineMobCaps extends InfoLine
         MobCapDataHandler mobCapData = this.getData().getMobCapData();
 
         // Was 100 ticks
-        if (this.getData().hasIntegratedServer() && (this.getData().getIntegratedServer().getTicks() % 25) == 0)
+        if (this.getData().hasIntegratedServer() && (this.getData().getIntegratedServer().getTickCount() % 25) == 0)
         {
             mobCapData.updateIntegratedServerMobCaps();
         }

@@ -1,16 +1,16 @@
 package fi.dy.masa.minihud.util;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import fi.dy.masa.malilib.config.IConfigBoolean;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.RendererToggle;
 import fi.dy.masa.minihud.data.DebugDataManager;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.hud.debug.DebugHudEntries;
-import net.minecraft.client.render.Frustum;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.debug.DebugScreenEntries;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.culling.Frustum;
+import net.minecraft.network.chat.Component;
 
 @Deprecated
 public class DebugInfoUtils
@@ -49,32 +49,32 @@ public class DebugInfoUtils
         if (config == RendererToggle.DEBUG_CHUNK_BORDER)
         {
 //            boolean enabled = ((IMixinDebugRenderer) MinecraftClient.getInstance().debugRenderer).minihud_getShowChunkBorder();
-			boolean enabled = DebugDataManager.getInstance().isDebugAlwaysEnabled(DebugHudEntries.CHUNK_BORDERS);
+			boolean enabled = DebugDataManager.getInstance().isDebugAlwaysEnabled(DebugScreenEntries.CHUNK_BORDERS);
 
             if (enabled != RendererToggle.DEBUG_CHUNK_BORDER.getBooleanValue())
             {
-                enabled = DebugDataManager.getInstance().toggleDebugAlwaysEnabled(DebugHudEntries.CHUNK_BORDERS);
+                enabled = DebugDataManager.getInstance().toggleDebugAlwaysEnabled(DebugScreenEntries.CHUNK_BORDERS);
                 debugWarn(enabled ? "debug.chunk_boundaries.on" : "debug.chunk_boundaries.off");
             }
         }
         else if (config == RendererToggle.DEBUG_CHUNK_INFO)
         {
 //            MinecraftClient.getInstance().debugChunkInfo = config.getBooleanValue();
-			DebugDataManager.getInstance().setDebugAlwaysEnabled(DebugHudEntries.CHUNK_SECTION_PATHS, config.getBooleanValue());
+			DebugDataManager.getInstance().setDebugAlwaysEnabled(DebugScreenEntries.CHUNK_SECTION_PATHS, config.getBooleanValue());
         }
         else if (config == RendererToggle.DEBUG_CHUNK_OCCLUSION)
         {
 //            MinecraftClient.getInstance().debugChunkOcclusion = config.getBooleanValue();
-			DebugDataManager.getInstance().setDebugAlwaysEnabled(DebugHudEntries.CHUNK_SECTION_VISIBILITY, config.getBooleanValue());
+			DebugDataManager.getInstance().setDebugAlwaysEnabled(DebugScreenEntries.CHUNK_SECTION_VISIBILITY, config.getBooleanValue());
         }
         else if (config == RendererToggle.DEBUG_OCTREEE)
         {
-			boolean enabled = DebugDataManager.getInstance().isDebugAlwaysEnabled(DebugHudEntries.CHUNK_SECTION_OCTREE);
+			boolean enabled = DebugDataManager.getInstance().isDebugAlwaysEnabled(DebugScreenEntries.CHUNK_SECTION_OCTREE);
 //			boolean enabled = ((IMixinDebugRenderer) MinecraftClient.getInstance().debugRenderer).minihud_getShowOctree();
 
             if (enabled != RendererToggle.DEBUG_OCTREEE.getBooleanValue())
             {
-                enabled = DebugDataManager.getInstance().toggleDebugAlwaysEnabled(DebugHudEntries.CHUNK_SECTION_OCTREE);
+                enabled = DebugDataManager.getInstance().toggleDebugAlwaysEnabled(DebugScreenEntries.CHUNK_SECTION_OCTREE);
 //				enabled = MinecraftClient.getInstance().debugRenderer.toggleShowOctree();
             }
 
@@ -101,14 +101,14 @@ public class DebugInfoUtils
 
     private static void debugWarn(String key, Object... args)
     {
-        MinecraftClient.getInstance().inGameHud.getChatHud().addMessage(Text.empty()
-                .append(Text.translatable("debug.prefix").formatted(Formatting.YELLOW, Formatting.BOLD))
+        Minecraft.getInstance().gui.getChat().addMessage(Component.empty()
+                .append(Component.translatable("debug.prefix").withStyle(ChatFormatting.YELLOW, ChatFormatting.BOLD))
                 .append(" ")
-                .append(Text.translatable(key, args)));
+                .append(Component.translatable(key, args)));
     }
 
-    public static void renderVanillaDebug(MatrixStack matrixStack, Frustum frustum,
-                                          VertexConsumerProvider.Immediate vtx,
+    public static void renderVanillaDebug(PoseStack matrixStack, Frustum frustum,
+                                          MultiBufferSource.BufferSource vtx,
                                           double cameraX, double cameraY, double cameraZ)
     {
 //        DebugRenderer renderer = MinecraftClient.getInstance().debugRenderer;
@@ -214,7 +214,7 @@ public class DebugInfoUtils
 
     /**
      * Fixes Desync between MiniHUD config and the actual toggles in game.
-     * @param toggle
+     * @param toggle ()
      */
     public static void onToggleVanillaDebugChunkBorder(boolean toggle)
     {

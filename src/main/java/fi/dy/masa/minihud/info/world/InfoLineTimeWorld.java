@@ -3,9 +3,7 @@ package fi.dy.masa.minihud.info.world;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nonnull;
-
-import net.minecraft.world.World;
-
+import net.minecraft.world.level.Level;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.info.InfoLine;
@@ -39,11 +37,11 @@ public class InfoLineTimeWorld extends InfoLine
     }
 
     @Override
-    public List<Entry> parseWorld(@Nonnull World world)
+    public List<Entry> parseWorld(@Nonnull Level world)
     {
         List<Entry> list = new ArrayList<>();
 
-        list.add(this.translate(TIME_KEY, world.getTimeOfDay(), world.getTime()));
+        list.add(this.translate(TIME_KEY, world.getDayTime(), world.getGameTime()));
 
         return list;
     }

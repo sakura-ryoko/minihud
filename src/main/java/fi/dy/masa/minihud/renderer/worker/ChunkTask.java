@@ -1,8 +1,8 @@
 package fi.dy.masa.minihud.renderer.worker;
 
+import net.minecraft.core.Vec3i;
+import net.minecraft.world.level.ChunkPos;
 import org.jetbrains.annotations.NotNull;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.Vec3i;
 
 public class ChunkTask implements Comparable<ChunkTask>
 {
