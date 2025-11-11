@@ -35,7 +35,7 @@ public class InfoLineParticleCount extends InfoLine
             return null;
         }
 
-        list.add(this.translate(PARTICLE_KEY, this.mc().particleEngine.countParticles()));
+        list.add(this.translate(PARTICLE_KEY, this.mc().particleManager.getDebugString()));
 
         return list;
     }

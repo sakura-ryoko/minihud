@@ -1,10 +1,10 @@
 package fi.dy.masa.minihud.mixin.block;
 
 import java.util.List;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.ConduitBlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.entity.ConduitBlockEntity;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -19,13 +19,13 @@ import fi.dy.masa.minihud.util.ConduitExtra;
 @Mixin(ConduitBlockEntity.class)
 public abstract class MixinConduitBlockEntity implements ConduitExtra
 {
-    @Shadow @Final private List<BlockPos> effectBlocks;
+    @Shadow @Final private List<BlockPos> activatingBlocks;
     @Unique private int minihud_activatingBlockCount;
 
     @Override
     public int minihud$getCurrentActivatingBlockCount()
     {
-        return this.effectBlocks.size();
+        return this.activatingBlocks.size();
     }
 
     @Override
@@ -42,8 +42,8 @@ public abstract class MixinConduitBlockEntity implements ConduitExtra
 
     @Inject(method = "clientTick",
             at = @At(value = "INVOKE",
-                    target = "Lnet/minecraft/world/level/block/entity/ConduitBlockEntity;updateHunting(Lnet/minecraft/world/level/block/entity/ConduitBlockEntity;Ljava/util/List;)V"))
-    private static void minihud_postActiveBlockScan(Level world, BlockPos pos, BlockState state,
+                    target = "Lnet/minecraft/block/entity/ConduitBlockEntity;openEye(Lnet/minecraft/block/entity/ConduitBlockEntity;Ljava/util/List;)V"))
+    private static void minihud_postActiveBlockScan(World world, BlockPos pos, BlockState state,
                                                     ConduitBlockEntity blockEntity, CallbackInfo ci)
     {
         if (RendererToggle.OVERLAY_CONDUIT_RANGE.getBooleanValue())

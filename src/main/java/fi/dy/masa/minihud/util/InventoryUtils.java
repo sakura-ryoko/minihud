@@ -2,21 +2,21 @@ package fi.dy.masa.minihud.util;
 
 import java.util.Iterator;
 import java.util.List;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.world.Container;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.Bees;
-import net.minecraft.world.item.component.BundleContents;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BeehiveBlockEntity;
+import net.minecraft.block.entity.BeehiveBlockEntity;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.BeesComponent;
+import net.minecraft.component.type.BundleContentsComponent;
+import net.minecraft.inventory.Inventory;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import fi.dy.masa.minihud.event.RenderHandler;
 
 public class InventoryUtils
 {
-    public static Container getInventory(Level world, BlockPos pos)
+    public static Inventory getInventory(World world, BlockPos pos)
     {
-        Container inv = fi.dy.masa.malilib.util.InventoryUtils.getInventory(world, pos);
+        Inventory inv = fi.dy.masa.malilib.util.InventoryUtils.getInventory(world, pos);
 
         if ((inv == null || inv.isEmpty()) && !DataStorage.getInstance().hasIntegratedServer())
         {
@@ -26,9 +26,9 @@ public class InventoryUtils
         return inv;
     }
 
-    public static int recalculateBundleSize(BundleContents bundle, int maxCount)
+    public static int recalculateBundleSize(BundleContentsComponent bundle, int maxCount)
     {
-        Iterator<ItemStack> iter = bundle.itemCopyStream().iterator();
+        Iterator<ItemStack> iter = bundle.stream().iterator();
         final int vanillaMax = 64;
         final int vanillaBundleAdj = 4; // Why does a nested, bundle count as 4, mojang?
         int newCount = 0;
@@ -39,17 +39,17 @@ public class InventoryUtils
 
             if (!entry.isEmpty())
             {
-                Bees beeData = entry.getOrDefault(DataComponents.BEES, Bees.EMPTY);
-                List<BeehiveBlockEntity.Occupant> list = beeData.bees();
+                BeesComponent beeData = entry.getOrDefault(DataComponentTypes.BEES, BeesComponent.DEFAULT);
+                List<BeehiveBlockEntity.BeeData> list = beeData.bees();
 
                 if (!list.isEmpty())
                 {
                     return vanillaMax;
                 }
-                else if (entry.has(DataComponents.BUNDLE_CONTENTS))
+                else if (entry.contains(DataComponentTypes.BUNDLE_CONTENTS))
                 {
                     // Nesting Bundles...
-                    BundleContents bundleEntry = entry.get(DataComponents.BUNDLE_CONTENTS);
+                    BundleContentsComponent bundleEntry = entry.get(DataComponentTypes.BUNDLE_CONTENTS);
 
                     if (bundleEntry != null)
                     {
@@ -67,9 +67,9 @@ public class InventoryUtils
                         newCount += Math.min(entry.getCount(), maxCount);
                     }
                 }
-                else if (entry.getMaxStackSize() != vanillaMax)
+                else if (entry.getMaxCount() != vanillaMax)
                 {
-                    final float fraction = (float) entry.getCount() / entry.getMaxStackSize();
+                    final float fraction = (float) entry.getCount() / entry.getMaxCount();
 
                     if (fraction != 1.0F)
                     {

@@ -4,16 +4,16 @@ import com.google.gson.JsonObject;
 import fi.dy.masa.malilib.util.EntityUtils;
 import fi.dy.masa.malilib.util.JsonUtils;
 import fi.dy.masa.minihud.config.Configs;
-import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.entity.Entity;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 
 public class ShapeCenteredBox extends ShapeBox
 {
     protected int width = 16;
     protected int depth = 16;
     protected int height = 16;
-    protected Vec3 center = Vec3.ZERO;
+    protected Vec3d center = Vec3d.ZERO;
 
     public ShapeCenteredBox()
 	{
@@ -27,20 +27,20 @@ public class ShapeCenteredBox extends ShapeBox
 		Entity cameraEntity = EntityUtils.getCameraEntity();
 
 		if (cameraEntity != null &&
-			this.center == Vec3.ZERO)
+			this.center == Vec3d.ZERO)
 		{
-			this.setCenter(cameraEntity.position());
+			this.setCenter(cameraEntity.getEntityPos());
 		}
 	}
 
     protected void setBoxFromDimension()
 	{
-        this.corner1 = new Vec3(this.center.x - (this.width / 2), this.center.y ,this.center.z - (this.depth/2));
-        this.corner2 = new Vec3(this.center.x + (this.width / 2), this.center.y + this.height, this.center.z + (this.depth/2));
+        this.corner1 = new Vec3d(this.center.x - (this.width / 2), this.center.y ,this.center.z - (this.depth/2));
+        this.corner2 = new Vec3d(this.center.x + (this.width / 2), this.center.y + this.height, this.center.z + (this.depth/2));
         this.setBoxFromCorners();
     }
 
-    public void setCenter(Vec3 center)
+    public void setCenter(Vec3d center)
 	{
         this.center = center;
         this.setBoxFromDimension();
@@ -48,13 +48,13 @@ public class ShapeCenteredBox extends ShapeBox
 
     public void setWidth(int width)
 	{
-        this.width = Mth.clamp(width, 1,8192);;
+        this.width = MathHelper.clamp(width, 1,8192);;
         this.setBoxFromDimension();
     }
     
     public void setDepth(int depth)
 	{
-        this.depth = Mth.clamp(depth, 1,8192);
+        this.depth = MathHelper.clamp(depth, 1,8192);
         this.setBoxFromDimension();
     }
     
@@ -64,7 +64,7 @@ public class ShapeCenteredBox extends ShapeBox
         this.setBoxFromDimension();
     }
 
-    public Vec3 getCenter()
+    public Vec3d getCenter()
 	{
         return this.center;
     }

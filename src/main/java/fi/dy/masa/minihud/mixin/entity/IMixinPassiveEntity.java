@@ -1,12 +1,12 @@
 package fi.dy.masa.minihud.mixin.entity;
 
-import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.entity.passive.PassiveEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-@Mixin(AgeableMob.class)
+@Mixin(PassiveEntity.class)
 public interface IMixinPassiveEntity
 {
-    @Accessor("age")
+    @Accessor("breedingAge")
     int minihud_getRealBreedingAge();
 }

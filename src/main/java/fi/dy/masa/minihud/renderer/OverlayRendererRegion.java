@@ -2,16 +2,16 @@ package fi.dy.masa.minihud.renderer;
 
 import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.client.Minecraft;
-import net.minecraft.core.BlockPos;
-import net.minecraft.util.Mth;
-import net.minecraft.util.profiling.ProfilerFiller;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.MeshData;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.render.BufferBuilder;
+import net.minecraft.client.render.BuiltBuffer;
+import net.minecraft.entity.Entity;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.profiler.Profiler;
+import net.minecraft.world.World;
 import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.data.Color4f;
 import fi.dy.masa.minihud.MiniHUD;
@@ -22,7 +22,7 @@ public class OverlayRendererRegion extends OverlayRendererBase
 {
     public static final OverlayRendererRegion INSTANCE = new OverlayRendererRegion();
     protected boolean needsUpdate = true;
-    private List<AABB> boxes;
+    private List<Box> boxes;
     private boolean hasData;
 
     protected OverlayRendererRegion()
@@ -45,13 +45,13 @@ public class OverlayRendererRegion extends OverlayRendererBase
     }
 
     @Override
-    public boolean shouldRender(Minecraft mc)
+    public boolean shouldRender(MinecraftClient mc)
     {
         return RendererToggle.OVERLAY_REGION_FILE.getBooleanValue();
     }
 
     @Override
-    public boolean needsUpdate(Entity entity, Minecraft mc)
+    public boolean needsUpdate(Entity entity, MinecraftClient mc)
     {
         if (this.needsUpdate)
         {
@@ -67,7 +67,7 @@ public class OverlayRendererRegion extends OverlayRendererBase
     }
 
     @Override
-    public void update(Vec3 cameraPos, Entity entity, Minecraft mc, ProfilerFiller profiler)
+    public void update(Vec3d cameraPos, Entity entity, MinecraftClient mc, Profiler profiler)
     {
         this.calculateRegions(entity);
 
@@ -81,11 +81,11 @@ public class OverlayRendererRegion extends OverlayRendererBase
 
     private void calculateRegions(Entity entity)
     {
-        Level world = entity.level();
-        int minY = world != null ? world.getMinY() : -64;
-        int maxY = world != null ? world.getMaxY() + 1 : 320;
-        int rx = Mth.floor(entity.getX()) & ~0x1FF;
-        int rz = Mth.floor(entity.getZ()) & ~0x1FF;
+        World world = entity.getEntityWorld();
+        int minY = world != null ? world.getBottomY() : -64;
+        int maxY = world != null ? world.getTopYInclusive() + 1 : 320;
+        int rx = MathHelper.floor(entity.getX()) & ~0x1FF;
+        int rz = MathHelper.floor(entity.getZ()) & ~0x1FF;
         BlockPos pos1 = new BlockPos(rx,       minY, rz      );
         BlockPos pos2 = new BlockPos(rx + 511, maxY, rz + 511);
         this.boxes = RenderUtils.calculateBoxes(pos1, pos2);
@@ -99,16 +99,16 @@ public class OverlayRendererRegion extends OverlayRendererBase
     }
 
     @Override
-    public void render(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
+    public void render(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
     {
         this.allocateBuffers();
         this.renderQuads(cameraPos, mc, profiler);
         this.renderOutlines(cameraPos, mc, profiler);
     }
 
-    private void renderQuads(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
+    private void renderQuads(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
     {
-        if (mc.level == null || mc.player == null)
+        if (mc.world == null || mc.player == null)
         {
             return;
         }
@@ -122,14 +122,14 @@ public class OverlayRendererRegion extends OverlayRendererBase
 //        matrices.push();
 //        MatrixStack.Entry e = matrices.peek();
 
-        for (AABB box : this.boxes)
+        for (Box box : this.boxes)
         {
             RenderUtils.renderWallQuads(box, cameraPos, color, builder);
         }
 
         try
         {
-            MeshData meshData = builder.build();
+            BuiltBuffer meshData = builder.endNullable();
 
             if (meshData != null)
             {
@@ -152,9 +152,9 @@ public class OverlayRendererRegion extends OverlayRendererBase
         profiler.pop();
     }
 
-    private void renderOutlines(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
+    private void renderOutlines(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
     {
-        if (mc.level == null || mc.player == null)
+        if (mc.world == null || mc.player == null)
         {
             return;
         }
@@ -168,14 +168,14 @@ public class OverlayRendererRegion extends OverlayRendererBase
 //        matrices.push();
 //        MatrixStack.Entry e = matrices.peek();
 
-        for (AABB box : this.boxes)
+        for (Box box : this.boxes)
         {
             RenderUtils.renderWallOutlines(box, 16, 16, true, cameraPos, color, builder);
         }
 
         try
         {
-            MeshData meshData = builder.build();
+            BuiltBuffer meshData = builder.endNullable();
 
             if (meshData != null)
             {

@@ -1,15 +1,15 @@
 package fi.dy.masa.minihud.util;
 
 import java.util.function.LongConsumer;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.util.Mth;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 
 public class RayTracer
 {
-    protected final Vec3 start;
-    protected final Vec3 end;
+    protected final Vec3d start;
+    protected final Vec3d end;
     protected final int endBlockX;
     protected final int endBlockY;
     protected final int endBlockZ;
@@ -23,23 +23,23 @@ public class RayTracer
 
     public RayTracer(BlockPos start, BlockPos end)
     {
-        this(new Vec3(start.getX() + 0.5, start.getY() + 0.5, start.getZ() + 0.5),
-             new Vec3(end.getX() + 0.5, end.getY() + 0.5, end.getZ() + 0.5));
+        this(new Vec3d(start.getX() + 0.5, start.getY() + 0.5, start.getZ() + 0.5),
+             new Vec3d(end.getX() + 0.5, end.getY() + 0.5, end.getZ() + 0.5));
     }
 
-    public RayTracer(Vec3 start, Vec3 end)
+    public RayTracer(Vec3d start, Vec3d end)
     {
         this.start = start;
         this.end = end;
         this.x = start.x;
         this.y = start.y;
         this.z = start.z;
-        this.endBlockX = Mth.floor(end.x);
-        this.endBlockY = Mth.floor(end.y);
-        this.endBlockZ = Mth.floor(end.z);
-        this.blockX = Mth.floor(start.x);
-        this.blockY = Mth.floor(start.y);
-        this.blockZ = Mth.floor(start.z);
+        this.endBlockX = MathHelper.floor(end.x);
+        this.endBlockY = MathHelper.floor(end.y);
+        this.endBlockZ = MathHelper.floor(end.z);
+        this.blockX = MathHelper.floor(start.x);
+        this.blockY = MathHelper.floor(start.y);
+        this.blockZ = MathHelper.floor(start.z);
     }
 
     public boolean advance()
@@ -126,16 +126,16 @@ public class RayTracer
             this.z = nextZ;
         }
 
-        this.blockX = Mth.floor(this.x) - (this.side == Direction.EAST  ? 1 : 0);
-        this.blockY = Mth.floor(this.y) - (this.side == Direction.UP    ? 1 : 0);
-        this.blockZ = Mth.floor(this.z) - (this.side == Direction.SOUTH ? 1 : 0);
+        this.blockX = MathHelper.floor(this.x) - (this.side == Direction.EAST  ? 1 : 0);
+        this.blockY = MathHelper.floor(this.y) - (this.side == Direction.UP    ? 1 : 0);
+        this.blockZ = MathHelper.floor(this.z) - (this.side == Direction.SOUTH ? 1 : 0);
 
         return false;
     }
 
-    public Vec3 getPosition()
+    public Vec3d getPosition()
     {
-        return new Vec3(this.x, this.y, this.z);
+        return new Vec3d(this.x, this.y, this.z);
     }
 
     public Direction getSide()

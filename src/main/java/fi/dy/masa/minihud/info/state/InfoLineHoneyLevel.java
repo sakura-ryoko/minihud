@@ -3,10 +3,10 @@ package fi.dy.masa.minihud.info.state;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nonnull;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.BeehiveBlock;
-import net.minecraft.world.level.block.entity.BeehiveBlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.block.BeehiveBlock;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.entity.BeehiveBlockEntity;
+import net.minecraft.world.World;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.info.InfoLine;
@@ -42,7 +42,7 @@ public class InfoLineHoneyLevel extends InfoLine
     }
 
     @Override
-    public List<Entry> parseBlockState(@Nonnull Level world, @Nonnull BlockState state)
+    public List<Entry> parseBlockState(@Nonnull World world, @Nonnull BlockState state)
     {
         List<Entry> list = new ArrayList<>();
 

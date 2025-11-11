@@ -11,32 +11,32 @@ import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import org.apache.commons.lang3.math.Fraction;
 
 import com.mojang.serialization.DataResult;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.GlobalPos;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
+import net.minecraft.block.entity.BeehiveBlockEntity;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.*;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.TypedEntityData;
+import net.minecraft.entity.passive.AxolotlEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.ComponentSerialization;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.Style;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.Mth;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.animal.axolotl.Axolotl;
-import net.minecraft.world.food.FoodProperties;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.*;
-import net.minecraft.world.item.crafting.AbstractCookingRecipe;
-import net.minecraft.world.item.crafting.Recipe;
-import net.minecraft.world.item.crafting.RecipeHolder;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
-import net.minecraft.world.level.block.entity.BeehiveBlockEntity;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.recipe.AbstractCookingRecipe;
+import net.minecraft.recipe.Recipe;
+import net.minecraft.recipe.RecipeEntry;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.state.property.Properties;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Style;
+import net.minecraft.text.Text;
+import net.minecraft.text.TextCodecs;
+import net.minecraft.util.math.BlockBox;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.GlobalPos;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.World;
 
 import fi.dy.masa.malilib.util.IntBoundingBox;
 import fi.dy.masa.malilib.util.StringUtils;
@@ -98,18 +98,18 @@ public class MiscUtils
         return RAND.nextInt(10) == 0;
     }
 
-    public static boolean isOverworld(Level world)
+    public static boolean isOverworld(World world)
     {
-        return world.dimensionType().natural();
+        return world.getDimension().natural();
     }
 
-    public static boolean isStructureWithinRange(@Nullable BoundingBox bb, BlockPos playerPos, int maxRange)
+    public static boolean isStructureWithinRange(@Nullable BlockBox bb, BlockPos playerPos, int maxRange)
     {
         return bb != null &&
-                playerPos.getX() >= (bb.minX() - maxRange) &&
-                playerPos.getX() <= (bb.maxX() + maxRange) &&
-                playerPos.getZ() >= (bb.minZ() - maxRange) &&
-                playerPos.getZ() <= (bb.maxZ() + maxRange);
+                playerPos.getX() >= (bb.getMinX() - maxRange) &&
+                playerPos.getX() <= (bb.getMaxX() + maxRange) &&
+                playerPos.getZ() >= (bb.getMinZ() - maxRange) &&
+                playerPos.getZ() <= (bb.getMaxZ() + maxRange);
     }
 
     public static boolean isStructureWithinRange(@Nullable IntBoundingBox bb, BlockPos playerPos, int maxRange)
@@ -127,21 +127,21 @@ public class MiscUtils
                bb1.maxX == bb2.maxX && bb1.maxY == bb2.maxY && bb1.maxZ == bb2.maxZ;
     }
 
-    public static int getSpawnableChunksCount(@Nonnull ServerLevel world)
+    public static int getSpawnableChunksCount(@Nonnull ServerWorld world)
     {
-        return world.getChunkSource().chunkMap.getDistanceManager().getNaturalSpawnChunkCount();
+        return world.getChunkManager().chunkLoadingManager.getLevelManager().getTickedChunkCount();
     }
 
-    public static void addAxolotlTooltip(ItemStack stack, Consumer<Component> lines)
+    public static void addAxolotlTooltip(ItemStack stack, Consumer<Text> lines)
     {
-        Axolotl.Variant variant = stack.getComponents().getOrDefault(DataComponents.AXOLOTL_VARIANT, Axolotl.Variant.LUCY);
+        AxolotlEntity.Variant variant = stack.getComponents().getOrDefault(DataComponentTypes.AXOLOTL_VARIANT, AxolotlEntity.Variant.LUCY);
 
 //        MiniHUD.LOGGER.error("addAxolotlTooltip(): NBT: [{}]", nbt.toString());
-        int variantId = variant.getId();
+        int variantId = variant.getIndex();
 //        AxolotlEntity.Variant variant = AxolotlEntity.Variant.byIndex(variantId);
-        String variantName = variant.getName();
-        MutableComponent labelText = Component.translatable("minihud.label.axolotl_tooltip.label");
-        MutableComponent valueText = Component.translatable("minihud.label.axolotl_tooltip.value", variantName, variantId);
+        String variantName = variant.getId();
+        MutableText labelText = Text.translatable("minihud.label.axolotl_tooltip.label");
+        MutableText valueText = Text.translatable("minihud.label.axolotl_tooltip.value", variantName, variantId);
 
         if (variantId < AXOLOTL_COLORS.length)
         {
@@ -151,31 +151,31 @@ public class MiscUtils
         lines.accept(labelText.append(valueText));
     }
 
-    public static void addBeeTooltip(ItemStack stack, Consumer<Component> lines)
+    public static void addBeeTooltip(ItemStack stack, Consumer<Text> lines)
     {
-        Bees bees = stack.getComponents().getOrDefault(DataComponents.BEES, Bees.EMPTY);
-        List<BeehiveBlockEntity.Occupant> beeList = bees.bees();
+        BeesComponent bees = stack.getComponents().getOrDefault(DataComponentTypes.BEES, BeesComponent.DEFAULT);
+        List<BeehiveBlockEntity.BeeData> beeList = bees.bees();
 
         if (beeList != null && beeList.isEmpty() == false)
         {
             int count = beeList.size();
             int babyCount = 0;
 
-            for (BeehiveBlockEntity.Occupant beeOccupant : beeList)
+            for (BeehiveBlockEntity.BeeData beeOccupant : beeList)
             {
                 TypedEntityData<EntityType<?>> beeData = beeOccupant.entityData();
-                CompoundTag beeTag = beeData.copyTagWithoutId();
+                NbtCompound beeTag = beeData.copyNbtWithoutId();
                 int beeTicks = beeOccupant.ticksInHive();
-                Optional<Component> beeName = Optional.empty();
+                Optional<Text> beeName = Optional.empty();
                 int beeAge = -1;
 
                 if (beeTag.contains("CustomName"))
                 {
-                    Tag nbtName = beeTag.get("CustomName");
+                    NbtElement nbtName = beeTag.get("CustomName");
 
                     if (nbtName != null)
                     {
-                        DataResult<Component> dr = ComponentSerialization.CODEC.parse(DataStorage.getInstance().getWorldRegistryManager().createSerializationContext(NbtOps.INSTANCE), nbtName);
+                        DataResult<Text> dr = TextCodecs.CODEC.parse(DataStorage.getInstance().getWorldRegistryManager().getOps(NbtOps.INSTANCE), nbtName);
 
                         if (dr.isSuccess())
                         {
@@ -185,7 +185,7 @@ public class MiscUtils
                 }
                 if (beeTag.contains("Age"))
                 {
-                    beeAge = beeTag.getIntOr("Age", 0);
+                    beeAge = beeTag.getInt("Age", 0);
                 }
                 if (beeAge + beeTicks < 0)
                 {
@@ -193,7 +193,7 @@ public class MiscUtils
                 }
 
                 //beeName.ifPresent(text -> lines.accept(StringUtils.translateAsText("minihud.label.bee_tooltip.name", text.getString())));
-                beeName.ifPresent(text -> lines.accept(Component.translatable("minihud.label.bee_tooltip.name", text)));
+                beeName.ifPresent(text -> lines.accept(Text.translatable("minihud.label.bee_tooltip.name", text)));
             }
 
             if (babyCount > 0)
@@ -207,14 +207,14 @@ public class MiscUtils
         }
     }
 
-    public static void addBundleTooltip(ItemStack stack, Consumer<Component> lines)
+    public static void addBundleTooltip(ItemStack stack, Consumer<Text> lines)
     {
-        BundleContents bundleData = stack.get(DataComponents.BUNDLE_CONTENTS);
+        BundleContentsComponent bundleData = stack.get(DataComponentTypes.BUNDLE_CONTENTS);
         final int maxCount = Configs.Generic.BUNDLE_TOOLTIPS_FILL_LEVEL.getIntegerValue();
 
         if (bundleData != null)
         {
-            Fraction occupancy = bundleData.weight();
+            Fraction occupancy = bundleData.getOccupancy();
             int count;
             float fillPercent;
 
@@ -225,7 +225,7 @@ public class MiscUtils
             }
             else
             {
-                count = Mth.mulAndTruncate(occupancy, maxCount);
+                count = MathHelper.multiplyFraction(occupancy, maxCount);
                 fillPercent = 100 * occupancy.floatValue();
             }
 
@@ -240,13 +240,13 @@ public class MiscUtils
         }
     }
 
-    public static void addHoneyTooltip(ItemStack stack, Consumer<Component> lines)
+    public static void addHoneyTooltip(ItemStack stack, Consumer<Text> lines)
     {
-        BlockItemStateProperties blockItemState = stack.getComponents().get(DataComponents.BLOCK_STATE);
+        BlockStateComponent blockItemState = stack.getComponents().get(DataComponentTypes.BLOCK_STATE);
 
         if (blockItemState != null && blockItemState.isEmpty() == false)
         {
-            Integer honey = blockItemState.get(BlockStateProperties.LEVEL_HONEY);
+            Integer honey = blockItemState.getValue(Properties.HONEY_LEVEL);
             String honeyLevel = "0";
 
             if (honey != null && (honey >= 0 && honey <= 5))
@@ -258,15 +258,15 @@ public class MiscUtils
         }
     }
 
-    public static void addCustomModelTooltip(ItemStack stack, Consumer<Component> lines)
+    public static void addCustomModelTooltip(ItemStack stack, Consumer<Text> lines)
     {
-        CustomModelData data = stack.get(DataComponents.CUSTOM_MODEL_DATA);
+        CustomModelDataComponent data = stack.get(DataComponentTypes.CUSTOM_MODEL_DATA);
 
         if (data != null)
         {
             // Only display the first entry of any type
             Float aFloat = data.getFloat(0);
-            Boolean aFlag = data.getBoolean(0);
+            Boolean aFlag = data.getFlag(0);
             String aString = data.getString(0);
             Integer aColor = data.getColor(0);
 
@@ -289,9 +289,9 @@ public class MiscUtils
         }
     }
 
-    public static void addFoodTooltip(ItemStack stack, Consumer<Component> lines)
+    public static void addFoodTooltip(ItemStack stack, Consumer<Text> lines)
     {
-        FoodProperties data = stack.get(DataComponents.FOOD);
+        FoodComponent data = stack.get(DataComponentTypes.FOOD);
 
         if (data != null)
         {
@@ -299,20 +299,20 @@ public class MiscUtils
         }
     }
 
-    public static void addLodestoneTooltip(ItemStack stack, Consumer<Component> lines)
+    public static void addLodestoneTooltip(ItemStack stack, Consumer<Text> lines)
     {
-        LodestoneTracker data = stack.get(DataComponents.LODESTONE_TRACKER);
+        LodestoneTrackerComponent data = stack.get(DataComponentTypes.LODESTONE_TRACKER);
 
         if (data != null && data.target().isPresent())
         {
             GlobalPos pos = data.target().get();
-            lines.accept(StringUtils.translateAsText("minihud.label.lodestone_tooltip", pos.dimension().location().getPath(), pos.pos().toShortString()));
+            lines.accept(StringUtils.translateAsText("minihud.label.lodestone_tooltip", pos.dimension().getValue().getPath(), pos.pos().toShortString()));
         }
     }
 
-    public static int getFurnaceXpAmount(ServerLevel world, AbstractFurnaceBlockEntity be)
+    public static int getFurnaceXpAmount(ServerWorld world, AbstractFurnaceBlockEntity be)
     {
-        Reference2IntOpenHashMap<ResourceKey<Recipe<?>>> recipes = ((IMixinAbstractFurnaceBlockEntity) be).minihud_getUsedRecipes();
+        Reference2IntOpenHashMap<RegistryKey<Recipe<?>>> recipes = ((IMixinAbstractFurnaceBlockEntity) be).minihud_getUsedRecipes();
         double xp = 0.0;
 
         if (recipes == null || recipes.isEmpty())
@@ -320,22 +320,22 @@ public class MiscUtils
             return -1;
         }
 
-        for (Reference2IntMap.Entry<ResourceKey<Recipe<?>>> entry : recipes.reference2IntEntrySet())
+        for (Reference2IntMap.Entry<RegistryKey<Recipe<?>>> entry : recipes.reference2IntEntrySet())
         {
-            RecipeHolder<?> recipeEntry = world.recipeAccess().byKey(entry.getKey()).orElse(null);
+            RecipeEntry<?> recipeEntry = world.getRecipeManager().get(entry.getKey()).orElse(null);
 
             if (recipeEntry != null)
             {
-                xp += entry.getIntValue() * ((AbstractCookingRecipe) recipeEntry.value()).experience();
+                xp += entry.getIntValue() * ((AbstractCookingRecipe) recipeEntry.value()).getExperience();
             }
         }
 
         return (int) xp;
     }
 
-    public static int getFurnaceXpAmount(ServerLevel world, @Nonnull CompoundTag nbt)
+    public static int getFurnaceXpAmount(ServerWorld world, @Nonnull NbtCompound nbt)
     {
-        Reference2IntOpenHashMap<ResourceKey<Recipe<?>>> recipes = NbtBlockUtils.getRecipesUsedFromNbt(nbt);
+        Reference2IntOpenHashMap<RegistryKey<Recipe<?>>> recipes = NbtBlockUtils.getRecipesUsedFromNbt(nbt);
         double xp = 0.0;
 
         if (recipes.isEmpty())
@@ -343,13 +343,13 @@ public class MiscUtils
             return -1;
         }
 
-        for (Reference2IntMap.Entry<ResourceKey<Recipe<?>>> entry : recipes.reference2IntEntrySet())
+        for (Reference2IntMap.Entry<RegistryKey<Recipe<?>>> entry : recipes.reference2IntEntrySet())
         {
-            RecipeHolder<?> recipeEntry = world.recipeAccess().byKey(entry.getKey()).orElse(null);
+            RecipeEntry<?> recipeEntry = world.getRecipeManager().get(entry.getKey()).orElse(null);
 
             if (recipeEntry != null)
             {
-                xp += entry.getIntValue() * ((AbstractCookingRecipe) recipeEntry.value()).experience();
+                xp += entry.getIntValue() * ((AbstractCookingRecipe) recipeEntry.value()).getExperience();
             }
         }
 
@@ -359,7 +359,7 @@ public class MiscUtils
     // Servux Synced Recipe Manager required
     public static int getFurnaceXpAmount(AbstractFurnaceBlockEntity be)
     {
-        Reference2IntOpenHashMap<ResourceKey<Recipe<?>>> recipes = ((IMixinAbstractFurnaceBlockEntity) be).minihud_getUsedRecipes();
+        Reference2IntOpenHashMap<RegistryKey<Recipe<?>>> recipes = ((IMixinAbstractFurnaceBlockEntity) be).minihud_getUsedRecipes();
         double xp = 0.0;
 
         if (recipes == null || recipes.isEmpty() || HudDataManager.getInstance().getPreparedRecipes() == null)
@@ -367,22 +367,22 @@ public class MiscUtils
             return -1;
         }
 
-        for (Reference2IntMap.Entry<ResourceKey<Recipe<?>>> entry : recipes.reference2IntEntrySet())
+        for (Reference2IntMap.Entry<RegistryKey<Recipe<?>>> entry : recipes.reference2IntEntrySet())
         {
-            RecipeHolder<?> recipeEntry = HudDataManager.getInstance().getPreparedRecipes().byKey(entry.getKey());
+            RecipeEntry<?> recipeEntry = HudDataManager.getInstance().getPreparedRecipes().get(entry.getKey());
 
             if (recipeEntry != null)
             {
-                xp += entry.getIntValue() * ((AbstractCookingRecipe) recipeEntry.value()).experience();
+                xp += entry.getIntValue() * ((AbstractCookingRecipe) recipeEntry.value()).getExperience();
             }
         }
 
         return (int) xp;
     }
 
-    public static int getFurnaceXpAmount(@Nonnull CompoundTag nbt)
+    public static int getFurnaceXpAmount(@Nonnull NbtCompound nbt)
     {
-        Reference2IntOpenHashMap<ResourceKey<Recipe<?>>> recipes = NbtBlockUtils.getRecipesUsedFromNbt(nbt);
+        Reference2IntOpenHashMap<RegistryKey<Recipe<?>>> recipes = NbtBlockUtils.getRecipesUsedFromNbt(nbt);
         double xp = 0.0;
 
         if (recipes.isEmpty() || HudDataManager.getInstance().getPreparedRecipes() == null)
@@ -390,13 +390,13 @@ public class MiscUtils
             return -1;
         }
 
-        for (Reference2IntMap.Entry<ResourceKey<Recipe<?>>> entry : recipes.reference2IntEntrySet())
+        for (Reference2IntMap.Entry<RegistryKey<Recipe<?>>> entry : recipes.reference2IntEntrySet())
         {
-            RecipeHolder<?> recipeEntry = HudDataManager.getInstance().getPreparedRecipes().byKey(entry.getKey());
+            RecipeEntry<?> recipeEntry = HudDataManager.getInstance().getPreparedRecipes().get(entry.getKey());
 
             if (recipeEntry != null)
             {
-                xp += entry.getIntValue() * ((AbstractCookingRecipe) recipeEntry.value()).experience();
+                xp += entry.getIntValue() * ((AbstractCookingRecipe) recipeEntry.value()).getExperience();
             }
         }
 

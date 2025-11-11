@@ -10,13 +10,13 @@ import org.spongepowered.asm.mixin.injection.ModifyArgs;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
 import java.util.Map;
-import net.minecraft.locale.Language;
+import net.minecraft.util.Language;
 
 @Mixin(Language.class)
 public class MixinLanguage
 {
     @ModifyArgs(
-            method = "loadFromJson(Ljava/io/InputStream;Ljava/util/function/BiConsumer;)V",
+            method = "load(Ljava/io/InputStream;Ljava/util/function/BiConsumer;)V",
             at = @At(
                     value = "INVOKE",
                     target = "Ljava/util/function/BiConsumer;accept(Ljava/lang/Object;Ljava/lang/Object;)V"

@@ -3,10 +3,10 @@ package fi.dy.masa.minihud.info.state;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nonnull;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.block.BlockState;
+import net.minecraft.registry.Registries;
+import net.minecraft.util.Identifier;
+import net.minecraft.world.World;
 import fi.dy.masa.malilib.util.game.BlockUtils;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
@@ -43,10 +43,10 @@ public class InfoLineBlockProps extends InfoLine
     }
 
     @Override
-    public List<Entry> parseBlockState(@Nonnull Level world, @Nonnull BlockState state)
+    public List<Entry> parseBlockState(@Nonnull World world, @Nonnull BlockState state)
     {
         List<Entry> list = new ArrayList<>();
-        ResourceLocation rl = BuiltInRegistries.BLOCK.getKey(state.getBlock());
+        Identifier rl = Registries.BLOCK.getId(state.getBlock());
 
         list.add(this.of(rl != null ? rl.toString() : "<null>"));
 

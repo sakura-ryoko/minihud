@@ -2,11 +2,11 @@ package fi.dy.masa.minihud.info.entity;
 
 import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.level.Level;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.util.Identifier;
+import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import fi.dy.masa.malilib.util.nbt.NbtEntityUtils;
 import fi.dy.masa.minihud.Reference;
@@ -47,10 +47,10 @@ public class InfoLineEntityRegName extends InfoLine
     }
 
     @Override
-    public List<Entry> parseNbt(@NotNull Level world, @NotNull EntityType<?> entityType, @NotNull CompoundTag nbt)
+    public List<Entry> parseNbt(@NotNull World world, @NotNull EntityType<?> entityType, @NotNull NbtCompound nbt)
     {
         List<Entry> list = new ArrayList<>();
-        ResourceLocation regName = EntityType.getKey(entityType);
+        Identifier regName = EntityType.getId(entityType);
 
         list.add(this.translate(ENTITY_KEY, regName));
 
@@ -58,11 +58,11 @@ public class InfoLineEntityRegName extends InfoLine
     }
 
     @Override
-    public List<Entry> parseEnt(@NotNull Level world, @NotNull Entity ent)
+    public List<Entry> parseEnt(@NotNull World world, @NotNull Entity ent)
     {
         List<Entry> list = new ArrayList<>();
 
-        ResourceLocation regName = EntityType.getKey(ent.getType());
+        Identifier regName = EntityType.getId(ent.getType());
 
         list.add(this.translate(ENTITY_KEY, regName));
 

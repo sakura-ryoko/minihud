@@ -2,17 +2,17 @@ package fi.dy.masa.minihud.renderer;
 
 import java.util.*;
 import javax.annotation.Nullable;
-import net.minecraft.client.Minecraft;
-import net.minecraft.core.Direction;
-import net.minecraft.util.profiling.ProfilerFiller;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.render.BufferBuilder;
+import net.minecraft.client.render.BuiltBuffer;
+import net.minecraft.entity.Entity;
+import net.minecraft.util.math.Box;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.profiler.Profiler;
+import net.minecraft.world.World;
 import com.google.gson.JsonObject;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.MeshData;
 import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.JsonUtils;
 import fi.dy.masa.malilib.util.data.Color4f;
@@ -27,16 +27,16 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
 
     private static final Direction[] HORIZONTALS = new Direction[] { Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST };
     protected boolean needsUpdate = true;
-    @Nullable public Vec3 newPos;
+    @Nullable public Vec3d newPos;
 
     protected RendererToggle toggle;
-    protected Vec3 pos = Vec3.ZERO;
+    protected Vec3d pos = Vec3d.ZERO;
     protected double minX;
     protected double minZ;
     protected double maxX;
     protected double maxZ;
 
-    private final HashMap<ChunkPos, List<AABB>> chunkMap;
+    private final HashMap<ChunkPos, List<Box>> chunkMap;
     private Entity cameraEntity;
     private boolean hasData;
 
@@ -61,19 +61,19 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
         this.needsUpdate = true;
     }
 
-    public void setNewPos(@Nullable Vec3 pos)
+    public void setNewPos(@Nullable Vec3d pos)
     {
         this.newPos = pos;
     }
 
     @Override
-    public boolean shouldRender(Minecraft mc)
+    public boolean shouldRender(MinecraftClient mc)
     {
         return this.toggle.getBooleanValue();
     }
 
     @Override
-    public boolean needsUpdate(Entity entity, Minecraft mc)
+    public boolean needsUpdate(Entity entity, MinecraftClient mc)
     {
         if (this.needsUpdate)
         {
@@ -94,11 +94,11 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
     }
 
     @Override
-    public void update(Vec3 cameraPos, Entity entity, Minecraft mc, ProfilerFiller profiler)
+    public void update(Vec3d cameraPos, Entity entity, MinecraftClient mc, Profiler profiler)
     {
         if (this.toggle == RendererToggle.OVERLAY_RANDOM_TICKS_PLAYER)
         {
-            this.pos = entity.position();
+            this.pos = entity.getEntityPos();
         }
         else if (this.newPos != null)
         {
@@ -114,15 +114,15 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
         {
 //            this.calculateChunkEdgesIfApplicable(pos, chunks, entity.getEntityWorld());
 
-            List<AABB> boxes = new ArrayList<>();
+            List<Box> boxes = new ArrayList<>();
 
             for (Direction side : HORIZONTALS)
             {
-                ChunkPos posAdj = new ChunkPos(pos.x + side.getStepX(), pos.z + side.getStepZ());
+                ChunkPos posAdj = new ChunkPos(pos.x + side.getOffsetX(), pos.z + side.getOffsetZ());
 
                 if (!chunks.contains(posAdj))
                 {
-                    AABB bb = this.calculateChunkEdge(pos, side, entity.level());
+                    Box bb = this.calculateChunkEdge(pos, side, entity.getEntityWorld());
 
                     if (bb != null)
                     {
@@ -153,16 +153,16 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
     }
 
     @Override
-    public void render(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
+    public void render(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
     {
         this.allocateBuffers();
         this.renderQuads(cameraPos, mc, profiler);
         this.renderOutlines(cameraPos, mc, profiler);
     }
 
-    private void renderQuads(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
+    private void renderQuads(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
     {
-        if (mc.level == null || mc.player == null)
+        if (mc.world == null || mc.player == null)
         {
             return;
         }
@@ -182,7 +182,7 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
         this.chunkMap.forEach(
                 (pos, boxes) ->
                 {
-                    for (AABB bb : boxes)
+                    for (Box bb : boxes)
                     {
                         RenderUtils.renderWallQuads(bb, cameraPos, color, builder);
                     }
@@ -190,7 +190,7 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
 
         try
         {
-            MeshData meshData = builder.build();
+            BuiltBuffer meshData = builder.endNullable();
 
             if (meshData != null)
             {
@@ -213,9 +213,9 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
         profiler.pop();
     }
 
-    private void renderOutlines(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
+    private void renderOutlines(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
     {
-        if (mc.level == null || mc.player == null)
+        if (mc.world == null || mc.player == null)
         {
             return;
         }
@@ -235,7 +235,7 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
         this.chunkMap.forEach(
                 (pos, boxes) ->
                 {
-                    for (AABB bb : boxes)
+                    for (Box bb : boxes)
                     {
                         RenderUtils.renderWallOutlines(bb, 16, 16, true, cameraPos, color, builder);
                     }
@@ -243,7 +243,7 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
 
         try
         {
-            MeshData meshData = builder.build();
+            BuiltBuffer meshData = builder.endNullable();
 
             if (meshData != null)
             {
@@ -269,7 +269,7 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
         this.hasData = false;
     }
 
-    protected Set<ChunkPos> getRandomTickableChunks(Vec3 posCenter)
+    protected Set<ChunkPos> getRandomTickableChunks(Vec3d posCenter)
     {
         Set<ChunkPos> set = new HashSet<>();
         final int centerChunkX = ((int) Math.floor(posCenter.x)) >> 4;
@@ -312,7 +312,7 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
 //        }
 //    }
 
-    private @Nullable AABB calculateChunkEdge(ChunkPos pos, Direction side, Level world)
+    private @Nullable Box calculateChunkEdge(ChunkPos pos, Direction side, World world)
     {
         float minX, minZ, maxX, maxZ;
 
@@ -346,10 +346,10 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
                 return null;
         }
 
-        int minY = world != null ? world.getMinY() : -64;
-        int maxY = world != null ? world.getMaxY() + 1 : 320;
+        int minY = world != null ? world.getBottomY() : -64;
+        int maxY = world != null ? world.getTopYInclusive() + 1 : 320;
 
-        return new AABB(minX, minY, minZ, maxX, maxY, maxZ);
+        return new Box(minX, minY, minZ, maxX, maxY, maxZ);
     }
 
     @Override
@@ -370,7 +370,7 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
     @Override
     public void fromJson(JsonObject obj)
     {
-        Vec3 pos = JsonUtils.vec3dFromJson(obj, "pos");
+        Vec3d pos = JsonUtils.vec3dFromJson(obj, "pos");
 
         if (pos != null && this.toggle == RendererToggle.OVERLAY_RANDOM_TICKS_FIXED)
         {

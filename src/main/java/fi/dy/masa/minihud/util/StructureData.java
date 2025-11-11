@@ -3,10 +3,10 @@ package fi.dy.masa.minihud.util;
 import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.world.level.levelgen.structure.StructurePiece;
-import net.minecraft.world.level.levelgen.structure.StructureStart;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtList;
+import net.minecraft.structure.StructurePiece;
+import net.minecraft.structure.StructureStart;
 import com.google.common.collect.ImmutableList;
 import fi.dy.masa.malilib.util.IntBoundingBox;
 import fi.dy.masa.minihud.MiniHUD;
@@ -56,7 +56,7 @@ public class StructureData
     public static StructureData fromStructureStart(StructureType type, StructureStart structure)
     {
         ImmutableList.Builder<IntBoundingBox> builder = ImmutableList.builder();
-        List<StructurePiece> components = structure.getPieces();
+        List<StructurePiece> components = structure.getChildren();
 
         for (StructurePiece component : components)
         {
@@ -67,12 +67,12 @@ public class StructureData
     }
 
     @Nullable
-    public static StructureData fromStructureStartTag(CompoundTag tag, long currentTime)
+    public static StructureData fromStructureStartTag(NbtCompound tag, long currentTime)
     {
         if (tag.contains("id") &&
             tag.contains("Children"))
         {
-            StructureType type = StructureType.fromStructureId(tag.getStringOr("id", "?"));
+            StructureType type = StructureType.fromStructureId(tag.getString("id", "?"));
 
             if (type == StructureType.UNKNOWN && Configs.Generic.DEBUG_MESSAGES.getBooleanValue())
             {
@@ -80,12 +80,12 @@ public class StructureData
             }
 
             ImmutableList.Builder<IntBoundingBox> builder = ImmutableList.builder();
-            ListTag pieces = tag.getListOrEmpty("Children");
+            NbtList pieces = tag.getListOrEmpty("Children");
             final int count = pieces.size();
 
             for (int i = 0; i < count; ++i)
             {
-                CompoundTag pieceTag = pieces.getCompoundOrEmpty(i);
+                NbtCompound pieceTag = pieces.getCompoundOrEmpty(i);
                 builder.add(IntBoundingBox.fromArray(pieceTag.getIntArray("BB").orElseThrow()));
             }
 

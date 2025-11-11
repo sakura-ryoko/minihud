@@ -2,13 +2,13 @@ package fi.dy.masa.minihud.gui;
 
 import java.util.Locale;
 import java.util.function.*;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.TextRenderer;
+import net.minecraft.entity.Entity;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3d;
 import fi.dy.masa.malilib.config.options.ConfigOptionList;
 import fi.dy.masa.malilib.gui.*;
 import fi.dy.masa.malilib.gui.button.*;
@@ -69,7 +69,7 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         this.addLabel(x, y, -1, 14, 0xFFFFFFFF, StringUtils.translate("minihud.gui.label.color"));
         y += 12;
 
-        GuiTextFieldGeneric textField = new GuiTextFieldGeneric(x, y, 70, 17, this.font);
+        GuiTextFieldGeneric textField = new GuiTextFieldGeneric(x, y, 70, 17, this.textRenderer);
         textField.setMaxLengthWrapper(12);
         textField.setTextWrapper(String.format("#%08X", this.shape.getColor().intValue));
         this.addTextField(textField, new TextFieldListenerColor(this.shape));
@@ -84,7 +84,7 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         this.addLabel(x, y, -1, 14, 0xFFFFFFFF, StringUtils.translate("minihud.gui.label.outlines_color"));
         y += 12;
 
-        GuiTextFieldGeneric textField = new GuiTextFieldGeneric(x, y, 70, 17, this.font);
+        GuiTextFieldGeneric textField = new GuiTextFieldGeneric(x, y, 70, 17, this.textRenderer);
         textField.setMaxLengthWrapper(12);
         textField.setTextWrapper(String.format("#%08X", this.shape.getColorLines().intValue));
         this.addTextField(textField, new TextFieldListenerColorLines(this.shape));
@@ -99,7 +99,7 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         this.addLabel(x, y, -1, 14, 0xFFFFFFFF, StringUtils.translate("minihud.gui.label.display_name_colon"));
         y += 12;
 
-        GuiTextFieldGeneric textField = new GuiTextFieldGeneric(x, y, 240, 17, this.font);
+        GuiTextFieldGeneric textField = new GuiTextFieldGeneric(x, y, 240, 17, this.textRenderer);
         textField.setTextWrapper(this.shape.getDisplayName());
         this.addTextField(textField, (txtFld) -> { this.shape.setDisplayName(txtFld.getTextWrapper()); return true; });
         y += 20;
@@ -384,7 +384,7 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
     private void toggleSideEnabled(Direction side, ShapeBox shape)
     {
         int mask = shape.getEnabledSidesMask();
-        shape.setEnabledSidesMask(mask ^ (1 << side.get3DDataValue()));
+        shape.setEnabledSidesMask(mask ^ (1 << side.getIndex()));
     }
 
     private void toggleRenderLines(ShapeBase shape, ButtonOnOff button)
@@ -424,7 +424,7 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
     protected void addBoxInput(int x, int y, int textFieldWidth, DoubleSupplier coordinateSource,
                                DoubleConsumer coordinateConsumer)
     {
-        Font textRenderer = Minecraft.getInstance().font;
+        TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
         GuiTextFieldGeneric textField = new GuiTextFieldGeneric(x, y + 1, textFieldWidth, 14, textRenderer);
         textField.setTextWrapper("" + coordinateSource.getAsDouble());
 
@@ -469,7 +469,7 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         this.addLabel(x + 12, y, -1, 12, 0xFFFFFFFF, translationKey);
         y += 11;
 
-        GuiTextFieldDouble txtField = new GuiTextFieldDouble(x + 12, y, 40, 14, this.font);
+        GuiTextFieldDouble txtField = new GuiTextFieldDouble(x + 12, y, 40, 14, this.textRenderer);
         txtField.setTextWrapper(String.valueOf(supplier.getAsDouble()));
         this.addTextField(txtField, new TextFieldListenerDouble(consumer));
 
@@ -486,7 +486,7 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         this.addLabel(x + 12, y, -1, 12, 0xFFFFFFFF, translationKey);
         y += 11;
 
-        GuiTextFieldInteger txtField = new GuiTextFieldInteger(x + 12, y, 40, 14, this.font);
+        GuiTextFieldInteger txtField = new GuiTextFieldInteger(x + 12, y, 40, 14, this.textRenderer);
         txtField.setTextWrapper(String.valueOf(supplier.getAsInt()));
         this.addTextField(txtField, new TextFieldListenerInteger(consumer));
 
@@ -518,7 +518,7 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
 
     public static Direction cycleDirection(Direction direction, boolean reverse)
     {
-        int index = direction.get3DDataValue();
+        int index = direction.getIndex();
 
         if (reverse)
         {
@@ -529,16 +529,16 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
             index = index >= 5 ? 0 : index + 1;
         }
 
-        return Direction.from3DDataValue(index);
+        return Direction.byIndex(index);
     }
 
-    protected void setPositionFromCamera(Consumer<Vec3> consumer)
+    protected void setPositionFromCamera(Consumer<Vec3d> consumer)
     {
         Entity entity = EntityUtils.getCameraEntity();
 
         if (entity != null)
         {
-            consumer.accept(entity.position());
+            consumer.accept(entity.getEntityPos());
             this.initGui();
         }
     }
@@ -549,14 +549,14 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
 
         if (entity != null)
         {
-            consumer.accept(entity.blockPosition());
+            consumer.accept(entity.getBlockPos());
             this.initGui();
         }
     }
 
     public static class MutableWrapperBox
     {
-        protected final Consumer<AABB> boxConsumer;
+        protected final Consumer<Box> boxConsumer;
         protected double minX;
         protected double minY;
         protected double minZ;
@@ -564,7 +564,7 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         protected double maxY;
         protected double maxZ;
 
-        public MutableWrapperBox(AABB box, Consumer<AABB> boxConsumer)
+        public MutableWrapperBox(Box box, Consumer<Box> boxConsumer)
         {
             this.minX = box.minX;
             this.minY = box.minY;
@@ -641,7 +641,7 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
             this.updateBox();
         }
 
-        public void setMinCorner(Vec3 pos)
+        public void setMinCorner(Vec3d pos)
         {
             this.minX = pos.x;
             this.minY = pos.y;
@@ -649,7 +649,7 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
             this.updateBox();
         }
 
-        public void setMaxCorner(Vec3 pos)
+        public void setMaxCorner(Vec3d pos)
         {
             this.maxX = pos.x;
             this.maxY = pos.y;
@@ -659,12 +659,12 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
 
         protected void updateBox()
         {
-            AABB box = new AABB(this.minX, this.minY, this.minZ, this.maxX, this.maxY, this.maxZ);
+            Box box = new Box(this.minX, this.minY, this.minZ, this.maxX, this.maxY, this.maxZ);
             this.boxConsumer.accept(box);
         }
     }
 
-    public record Vec3dEditor(Supplier<Vec3> supplier, Consumer<Vec3> consumer, GuiShapeEditor gui) implements ICoordinateValueModifier
+    public record Vec3dEditor(Supplier<Vec3d> supplier, Consumer<Vec3d> consumer, GuiShapeEditor gui) implements ICoordinateValueModifier
     {
         @Override
         public boolean modifyValue(CoordinateType type, int amount)

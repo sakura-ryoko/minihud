@@ -1,10 +1,10 @@
 package fi.dy.masa.minihud.mixin.entity;
 
-import net.minecraft.world.entity.monster.Skeleton;
+import net.minecraft.entity.mob.SkeletonEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-@Mixin(Skeleton.class)
+@Mixin(SkeletonEntity.class)
 public interface IMixinSkeletonEntity
 {
     @Accessor("conversionTime")

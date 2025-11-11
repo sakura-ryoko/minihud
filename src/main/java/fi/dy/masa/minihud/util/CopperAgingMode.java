@@ -1,15 +1,15 @@
 package fi.dy.masa.minihud.util;
 
 import javax.annotation.Nonnull;
+import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.codec.PacketCodecs;
+import net.minecraft.util.StringIdentifiable;
 import com.google.common.collect.ImmutableList;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.util.StringRepresentable;
 import fi.dy.masa.malilib.config.IConfigOptionListEntry;
 import fi.dy.masa.malilib.util.StringUtils;
 
-public enum CopperAgingMode implements IConfigOptionListEntry, StringRepresentable
+public enum CopperAgingMode implements IConfigOptionListEntry, StringIdentifiable
 {
 	NONE			("none",			"minihud.label.copper_aging.none"),
 	MC_TIME			("mc_time",		"minihud.label.copper_aging.mc_time"),
@@ -21,8 +21,8 @@ public enum CopperAgingMode implements IConfigOptionListEntry, StringRepresentab
 	ALL				("all",			"minihud.label.copper_aging.all"),
 	;
 
-	public static final StringRepresentable.EnumCodec<CopperAgingMode> CODEC = StringRepresentable.fromEnum(CopperAgingMode::values);
-	public static final StreamCodec<ByteBuf, CopperAgingMode> PACKET_CODEC = ByteBufCodecs.STRING_UTF8.map(CopperAgingMode::fromStringStatic, CopperAgingMode::getSerializedName);
+	public static final StringIdentifiable.EnumCodec<CopperAgingMode> CODEC = StringIdentifiable.createCodec(CopperAgingMode::values);
+	public static final PacketCodec<ByteBuf, CopperAgingMode> PACKET_CODEC = PacketCodecs.STRING.xmap(CopperAgingMode::fromStringStatic, CopperAgingMode::asString);
 	public static final ImmutableList<CopperAgingMode> VALUES = ImmutableList.copyOf(values());
 
 	private final String configString;
@@ -35,7 +35,7 @@ public enum CopperAgingMode implements IConfigOptionListEntry, StringRepresentab
 	}
 
 	@Override
-	public @Nonnull String getSerializedName()
+	public @Nonnull String asString()
 	{
 		return this.configString;
 	}

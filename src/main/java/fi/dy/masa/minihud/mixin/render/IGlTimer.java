@@ -1,12 +1,12 @@
 package fi.dy.masa.minihud.mixin.render;
 
-import com.mojang.blaze3d.systems.TimerQuery;
+import net.minecraft.client.gl.GlTimer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-@Mixin(TimerQuery.class)
+@Mixin(GlTimer.class)
 public interface IGlTimer
 {
-	@Accessor("nextQueryName")
+	@Accessor("queryId")
 	int minihud_getQueryId();
 }

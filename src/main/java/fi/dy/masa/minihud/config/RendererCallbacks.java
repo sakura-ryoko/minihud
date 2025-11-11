@@ -9,10 +9,10 @@ import fi.dy.masa.minihud.data.HudDataManager;
 import fi.dy.masa.minihud.renderer.*;
 import fi.dy.masa.minihud.renderer.shapes.ShapeManager;
 import fi.dy.masa.minihud.util.DataStorage;
-import net.minecraft.client.Minecraft;
-import net.minecraft.core.GlobalPos;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.entity.Entity;
+import net.minecraft.util.math.GlobalPos;
+import net.minecraft.util.math.Vec3d;
 
 public class RendererCallbacks
 {
@@ -58,7 +58,7 @@ public class RendererCallbacks
 
         if (config.getBooleanValue() && entity != null)
         {
-            Vec3 pos = entity.position();
+            Vec3d pos = entity.getEntityPos();
             OverlayRendererRandomTickableChunks.INSTANCE_FIXED.setNewPos(pos);
             String green = GuiBase.TXT_GREEN;
             String rst = GuiBase.TXT_RST;
@@ -114,7 +114,7 @@ public class RendererCallbacks
 
     public static void onSpawnChunksRealToggled(IConfigBoolean config)
     {
-        Minecraft mc = Minecraft.getInstance();
+        MinecraftClient mc = MinecraftClient.getInstance();
 
         if (mc != null && mc.player != null)
         {
@@ -138,7 +138,7 @@ public class RendererCallbacks
                     String strPos = String.format("x: %d, y: %d, z: %d [R: %d]", spawn.pos().getX(), spawn.pos().getY(), spawn.pos().getZ(), radius);
                     message = StringUtils.translate("minihud.message.toggled_using_world_spawn", config.getPrettyName(), strStatus, strPos);
 
-                    if (mc.hasSingleplayerServer() == false && HudDataManager.getInstance().hasServuxServer())
+                    if (mc.isIntegratedServerRunning() == false && HudDataManager.getInstance().hasServuxServer())
                     {
                         HudDataManager.getInstance().requestSpawnMetadata();
                     }
@@ -153,7 +153,7 @@ public class RendererCallbacks
 
                     String strStatus = green + StringUtils.translate("malilib.message.value.on") + rst;
                     String strPos = String.format("[%s] x: %d, y: %d, z: %d",
-                                                  spawn.dimension().location().toString(),
+                                                  spawn.dimension().getValue().toString(),
                                                   spawn.pos().getX(), spawn.pos().getY(), spawn.pos().getZ());
                     message = StringUtils.translate("minihud.message.toggled_using_world_spawn", config.getPrettyName(), strStatus, strPos);
 
@@ -167,11 +167,11 @@ public class RendererCallbacks
 
     public static void onStructuresToggled(IConfigBoolean config)
     {
-        Minecraft mc = Minecraft.getInstance();
+        MinecraftClient mc = MinecraftClient.getInstance();
 
         if (mc != null && mc.player != null)
         {
-            if (mc.hasSingleplayerServer() == false && DataStorage.getInstance().hasIntegratedServer() == false)
+            if (mc.isIntegratedServerRunning() == false && DataStorage.getInstance().hasIntegratedServer() == false)
             {
                 if (config.getBooleanValue())
                 {

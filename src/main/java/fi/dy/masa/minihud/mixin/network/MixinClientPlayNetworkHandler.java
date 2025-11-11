@@ -11,75 +11,75 @@ import fi.dy.masa.minihud.data.HudDataManager;
 import fi.dy.masa.minihud.mixin.world.IMixinChunkDeltaUpdateS2CPacket;
 import fi.dy.masa.minihud.util.DataStorage;
 import fi.dy.masa.minihud.util.NotificationUtils;
-import net.minecraft.client.multiplayer.ClientPacketListener;
-import net.minecraft.network.protocol.game.ClientboundLoginPacket;
-import net.minecraft.network.protocol.game.ClientboundSetDefaultSpawnPositionPacket;
-import net.minecraft.network.protocol.game.ClientboundTagQueryPacket;
+import net.minecraft.client.network.ClientPlayNetworkHandler;
+import net.minecraft.network.packet.s2c.play.GameJoinS2CPacket;
+import net.minecraft.network.packet.s2c.play.NbtQueryResponseS2CPacket;
+import net.minecraft.network.packet.s2c.play.PlayerSpawnPositionS2CPacket;
 
-@Mixin(ClientPacketListener.class)
+@Mixin(ClientPlayNetworkHandler.class)
 public abstract class MixinClientPlayNetworkHandler
 {
-    @Inject(method = "handleBlockUpdate", at = @At("RETURN"))
-    private void minihud_markChunkChangedBlockChange(net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket packet, CallbackInfo ci)
+    @Inject(method = "onBlockUpdate", at = @At("RETURN"))
+    private void minihud_markChunkChangedBlockChange(net.minecraft.network.packet.s2c.play.BlockUpdateS2CPacket packet, CallbackInfo ci)
     {
-        NotificationUtils.onBlockChange(packet.getPos(), packet.getBlockState());
+        NotificationUtils.onBlockChange(packet.getPos(), packet.getState());
     }
 
-    @Inject(method = "handleLevelChunkWithLight", at = @At("RETURN"))
-    private void minihud_markChunkChangedFullChunk(net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket packet, CallbackInfo ci)
+    @Inject(method = "onChunkData", at = @At("RETURN"))
+    private void minihud_markChunkChangedFullChunk(net.minecraft.network.packet.s2c.play.ChunkDataS2CPacket packet, CallbackInfo ci)
     {
-        NotificationUtils.onChunkData(packet.getX(), packet.getZ(), packet.getChunkData());
+        NotificationUtils.onChunkData(packet.getChunkX(), packet.getChunkZ(), packet.getChunkData());
     }
 
-    @Inject(method = "handleChunkBlocksUpdate", at = @At("RETURN"))
-    private void minihud_markChunkChangedMultiBlockChange(net.minecraft.network.protocol.game.ClientboundSectionBlocksUpdatePacket packet, CallbackInfo ci)
+    @Inject(method = "onChunkDeltaUpdate", at = @At("RETURN"))
+    private void minihud_markChunkChangedMultiBlockChange(net.minecraft.network.packet.s2c.play.ChunkDeltaUpdateS2CPacket packet, CallbackInfo ci)
     {
-        net.minecraft.core.SectionPos pos = ((IMixinChunkDeltaUpdateS2CPacket) packet).minihud_getChunkSectionPos();
+        net.minecraft.util.math.ChunkSectionPos pos = ((IMixinChunkDeltaUpdateS2CPacket) packet).minihud_getChunkSectionPos();
         NotificationUtils.onMultiBlockChange(pos, packet);
     }
 
-    @Inject(method = "handleSystemChat", at = @At("RETURN"))
-    private void minihud_onGameMessage(net.minecraft.network.protocol.game.ClientboundSystemChatPacket packet, CallbackInfo ci)
+    @Inject(method = "onGameMessage", at = @At("RETURN"))
+    private void minihud_onGameMessage(net.minecraft.network.packet.s2c.play.GameMessageS2CPacket packet, CallbackInfo ci)
     {
         DataStorage.getInstance().onChatMessage(packet.content());
     }
 
-    @Inject(method = "handleTabListCustomisation", at = @At("RETURN"))
-    private void minihud_onHandlePlayerListHeaderFooter(net.minecraft.network.protocol.game.ClientboundTabListPacket packetIn, CallbackInfo ci)
+    @Inject(method = "onPlayerListHeader", at = @At("RETURN"))
+    private void minihud_onHandlePlayerListHeaderFooter(net.minecraft.network.packet.s2c.play.PlayerListHeaderS2CPacket packetIn, CallbackInfo ci)
     {
         DataStorage.getInstance().handleCarpetServerTPSData(packetIn.footer());
         DataStorage.getInstance().getMobCapData().parsePlayerListFooterMobCapData(packetIn.footer());
     }
 
-    @Inject(method = "handleSetTime", at = @At("RETURN"))
-    private void minihud_onTimeUpdate(net.minecraft.network.protocol.game.ClientboundSetTimePacket packetIn, CallbackInfo ci)
+    @Inject(method = "onWorldTimeUpdate", at = @At("RETURN"))
+    private void minihud_onTimeUpdate(net.minecraft.network.packet.s2c.play.WorldTimeUpdateS2CPacket packetIn, CallbackInfo ci)
     {
 //        DataStorage.getInstance().onServerTimeUpdate(packetIn.time());
     }
 
-    @Inject(method = "handleSetSpawn", at = @At("RETURN"))
-    private void minihud_onSetSpawn(ClientboundSetDefaultSpawnPositionPacket packet, CallbackInfo ci)
+    @Inject(method = "onPlayerSpawnPosition", at = @At("RETURN"))
+    private void minihud_onSetSpawn(PlayerSpawnPositionS2CPacket packet, CallbackInfo ci)
     {
 //        MiniHUD.LOGGER.error("onPlayerSpawnPosition() [PACKET] --> [{}]", packet.respawnData().globalPos().toString());
         HudDataManager.getInstance().setWorldSpawn(packet.respawnData().globalPos());
     }
 
-    @Inject(method = "handleLogin", at = @At("RETURN"))
-    private void minihud_onPostGameJoin(ClientboundLoginPacket packet, CallbackInfo ci)
+    @Inject(method = "onGameJoin", at = @At("RETURN"))
+    private void minihud_onPostGameJoin(GameJoinS2CPacket packet, CallbackInfo ci)
     {
         DataStorage.getInstance().setSimulationDistance(packet.simulationDistance());
     }
 
-    @Inject(method = "handleTagQueryPacket", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/DebugQueryHandler;handleResponse(ILnet/minecraft/nbt/CompoundTag;)Z"))
-    private void minihud_onQueryResponse(ClientboundTagQueryPacket packet, CallbackInfo ci)
+    @Inject(method = "onNbtQueryResponse", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/DataQueryHandler;handleQueryResponse(ILnet/minecraft/nbt/NbtCompound;)Z"))
+    private void minihud_onQueryResponse(NbtQueryResponseS2CPacket packet, CallbackInfo ci)
     {
         if (Configs.Generic.ENTITY_DATA_SYNC_BACKUP.getBooleanValue())
         {
-            EntitiesDataManager.getInstance().handleVanillaQueryNbt(packet.getTransactionId(), packet.getTag());
+            EntitiesDataManager.getInstance().handleVanillaQueryNbt(packet.getTransactionId(), packet.getNbt());
         }
     }
 
-    @Inject(method = "handleCommands", at = @At("RETURN"))
+    @Inject(method = "onCommandTree", at = @At("RETURN"))
     private void minihud_onCommandTree(CallbackInfo ci)
     {
         if (Configs.Generic.ENTITY_DATA_SYNC_BACKUP.getBooleanValue())

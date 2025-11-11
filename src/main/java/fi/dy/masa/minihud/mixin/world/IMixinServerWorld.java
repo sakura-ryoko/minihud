@@ -1,14 +1,14 @@
 package fi.dy.masa.minihud.mixin.world;
 
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.entity.PersistentEntitySectionManager;
+import net.minecraft.entity.Entity;
+import net.minecraft.server.world.ServerEntityManager;
+import net.minecraft.server.world.ServerWorld;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-@Mixin(ServerLevel.class)
+@Mixin(ServerWorld.class)
 public interface IMixinServerWorld
 {
     @Accessor("entityManager")
-    PersistentEntitySectionManager<Entity> minihud_getEntityManager();
+    ServerEntityManager<Entity> minihud_getEntityManager();
 }

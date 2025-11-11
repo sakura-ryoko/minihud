@@ -6,39 +6,39 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 import javax.annotation.Nullable;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.server.IntegratedServer;
-import net.minecraft.server.level.ChunkResult;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.chunk.ChunkAccess;
-import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraft.world.level.chunk.status.ChunkStatus;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.server.integrated.IntegratedServer;
+import net.minecraft.server.world.OptionalChunk;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.World;
+import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.ChunkStatus;
+import net.minecraft.world.chunk.WorldChunk;
 import fi.dy.masa.minihud.util.DataStorage;
 
 public class InfoLineChunkCache
 {
     public static final InfoLineChunkCache INSTANCE = new InfoLineChunkCache();
-    private final Map<ChunkPos, CompletableFuture<ChunkResult<ChunkAccess>>> chunkFutures = new HashMap<>();
-    @Nullable private LevelChunk cachedClientChunk;
-    private Minecraft mc;
+    private final Map<ChunkPos, CompletableFuture<OptionalChunk<Chunk>>> chunkFutures = new HashMap<>();
+    @Nullable private WorldChunk cachedClientChunk;
+    private MinecraftClient mc;
 
     private InfoLineChunkCache()
     {
-        this.mc = Minecraft.getInstance();
+        this.mc = MinecraftClient.getInstance();
     }
 
-    private @Nullable Level getClientWorld()
+    private @Nullable World getClientWorld()
     {
         if (this.mc == null)
         {
-            this.mc = Minecraft.getInstance();
+            this.mc = MinecraftClient.getInstance();
         }
 
-        if (this.mc.level != null)
+        if (this.mc.world != null)
         {
-            return this.mc.level;
+            return this.mc.world;
         }
 
         return null;
@@ -63,16 +63,16 @@ public class InfoLineChunkCache
     }
 
     @Nullable
-    public LevelChunk getChunk(ChunkPos chunkPos)
+    public WorldChunk getChunk(ChunkPos chunkPos)
     {
-        CompletableFuture<ChunkResult<ChunkAccess>> future = this.chunkFutures.get(chunkPos);
+        CompletableFuture<OptionalChunk<Chunk>> future = this.chunkFutures.get(chunkPos);
 
         if (future == null)
         {
             future = this.setupChunkFuture(chunkPos);
         }
 
-        ChunkResult<ChunkAccess> chunkResult = future.getNow(null);
+        OptionalChunk<Chunk> chunkResult = future.getNow(null);
 
         if (chunkResult == null)
         {
@@ -80,11 +80,11 @@ public class InfoLineChunkCache
         }
         else
         {
-            ChunkAccess chunk = chunkResult.orElse(null);
+            Chunk chunk = chunkResult.orElse(null);
 
-            if (chunk instanceof LevelChunk)
+            if (chunk instanceof WorldChunk)
             {
-                return (LevelChunk) chunk;
+                return (WorldChunk) chunk;
             }
             else
             {
@@ -93,26 +93,26 @@ public class InfoLineChunkCache
         }
     }
 
-    public CompletableFuture<ChunkResult<ChunkAccess>> setupChunkFuture(ChunkPos chunkPos)
+    public CompletableFuture<OptionalChunk<Chunk>> setupChunkFuture(ChunkPos chunkPos)
     {
         IntegratedServer server = this.getData().getIntegratedServer();
-        CompletableFuture<ChunkResult<ChunkAccess>> future = null;
+        CompletableFuture<OptionalChunk<Chunk>> future = null;
 
         if (server != null)
         {
-            ServerLevel world = server.getLevel(Objects.requireNonNull(this.getClientWorld()).dimension());
+            ServerWorld world = server.getWorld(Objects.requireNonNull(this.getClientWorld()).getRegistryKey());
 
             if (world != null)
             {
-                future = world.getChunkSource()
-                              .getChunkFuture(chunkPos.x, chunkPos.z, ChunkStatus.FULL, false)
-                              .thenApply((either) -> either.map((chunk) -> (LevelChunk) chunk) );
+                future = world.getChunkManager()
+                              .getChunkFutureSyncOnMainThread(chunkPos.x, chunkPos.z, ChunkStatus.FULL, false)
+                              .thenApply((either) -> either.map((chunk) -> (WorldChunk) chunk) );
             }
         }
 
         if (future == null)
         {
-            future = CompletableFuture.completedFuture(ChunkResult.of(this.getClientChunk(chunkPos)));
+            future = CompletableFuture.completedFuture(OptionalChunk.of(this.getClientChunk(chunkPos)));
         }
 
         this.chunkFutures.put(chunkPos, future);
@@ -120,7 +120,7 @@ public class InfoLineChunkCache
         return future;
     }
 
-    public LevelChunk getClientChunk(ChunkPos chunkPos)
+    public WorldChunk getClientChunk(ChunkPos chunkPos)
     {
         if (this.cachedClientChunk == null || !this.cachedClientChunk.getPos().equals(chunkPos))
         {

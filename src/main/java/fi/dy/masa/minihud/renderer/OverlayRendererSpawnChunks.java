@@ -2,20 +2,19 @@ package fi.dy.masa.minihud.renderer;
 
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.render.BufferBuilder;
+import net.minecraft.client.render.BuiltBuffer;
+import net.minecraft.entity.Entity;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.profiler.Profiler;
+import net.minecraft.world.Heightmap;
+import net.minecraft.world.World;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.MeshData;
-import net.minecraft.client.Minecraft;
-import net.minecraft.core.BlockPos;
-import net.minecraft.util.profiling.ProfilerFiller;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
-
 import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.data.Color4f;
 import fi.dy.masa.malilib.util.position.PositionUtils;
@@ -33,10 +32,10 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
     protected final boolean isPlayerFollowing;
     protected boolean needsUpdate = true;
 
-    protected List<AABB> boxesBrown;
-    protected List<AABB> boxesRed;
-    protected List<AABB> boxesYellow;
-    protected List<AABB> boxesGreen;
+    protected List<Box> boxesBrown;
+    protected List<Box> boxesRed;
+    protected List<Box> boxesYellow;
+    protected List<Box> boxesGreen;
     protected BlockPos center;
     private boolean hasData;
 
@@ -48,7 +47,7 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
         this.boxesRed = new ArrayList<>();
         this.boxesYellow = new ArrayList<>();
         this.boxesGreen = new ArrayList<>();
-        this.center = BlockPos.ZERO;
+        this.center = BlockPos.ORIGIN;
         this.hasData = false;
     }
 
@@ -64,16 +63,16 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
     }
 
     @Override
-    public boolean shouldRender(Minecraft mc)
+    public boolean shouldRender(MinecraftClient mc)
     {
         return this.toggle.getBooleanValue() &&
                 (this.isPlayerFollowing ||
-                 (mc.level != null &&
+                 (mc.world != null &&
                  HudDataManager.getInstance().isWorldSpawnKnown()));
     }
 
     @Override
-    public boolean needsUpdate(Entity entity, Minecraft mc)
+    public boolean needsUpdate(Entity entity, MinecraftClient mc)
     {
         if (this.needsUpdate)
         {
@@ -90,7 +89,7 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
 
         if (this.lastUpdatePos == null)
         {
-            this.lastUpdatePos = entity.blockPosition();
+            this.lastUpdatePos = entity.getBlockPos();
             return true;
         }
 
@@ -106,15 +105,15 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
             return ex != lx || ez != lz || Math.abs(ey - ly) > 16;
         }
 
-        int range = mc.options.renderDistance().get() * 16;
+        int range = mc.options.getViewDistance().getValue() * 16;
 
         return Math.abs(lx - ex) > range || Math.abs(ey - ly) > 16 || Math.abs(lz - ez) > range;
     }
 
     @Override
-    public void update(Vec3 cameraPos, Entity entity, Minecraft mc, ProfilerFiller profiler)
+    public void update(Vec3d cameraPos, Entity entity, MinecraftClient mc, Profiler profiler)
     {
-        if (mc.level == null || mc.player == null || !RenderSystem.isOnRenderThread())
+        if (mc.world == null || mc.player == null || !RenderSystem.isOnRenderThread())
         {
             return;
         }
@@ -147,7 +146,7 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
         }
         else if (data.isSpawnChunkRadiusKnown() &&
 		         data.getSpawnChunkRadius() > 0 &&
-				 data.getWorldSpawn().dimension().equals(mc.level.dimension()))
+				 data.getWorldSpawn().dimension().equals(mc.world.getRegistryKey()))
         {
             // OVERLAY_SPAWN_CHUNK_OVERLAY_REAL
             this.center = data.getWorldSpawn().pos();
@@ -162,7 +161,7 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
         }
         else
         {
-			if (data.getWorldSpawn().dimension().equals(mc.level.dimension()))
+			if (data.getWorldSpawn().dimension().equals(mc.world.getRegistryKey()))
 			{
 				this.center = data.getWorldSpawn().pos();
 				red = 0;
@@ -187,20 +186,20 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
 		{
 			if (brownEnabled)
 			{
-				corners = this.getSpawnChunkCorners(this.center, brown, mc.level);   // Org 22 (Brown / WorldGen Only)
+				corners = this.getSpawnChunkCorners(this.center, brown, mc.world);   // Org 22 (Brown / WorldGen Only)
 				this.boxesBrown = RenderUtils.calculateBoxes(corners.getLeft(), corners.getRight());
 			}
 
-			corners = this.getSpawnChunkCorners(this.center, red, mc.level);     // Org 11 (Red / Mob Caps Only)
+			corners = this.getSpawnChunkCorners(this.center, red, mc.world);     // Org 11 (Red / Mob Caps Only)
 			this.boxesRed = RenderUtils.calculateBoxes(corners.getLeft(), corners.getRight());
 
 			if (yellowEnabled)
 			{
-				corners = this.getSpawnChunkCorners(this.center, yellow, mc.level);     // Org 10 (Yellow / Redstone Processing)
+				corners = this.getSpawnChunkCorners(this.center, yellow, mc.world);     // Org 10 (Yellow / Redstone Processing)
 				this.boxesYellow = RenderUtils.calculateBoxes(corners.getLeft(), corners.getRight());
 			}
 
-			corners = this.getSpawnChunkCorners(this.center, green, mc.level);      // Org 9 (Green / Entity Processing)
+			corners = this.getSpawnChunkCorners(this.center, green, mc.world);      // Org 9 (Green / Entity Processing)
 			this.boxesGreen = RenderUtils.calculateBoxes(corners.getLeft(), corners.getRight());
 		}
 
@@ -216,16 +215,16 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
     }
 
     @Override
-    public void render(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
+    public void render(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
     {
         this.allocateBuffers();
         this.renderQuads(cameraPos, mc, profiler);
         this.renderOutlines(cameraPos, mc, profiler);
     }
 
-    private void renderQuads(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
+    private void renderQuads(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
     {
-        if (mc.level == null || mc.player == null)
+        if (mc.world == null || mc.player == null)
         {
             return;
         }
@@ -251,19 +250,19 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
 
 		if (this.isPlayerFollowing || HudDataManager.getInstance().isSpawnChunkRadiusKnown())
 		{
-			for (AABB entry : this.boxesBrown)
+			for (Box entry : this.boxesBrown)
 			{
 				RenderUtils.renderWallQuads(entry, cameraPos, colorOuter, builder);
 			}
-			for (AABB entry : this.boxesRed)
+			for (Box entry : this.boxesRed)
 			{
 				RenderUtils.renderWallQuads(entry, cameraPos, colorLazy, builder);
 			}
-			for (AABB entry : this.boxesYellow)
+			for (Box entry : this.boxesYellow)
 			{
 				RenderUtils.renderWallQuads(entry, cameraPos, colorRedstone, builder);
 			}
-			for (AABB entry : this.boxesGreen)
+			for (Box entry : this.boxesGreen)
 			{
 				RenderUtils.renderWallQuads(entry, cameraPos, colorEntity, builder);
 			}
@@ -271,7 +270,7 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
 
         try
         {
-            MeshData meshData = builder.build();
+            BuiltBuffer meshData = builder.endNullable();
 
             if (meshData != null)
             {
@@ -293,9 +292,9 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
         profiler.pop();
     }
 
-    private void renderOutlines(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
+    private void renderOutlines(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
     {
-        if (mc.level == null || mc.player == null)
+        if (mc.world == null || mc.player == null)
         {
             return;
         }
@@ -323,19 +322,19 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
 
 		if (this.isPlayerFollowing || HudDataManager.getInstance().isSpawnChunkRadiusKnown())
 		{
-			for (AABB entry : this.boxesBrown)
+			for (Box entry : this.boxesBrown)
 			{
 				RenderUtils.renderWallOutlines(entry, 16, 16, true, cameraPos, colorOuter, builder);
 			}
-			for (AABB entry : this.boxesRed)
+			for (Box entry : this.boxesRed)
 			{
 				RenderUtils.renderWallOutlines(entry, 16, 16, true, cameraPos, colorLazy, builder);
 			}
-			for (AABB entry : this.boxesYellow)
+			for (Box entry : this.boxesYellow)
 			{
 				RenderUtils.renderWallOutlines(entry, 16, 16, true, cameraPos, colorRedstone, builder);
 			}
-			for (AABB entry : this.boxesGreen)
+			for (Box entry : this.boxesGreen)
 			{
 				RenderUtils.renderWallOutlines(entry, 16, 16, true, cameraPos, colorEntity, builder);
 			}
@@ -343,7 +342,7 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
 
         try
         {
-            MeshData meshData = builder.build();
+            BuiltBuffer meshData = builder.endNullable();
 
             if (meshData != null)
             {
@@ -378,22 +377,22 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
         this.reset();
     }
 
-    protected Pair<BlockPos, BlockPos> getSpawnChunkCorners(BlockPos worldSpawn, int chunkRange, Level world)
+    protected Pair<BlockPos, BlockPos> getSpawnChunkCorners(BlockPos worldSpawn, int chunkRange, World world)
     {
         int cx = (worldSpawn.getX() >> 4);
         int cz = (worldSpawn.getZ() >> 4);
 
         int minY = this.getMinY(world, worldSpawn, cx, cz);
-        int maxY = world != null ? world.getMaxY() + 1 : 320;
+        int maxY = world != null ? world.getTopYInclusive() + 1 : 320;
         BlockPos pos1 = new BlockPos( (cx - chunkRange) << 4      , minY,  (cz - chunkRange) << 4);
         BlockPos pos2 = new BlockPos(((cx + chunkRange) << 4) + 15, maxY, ((cz + chunkRange) << 4) + 15);
 
         return Pair.of(pos1, pos2);
     }
 
-    private int getMinY(Level world, BlockPos pos, int cx, int cz)
+    private int getMinY(World world, BlockPos pos, int cx, int cz)
     {
-        Minecraft mc = Minecraft.getInstance();
+        MinecraftClient mc = MinecraftClient.getInstance();
         int minY;
 
         // For whatever reason, in Fabulous! Graphics, the Y level gets rendered through to -64,
@@ -401,9 +400,9 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
 //        if (MinecraftClient.isFabulousGraphicsOrBetter() && world != null && mc.player != null)
         if (world != null && mc.player != null)
         {
-            int ws = world.getChunk(cx, cz).getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, pos.getX(), pos.getZ());
+            int ws = world.getChunk(cx, cz).sampleHeightmap(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, pos.getX(), pos.getZ());
 
-            if (mc.player.blockPosition().getY() >= world.getSeaLevel())
+            if (mc.player.getBlockPos().getY() >= world.getSeaLevel())
             {
                 minY = Math.min(world.getSeaLevel(), ws);
             }
@@ -411,12 +410,12 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
             {
                 // Dumb hack to help correct the display
                 // mc.player.getBlockPos().getY() - 16
-                minY = Math.min(Math.max(world.getMinSectionY(), ws), mc.player.blockPosition().getY() - 16);
+                minY = Math.min(Math.max(world.getBottomSectionCoord(), ws), mc.player.getBlockPos().getY() - 16);
             }
         }
         else
         {
-            minY = world != null ? world.getMinY() : -64;
+            minY = world != null ? world.getBottomY() : -64;
         }
 
         return minY;

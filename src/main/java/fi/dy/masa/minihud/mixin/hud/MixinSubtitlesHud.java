@@ -5,23 +5,23 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import fi.dy.masa.minihud.event.RenderHandler;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.SubtitleOverlay;
+import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.hud.SubtitlesHud;
 
-@Mixin(SubtitleOverlay.class)
+@Mixin(SubtitlesHud.class)
 public abstract class MixinSubtitlesHud
 {
-    @Inject(method = "render(Lnet/minecraft/client/gui/GuiGraphics;)V",
+    @Inject(method = "render(Lnet/minecraft/client/gui/DrawContext;)V",
             at = @At(value = "INVOKE",
-                     target = "Lnet/minecraft/client/gui/GuiGraphics;fill(IIIII)V",
+                     target = "Lnet/minecraft/client/gui/DrawContext;fill(IIIII)V",
                      shift = At.Shift.BEFORE))
-    private void minihud_nudgeSubtitleOverlay(GuiGraphics context, CallbackInfo ci)
+    private void minihud_nudgeSubtitleOverlay(DrawContext context, CallbackInfo ci)
     {
         int offset = RenderHandler.getInstance().getSubtitleOffset();
 
         if (offset != 0)
         {
-            context.pose().translate(0, offset);
+            context.getMatrices().translate(0, offset);
         }
     }
 }

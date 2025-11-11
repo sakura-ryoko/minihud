@@ -1,21 +1,21 @@
 package fi.dy.masa.minihud.renderer;
 
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.MeshData;
-import com.mojang.blaze3d.vertex.PoseStack;
 import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.data.Color4f;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.RendererToggle;
-import net.minecraft.client.Minecraft;
-import net.minecraft.util.profiling.ProfilerFiller;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.block.Blocks;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.render.BufferBuilder;
+import net.minecraft.client.render.BuiltBuffer;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.entity.Entity;
+import net.minecraft.item.BlockItem;
+import net.minecraft.item.Item;
+import net.minecraft.util.math.Box;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.profiler.Profiler;
+import net.minecraft.world.World;
 
 public class OverlayRendererHandheldBeaconRange extends OverlayRendererBase
 {
@@ -26,7 +26,7 @@ public class OverlayRendererHandheldBeaconRange extends OverlayRendererBase
     // How often it updates in BlockPos changes
 
     private int level;
-    private AABB box;
+    private Box box;
     private boolean hasData;
 
     protected OverlayRendererHandheldBeaconRange()
@@ -45,10 +45,10 @@ public class OverlayRendererHandheldBeaconRange extends OverlayRendererBase
     }
 
     @Override
-    public boolean shouldRender(Minecraft mc)
+    public boolean shouldRender(MinecraftClient mc)
     {
         if (mc.player == null) return false;
-        Item item = mc.player.getMainHandItem().getItem();
+        Item item = mc.player.getMainHandStack().getItem();
 
         if (RendererToggle.OVERLAY_BEACON_RANGE.getBooleanValue())
         {
@@ -64,7 +64,7 @@ public class OverlayRendererHandheldBeaconRange extends OverlayRendererBase
     }
 
     @Override
-    public boolean needsUpdate(Entity entity, Minecraft mc)
+    public boolean needsUpdate(Entity entity, MinecraftClient mc)
     {
         return this.needsUpdate || this.lastUpdatePos == null ||
                 Math.abs(entity.getX() - this.lastUpdatePos.getX()) > this.updateDistance ||
@@ -73,11 +73,11 @@ public class OverlayRendererHandheldBeaconRange extends OverlayRendererBase
     }
 
     @Override
-    public void update(Vec3 cameraPos, Entity entity, Minecraft mc, ProfilerFiller profiler)
+    public void update(Vec3d cameraPos, Entity entity, MinecraftClient mc, Profiler profiler)
     {
         if (RendererToggle.OVERLAY_BEACON_RANGE.getBooleanValue())
         {
-            this.calculateBeaconBoxForPlayer(entity.level(), entity, mc);
+            this.calculateBeaconBoxForPlayer(entity.getEntityWorld(), entity, mc);
 
             if (this.hasData())
             {
@@ -93,16 +93,16 @@ public class OverlayRendererHandheldBeaconRange extends OverlayRendererBase
     }
 
     @Override
-    public void render(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
+    public void render(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
     {
         this.allocateBuffers();
         this.renderQuads(cameraPos, mc, profiler);
         this.renderOutlines(cameraPos, mc, profiler);
     }
 
-    private void renderQuads(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
+    private void renderQuads(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
     {
-        if (mc.level == null || mc.player == null)
+        if (mc.world == null || mc.player == null)
         {
             return;
         }
@@ -112,15 +112,15 @@ public class OverlayRendererHandheldBeaconRange extends OverlayRendererBase
 
         RenderObjectVbo ctx = this.renderObjects.getFirst();
         BufferBuilder builder = ctx.start(() -> "minihud:held_beacon/quads", MaLiLibPipelines.POSITION_COLOR_MASA_LEQUAL_DEPTH_OFFSET_1);
-        PoseStack matrices = new PoseStack();
+        MatrixStack matrices = new MatrixStack();
 
-        matrices.pushPose();
+        matrices.push();
 
         RenderUtils.drawBoxAllSidesBatchedQuads(this.box, Color4f.fromColor(color.intValue, 0.3f), builder);
 
         try
         {
-            MeshData meshData = builder.build();
+            BuiltBuffer meshData = builder.endNullable();
 
             if (meshData != null)
             {
@@ -139,13 +139,13 @@ public class OverlayRendererHandheldBeaconRange extends OverlayRendererBase
             MiniHUD.LOGGER.error("OverlayRendererHandheldBeaconRange#renderQuads(): Exception; {}", err.getMessage());
         }
 
-        matrices.popPose();
+        matrices.pop();
         profiler.pop();
     }
 
-    private void renderOutlines(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
+    private void renderOutlines(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
     {
-        if (mc.level == null || mc.player == null)
+        if (mc.world == null || mc.player == null)
         {
             return;
         }
@@ -162,7 +162,7 @@ public class OverlayRendererHandheldBeaconRange extends OverlayRendererBase
 
         try
         {
-            MeshData meshData = builder.build();
+            BuiltBuffer meshData = builder.endNullable();
 
             if (meshData != null)
             {
@@ -188,16 +188,16 @@ public class OverlayRendererHandheldBeaconRange extends OverlayRendererBase
         this.hasData = false;
     }
 
-    private void calculateBeaconBoxForPlayer(Level world, Entity entity, Minecraft mc)
+    private void calculateBeaconBoxForPlayer(World world, Entity entity, MinecraftClient mc)
     {
         if (mc.player == null) return;
-        Vec3 cameraPos = mc.gameRenderer.getMainCamera().getPosition();
+        Vec3d cameraPos = mc.gameRenderer.getCamera().getPos();
         double x = Math.floor(entity.getX()) - cameraPos.x;
         double y = Math.floor(entity.getY()) - cameraPos.y;
         double z = Math.floor(entity.getZ()) - cameraPos.z;
         // Use the slot number as the level if sneaking
 
-        this.level = mc.player.isShiftKeyDown() ? Math.min(4, mc.player.getInventory().getSelectedSlot() + 1) : 4;
+        this.level = mc.player.isSneaking() ? Math.min(4, mc.player.getInventory().getSelectedSlot() + 1) : 4;
         float range = this.level * 10 + 10;
         float minX = (float) (x - range);
         float minY = (float) (y - range);
@@ -206,7 +206,7 @@ public class OverlayRendererHandheldBeaconRange extends OverlayRendererBase
         float maxY = (float) (y + range + 24);  // the getYTop doesn't seem to work here
         float maxZ = (float) (z + range + 1);
 
-        this.box = new AABB(minX, minY, minZ, maxX, maxY, maxZ);
+        this.box = new Box(minX, minY, minZ, maxX, maxY, maxZ);
         this.hasData = true;
     }
 }

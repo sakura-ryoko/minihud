@@ -36,7 +36,7 @@ public class InfoLineChunkSections extends InfoLine
             return null;
         }
 
-        list.add(this.translate(CHUNKS_KEY, ((IMixinWorldRenderer) mc().levelRenderer).minihud_getRenderedChunksInvoker()));
+        list.add(this.translate(CHUNKS_KEY, ((IMixinWorldRenderer) mc().worldRenderer).minihud_getRenderedChunksInvoker()));
 
         return list;
     }

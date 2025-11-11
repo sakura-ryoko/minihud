@@ -8,18 +8,18 @@ import fi.dy.masa.minihud.util.DataStorage;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.Util;
-import net.minecraft.client.multiplayer.ClientPacketListener;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtAccounter;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.RandomSource;
+import net.minecraft.client.network.ClientPlayNetworkHandler;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtList;
+import net.minecraft.nbt.NbtSizeTracker;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.Util;
+import net.minecraft.util.math.random.Random;
 
 @Environment(EnvType.CLIENT)
-public abstract class ServuxStructuresHandler<T extends CustomPacketPayload> implements IPluginClientPlayHandler<T>
+public abstract class ServuxStructuresHandler<T extends CustomPayload> implements IPluginClientPlayHandler<T>
 {
     private final static ServuxStructuresHandler<ServuxStructuresPacket.Payload> INSTANCE = new ServuxStructuresHandler<>()
     {
@@ -31,7 +31,7 @@ public abstract class ServuxStructuresHandler<T extends CustomPacketPayload> imp
     };
     public static ServuxStructuresHandler<ServuxStructuresPacket.Payload> getInstance() { return INSTANCE; }
 
-    public static final ResourceLocation CHANNEL_ID = ResourceLocation.fromNamespaceAndPath("servux", "structures");
+    public static final Identifier CHANNEL_ID = Identifier.of("servux", "structures");
 
     private boolean servuxRegistered;
     private boolean payloadRegistered = false;
@@ -40,10 +40,10 @@ public abstract class ServuxStructuresHandler<T extends CustomPacketPayload> imp
     private long readingSessionKey = -1;
 
     @Override
-    public ResourceLocation getPayloadChannel() { return CHANNEL_ID; }
+    public Identifier getPayloadChannel() { return CHANNEL_ID; }
 
     @Override
-    public boolean isPlayRegistered(ResourceLocation channel)
+    public boolean isPlayRegistered(Identifier channel)
     {
         if (channel.equals(CHANNEL_ID))
         {
@@ -54,7 +54,7 @@ public abstract class ServuxStructuresHandler<T extends CustomPacketPayload> imp
     }
 
     @Override
-    public void setPlayRegistered(ResourceLocation channel)
+    public void setPlayRegistered(Identifier channel)
     {
         if (channel.equals(CHANNEL_ID))
         {
@@ -62,7 +62,7 @@ public abstract class ServuxStructuresHandler<T extends CustomPacketPayload> imp
         }
     }
 
-    public void decodeStructuresPacket(ResourceLocation channel, ServuxStructuresPacket packet)
+    public void decodeStructuresPacket(Identifier channel, ServuxStructuresPacket packet)
     {
         if (!channel.equals(CHANNEL_ID) || packet == null)
         {
@@ -74,21 +74,21 @@ public abstract class ServuxStructuresHandler<T extends CustomPacketPayload> imp
             {
                 if (this.readingSessionKey == -1)
                 {
-                    this.readingSessionKey = RandomSource.create(Util.getMillis()).nextLong();
+                    this.readingSessionKey = Random.create(Util.getMeasuringTimeMs()).nextLong();
                 }
 
-                FriendlyByteBuf fullPacket = PacketSplitter.receive(this, this.readingSessionKey, packet.getBuffer());
+                PacketByteBuf fullPacket = PacketSplitter.receive(this, this.readingSessionKey, packet.getBuffer());
 
                 if (fullPacket != null)
                 {
                     try
                     {
-                        CompoundTag nbt = (CompoundTag) fullPacket.readNbt(NbtAccounter.unlimitedHeap());
+                        NbtCompound nbt = (NbtCompound) fullPacket.readNbt(NbtSizeTracker.ofUnlimitedBytes());
                         this.readingSessionKey = -1;
 
                         if (nbt != null)
                         {
-                            ListTag structures = nbt.getListOrEmpty("Structures");
+                            NbtList structures = nbt.getListOrEmpty("Structures");
 //                            MiniHUD.debugLog("decodeStructuresPacket(): received Structures Data of size {} (in bytes) // structures [{}]", nbt.getSizeInBytes(), structures.size());
 
                             DataStorage.getInstance().addOrUpdateStructuresFromServer(structures, this.servuxRegistered);
@@ -131,7 +131,7 @@ public abstract class ServuxStructuresHandler<T extends CustomPacketPayload> imp
     }
 
     @Override
-    public void reset(ResourceLocation channel)
+    public void reset(Identifier channel)
     {
         if (channel.equals(CHANNEL_ID) && this.servuxRegistered)
         {
@@ -141,7 +141,7 @@ public abstract class ServuxStructuresHandler<T extends CustomPacketPayload> imp
         }
     }
 
-    public void resetFailures(ResourceLocation channel)
+    public void resetFailures(Identifier channel)
     {
         if (channel.equals(CHANNEL_ID) && this.failures > 0)
         {
@@ -152,14 +152,14 @@ public abstract class ServuxStructuresHandler<T extends CustomPacketPayload> imp
     @Override
     public void receivePlayPayload(T payload, ClientPlayNetworking.Context ctx)
     {
-        if (payload.type().id().equals(CHANNEL_ID))
+        if (payload.getId().id().equals(CHANNEL_ID))
         {
             ServuxStructuresHandler.INSTANCE.decodeStructuresPacket(CHANNEL_ID, ((ServuxStructuresPacket.Payload) payload).data());
         }
     }
 
     @Override
-    public void encodeWithSplitter(FriendlyByteBuf buffer, ClientPacketListener handler)
+    public void encodeWithSplitter(PacketByteBuf buffer, ClientPlayNetworkHandler handler)
     {
         // NO-OP
     }

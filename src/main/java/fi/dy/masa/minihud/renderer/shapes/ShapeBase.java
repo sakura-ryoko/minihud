@@ -3,9 +3,9 @@ package fi.dy.masa.minihud.renderer.shapes;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.client.Minecraft;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.entity.Entity;
+import net.minecraft.util.math.Vec3d;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import fi.dy.masa.malilib.interfaces.IRangeChangeListener;
@@ -21,7 +21,7 @@ public abstract class ShapeBase extends OverlayRendererBase implements IRangeCha
 {
     protected static final DecimalFormat DEC_FMT = new DecimalFormat("#.##");
 
-    protected final Minecraft mc;
+    protected final MinecraftClient mc;
     protected final ShapeType type;
     protected final LayerRange layerRange;
     protected String displayName;
@@ -35,7 +35,7 @@ public abstract class ShapeBase extends OverlayRendererBase implements IRangeCha
 
     public ShapeBase(ShapeType type, Color4f color)
     {
-        this.mc = Minecraft.getInstance();
+        this.mc = MinecraftClient.getInstance();
         this.type = type;
         this.color = color;
         this.colorLines = Color4f.WHITE;
@@ -169,18 +169,18 @@ public abstract class ShapeBase extends OverlayRendererBase implements IRangeCha
         this.needsUpdate = true;
     }
 
-    public void moveToPosition(Vec3 pos)
+    public void moveToPosition(Vec3d pos)
     {
     }
 
     @Override
-    public boolean shouldRender(Minecraft mc)
+    public boolean shouldRender(MinecraftClient mc)
     {
         return this.enabled && RendererToggle.SHAPE_RENDERER.getBooleanValue();
     }
 
     @Override
-    public boolean needsUpdate(Entity entity, Minecraft mc)
+    public boolean needsUpdate(Entity entity, MinecraftClient mc)
     {
         return this.needsUpdate;
     }

@@ -3,7 +3,7 @@ package fi.dy.masa.minihud.info.world;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nonnull;
-import net.minecraft.world.level.Level;
+import net.minecraft.world.World;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.InfoToggle;
@@ -38,11 +38,11 @@ public class InfoLineTimeDayModulo extends InfoLine
     }
 
     @Override
-    public List<Entry> parseWorld(@Nonnull Level world)
+    public List<Entry> parseWorld(@Nonnull World world)
     {
         List<Entry> list = new ArrayList<>();
         final int mod = Configs.Generic.TIME_DAY_DIVISOR.getIntegerValue();
-        final long current = world.getDayTime() % mod;
+        final long current = world.getTimeOfDay() % mod;
 
         list.add(this.translate(TIME_KEY, mod, current));
 

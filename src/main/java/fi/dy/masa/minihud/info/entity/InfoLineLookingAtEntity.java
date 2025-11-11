@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import javax.annotation.Nonnull;
-import net.minecraft.Util;
-import net.minecraft.world.entity.AgeableMob;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.OwnableEntity;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.Tameable;
+import net.minecraft.entity.passive.PassiveEntity;
+import net.minecraft.util.Util;
 import org.apache.commons.lang3.tuple.Pair;
 import fi.dy.masa.malilib.util.nbt.NbtEntityUtils;
 import fi.dy.masa.minihud.Reference;
@@ -59,11 +59,11 @@ public class InfoLineLookingAtEntity extends InfoLine
 
             if (ownerPair.getLeft() != Util.NIL_UUID)
             {
-                LivingEntity owner = ctx.world().getPlayerByUUID(ownerPair.getLeft());
+                LivingEntity owner = ctx.world().getPlayerByUuid(ownerPair.getLeft());
 
                 if (owner != null)
                 {
-                    entityLine = entityLine + " - " + this.qt(LOOKING_KEY+".owner") + ": " + owner.getName().tryCollapseToString();
+                    entityLine = entityLine + " - " + this.qt(LOOKING_KEY+".owner") + ": " + owner.getName().getLiteralString();
                 }
             }
             if (agePair.getLeft() < 0)
@@ -78,18 +78,18 @@ public class InfoLineLookingAtEntity extends InfoLine
         {
             String entityLine = this.qt(LOOKING_KEY+".livingentity", living.getName().getString(), living.getHealth(), living.getMaxHealth());
 
-            if (living instanceof OwnableEntity tamable)
+            if (living instanceof Tameable tamable)
             {
                 LivingEntity owner = tamable.getOwner();
 
                 if (owner != null)
                 {
-                    entityLine = entityLine + " - " + this.qt(LOOKING_KEY+".owner") + ": " + owner.getName().tryCollapseToString();
+                    entityLine = entityLine + " - " + this.qt(LOOKING_KEY+".owner") + ": " + owner.getName().getLiteralString();
                 }
             }
-            if (living instanceof AgeableMob passive)
+            if (living instanceof PassiveEntity passive)
             {
-                if (passive.getAge() < 0)
+                if (passive.getBreedingAge() < 0)
                 {
                     int untilGrown = ((IMixinPassiveEntity) passive).minihud_getRealBreedingAge() * (-1);
                     entityLine = entityLine+ " [" + MiscUtils.formatDuration(untilGrown * 50L) + " " + this.qt(REMAINING_KEY) + "]";

@@ -3,11 +3,11 @@ package fi.dy.masa.minihud.info.entity;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nonnull;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.level.Level;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.world.World;
 import org.apache.commons.lang3.tuple.Triple;
 import fi.dy.masa.malilib.util.nbt.NbtEntityUtils;
 import fi.dy.masa.minihud.Reference;
@@ -48,7 +48,7 @@ public class InfoLineLookingAtPlayerExp extends InfoLine
     }
 
     @Override
-    public List<Entry> parseNbt(@Nonnull Level world, @Nonnull EntityType<?> entityType, @Nonnull CompoundTag nbt)
+    public List<Entry> parseNbt(@Nonnull World world, @Nonnull EntityType<?> entityType, @Nonnull NbtCompound nbt)
     {
         List<Entry> list = new ArrayList<>();
 
@@ -66,11 +66,11 @@ public class InfoLineLookingAtPlayerExp extends InfoLine
     }
 
     @Override
-    public List<Entry> parseEnt(@Nonnull Level world, @Nonnull Entity ent)
+    public List<Entry> parseEnt(@Nonnull World world, @Nonnull Entity ent)
     {
         List<Entry> list = new ArrayList<>();
 
-        if (ent instanceof ServerPlayer player)
+        if (ent instanceof ServerPlayerEntity player)
         {
             list.add(this.translate(PLAYER_KEY, player.experienceLevel, 100 * player.experienceProgress, player.totalExperience));
         }

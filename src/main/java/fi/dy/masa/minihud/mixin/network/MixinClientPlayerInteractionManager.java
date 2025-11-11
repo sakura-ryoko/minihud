@@ -7,17 +7,17 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import fi.dy.masa.minihud.util.DataStorage;
-import net.minecraft.client.multiplayer.MultiPlayerGameMode;
+import net.minecraft.client.network.ClientPlayerInteractionManager;
 
-@Mixin(MultiPlayerGameMode.class)
+@Mixin(ClientPlayerInteractionManager.class)
 public abstract class MixinClientPlayerInteractionManager
 {
-    @Shadow @Final private net.minecraft.client.Minecraft minecraft;
+    @Shadow @Final private net.minecraft.client.MinecraftClient client;
 
-    @Inject(method = "destroyBlock", at = @At(value = "INVOKE",
-                target = "Lnet/minecraft/world/level/block/Block;destroy(Lnet/minecraft/world/level/LevelAccessor;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;)V"))
-    private void countBlockBreakingSpeed(net.minecraft.core.BlockPos pos, CallbackInfoReturnable<Boolean> cir)
+    @Inject(method = "breakBlock", at = @At(value = "INVOKE",
+                target = "Lnet/minecraft/block/Block;onBroken(Lnet/minecraft/world/WorldAccess;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)V"))
+    private void countBlockBreakingSpeed(net.minecraft.util.math.BlockPos pos, CallbackInfoReturnable<Boolean> cir)
     {
-        DataStorage.getInstance().onPlayerBlockBreak(this.minecraft);
+        DataStorage.getInstance().onPlayerBlockBreak(this.client);
     }
 }

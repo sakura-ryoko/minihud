@@ -2,11 +2,11 @@ package fi.dy.masa.minihud.network;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.network.packet.CustomPayload;
 
 @Environment(EnvType.CLIENT)
 @Deprecated
-public abstract class ServuxDebugHandler<T extends CustomPacketPayload>
+public abstract class ServuxDebugHandler<T extends CustomPayload>
 //        implements IPluginClientPlayHandler<T>
 {
 //    private static final ServuxDebugHandler<ServuxDebugPacket.Payload> INSTANCE = new ServuxDebugHandler<>() {

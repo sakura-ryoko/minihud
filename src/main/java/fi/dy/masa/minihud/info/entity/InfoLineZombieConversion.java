@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import javax.annotation.Nonnull;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.monster.Skeleton;
-import net.minecraft.world.entity.monster.Zombie;
-import net.minecraft.world.entity.monster.ZombieVillager;
-import net.minecraft.world.level.Level;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.mob.SkeletonEntity;
+import net.minecraft.entity.mob.ZombieEntity;
+import net.minecraft.entity.mob.ZombieVillagerEntity;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.world.World;
 import org.apache.commons.lang3.tuple.Pair;
 import fi.dy.masa.malilib.util.nbt.NbtEntityUtils;
 import fi.dy.masa.minihud.Reference;
@@ -55,9 +55,9 @@ public class InfoLineZombieConversion extends InfoLine
     }
 
     @Override
-    public List<Entry> parseNbt(@Nonnull Level world, @Nonnull EntityType<?> entityType, @Nonnull CompoundTag nbt)
+    public List<Entry> parseNbt(@Nonnull World world, @Nonnull EntityType<?> entityType, @Nonnull NbtCompound nbt)
     {
-        String zombieType = entityType.getDescription().getString();
+        String zombieType = entityType.getName().getString();
         List<Entry> list = new ArrayList<>();
         int conversionTimer = -1;
 
@@ -87,19 +87,19 @@ public class InfoLineZombieConversion extends InfoLine
     }
 
     @Override
-    public List<Entry> parseEnt(@Nonnull Level world, @Nonnull Entity ent)
+    public List<Entry> parseEnt(@Nonnull World world, @Nonnull Entity ent)
     {
-        String zombieType = ent.getType().getDescription().getString();
+        String zombieType = ent.getType().getName().getString();
         List<Entry> list = new ArrayList<>();
         int conversionTimer;
 
         switch (ent)
         {
-            case ZombieVillager zombie ->
+            case ZombieVillagerEntity zombie ->
                     conversionTimer = ((IMixinZombieVillagerEntity) zombie).minihud_conversionTimer();
-            case Zombie zombert ->
+            case ZombieEntity zombert ->
                     conversionTimer = ((IMixinZombieEntity) zombert).minihud_ticksUntilWaterConversion();
-            case Skeleton skeleton ->
+            case SkeletonEntity skeleton ->
                     conversionTimer = ((IMixinSkeletonEntity) skeleton).minihud_conversionTime();
             default ->
                     conversionTimer = -1;

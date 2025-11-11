@@ -2,12 +2,12 @@ package fi.dy.masa.minihud.renderer;
 
 import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.client.Camera;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.culling.Frustum;
-import net.minecraft.util.profiling.ProfilerFiller;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.render.Camera;
+import net.minecraft.client.render.Frustum;
+import net.minecraft.entity.Entity;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.profiler.Profiler;
 import com.google.gson.JsonObject;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
@@ -51,17 +51,17 @@ public class RenderContainer
         this.renderers.remove(renderer);
     }
 
-    public void render(Entity entity, Matrix4f posMatrix, Matrix4f projMatrix, Minecraft mc, Camera camera, Frustum frustum, ProfilerFiller profiler)
+    public void render(Entity entity, Matrix4f posMatrix, Matrix4f projMatrix, MinecraftClient mc, Camera camera, Frustum frustum, Profiler profiler)
     {
         profiler.push("render_container");
-        this.update(camera.getPosition(), entity, mc, profiler);
-        this.draw(camera.getPosition(), profiler);
+        this.update(camera.getPos(), entity, mc, profiler);
+        this.draw(camera.getPos(), profiler);
         profiler.pop();
     }
 
-    protected void update(Vec3 cameraPos, Entity entity, Minecraft mc, ProfilerFiller profiler)
+    protected void update(Vec3d cameraPos, Entity entity, MinecraftClient mc, Profiler profiler)
     {
-        profiler.popPush("render_update");
+        profiler.swap("render_update");
 
         this.countActive = 0;
 
@@ -90,9 +90,9 @@ public class RenderContainer
         }
     }
 
-    protected void draw(Vec3 cameraPos, ProfilerFiller profiler)
+    protected void draw(Vec3d cameraPos, Profiler profiler)
     {
-        profiler.popPush("render_draw");
+        profiler.swap("render_draw");
 
         if (this.countActive > 0)
         {
@@ -105,7 +105,7 @@ public class RenderContainer
 //                if (renderer.shouldRender(mc))
                 if (renderer.hasData())
                 {
-                    Vec3 updatePos = renderer.getUpdatePosition();
+                    Vec3d updatePos = renderer.getUpdatePosition();
 
                     matrix4fstack.pushMatrix();
                     matrix4fstack.translate((float) (updatePos.x - cameraPos.x), (float) (updatePos.y - cameraPos.y), (float) (updatePos.z - cameraPos.z));

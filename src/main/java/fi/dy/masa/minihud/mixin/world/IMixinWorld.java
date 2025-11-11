@@ -1,14 +1,14 @@
 package fi.dy.masa.minihud.mixin.world;
 
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.entity.LevelEntityGetter;
+import net.minecraft.entity.Entity;
+import net.minecraft.world.World;
+import net.minecraft.world.entity.EntityLookup;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
-@Mixin(Level.class)
+@Mixin(World.class)
 public interface IMixinWorld
 {
-    @Invoker("getEntities")
-    LevelEntityGetter<Entity> minihud_getEntityLookup();
+    @Invoker("getEntityLookup")
+    EntityLookup<Entity> minihud_getEntityLookup();
 }

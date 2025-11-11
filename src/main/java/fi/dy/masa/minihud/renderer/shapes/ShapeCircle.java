@@ -3,17 +3,17 @@ package fi.dy.masa.minihud.renderer.shapes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-import net.minecraft.client.Minecraft;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.util.Mth;
-import net.minecraft.util.profiling.ProfilerFiller;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.render.BufferBuilder;
+import net.minecraft.client.render.BuiltBuffer;
+import net.minecraft.entity.Entity;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.profiler.Profiler;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.MeshData;
 import it.unimi.dsi.fastutil.longs.Long2ByteOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
@@ -41,7 +41,7 @@ public class ShapeCircle extends ShapeCircleBase
     }
 
     @Override
-    public void update(Vec3 cameraPos, Entity entity, Minecraft mc, ProfilerFiller profiler)
+    public void update(Vec3d cameraPos, Entity entity, MinecraftClient mc, Profiler profiler)
     {
         this.hasData = true;
         this.render(cameraPos, mc, profiler);
@@ -55,7 +55,7 @@ public class ShapeCircle extends ShapeCircleBase
     }
 
     @Override
-    public void render(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
+    public void render(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
     {
         this.allocateBuffers(this.renderLines);
         this.renderQuads(cameraPos, mc, profiler);
@@ -66,9 +66,9 @@ public class ShapeCircle extends ShapeCircleBase
         }
     }
 
-    private void renderQuads(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
+    private void renderQuads(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
     {
-        if (mc.level == null || mc.player == null)
+        if (mc.world == null || mc.player == null)
         {
             return;
         }
@@ -83,7 +83,7 @@ public class ShapeCircle extends ShapeCircleBase
 
         try
         {
-            MeshData meshData = builder.build();
+            BuiltBuffer meshData = builder.endNullable();
 
             if (meshData != null)
             {
@@ -106,9 +106,9 @@ public class ShapeCircle extends ShapeCircleBase
         profiler.pop();
     }
 
-    private void renderOutlines(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
+    private void renderOutlines(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
     {
-        if (mc.level == null || mc.player == null || !this.renderLines)
+        if (mc.world == null || mc.player == null || !this.renderLines)
         {
             return;
         }
@@ -123,7 +123,7 @@ public class ShapeCircle extends ShapeCircleBase
 
         try
         {
-            MeshData meshData = builder.build();
+            BuiltBuffer meshData = builder.endNullable();
 
             if (meshData != null)
             {
@@ -154,17 +154,17 @@ public class ShapeCircle extends ShapeCircleBase
 
     public void setHeight(int height)
     {
-        this.height = Mth.clamp(height, 1, 8192);
+        this.height = MathHelper.clamp(height, 1, 8192);
         this.setNeedsUpdate();
     }
 
-    protected void renderCircleShapeQuads(Vec3 cameraPos, BufferBuilder builder)
+    protected void renderCircleShapeQuads(Vec3d cameraPos, BufferBuilder builder)
     {
         LongOpenHashSet positions = new LongOpenHashSet();
-        Consumer<BlockPos.MutableBlockPos> positionConsumer = this.getPositionCollector(positions);
+        Consumer<BlockPos.Mutable> positionConsumer = this.getPositionCollector(positions);
         SphereUtils.RingPositionTest test = this::isPositionOnOrInsideRing;
-        BlockPos.MutableBlockPos mutablePos = new BlockPos.MutableBlockPos();
-        Vec3 effectiveCenter = this.getEffectiveCenter();
+        BlockPos.Mutable mutablePos = new BlockPos.Mutable();
+        Vec3d effectiveCenter = this.getEffectiveCenter();
         Direction.Axis axis = this.mainAxis.getAxis();
         double expand = 0;
 
@@ -189,10 +189,10 @@ public class ShapeCircle extends ShapeCircleBase
         }
         else
         {
-            BlockPos posCenter = BlockPos.containing(effectiveCenter);
-            int offX = this.mainAxis.getStepX();
-            int offY = this.mainAxis.getStepY();
-            int offZ = this.mainAxis.getStepZ();
+            BlockPos posCenter = BlockPos.ofFloored(effectiveCenter);
+            int offX = this.mainAxis.getOffsetX();
+            int offY = this.mainAxis.getOffsetY();
+            int offZ = this.mainAxis.getOffsetZ();
     
             for (int i = 0; i < this.height; ++i)
             {
@@ -216,15 +216,15 @@ public class ShapeCircle extends ShapeCircleBase
         }
     }
 
-    protected void renderCircleShapeOutlines(Vec3 cameraPos,
+    protected void renderCircleShapeOutlines(Vec3d cameraPos,
 //                                             BufferBuilder builder, MatrixStack.Entry e)
                                              BufferBuilder builder)
     {
         LongOpenHashSet positions = new LongOpenHashSet();
-        Consumer<BlockPos.MutableBlockPos> positionConsumer = this.getPositionCollector(positions);
+        Consumer<BlockPos.Mutable> positionConsumer = this.getPositionCollector(positions);
         SphereUtils.RingPositionTest test = this::isPositionOnOrInsideRing;
-        BlockPos.MutableBlockPos mutablePos = new BlockPos.MutableBlockPos();
-        Vec3 effectiveCenter = this.getEffectiveCenter();
+        BlockPos.Mutable mutablePos = new BlockPos.Mutable();
+        Vec3d effectiveCenter = this.getEffectiveCenter();
         Direction.Axis axis = this.mainAxis.getAxis();
         double expand = 0;
 
@@ -249,10 +249,10 @@ public class ShapeCircle extends ShapeCircleBase
         }
         else
         {
-            BlockPos posCenter = BlockPos.containing(effectiveCenter);
-            int offX = this.mainAxis.getStepX();
-            int offY = this.mainAxis.getStepY();
-            int offZ = this.mainAxis.getStepZ();
+            BlockPos posCenter = BlockPos.ofFloored(effectiveCenter);
+            int offX = this.mainAxis.getOffsetX();
+            int offY = this.mainAxis.getOffsetY();
+            int offZ = this.mainAxis.getOffsetZ();
 
             for (int i = 0; i < this.height; ++i)
             {
@@ -291,12 +291,12 @@ public class ShapeCircle extends ShapeCircleBase
     {
         Direction.Axis axis = this.mainAxis.getAxis();
 
-        Vec3 effectiveCenter = this.getEffectiveCenter();
+        Vec3d effectiveCenter = this.getEffectiveCenter();
         double radiusSq = this.getSquaredRadius();
         double x = axis == Direction.Axis.X ? effectiveCenter.x : (double) blockX + 0.5;
         double y = axis == Direction.Axis.Y ? effectiveCenter.y : (double) blockY + 0.5;
         double z = axis == Direction.Axis.Z ? effectiveCenter.z : (double) blockZ + 0.5;
-        double distSq = effectiveCenter.distanceToSqr(x, y, z);
+        double distSq = effectiveCenter.squaredDistanceTo(x, y, z);
         double diff = radiusSq - distSq;
 
         return diff >= 0;
