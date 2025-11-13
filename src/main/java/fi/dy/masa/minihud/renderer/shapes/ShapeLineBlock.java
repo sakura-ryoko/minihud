@@ -139,7 +139,7 @@ public class ShapeLineBlock extends ShapeBlocky
 
         profiler.push("line_block_quads");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "minihud:line_block/quads", this.renderThroughShape ? MaLiLibPipelines.MINIHUD_SHAPE_NO_DEPTH_OFFSET : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET);
+        BufferBuilder builder = ctx.start(() -> "minihud:line_block/quads", this.renderThroughShape ? MaLiLibPipelines.MINIHUD_SHAPE_NO_DEPTH_OFFSET : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL);
 //        MatrixStack matrices = new MatrixStack();
 
 //        matrices.push();

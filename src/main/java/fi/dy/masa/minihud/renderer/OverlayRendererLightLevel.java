@@ -13,6 +13,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.fluid.FluidState;
+import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.registry.tag.FluidTags;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
@@ -132,7 +133,7 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
         // Don't reallocate it unless empty; using start() calls reset() anyways.
         if (this.renderObjects.isEmpty())
         {
-            this.renderObjects.add(new RenderObjectVbo(() -> this.getName() + " Quads", MaLiLibPipelines.POSITION_TEX_COLOR_MASA_LEQUAL_DEPTH));
+            this.renderObjects.add(new RenderObjectVbo(() -> this.getName() + " Quads", MaLiLibPipelines.POSITION_TEX_COLOR_MASA_LEQUAL_DEPTH_NO_CULL));
             this.renderObjects.add(new RenderObjectVbo(() -> this.getName() + " Lines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH));
         }
     }
@@ -161,7 +162,7 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
 
         // this.renderThrough ? MaLiLibPipelines.POSITION_TEX_COLOR_SIMPLE : MaLiLibPipelines.POSITION_TEX_COLOR_LESSER_DEPTH
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "minihud:light_level/tex_quads", this.renderThrough ? MaLiLibPipelines.POSITION_TEX_COLOR_MASA_NO_DEPTH_NO_CULL : MaLiLibPipelines.POSITION_TEX_COLOR_MASA_LEQUAL_DEPTH);
+        BufferBuilder builder = ctx.start(() -> "minihud:light_level/tex_quads", this.renderThrough ? MaLiLibPipelines.POSITION_TEX_COLOR_MASA_NO_DEPTH_NO_CULL : MaLiLibPipelines.POSITION_TEX_COLOR_MASA_LEQUAL_DEPTH_NO_CULL);
         MatrixStack matrices = new MatrixStack();
 
         try
@@ -175,8 +176,6 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
         }
 
         matrices.push();
-//        fi.dy.masa.malilib.render.RenderUtils.bindTexture(TEXTURE_NUMBERS);
-
         MatrixStack.Entry e = matrices.peek();
 
         if (numberMode == LightLevelNumberMode.BLOCK || numberMode == LightLevelNumberMode.BOTH)
@@ -233,11 +232,7 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
         LightLevelMarkerMode markerMode = (LightLevelMarkerMode) Configs.Generic.LIGHT_LEVEL_MARKER_MODE.getOptionListValue();
 
         RenderObjectVbo ctx = this.renderObjects.get(1);
-        BufferBuilder builder = ctx.start(() -> "minihud:light_level/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH);
-//        MatrixStack matrices = new MatrixStack();
-
-//        matrices.push();
-//        MatrixStack.Entry e = matrices.peek();
+        BufferBuilder builder = ctx.start(() -> "minihud:light_level/outlines", this.renderThrough ? MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_NO_DEPTH_NO_CULL : MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH);
 
         if (markerMode == LightLevelMarkerMode.SQUARE)
         {
@@ -263,7 +258,6 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
             MiniHUD.LOGGER.error("OverlayRendererLightLevel#renderOutlines(): Exception; {}", err.getMessage());
         }
 
-//        matrices.pop();
         profiler.pop();
     }
 
@@ -462,12 +456,6 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
     {
         y += 0.005F;
 
-//        buffer.vertex(e, x + offset1, y, z + offset1).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
-//        buffer.vertex(e, x + offset2, y, z + offset2).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
-//
-//        buffer.vertex(e, x + offset1, y, z + offset2).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
-//        buffer.vertex(e, x + offset2, y, z + offset1).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
-
         buffer.vertex(x + offset1, y, z + offset1).color(color.r, color.g, color.b, color.a);
         buffer.vertex(x + offset2, y, z + offset2).color(color.r, color.g, color.b, color.a);
 
@@ -478,18 +466,6 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
     private void renderLightLevelSquare(float x, float y, float z, Color4f color, float offset1, float offset2, BufferBuilder buffer)
     {
         y += 0.005F;
-
-//        buffer.vertex(e, x + offset1, y, z + offset1).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
-//        buffer.vertex(e, x + offset1, y, z + offset2).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
-//
-//        buffer.vertex(e, x + offset1, y, z + offset2).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
-//        buffer.vertex(e, x + offset2, y, z + offset2).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
-//
-//        buffer.vertex(e, x + offset2, y, z + offset2).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
-//        buffer.vertex(e, x + offset2, y, z + offset1).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
-//
-//        buffer.vertex(e, x + offset2, y, z + offset1).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
-//        buffer.vertex(e, x + offset1, y, z + offset1).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
 
         buffer.vertex(x + offset1, y, z + offset1).color(color.r, color.g, color.b, color.a);
         buffer.vertex(x + offset1, y, z + offset2).color(color.r, color.g, color.b, color.a);
@@ -659,17 +635,13 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
         {
             return false;
         }
-        /*
-        else if (state.isIn(BlockTags.PREVENT_MOB_SPAWNING_INSIDE))
+        else if (state.isIn(BlockTags.INVALID_SPAWN_INSIDE))
         {
             return false;
         }
 
         // this also calls BlockState isIn()
-        return entityType.method_29496(state) == false;
-        */
-
-        return true;
+        return entityType.isInvalidSpawn(state) == false;
     }
 
     public static class LightLevelInfo

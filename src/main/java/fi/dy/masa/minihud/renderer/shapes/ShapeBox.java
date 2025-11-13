@@ -252,7 +252,7 @@ public class ShapeBox extends ShapeBase
 
         profiler.push("box_quads");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "minihud:box/quads", this.renderThroughShape ? MaLiLibPipelines.MINIHUD_SHAPE_NO_DEPTH_OFFSET : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET);
+        BufferBuilder builder = ctx.start(() -> "minihud:box/quads", this.renderThroughShape ? MaLiLibPipelines.MINIHUD_SHAPE_NO_DEPTH_OFFSET : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL);
         MatrixStack matrices = new MatrixStack();
 
         matrices.push();
