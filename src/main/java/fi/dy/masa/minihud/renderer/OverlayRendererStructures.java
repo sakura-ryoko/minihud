@@ -118,7 +118,7 @@ public class OverlayRendererStructures extends OverlayRendererBase
 
         profiler.push("structure main");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "minihud:structure/main_quads", this.renderThrough ? MaLiLibPipelines.MINIHUD_SHAPE_NO_DEPTH_OFFSET : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET);
+        BufferBuilder builder = ctx.start(() -> "minihud:structure/main_quads", this.renderThrough ? MaLiLibPipelines.MINIHUD_SHAPE_NO_DEPTH_OFFSET : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL);
 //        MatrixStack matrices = new MatrixStack();
 
 //        matrices.push();
@@ -168,7 +168,7 @@ public class OverlayRendererStructures extends OverlayRendererBase
         // ShaderPipelines.DEBUG_QUADS
         profiler.push("structure components");
         RenderObjectVbo ctx = this.renderObjects.get(1);
-        BufferBuilder builder = ctx.start(() -> "minihud:structure/component_quads", this.renderThrough ? MaLiLibPipelines.MINIHUD_SHAPE_NO_DEPTH_OFFSET : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET);
+        BufferBuilder builder = ctx.start(() -> "minihud:structure/component_quads", this.renderThrough ? MaLiLibPipelines.MINIHUD_SHAPE_NO_DEPTH_OFFSET : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL);
 //        MatrixStack matrices = new MatrixStack();
 
 //        matrices.push();

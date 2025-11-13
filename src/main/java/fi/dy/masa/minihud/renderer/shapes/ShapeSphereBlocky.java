@@ -72,7 +72,7 @@ public class ShapeSphereBlocky extends ShapeCircleBase
         profiler.push("sphere_blocky_quads");
 
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "minihud:sphere_blocky/quads", this.renderThroughShape ? MaLiLibPipelines.MINIHUD_SHAPE_NO_DEPTH_OFFSET : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET);
+        BufferBuilder builder = ctx.start(() -> "minihud:sphere_blocky/quads", this.renderThroughShape ? MaLiLibPipelines.MINIHUD_SHAPE_NO_DEPTH_OFFSET : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL);
 
         this.renderSphereShapeQuads(cameraPos, builder);
 

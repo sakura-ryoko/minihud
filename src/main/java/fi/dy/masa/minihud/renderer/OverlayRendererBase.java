@@ -50,7 +50,7 @@ public abstract class OverlayRendererBase implements IOverlayRenderer
     protected void allocateBuffers(boolean useOutlines)
     {
         this.clearBuffers();
-        this.renderObjects.add(new RenderObjectVbo(() -> this.getName()+"/Quads", MaLiLibPipelines.MINIHUD_SHAPE_OFFSET));
+        this.renderObjects.add(new RenderObjectVbo(() -> this.getName()+"/Quads", MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL));
 
         if (useOutlines)
         {

@@ -163,7 +163,7 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
         // MaLiLibPipelines.POSITION_COLOR_MASA_LESSER_DEPTH
         profiler.push("conduit_quads");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "minihud:conduit/quads", this.renderThrough ? MaLiLibPipelines.MINIHUD_SHAPE_NO_DEPTH_OFFSET : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET);
+        BufferBuilder builder = ctx.start(() -> "minihud:conduit/quads", this.renderThrough ? MaLiLibPipelines.MINIHUD_SHAPE_NO_DEPTH_OFFSET : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL);
 //        MatrixStack matrices = new MatrixStack();
 //
 //        matrices.push();
