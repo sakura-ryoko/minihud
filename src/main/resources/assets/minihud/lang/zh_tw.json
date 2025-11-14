@@ -1050,7 +1050,7 @@
     "minihud.message.error.invalid_spawn_chunk_radius": "無法解析聊天中的生成區塊半徑 (0 < 32)",
     "minihud.message.error.shapes.select_shape_from_dropdown": "從下拉選單中選擇要建立的形狀型別",
     "minihud.message.no_seed": "MiniHUD: 世界種子未知",
-    "minihud.message.no_spawn_chunk_radius": "MiniHUD: 生成區塊半徑未知 (預設值為 OFF)",
+    "minihud.message.no_spawn_chunk_radius": "MiniHUD: 生成區塊半徑未知 (預設值為 2)",
     "minihud.message.seed_is": "MiniHUD 中的世界種子當前設定為 '%s'",
     "minihud.message.seed_set": "MiniHUD: 將世界種子設定為 '%s'",
     "minihud.message.spawn_chunk_radius_is": "MiniHUD 當前的生成區塊半徑設定為 '%s'",
