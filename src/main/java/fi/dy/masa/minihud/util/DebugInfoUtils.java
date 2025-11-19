@@ -1,16 +1,15 @@
 package fi.dy.masa.minihud.util;
 
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.hud.debug.DebugHudEntries;
+import net.minecraft.client.render.Frustum;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
+
 import fi.dy.masa.malilib.config.IConfigBoolean;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.RendererToggle;
 import fi.dy.masa.minihud.data.DebugDataManager;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.hud.debug.DebugHudEntries;
-import net.minecraft.client.render.Frustum;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 
 @Deprecated
 public class DebugInfoUtils
@@ -107,9 +106,7 @@ public class DebugInfoUtils
                 .append(Text.translatable(key, args)));
     }
 
-    public static void renderVanillaDebug(MatrixStack matrixStack, Frustum frustum,
-                                          VertexConsumerProvider.Immediate vtx,
-                                          double cameraX, double cameraY, double cameraZ)
+    public static void renderVanillaDebug(Frustum frustum, double cameraX, double cameraY, double cameraZ, float tickProgress)
     {
 //        DebugRenderer renderer = MinecraftClient.getInstance().debugRenderer;
 //

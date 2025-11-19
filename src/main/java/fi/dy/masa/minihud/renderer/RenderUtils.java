@@ -3,38 +3,14 @@ package fi.dy.masa.minihud.renderer;
 import java.util.*;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.CrafterBlock;
-import net.minecraft.block.ShulkerBoxBlock;
-import net.minecraft.block.entity.CrafterBlockEntity;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.passive.AbstractHorseEntity;
-import net.minecraft.entity.passive.VillagerEntity;
-import net.minecraft.entity.passive.WolfEntity;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.*;
-import net.minecraft.world.RaycastContext;
-import net.minecraft.world.World;
 
-import fi.dy.masa.malilib.mixin.entity.IMixinAbstractHorseEntity;
-import fi.dy.masa.malilib.render.InventoryOverlay;
 import fi.dy.masa.malilib.util.*;
 import fi.dy.masa.malilib.util.data.Color4f;
-import fi.dy.masa.malilib.util.game.BlockUtils;
-import fi.dy.masa.malilib.util.game.RayTraceUtils;
 import fi.dy.masa.malilib.util.position.PositionUtils;
-import fi.dy.masa.minihud.config.Configs;
-import fi.dy.masa.minihud.data.EntitiesDataManager;
 import fi.dy.masa.minihud.renderer.shapes.SideQuad;
 import fi.dy.masa.minihud.util.ShapeRenderType;
 import fi.dy.masa.minihud.util.shape.SphereUtils;
@@ -126,6 +102,7 @@ public class RenderUtils
             boolean alignLinesToModulo,
             Vec3d cameraPos,
             Color4f color,
+			float lineWidth,
             BufferBuilder bufferLines)
     {
         double cx = cameraPos.x;
@@ -138,8 +115,8 @@ public class RenderUtils
 
             while (lineY <= box.maxY)
             {
-                bufferLines.vertex((float) (box.minX - cx), (float) (lineY - cy), (float) (box.minZ - cz)).color(color.r, color.g, color.b, 1.0F);
-                bufferLines.vertex((float) (box.maxX - cx), (float) (lineY - cy), (float) (box.maxZ - cz)).color(color.r, color.g, color.b, 1.0F);
+                bufferLines.vertex((float) (box.minX - cx), (float) (lineY - cy), (float) (box.minZ - cz)).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+                bufferLines.vertex((float) (box.maxX - cx), (float) (lineY - cy), (float) (box.maxZ - cz)).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
 
                 lineY += lineIntervalV;
             }
@@ -153,8 +130,8 @@ public class RenderUtils
 
                 while (lineZ <= box.maxZ)
                 {
-                    bufferLines.vertex((float) (box.minX - cx), (float) (box.minY - cy), (float) (lineZ - cz)).color(color.r, color.g, color.b, 1.0F);
-                    bufferLines.vertex((float) (box.minX - cx), (float) (box.maxY - cy), (float) (lineZ - cz)).color(color.r, color.g, color.b, 1.0F);
+                    bufferLines.vertex((float) (box.minX - cx), (float) (box.minY - cy), (float) (lineZ - cz)).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+                    bufferLines.vertex((float) (box.minX - cx), (float) (box.maxY - cy), (float) (lineZ - cz)).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
 
                     lineZ += lineIntervalH;
                 }
@@ -165,8 +142,8 @@ public class RenderUtils
 
                 while (lineX <= box.maxX)
                 {
-                    bufferLines.vertex((float) (lineX - cx), (float) (box.minY - cy), (float) (box.minZ - cz)).color(color.r, color.g, color.b, 1.0F);
-                    bufferLines.vertex((float) (lineX - cx), (float) (box.maxY - cy), (float) (box.minZ - cz)).color(color.r, color.g, color.b, 1.0F);
+                    bufferLines.vertex((float) (lineX - cx), (float) (box.minY - cy), (float) (box.minZ - cz)).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+                    bufferLines.vertex((float) (lineX - cx), (float) (box.maxY - cy), (float) (box.minZ - cz)).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
 
                     lineX += lineIntervalH;
                 }
@@ -174,9 +151,8 @@ public class RenderUtils
         }
     }
 
-    public static void drawBoxNoOutlines(IntBoundingBox bb, Vec3d cameraPos, Color4f color,
-//                                         BufferBuilder bufferQuads, MatrixStack.Entry e)
-                                         BufferBuilder bufferQuads)
+    public static void drawBoxQuads(IntBoundingBox bb, Vec3d cameraPos, Color4f color,
+                                    BufferBuilder bufferQuads)
     {
         float minX = (float) (bb.minX - cameraPos.x);
         float minY = (float) (bb.minY - cameraPos.y);
@@ -188,7 +164,21 @@ public class RenderUtils
         fi.dy.masa.malilib.render.RenderUtils.drawBoxAllSidesBatchedQuads(minX, minY, minZ, maxX, maxY, maxZ, color, bufferQuads);
     }
 
-    /**
+	public static void drawBoxOutlines(IntBoundingBox bb, Vec3d cameraPos, Color4f color,
+									   float lineWidth,
+	                                   BufferBuilder bufferQuads)
+	{
+		float minX = (float) (bb.minX - cameraPos.x);
+		float minY = (float) (bb.minY - cameraPos.y);
+		float minZ = (float) (bb.minZ - cameraPos.z);
+		float maxX = (float) (bb.maxX + 1 - cameraPos.x);
+		float maxY = (float) (bb.maxY + 1 - cameraPos.y);
+		float maxZ = (float) (bb.maxZ + 1 - cameraPos.z);
+
+		fi.dy.masa.malilib.render.RenderUtils.drawBoxAllEdgesBatchedLines(minX, minY, minZ, maxX, maxY, maxZ, color, lineWidth, bufferQuads);
+	}
+
+	/**
      * Assumes a BufferBuilder in GL_QUADS mode has been initialized
      */
     public static void drawBlockSpaceSideBatchedQuads(long posLong, Direction side,
@@ -257,6 +247,7 @@ public class RenderUtils
 
     public static void drawBlockSpaceSideBatchedLines(long posLong, Direction side,
                                                       Color4f color, double expand, Vec3d cameraPos,
+													  float lineWidth,
                                                       BufferBuilder buffer)
     {
         int x = BlockPos.unpackLongX(posLong);
@@ -275,40 +266,40 @@ public class RenderUtils
         switch (side)
         {
             case DOWN:
-                buffer.vertex(maxX, minY, maxZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(minX, minY, maxZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(minX, minY, minZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(maxX, minY, minZ).color(color.r, color.g, color.b, color.a);
+                buffer.vertex(maxX, minY, maxZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+                buffer.vertex(minX, minY, maxZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+                buffer.vertex(minX, minY, minZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+                buffer.vertex(maxX, minY, minZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
                 break;
             case UP:
-                buffer.vertex(minX, maxY, maxZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(maxX, maxY, maxZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(maxX, maxY, minZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(minX, maxY, minZ).color(color.r, color.g, color.b, color.a);
+                buffer.vertex(minX, maxY, maxZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+                buffer.vertex(maxX, maxY, maxZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+                buffer.vertex(maxX, maxY, minZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+                buffer.vertex(minX, maxY, minZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
                 break;
             case NORTH:
-                buffer.vertex(maxX, minY, minZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(minX, minY, minZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(minX, maxY, minZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(maxX, maxY, minZ).color(color.r, color.g, color.b, color.a);
+                buffer.vertex(maxX, minY, minZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+                buffer.vertex(minX, minY, minZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+                buffer.vertex(minX, maxY, minZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+                buffer.vertex(maxX, maxY, minZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
                 break;
             case SOUTH:
-                buffer.vertex(minX, minY, maxZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(maxX, minY, maxZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(maxX, maxY, maxZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(minX, maxY, maxZ).color(color.r, color.g, color.b, color.a);
+                buffer.vertex(minX, minY, maxZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+                buffer.vertex(maxX, minY, maxZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+                buffer.vertex(maxX, maxY, maxZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+                buffer.vertex(minX, maxY, maxZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
                 break;
             case WEST:
-                buffer.vertex(minX, minY, minZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(minX, minY, maxZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(minX, maxY, maxZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(minX, maxY, minZ).color(color.r, color.g, color.b, color.a);
+                buffer.vertex(minX, minY, minZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+                buffer.vertex(minX, minY, maxZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+                buffer.vertex(minX, maxY, maxZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+                buffer.vertex(minX, maxY, minZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
                 break;
             case EAST:
-                buffer.vertex(maxX, minY, maxZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(maxX, minY, minZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(maxX, maxY, minZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(maxX, maxY, maxZ).color(color.r, color.g, color.b, color.a);
+                buffer.vertex(maxX, minY, maxZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+                buffer.vertex(maxX, minY, minZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+                buffer.vertex(maxX, maxY, minZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+                buffer.vertex(maxX, maxY, maxZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
                 break;
         }
     }
@@ -321,6 +312,7 @@ public class RenderUtils
                                                  Color4f color,
                                                  double expand,
                                                  Vec3d cameraPos,
+												 float lineWidth,
                                                  BufferBuilder buffer)
     {
         boolean full = renderType == ShapeRenderType.FULL_BLOCK;
@@ -357,7 +349,7 @@ public class RenderUtils
 
                 if (render)
                 {
-                    RenderUtils.drawBlockSpaceSideBatchedLines(posLong, side, color, expand, cameraPos, buffer);
+                    RenderUtils.drawBlockSpaceSideBatchedLines(posLong, side, color, expand, cameraPos, lineWidth, buffer);
                     //++count;
                 }
             }
@@ -453,6 +445,7 @@ public class RenderUtils
                                                    Color4f color,
                                                    double expand,
                                                    Vec3d cameraPos,
+												   float lineWidth,
                                                    BufferBuilder buffer)
     {
         //int count = 0;
@@ -472,7 +465,7 @@ public class RenderUtils
                     continue;
                 }
 
-                RenderUtils.drawBlockSpaceSideBatchedLines(posLong, side, color, expand, cameraPos, buffer);
+                RenderUtils.drawBlockSpaceSideBatchedLines(posLong, side, color, expand, cameraPos, lineWidth, buffer);
                 //++count;
             }
         }
@@ -589,25 +582,28 @@ public class RenderUtils
     }
 
     public static void renderQuadLines(Collection<SideQuad> quads, Color4f color, double expand, Vec3d cameraPos,
+									   float lineWidth,
                                        BufferBuilder buffer)
     {
         for (SideQuad quad : quads)
         {
             renderInsetQuadLines(quad.startPos(), quad.width(), quad.height(), quad.side(),
-                                 -expand, color, cameraPos, buffer);
+                                 -expand, color, cameraPos, lineWidth, buffer);
         }
         //System.out.printf("merged: rendered %d quads\n", quads.size());
     }
 
     public static void renderInsetQuadLines(Vec3i minPos, int width, int height, Direction side,
                                             double inset, Color4f color, Vec3d cameraPos,
+                                            float lineWidth,
                                             BufferBuilder buffer)
     {
-        renderInsetQuadLines(minPos.getX(), minPos.getY(), minPos.getZ(), width, height, side, inset, color, cameraPos, buffer);
+        renderInsetQuadLines(minPos.getX(), minPos.getY(), minPos.getZ(), width, height, side, inset, color, cameraPos, lineWidth, buffer);
     }
 
     public static void renderInsetQuadLines(long minPos, int width, int height, Direction side,
                                             double inset, Color4f color, Vec3d cameraPos,
+                                            float lineWidth,
                                             BufferBuilder buffer)
 
     {
@@ -615,11 +611,12 @@ public class RenderUtils
         int y = BlockPos.unpackLongY(minPos);
         int z = BlockPos.unpackLongZ(minPos);
 
-        renderInsetQuadLines(x, y, z, width, height, side, inset, color, cameraPos, buffer);
+        renderInsetQuadLines(x, y, z, width, height, side, inset, color, cameraPos, lineWidth, buffer);
     }
 
     public static void renderInsetQuadLines(int x, int y, int z, int width, int height, Direction side,
                                             double inset, Color4f color, Vec3d cameraPos,
+                                            float lineWidth,
                                             BufferBuilder buffer)
     {
         float minX = (float) (x - cameraPos.x);
@@ -649,45 +646,45 @@ public class RenderUtils
         {
             case WEST:
                 minX += (float) inset;
-                buffer.vertex(minX, minY, minZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(minX, maxY, minZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(minX, maxY, maxZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(minX, minY, maxZ).color(color.r, color.g, color.b, color.a);
+                buffer.vertex(minX, minY, minZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+                buffer.vertex(minX, maxY, minZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+                buffer.vertex(minX, maxY, maxZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+                buffer.vertex(minX, minY, maxZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
                 break;
             case EAST:
                 maxX += (float) (1 - inset);
-                buffer.vertex(maxX, minY, minZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(maxX, minY, maxZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(maxX, maxY, maxZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(maxX, maxY, minZ).color(color.r, color.g, color.b, color.a);
+                buffer.vertex(maxX, minY, minZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+                buffer.vertex(maxX, minY, maxZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+                buffer.vertex(maxX, maxY, maxZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+                buffer.vertex(maxX, maxY, minZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
                 break;
             case NORTH:
                 minZ += (float) inset;
-                buffer.vertex(minX, minY, minZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(maxX, minY, minZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(maxX, maxY, minZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(minX, maxY, minZ).color(color.r, color.g, color.b, color.a);
+                buffer.vertex(minX, minY, minZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+                buffer.vertex(maxX, minY, minZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+                buffer.vertex(maxX, maxY, minZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+                buffer.vertex(minX, maxY, minZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
                 break;
             case SOUTH:
                 maxZ += (float) (1 - inset);
-                buffer.vertex(minX, minY, maxZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(minX, maxY, maxZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(maxX, maxY, maxZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(maxX, minY, maxZ).color(color.r, color.g, color.b, color.a);
+                buffer.vertex(minX, minY, maxZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+                buffer.vertex(minX, maxY, maxZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+                buffer.vertex(maxX, maxY, maxZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+                buffer.vertex(maxX, minY, maxZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
                 break;
             case DOWN:
                 minY += (float) inset;
-                buffer.vertex(minX, minY, minZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(minX, minY, maxZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(maxX, minY, maxZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(maxX, minY, minZ).color(color.r, color.g, color.b, color.a);
+                buffer.vertex(minX, minY, minZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+                buffer.vertex(minX, minY, maxZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+                buffer.vertex(maxX, minY, maxZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+                buffer.vertex(maxX, minY, minZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
                 break;
             case UP:
                 maxY += (float) (1 - inset);
-                buffer.vertex(minX, maxY, minZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(maxX, maxY, minZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(maxX, maxY, maxZ).color(color.r, color.g, color.b, color.a);
-                buffer.vertex(minX, maxY, maxZ).color(color.r, color.g, color.b, color.a);
+                buffer.vertex(minX, maxY, minZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+                buffer.vertex(maxX, maxY, minZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+                buffer.vertex(maxX, maxY, maxZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+                buffer.vertex(minX, maxY, maxZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
                 break;
         }
     }
@@ -699,6 +696,7 @@ public class RenderUtils
                                               double inset,
                                               Color4f color,
                                               Vec3d cameraPos,
+											  float lineWidth,
                                               BufferBuilder buffer)
     {
         float minX = (float) (minPos.getX() - cameraPos.x);
@@ -738,25 +736,25 @@ public class RenderUtils
         if (side.getAxis() == Direction.Axis.Y)
         {
             // Line at the "start" end of the quad
-            buffer.vertex(minX, minY, minZ).color(color.r, color.g, color.b, 1f);
-            buffer.vertex(minX, maxY, maxZ).color(color.r, color.g, color.b, 1f);
+            buffer.vertex(minX, minY, minZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+            buffer.vertex(minX, maxY, maxZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
 
             for (float z = minZ; z < maxZ + 0.5; z += 1.0F)
             {
-                buffer.vertex(minX, minY, z).color(color.r, color.g, color.b, 1f);
-                buffer.vertex(maxX, maxY, z).color(color.r, color.g, color.b, 1f);
+                buffer.vertex(minX, minY, z).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+                buffer.vertex(maxX, maxY, z).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
             }
         }
         else
         {
             // Vertical line at the "start" end of the quad
-            buffer.vertex(minX, minY, minZ).color(color.r, color.g, color.b, 1f);
-            buffer.vertex(minX, maxY, minZ).color(color.r, color.g, color.b, 1f);
+            buffer.vertex(minX, minY, minZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+            buffer.vertex(minX, maxY, minZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
 
             for (float y = minY; y < maxY + 0.5; y += 1.0F)
             {
-                buffer.vertex(minX, y, minZ).color(color.r, color.g, color.b, 1f);
-                buffer.vertex(maxX, y, maxZ).color(color.r, color.g, color.b, 1f);
+                buffer.vertex(minX, y, minZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+                buffer.vertex(maxX, y, maxZ).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
             }
         }
     }
@@ -797,7 +795,7 @@ public class RenderUtils
     }
 
     public static void drawBoxAllEdgesBatchedLines(Box bb, Color4f color,
-//                                                   BufferBuilder buffer, MatrixStack matrices)
+												   float lineWidth,
                                                    BufferBuilder buffer)
     {
         float minX = (float) bb.minX;
@@ -807,194 +805,194 @@ public class RenderUtils
         float maxY = (float) bb.maxY;
         float maxZ = (float) bb.maxZ;
 
-        fi.dy.masa.malilib.render.RenderUtils.drawBoxAllEdgesBatchedLines(minX, minY, minZ, maxX, maxY, maxZ, color, buffer);
+        fi.dy.masa.malilib.render.RenderUtils.drawBoxAllEdgesBatchedLines(minX, minY, minZ, maxX, maxY, maxZ, color, lineWidth, buffer);
     }
 
     // OG Method (Works)
-    @Deprecated
-    public static void renderInventoryOverlay(MinecraftClient mc, DrawContext drawContext)
-    {
-        World world = WorldUtils.getBestWorld(mc);
-        Entity cameraEntity = EntityUtils.getCameraEntity();
-
-        if (mc.player == null || world == null || cameraEntity == null)
-        {
-            return;
-        }
-
-        if (cameraEntity == mc.player && world instanceof ServerWorld)
-        {
-            // We need to get the player from the server world (if available, ie. in single player),
-            // so that the player itself won't be included in the ray trace
-            Entity serverPlayer = world.getPlayerByUuid(mc.player.getUuid());
-
-            if (serverPlayer != null)
-            {
-                cameraEntity = serverPlayer;
-            }
-        }
-
-        HitResult trace = RayTraceUtils.getRayTraceFromEntity(cameraEntity.getEntityWorld(), cameraEntity, RaycastContext.FluidHandling.NONE);
-
-		if (trace == null) return;
-        BlockPos pos = null;
-        Inventory inv = null;
-        ShulkerBoxBlock shulkerBoxBlock = null;
-        CrafterBlock crafterBlock = null;
-        LivingEntity entityLivingBase = null;
-
-        if (trace.getType() == HitResult.Type.BLOCK)
-        {
-            pos = ((BlockHitResult) trace).getBlockPos();
-            Block blockTmp = world.getBlockState(pos).getBlock();
-
-            if (blockTmp instanceof ShulkerBoxBlock)
-            {
-                shulkerBoxBlock = (ShulkerBoxBlock) blockTmp;
-            }
-            else if (blockTmp instanceof CrafterBlock)
-            {
-                crafterBlock = (CrafterBlock) blockTmp;
-            }
-
-            inv = fi.dy.masa.minihud.util.InventoryUtils.getInventory(world, pos);
-        }
-        else if (trace.getType() == HitResult.Type.ENTITY)
-        {
-            Entity entity = ((EntityHitResult) trace).getEntity();
-
-            if (entity.getEntityWorld().isClient() &&
-                Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue())
-            {
-                EntitiesDataManager.getInstance().requestEntity(world, entity.getId());
-            }
-
-            if (entity instanceof LivingEntity)
-            {
-                entityLivingBase = (LivingEntity) entity;
-            }
-
-            if (entity instanceof Inventory)
-            {
-                inv = (Inventory) entity;
-            }
-            else if (entity instanceof VillagerEntity)
-            {
-                inv = ((VillagerEntity) entity).getInventory();
-            }
-            else if (entity instanceof AbstractHorseEntity)
-            {
-                inv = ((IMixinAbstractHorseEntity) entity).malilib_getHorseInventory();
-            }
-        }
-
-        final boolean isWolf = (entityLivingBase instanceof WolfEntity);
-        final int xCenter = GuiUtils.getScaledWindowWidth() / 2;
-        final int yCenter = GuiUtils.getScaledWindowHeight() / 2;
-        int x = xCenter - 52 / 2;
-        int y = yCenter - 92;
-
-        if (inv != null && inv.size() > 0)
-        {
-            final boolean isHorse = (entityLivingBase instanceof AbstractHorseEntity);
-            final int totalSlots = isHorse ? inv.size() - 1 : inv.size();
-            final int firstSlot = isHorse ? 1 : 0;
-
-            final InventoryOverlay.InventoryRenderType type = (entityLivingBase instanceof VillagerEntity) ? InventoryOverlay.InventoryRenderType.VILLAGER : InventoryOverlay.getInventoryType(inv);
-            final InventoryOverlay.InventoryProperties props = InventoryOverlay.getInventoryPropsTemp(type, totalSlots);
-            final int rows = (int) Math.ceil((double) totalSlots / props.slotsPerRow);
-            Set<Integer> lockedSlots = new HashSet<>();
-            int xInv = xCenter - (props.width / 2);
-            int yInv = yCenter - props.height - 6;
-
-            if (rows > 6)
-            {
-                yInv -= (rows - 6) * 18;
-                y -= (rows - 6) * 18;
-            }
-
-            if (entityLivingBase != null)
-            {
-                x = xCenter - 55;
-                xInv = xCenter + 2;
-                yInv = Math.min(yInv, yCenter - 92);
-            }
-
-            if (crafterBlock != null && pos != null)
-            {
-                CrafterBlockEntity cbe = (CrafterBlockEntity) world.getWorldChunk(pos).getBlockEntity(pos);
-                if (cbe != null)
-                {
-                    lockedSlots = BlockUtils.getDisabledSlots(cbe);
-                }
-            }
-
-            fi.dy.masa.malilib.render.RenderUtils.setShulkerboxBackgroundTintColor(shulkerBoxBlock, Configs.Generic.SHULKER_DISPLAY_BACKGROUND_COLOR.getBooleanValue());
-
-            if (isHorse)
-            {
-                Inventory horseInv = new SimpleInventory(2);
-                ItemStack horseArmor = (((AbstractHorseEntity) entityLivingBase).getBodyArmor());
-                horseInv.setStack(0, horseArmor != null && !horseArmor.isEmpty() ? horseArmor : ItemStack.EMPTY);
-                horseInv.setStack(1, inv.getStack(0));
-
-                InventoryOverlay.renderInventoryBackground(drawContext, type, xInv, yInv, 1, 2, mc);
-
-                if (type == InventoryOverlay.InventoryRenderType.LLAMA)
-                {
-                    InventoryOverlay.renderLlamaArmorBackgroundSlots(drawContext, horseInv, xInv + props.slotOffsetX, yInv + props.slotOffsetY);
-                }
-                else
-                {
-                    InventoryOverlay.renderHorseArmorBackgroundSlots(drawContext, horseInv, xInv + props.slotOffsetX, yInv + props.slotOffsetY);
-                }
-              
-                InventoryOverlay.renderInventoryStacks(drawContext, type, horseInv, xInv + props.slotOffsetX, yInv + props.slotOffsetY, 1, 0, 2, mc);
-                xInv += 32 + 4;
-            }
-            if (totalSlots > 0)
-            {
-                InventoryOverlay.renderInventoryBackground(drawContext, type, xInv, yInv, props.slotsPerRow, totalSlots, mc);
-
-                if (type == InventoryOverlay.InventoryRenderType.BREWING_STAND)
-                {
-                    InventoryOverlay.renderBrewerBackgroundSlots(drawContext, inv, xInv, yInv);
-                }
-              
-                InventoryOverlay.renderInventoryStacks(drawContext, type, inv, xInv + props.slotOffsetX, yInv + props.slotOffsetY, props.slotsPerRow, firstSlot, totalSlots, lockedSlots, mc);
-            }
-        }
-
-        if (isWolf)
-        {
-            InventoryOverlay.InventoryRenderType type = InventoryOverlay.InventoryRenderType.HORSE;
-            final InventoryOverlay.InventoryProperties props = InventoryOverlay.getInventoryPropsTemp(type, 2);
-            final int rows = (int) Math.ceil((double) 2 / props.slotsPerRow);
-            int xInv;
-            int yInv = yCenter - props.height - 6;
-
-            if (rows > 6)
-            {
-                yInv -= (rows - 6) * 18;
-                y -= (rows - 6) * 18;
-            }
-
-            x = xCenter - 55;
-            xInv = xCenter + 2;
-            yInv = Math.min(yInv, yCenter - 92);
-
-            Inventory wolfInv = new SimpleInventory(2);
-            ItemStack wolfArmor = ((WolfEntity) entityLivingBase).getBodyArmor();
-            wolfInv.setStack(0, wolfArmor != null && !wolfArmor.isEmpty() ? wolfArmor : ItemStack.EMPTY);
-            InventoryOverlay.renderInventoryBackground(drawContext, type, xInv, yInv, 1, 2, mc);
-            InventoryOverlay.renderWolfArmorBackgroundSlots(drawContext, wolfInv, xInv + props.slotOffsetX, yInv + props.slotOffsetY);
-            InventoryOverlay.renderInventoryStacks(drawContext, type, wolfInv, xInv + props.slotOffsetX, yInv + props.slotOffsetY, 1, 0, 2, mc);
-        }
-
-        if (entityLivingBase != null)
-        {
-            InventoryOverlay.renderEquipmentOverlayBackground(drawContext, x, y, entityLivingBase);
-            InventoryOverlay.renderEquipmentStacks(drawContext, entityLivingBase, x, y, mc);
-        }
-    }
+//    @Deprecated
+//    public static void renderInventoryOverlay(MinecraftClient mc, DrawContext drawContext)
+//    {
+//        World world = WorldUtils.getBestWorld(mc);
+//        Entity cameraEntity = EntityUtils.getCameraEntity();
+//
+//        if (mc.player == null || world == null || cameraEntity == null)
+//        {
+//            return;
+//        }
+//
+//        if (cameraEntity == mc.player && world instanceof ServerWorld)
+//        {
+//            // We need to get the player from the server world (if available, ie. in single player),
+//            // so that the player itself won't be included in the ray trace
+//            Entity serverPlayer = world.getPlayerByUuid(mc.player.getUuid());
+//
+//            if (serverPlayer != null)
+//            {
+//                cameraEntity = serverPlayer;
+//            }
+//        }
+//
+//        HitResult trace = RayTraceUtils.getRayTraceFromEntity(cameraEntity.getEntityWorld(), cameraEntity, RaycastContext.FluidHandling.NONE);
+//
+//		if (trace == null) return;
+//        BlockPos pos = null;
+//        Inventory inv = null;
+//        ShulkerBoxBlock shulkerBoxBlock = null;
+//        CrafterBlock crafterBlock = null;
+//        LivingEntity entityLivingBase = null;
+//
+//        if (trace.getType() == HitResult.Type.BLOCK)
+//        {
+//            pos = ((BlockHitResult) trace).getBlockPos();
+//            Block blockTmp = world.getBlockState(pos).getBlock();
+//
+//            if (blockTmp instanceof ShulkerBoxBlock)
+//            {
+//                shulkerBoxBlock = (ShulkerBoxBlock) blockTmp;
+//            }
+//            else if (blockTmp instanceof CrafterBlock)
+//            {
+//                crafterBlock = (CrafterBlock) blockTmp;
+//            }
+//
+//            inv = fi.dy.masa.minihud.util.InventoryUtils.getInventory(world, pos);
+//        }
+//        else if (trace.getType() == HitResult.Type.ENTITY)
+//        {
+//            Entity entity = ((EntityHitResult) trace).getEntity();
+//
+//            if (entity.getEntityWorld().isClient() &&
+//                Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue())
+//            {
+//                EntitiesDataManager.getInstance().requestEntity(world, entity.getId());
+//            }
+//
+//            if (entity instanceof LivingEntity)
+//            {
+//                entityLivingBase = (LivingEntity) entity;
+//            }
+//
+//            if (entity instanceof Inventory)
+//            {
+//                inv = (Inventory) entity;
+//            }
+//            else if (entity instanceof VillagerEntity)
+//            {
+//                inv = ((VillagerEntity) entity).getInventory();
+//            }
+//            else if (entity instanceof AbstractHorseEntity)
+//            {
+//                inv = ((IMixinAbstractHorseEntity) entity).malilib_getHorseInventory();
+//            }
+//        }
+//
+//        final boolean isWolf = (entityLivingBase instanceof WolfEntity);
+//        final int xCenter = GuiUtils.getScaledWindowWidth() / 2;
+//        final int yCenter = GuiUtils.getScaledWindowHeight() / 2;
+//        int x = xCenter - 52 / 2;
+//        int y = yCenter - 92;
+//
+//        if (inv != null && inv.size() > 0)
+//        {
+//            final boolean isHorse = (entityLivingBase instanceof AbstractHorseEntity);
+//            final int totalSlots = isHorse ? inv.size() - 1 : inv.size();
+//            final int firstSlot = isHorse ? 1 : 0;
+//
+//            final InventoryOverlay.InventoryRenderType type = (entityLivingBase instanceof VillagerEntity) ? InventoryOverlay.InventoryRenderType.VILLAGER : InventoryOverlay.getInventoryType(inv);
+//            final InventoryOverlay.InventoryProperties props = InventoryOverlay.getInventoryPropsTemp(type, totalSlots);
+//            final int rows = (int) Math.ceil((double) totalSlots / props.slotsPerRow);
+//            Set<Integer> lockedSlots = new HashSet<>();
+//            int xInv = xCenter - (props.width / 2);
+//            int yInv = yCenter - props.height - 6;
+//
+//            if (rows > 6)
+//            {
+//                yInv -= (rows - 6) * 18;
+//                y -= (rows - 6) * 18;
+//            }
+//
+//            if (entityLivingBase != null)
+//            {
+//                x = xCenter - 55;
+//                xInv = xCenter + 2;
+//                yInv = Math.min(yInv, yCenter - 92);
+//            }
+//
+//            if (crafterBlock != null && pos != null)
+//            {
+//                CrafterBlockEntity cbe = (CrafterBlockEntity) world.getWorldChunk(pos).getBlockEntity(pos);
+//                if (cbe != null)
+//                {
+//                    lockedSlots = BlockUtils.getDisabledSlots(cbe);
+//                }
+//            }
+//
+//            fi.dy.masa.malilib.render.RenderUtils.setShulkerboxBackgroundTintColor(shulkerBoxBlock, Configs.Generic.SHULKER_DISPLAY_BACKGROUND_COLOR.getBooleanValue());
+//
+//            if (isHorse)
+//            {
+//                Inventory horseInv = new SimpleInventory(2);
+//                ItemStack horseArmor = (((AbstractHorseEntity) entityLivingBase).getBodyArmor());
+//                horseInv.setStack(0, horseArmor != null && !horseArmor.isEmpty() ? horseArmor : ItemStack.EMPTY);
+//                horseInv.setStack(1, inv.getStack(0));
+//
+//                InventoryOverlay.renderInventoryBackground(drawContext, type, xInv, yInv, 1, 2, mc);
+//
+//                if (type == InventoryOverlay.InventoryRenderType.LLAMA)
+//                {
+//                    InventoryOverlay.renderLlamaArmorBackgroundSlots(drawContext, horseInv, xInv + props.slotOffsetX, yInv + props.slotOffsetY);
+//                }
+//                else
+//                {
+//                    InventoryOverlay.renderHorseArmorBackgroundSlots(drawContext, horseInv, xInv + props.slotOffsetX, yInv + props.slotOffsetY);
+//                }
+//
+//                InventoryOverlay.renderInventoryStacks(drawContext, type, horseInv, xInv + props.slotOffsetX, yInv + props.slotOffsetY, 1, 0, 2, mc);
+//                xInv += 32 + 4;
+//            }
+//            if (totalSlots > 0)
+//            {
+//                InventoryOverlay.renderInventoryBackground(drawContext, type, xInv, yInv, props.slotsPerRow, totalSlots, mc);
+//
+//                if (type == InventoryOverlay.InventoryRenderType.BREWING_STAND)
+//                {
+//                    InventoryOverlay.renderBrewerBackgroundSlots(drawContext, inv, xInv, yInv);
+//                }
+//
+//                InventoryOverlay.renderInventoryStacks(drawContext, type, inv, xInv + props.slotOffsetX, yInv + props.slotOffsetY, props.slotsPerRow, firstSlot, totalSlots, lockedSlots, mc);
+//            }
+//        }
+//
+//        if (isWolf)
+//        {
+//            InventoryOverlay.InventoryRenderType type = InventoryOverlay.InventoryRenderType.HORSE;
+//            final InventoryOverlay.InventoryProperties props = InventoryOverlay.getInventoryPropsTemp(type, 2);
+//            final int rows = (int) Math.ceil((double) 2 / props.slotsPerRow);
+//            int xInv;
+//            int yInv = yCenter - props.height - 6;
+//
+//            if (rows > 6)
+//            {
+//                yInv -= (rows - 6) * 18;
+//                y -= (rows - 6) * 18;
+//            }
+//
+//            x = xCenter - 55;
+//            xInv = xCenter + 2;
+//            yInv = Math.min(yInv, yCenter - 92);
+//
+//            Inventory wolfInv = new SimpleInventory(2);
+//            ItemStack wolfArmor = ((WolfEntity) entityLivingBase).getBodyArmor();
+//            wolfInv.setStack(0, wolfArmor != null && !wolfArmor.isEmpty() ? wolfArmor : ItemStack.EMPTY);
+//            InventoryOverlay.renderInventoryBackground(drawContext, type, xInv, yInv, 1, 2, mc);
+//            InventoryOverlay.renderWolfArmorBackgroundSlots(drawContext, wolfInv, xInv + props.slotOffsetX, yInv + props.slotOffsetY);
+//            InventoryOverlay.renderInventoryStacks(drawContext, type, wolfInv, xInv + props.slotOffsetX, yInv + props.slotOffsetY, 1, 0, 2, mc);
+//        }
+//
+//        if (entityLivingBase != null)
+//        {
+//            InventoryOverlay.renderEquipmentOverlayBackground(drawContext, x, y, entityLivingBase);
+//            InventoryOverlay.renderEquipmentStacks(drawContext, entityLivingBase, x, y, mc);
+//        }
+//    }
 }

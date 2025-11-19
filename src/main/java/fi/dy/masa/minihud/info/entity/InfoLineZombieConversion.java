@@ -4,15 +4,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import javax.annotation.Nonnull;
+import org.apache.commons.lang3.tuple.Pair;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.mob.SkeletonEntity;
 import net.minecraft.entity.mob.ZombieEntity;
 import net.minecraft.entity.mob.ZombieVillagerEntity;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.world.World;
-import org.apache.commons.lang3.tuple.Pair;
-import fi.dy.masa.malilib.util.nbt.NbtEntityUtils;
+
+import fi.dy.masa.malilib.util.data.DataEntityUtils;
+import fi.dy.masa.malilib.util.data.tag.CompoundData;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.info.InfoLine;
@@ -43,19 +45,19 @@ public class InfoLineZombieConversion extends InfoLine
     {
         if (ctx.world() == null) return null;
 
-        if (ctx.hasNbt())
+        if (ctx.hasData())
         {
-            EntityType<?> entityType = NbtEntityUtils.getEntityTypeFromNbt(ctx.nbt());
+            EntityType<?> entityType = DataEntityUtils.getEntityType(ctx.data());
             if (entityType == null) return null;
 
-            return this.parseNbt(ctx.world(), entityType, ctx.nbt());
+            return this.parseData(ctx.world(), entityType, ctx.data());
         }
 
         return ctx.ent() != null ? this.parseEnt(ctx.world(), ctx.ent()) : null;
     }
 
     @Override
-    public List<Entry> parseNbt(@Nonnull World world, @Nonnull EntityType<?> entityType, @Nonnull NbtCompound nbt)
+    public List<Entry> parseData(@Nonnull World world, @Nonnull EntityType<?> entityType, @Nonnull CompoundData data)
     {
         String zombieType = entityType.getName().getString();
         List<Entry> list = new ArrayList<>();
@@ -63,17 +65,17 @@ public class InfoLineZombieConversion extends InfoLine
 
         if (entityType.equals(EntityType.ZOMBIE_VILLAGER))
         {
-            Pair<Integer, UUID> zombieDoctor = NbtEntityUtils.getZombieConversionTimerFromNbt(nbt);
+            Pair<Integer, UUID> zombieDoctor = DataEntityUtils.getZombieConversionTimer(data);
             conversionTimer = zombieDoctor.getLeft();
         }
         else if (entityType.equals(EntityType.ZOMBIE))
         {
-            Pair<Integer, Integer> zombieDoctor = NbtEntityUtils.getDrownedConversionTimerFromNbt(nbt);
+            Pair<Integer, Integer> zombieDoctor = DataEntityUtils.getDrownedConversionTimer(data);
             conversionTimer = zombieDoctor.getLeft();
         }
         else if (entityType.equals(EntityType.SKELETON))
         {
-            conversionTimer = NbtEntityUtils.getStrayConversionTimeFromNbt(nbt);
+            conversionTimer = DataEntityUtils.getStrayConversionTime(data);
         }
 
         if (conversionTimer > 0)

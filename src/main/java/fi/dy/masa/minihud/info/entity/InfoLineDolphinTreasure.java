@@ -2,14 +2,16 @@ package fi.dy.masa.minihud.info.entity;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.commons.lang3.tuple.Pair;
+import org.jetbrains.annotations.NotNull;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.passive.DolphinEntity;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.world.World;
-import org.apache.commons.lang3.tuple.Pair;
-import org.jetbrains.annotations.NotNull;
-import fi.dy.masa.malilib.util.nbt.NbtEntityUtils;
+
+import fi.dy.masa.malilib.util.data.DataEntityUtils;
+import fi.dy.masa.malilib.util.data.tag.CompoundData;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.info.InfoLine;
@@ -37,21 +39,21 @@ public class InfoLineDolphinTreasure extends InfoLine
     {
         if (ctx.world() == null) return null;
 
-        if (ctx.hasNbt())
+        if (ctx.hasData())
         {
-            EntityType<?> entityType = NbtEntityUtils.getEntityTypeFromNbt(ctx.nbt());
+            EntityType<?> entityType = DataEntityUtils.getEntityType(ctx.data());
             if (entityType == null) return null;
 
-            return this.parseNbt(ctx.world(), entityType, ctx.nbt());
+            return this.parseData(ctx.world(), entityType, ctx.data());
         }
 
         return ctx.ent() != null ? this.parseEnt(ctx.world(), ctx.ent()) : null;
     }
 
     @Override
-    public List<Entry> parseNbt(@NotNull World world, @NotNull EntityType<?> entityType, @NotNull NbtCompound nbt)
+    public List<Entry> parseData(@NotNull World world, @NotNull EntityType<?> entityType, @NotNull CompoundData data)
     {
-        Pair<Integer, Boolean> dolphiPair = NbtEntityUtils.getDolphinDataFromNbt(nbt);
+        Pair<Integer, Boolean> dolphiPair = DataEntityUtils.getDolphinData(data);
         List<Entry> list = new ArrayList<>();
 
         if (dolphiPair != null && entityType.equals(EntityType.DOLPHIN))

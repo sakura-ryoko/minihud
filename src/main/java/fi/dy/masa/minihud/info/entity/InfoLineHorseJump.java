@@ -3,15 +3,17 @@ package fi.dy.masa.minihud.info.entity;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import org.apache.commons.lang3.tuple.Pair;
+import org.jetbrains.annotations.NotNull;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.passive.AbstractHorseEntity;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.world.World;
-import org.apache.commons.lang3.tuple.Pair;
-import org.jetbrains.annotations.NotNull;
-import fi.dy.masa.malilib.util.nbt.NbtEntityUtils;
+
+import fi.dy.masa.malilib.util.data.DataEntityUtils;
+import fi.dy.masa.malilib.util.data.tag.CompoundData;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.info.InfoLine;
@@ -48,12 +50,12 @@ public class InfoLineHorseJump extends InfoLine
             }
         }
 
-        if (ctx.hasLiving() && ctx.hasNbt())
+        if (ctx.hasLiving() && ctx.hasData())
         {
-            EntityType<?> entityType = NbtEntityUtils.getEntityTypeFromNbt(ctx.nbt());
+            EntityType<?> entityType = DataEntityUtils.getEntityType(ctx.data());
             if (entityType == null) return null;
 
-            return this.parseNbt(ctx.world(), entityType, ctx.nbt());
+            return this.parseData(ctx.world(), entityType, ctx.data());
         }
 
         if (ctx.ent() != null)
@@ -65,7 +67,7 @@ public class InfoLineHorseJump extends InfoLine
     }
 
     @Override
-    public List<Entry> parseNbt(@NotNull World world, @NotNull EntityType<?> entityType, @NotNull NbtCompound nbt)
+    public List<Entry> parseData(@NotNull World world, @NotNull EntityType<?> entityType, @NotNull CompoundData data)
     {
         List<Entry> list = new ArrayList<>();
         String horseType = entityType.getName().getString();
@@ -79,7 +81,7 @@ public class InfoLineHorseJump extends InfoLine
             entityType.equals(EntityType.TRADER_LLAMA) ||
             entityType.equals(EntityType.ZOMBIE_HORSE))
         {
-            Pair<Double, Double> horsePair = NbtEntityUtils.getSpeedAndJumpStrengthFromNbt(nbt);
+            Pair<Double, Double> horsePair = DataEntityUtils.getSpeedAndJumpStrength(data);
             double jump = horsePair.getRight();
 
             if (jump > 0d)

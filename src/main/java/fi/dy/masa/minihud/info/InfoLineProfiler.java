@@ -1,7 +1,7 @@
 package fi.dy.masa.minihud.info;
 
 import fi.dy.masa.minihud.config.InfoToggle;
-import fi.dy.masa.minihud.mixin.render.IGlTimer;
+import fi.dy.masa.minihud.mixin.render.IMixinGlTimer;
 import org.jetbrains.annotations.ApiStatus;
 
 import javax.annotation.Nullable;
@@ -28,9 +28,10 @@ public class InfoLineProfiler
 		return MinecraftClient.getInstance().debugHudEntryList.isEntryVisible(DebugHudEntries.GPU_UTILIZATION) || !InfoToggle.GPU.getBooleanValue();
 	}
 
-	private int getGPUQueryId()
+	private boolean isGPUQuerySafe()
 	{
-        return ((IGlTimer) GlTimer.getInstance()).minihud_getQueryId();
+        return  ((IMixinGlTimer) GlTimer.getInstance()).minihud_getQuery() != null &&
+		        ((IMixinGlTimer) GlTimer.getInstance()).minihud_getCommandEncoder() != null;
 	}
 
 	@ApiStatus.Internal
@@ -42,7 +43,7 @@ public class InfoLineProfiler
 			return;
 		}
 
-		if ((this.glQuery == null || this.glQuery.isResultAvailable()) && this.getGPUQueryId() == 0)
+		if ((this.glQuery == null || this.glQuery.isResultAvailable()) && !this.isGPUQuerySafe())
 		{
 			this.measurementEnable = true;
 			GlTimer.getInstance().beginProfile();
@@ -62,7 +63,7 @@ public class InfoLineProfiler
 			return;
 		}
 
-		if (this.measurementEnable && this.getGPUQueryId() != 0)
+		if (this.measurementEnable && this.isGPUQuerySafe())
 		{
 			GlTimer.getInstance().endProfile();
 		}

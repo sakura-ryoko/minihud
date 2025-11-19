@@ -47,10 +47,15 @@ import net.minecraft.world.chunk.light.LightingProvider;
 import fi.dy.masa.malilib.config.HudAlignment;
 import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.interfaces.IRenderer;
+import fi.dy.masa.malilib.render.GuiContext;
 import fi.dy.masa.malilib.render.RenderUtils;
 import fi.dy.masa.malilib.util.InventoryUtils;
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.malilib.util.WorldUtils;
+import fi.dy.masa.malilib.util.data.Constants;
+import fi.dy.masa.malilib.util.data.DataEntityUtils;
+import fi.dy.masa.malilib.util.data.tag.CompoundData;
+import fi.dy.masa.malilib.util.data.tag.converter.DataConverterNbt;
 import fi.dy.masa.malilib.util.game.BlockUtils;
 import fi.dy.masa.malilib.util.nbt.NbtEntityUtils;
 import fi.dy.masa.malilib.util.nbt.NbtInventory;
@@ -87,9 +92,9 @@ public class RenderHandler implements IRenderer
 
     private final List<StringHolder> lineWrappers = new ArrayList<>();
     private final List<String> lines = new ArrayList<>();
-    private Pair<BlockEntity, NbtCompound> lastBlockEntity = null;
-    private Pair<Entity, NbtCompound> lastEntity = null;
-    private Pair<Entity, NbtCompound> lastEnderItems = null;
+    private Pair<BlockEntity, CompoundData> lastBlockEntity = null;
+    private Pair<Entity, CompoundData> lastEntity = null;
+    private Pair<Entity, CompoundData> lastEnderItems = null;
 
     public RenderHandler()
     {
@@ -127,7 +132,7 @@ public class RenderHandler implements IRenderer
     }
 
     @Override
-    public void onRenderGameOverlayPostAdvanced(DrawContext drawContext, float partialTicks, Profiler profiler, MinecraftClient mc)
+    public void onRenderGameOverlayPostAdvanced(GuiContext ctx, float partialTicks, Profiler profiler)
     {
         if (Configs.Generic.MAIN_RENDERING_TOGGLE.getBooleanValue() == false)
         {
@@ -160,7 +165,7 @@ public class RenderHandler implements IRenderer
             boolean useBackground = Configs.Generic.USE_TEXT_BACKGROUND.getBooleanValue();
             boolean useShadow = Configs.Generic.USE_FONT_SHADOW.getBooleanValue();
 
-            RenderUtils.renderText(drawContext, x, y, Configs.Generic.FONT_SCALE.getDoubleValue(), textColor, bgColor, alignment,
+            RenderUtils.renderText(ctx, x, y, Configs.Generic.FONT_SCALE.getDoubleValue(), textColor, bgColor, alignment,
                                    useBackground, useShadow, Configs.Generic.HUD_STATUS_EFFECTS_SHIFT.getBooleanValue(),
                                    this.lines);
         }
@@ -177,7 +182,7 @@ public class RenderHandler implements IRenderer
             }
              */
 
-            InventoryOverlayHandler.getInstance().getRenderContext(drawContext, profiler, mc);
+            InventoryOverlayHandler.getInstance().getRenderContext(ctx, profiler);
 
             // OG method (Works with Crafters also)
             //fi.dy.masa.minihud.renderer.RenderUtils.renderInventoryOverlay(mc, drawContext);
@@ -205,7 +210,7 @@ public class RenderHandler implements IRenderer
     }
 
     @Override
-    public void onRenderTooltipLast(DrawContext drawContext, ItemStack stack, int x, int y)
+    public void onRenderTooltipLast(GuiContext ctx, ItemStack stack, int x, int y)
     {
         Item item = stack.getItem();
         if (item instanceof FilledMapItem)
@@ -213,7 +218,7 @@ public class RenderHandler implements IRenderer
             if (Configs.Generic.MAP_PREVIEW.getBooleanValue() &&
                (Configs.Generic.MAP_PREVIEW_REQUIRE_SHIFT.getBooleanValue() == false || GuiBase.isShiftDown()))
             {
-                RenderUtils.renderMapPreview(drawContext, stack, x, y, Configs.Generic.MAP_PREVIEW_SIZE.getIntegerValue(), false);
+                RenderUtils.renderMapPreview(ctx, stack, x, y, Configs.Generic.MAP_PREVIEW_SIZE.getIntegerValue(), false);
             }
         }
         else if (stack.getComponents().contains(DataComponentTypes.CONTAINER) && InventoryUtils.shulkerBoxHasItems(stack))
@@ -221,7 +226,7 @@ public class RenderHandler implements IRenderer
             if (Configs.Generic.SHULKER_BOX_PREVIEW.getBooleanValue() &&
                (Configs.Generic.SHULKER_DISPLAY_REQUIRE_SHIFT.getBooleanValue() == false || GuiBase.isShiftDown()))
             {
-                RenderUtils.renderShulkerBoxPreview(drawContext, stack, x, y, Configs.Generic.SHULKER_DISPLAY_BACKGROUND_COLOR.getBooleanValue());
+                RenderUtils.renderShulkerBoxPreview(ctx, stack, x, y, Configs.Generic.SHULKER_DISPLAY_BACKGROUND_COLOR.getBooleanValue());
             }
         }
         else if (stack.isOf(Items.ENDER_CHEST) && Configs.Generic.SHULKER_DISPLAY_ENDER_CHEST.getBooleanValue())
@@ -234,12 +239,12 @@ public class RenderHandler implements IRenderer
 
                 if (player != null)
                 {
-                    Pair<Entity, NbtCompound> pair = EntitiesDataManager.getInstance().requestEntity(world, player.getId());
+                    Pair<Entity, CompoundData> pair = EntitiesDataManager.getInstance().requestEntity(world, player.getId());
                     EnderChestInventory inv;
 
-                    if (pair != null && pair.getRight() != null && pair.getRight().contains(NbtKeys.ENDER_ITEMS))
+                    if (pair != null && pair.getRight() != null && pair.getRight().contains(NbtKeys.ENDER_ITEMS, Constants.NBT.TAG_LIST))
                     {
-                        inv = InventoryUtils.getPlayerEnderItemsFromNbt(pair.getRight(), world.getRegistryManager());
+                        inv = InventoryUtils.getPlayerEnderItemsFromData(pair.getRight(), world.getRegistryManager());
                         this.lastEnderItems = pair;
                     }
                     else if (pair != null && pair.getLeft() instanceof PlayerEntity pe && !pe.getEnderChestInventory().isEmpty())
@@ -248,7 +253,7 @@ public class RenderHandler implements IRenderer
                     }
                     else if (this.lastEnderItems != null)
                     {
-                        inv = InventoryUtils.getPlayerEnderItemsFromNbt(this.lastEnderItems.getRight(), world.getRegistryManager());
+                        inv = InventoryUtils.getPlayerEnderItemsFromData(this.lastEnderItems.getRight(), world.getRegistryManager());
                     }
                     else
                     {
@@ -264,7 +269,7 @@ public class RenderHandler implements IRenderer
                             NbtList list = nbtInv.toNbtList(world.getRegistryManager());
 
                             nbt.put(NbtKeys.ENDER_ITEMS, list);
-                            fi.dy.masa.malilib.render.RenderUtils.renderNbtItemsPreview(drawContext, stack, nbt, x, y, false);
+                            fi.dy.masa.malilib.render.RenderUtils.renderNbtItemsPreview(ctx, stack, nbt, x, y, false);
                         }
                         catch (Exception ignored) { }
                     }
@@ -276,7 +281,7 @@ public class RenderHandler implements IRenderer
             if (Configs.Generic.BUNDLE_PREVIEW.getBooleanValue() &&
                 (Configs.Generic.BUNDLE_DISPLAY_REQUIRE_SHIFT.getBooleanValue() == false || GuiBase.isShiftDown()))
             {
-                RenderUtils.renderBundlePreview(drawContext, stack, x, y, Configs.Generic.BUNDLE_DISPLAY_ROW_WIDTH.getIntegerValue(), Configs.Generic.BUNDLE_DISPLAY_BACKGROUND_COLOR.getBooleanValue());
+                RenderUtils.renderBundlePreview(ctx, stack, x, y, Configs.Generic.BUNDLE_DISPLAY_ROW_WIDTH.getIntegerValue(), Configs.Generic.BUNDLE_DISPLAY_BACKGROUND_COLOR.getBooleanValue());
             }
         }
     }
@@ -914,7 +919,7 @@ public class RenderHandler implements IRenderer
             if (parser != null)
             {
                 World bestWorld = WorldUtils.getBestWorld(mc);
-                Pair<BlockEntity, NbtCompound> pair = this.getTargetedBlockEntity(bestWorld, mc);
+                Pair<BlockEntity, CompoundData> pair = this.getTargetedBlockEntity(bestWorld, mc);
 
                 if (pair != null)
                 {
@@ -944,7 +949,7 @@ public class RenderHandler implements IRenderer
             if (parser != null)
             {
                 World bestWorld = WorldUtils.getBestWorld(mc);
-                Pair<BlockEntity, NbtCompound> pair = this.getTargetedBlockEntity(bestWorld, mc);
+                Pair<BlockEntity, CompoundData> pair = this.getTargetedBlockEntity(bestWorld, mc);
 
                 if (pair != null)
                 {
@@ -1007,7 +1012,7 @@ public class RenderHandler implements IRenderer
             if (parser != null)
             {
                 World bestWorld = WorldUtils.getBestWorld(mc);
-                Pair<BlockEntity, NbtCompound> pair = this.getTargetedBlockEntity(bestWorld, mc);
+                Pair<BlockEntity, CompoundData> pair = this.getTargetedBlockEntity(bestWorld, mc);
 
                 if (pair != null)
                 {
@@ -1043,7 +1048,7 @@ public class RenderHandler implements IRenderer
 
             if (parser != null)
             {
-                Pair<Entity, NbtCompound> pair = this.getTargetEntity(bestWorld, mc);
+                Pair<Entity, CompoundData> pair = this.getTargetEntity(bestWorld, mc);
                 InfoLine.Context ctx;
 
                 if (mc.player.hasVehicle() && pair == null)
@@ -1212,7 +1217,7 @@ public class RenderHandler implements IRenderer
 
             if (parser != null)
             {
-                Pair<Entity, NbtCompound> pair = this.getTargetEntity(world, mc);
+                Pair<Entity, CompoundData> pair = this.getTargetEntity(world, mc);
 
                 if (pair != null)
                 {
@@ -1356,7 +1361,7 @@ public class RenderHandler implements IRenderer
 
             if (parser != null)
             {
-                Pair<Entity, NbtCompound> pair = this.getTargetEntity(world, mc);
+                Pair<Entity, CompoundData> pair = this.getTargetEntity(world, mc);
 
                 if (pair != null)
                 {
@@ -1384,7 +1389,7 @@ public class RenderHandler implements IRenderer
 
             if (parser != null)
             {
-                Pair<Entity, NbtCompound> pair = this.getTargetEntity(world, mc);
+                Pair<Entity, CompoundData> pair = this.getTargetEntity(world, mc);
 
                 if (pair != null)
                 {
@@ -1412,7 +1417,7 @@ public class RenderHandler implements IRenderer
 
             if (parser != null)
             {
-                Pair<Entity, NbtCompound> pair = this.getTargetEntity(world, mc);
+                Pair<Entity, CompoundData> pair = this.getTargetEntity(world, mc);
 
                 if (pair != null)
                 {
@@ -1440,7 +1445,7 @@ public class RenderHandler implements IRenderer
 
 			if (parser != null)
 			{
-				Pair<Entity, NbtCompound> pair = this.getTargetEntity(world, mc);
+				Pair<Entity, CompoundData> pair = this.getTargetEntity(world, mc);
 
 				if (pair != null)
 				{
@@ -1468,7 +1473,7 @@ public class RenderHandler implements IRenderer
 
             if (parser != null)
             {
-                Pair<Entity, NbtCompound> pair = this.getTargetEntity(world, mc);
+                Pair<Entity, CompoundData> pair = this.getTargetEntity(world, mc);
 
                 if (pair != null)
                 {
@@ -1496,7 +1501,7 @@ public class RenderHandler implements IRenderer
 
             if (parser != null)
             {
-                Pair<Entity, NbtCompound> pair = this.getTargetEntity(world, mc);
+                Pair<Entity, CompoundData> pair = this.getTargetEntity(world, mc);
 
                 if (pair != null)
                 {
@@ -1524,7 +1529,7 @@ public class RenderHandler implements IRenderer
 
             if (parser != null)
             {
-                Pair<Entity, NbtCompound> pair = this.getTargetEntity(world, mc);
+                Pair<Entity, CompoundData> pair = this.getTargetEntity(world, mc);
 
                 if (pair != null)
                 {
@@ -1552,7 +1557,7 @@ public class RenderHandler implements IRenderer
 
             if (parser != null)
             {
-                Pair<Entity, NbtCompound> pair = this.getTargetEntity(world, mc);
+                Pair<Entity, CompoundData> pair = this.getTargetEntity(world, mc);
 
                 if (pair != null)
                 {
@@ -1587,7 +1592,7 @@ public class RenderHandler implements IRenderer
 
             if (parser != null)
             {
-                Pair<Entity, NbtCompound> pair = this.getTargetEntity(world, mc);
+                Pair<Entity, CompoundData> pair = this.getTargetEntity(world, mc);
 
                 if (pair != null)
                 {
@@ -1684,22 +1689,22 @@ public class RenderHandler implements IRenderer
         }
     }
 
-    private boolean isEntityDataValid(@Nonnull NbtCompound nbt)
+    private boolean isEntityDataValid(@Nonnull CompoundData data)
     {
         // Has a valid Inventory = ServerWorld
-        if (InventoryUtils.hasNbtItems(nbt))
+        if (InventoryUtils.hasDataItems(data))
         {
             return true;
         }
 
-        for (String key : nbt.getKeys())
+        for (String key : data.getKeys())
         {
             switch (key)
             {
                 // If `Fire == 0` instead of `-1` means it's ClientWorld; it's ridiculous, but it works.
                 case NbtKeys.FIRE ->
                 {
-                    int fire = nbt.getShort(NbtKeys.FIRE, (short) -1);
+                    int fire = data.contains(NbtKeys.FIRE, Constants.NBT.TAG_SHORT) ? data.getShort(NbtKeys.FIRE) : -1;
 
                     if (fire < 0 || fire > 0)
                     {
@@ -1709,7 +1714,7 @@ public class RenderHandler implements IRenderer
                 // If `Age == -1 or 1 instead of 0 or > 1 it's ClientWorld; it's ridiculous, but it works.
                 case NbtKeys.AGE ->
                 {
-                    int age = nbt.getInt(NbtKeys.AGE, -1);
+                    int age = data.contains(NbtKeys.AGE, Constants.NBT.TAG_INT) ? data.getInt(NbtKeys.AGE) : -1;
 
                     if (age == 0 || age > 1)
                     {
@@ -1719,7 +1724,7 @@ public class RenderHandler implements IRenderer
                 // Has a Brain besides the default = ServerWorld
                 case NbtKeys.BRAIN ->
                 {
-                    NbtCompound tag = nbt.getCompoundOrEmpty(NbtKeys.BRAIN);
+	                CompoundData tag = data.getCompound(NbtKeys.BRAIN);
 
                     if (!tag.isEmpty() && !tag.getCompound(NbtKeys.MEMORIES).isEmpty())
                     {
@@ -1730,21 +1735,21 @@ public class RenderHandler implements IRenderer
                 case NbtKeys.TRADE_RECIPES -> { return true; }
                 case NbtKeys.ZOMBIE_CONVERSION ->
                 {
-                    if (nbt.getInt(NbtKeys.ZOMBIE_CONVERSION, -1) > 0)
+                    if (data.getInt(NbtKeys.ZOMBIE_CONVERSION) > 0)
                     {
                         return true;
                     }
                 }
                 case NbtKeys.DROWNED_CONVERSION ->
                 {
-                    if (nbt.getInt(NbtKeys.DROWNED_CONVERSION, -1) > 0)
+                    if (data.getInt(NbtKeys.DROWNED_CONVERSION) > 0)
                     {
                         return true;
                     }
                 }
                 case NbtKeys.STRAY_CONVERSION ->
                 {
-                    if (nbt.getInt(NbtKeys.STRAY_CONVERSION, -1) > 0)
+                    if (data.getInt(NbtKeys.STRAY_CONVERSION) > 0)
                     {
                         return true;
                     }
@@ -1761,7 +1766,7 @@ public class RenderHandler implements IRenderer
     }
 
     @Nullable
-    public Pair<Entity, NbtCompound> getTargetEntity(World world, MinecraftClient mc)
+    public Pair<Entity, CompoundData> getTargetEntity(World world, MinecraftClient mc)
     {
         if (mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.ENTITY)
         {
@@ -1774,22 +1779,17 @@ public class RenderHandler implements IRenderer
             }
 
             World bestWorld = WorldUtils.getBestWorld(mc);
-            Pair<Entity, NbtCompound> pair = null;
+            Pair<Entity, CompoundData> pair = null;
 
             if (bestWorld instanceof ServerWorld serverWorld)
             {
                 Entity serverEntity = serverWorld.getEntityById(lookedEntity.getId());
-//                NbtView view = NbtView.getWriter(bestWorld.getRegistryManager());
-//                serverEntity.writeData(view.getWriter());
-//                NbtCompound nbt = view.readNbt();
-//                Identifier id = EntityType.getId(serverEntity.getType());
-                NbtCompound nbt = NbtEntityUtils.invokeEntityNbtDataNoPassengers(serverEntity, lookedEntity.getId());
+	            CompoundData data = DataEntityUtils.invokeEntityDataTagNoPassengers(serverEntity, lookedEntity.getId());
 
-//                if (nbt != null && id != null)
-                if (!nbt.isEmpty())
+                if (!data.isEmpty())
                 {
 //                    nbt.putString("id", id.toString());
-                    pair = Pair.of(serverEntity, nbt);
+                    pair = Pair.of(serverEntity, data);
                 }
             }
             else
@@ -1822,22 +1822,22 @@ public class RenderHandler implements IRenderer
     }
 
     @Nullable
-    public Pair<BlockEntity, NbtCompound> getTargetedBlockEntity(World world, MinecraftClient mc)
+    public Pair<BlockEntity, CompoundData> getTargetedBlockEntity(World world, MinecraftClient mc)
     {
         if (mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.BLOCK)
         {
             BlockPos posLooking = ((BlockHitResult) mc.crosshairTarget).getBlockPos();
             World bestWorld = WorldUtils.getBestWorld(mc);
             BlockState state = bestWorld.getBlockState(posLooking);
-            Pair<BlockEntity, NbtCompound> pair = null;
+            Pair<BlockEntity, CompoundData> pair = null;
 
             if (state.getBlock() instanceof BlockEntityProvider)
             {
                 if (bestWorld instanceof ServerWorld)
                 {
-                    NbtCompound nbt = new NbtCompound();
+	                CompoundData data = new CompoundData();
                     BlockEntity be = bestWorld.getWorldChunk(posLooking).getBlockEntity(posLooking);
-                    pair = Pair.of(be, be != null ? be.createNbtWithIdentifyingData(bestWorld.getRegistryManager()) : nbt);
+                    pair = Pair.of(be, be != null ? DataConverterNbt.fromVanillaCompound(be.createNbtWithIdentifyingData(bestWorld.getRegistryManager())) : data);
                 }
                 else
                 {
@@ -1863,11 +1863,11 @@ public class RenderHandler implements IRenderer
     }
 
     @Nullable
-    public Pair<BlockEntity, NbtCompound> requestBlockEntityAt(World world, BlockPos pos)
+    public Pair<BlockEntity, CompoundData> requestBlockEntityAt(World world, BlockPos pos)
     {
         if (!(world instanceof ServerWorld))
         {
-            Pair<BlockEntity, NbtCompound> pair = EntitiesDataManager.getInstance().requestBlockEntity(world, pos);
+            Pair<BlockEntity, CompoundData> pair = EntitiesDataManager.getInstance().requestBlockEntity(world, pos);
 
             BlockState state = world.getBlockState(pos);
 

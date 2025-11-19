@@ -5,15 +5,17 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.world.World;
-import fi.dy.masa.malilib.util.nbt.NbtEntityUtils;
+
+import fi.dy.masa.malilib.util.data.DataEntityUtils;
+import fi.dy.masa.malilib.util.data.tag.CompoundData;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.info.InfoLine;
@@ -41,21 +43,21 @@ public class InfoLineLookingAtEffects extends InfoLine
     {
         if (ctx.world() == null) return null;
 
-        if (ctx.hasLiving() && ctx.hasNbt())
+        if (ctx.hasLiving() && ctx.hasData())
         {
-            EntityType<?> entityType = NbtEntityUtils.getEntityTypeFromNbt(ctx.nbt());
+            EntityType<?> entityType = DataEntityUtils.getEntityType(ctx.data());
             if (entityType == null) return null;
 
-            return this.parseNbt(ctx.world(), entityType, ctx.nbt());
+            return this.parseData(ctx.world(), entityType, ctx.data());
         }
 
         return ctx.ent() != null ? this.parseEnt(ctx.world(), ctx.ent()) : null;
     }
 
     @Override
-    public List<Entry> parseNbt(@Nonnull World world, @Nonnull EntityType<?> entityType, @Nonnull NbtCompound nbt)
+    public List<Entry> parseData(@Nonnull World world, @Nonnull EntityType<?> entityType, @Nonnull CompoundData data)
     {
-        Map<RegistryEntry<StatusEffect>, StatusEffectInstance> effects = NbtEntityUtils.getActiveStatusEffectsFromNbt(nbt, world.getRegistryManager());
+        Map<RegistryEntry<StatusEffect>, StatusEffectInstance> effects = DataEntityUtils.getActiveStatusEffects(data, world.getRegistryManager());
         List<Entry> list = new ArrayList<>();
 
         if (effects == null || effects.isEmpty())

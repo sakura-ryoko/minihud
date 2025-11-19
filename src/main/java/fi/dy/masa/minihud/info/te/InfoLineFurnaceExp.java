@@ -3,13 +3,15 @@ package fi.dy.masa.minihud.info.te;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nonnull;
+
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.World;
-import fi.dy.masa.malilib.util.nbt.NbtBlockUtils;
+
+import fi.dy.masa.malilib.util.data.DataBlockUtils;
+import fi.dy.masa.malilib.util.data.tag.CompoundData;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.info.InfoLine;
@@ -37,20 +39,20 @@ public class InfoLineFurnaceExp extends InfoLine
     {
         if (ctx.world() == null) return null;
 
-        if (ctx.hasNbt())
+        if (ctx.hasData())
         {
-            BlockEntityType<?> beType = NbtBlockUtils.getBlockEntityTypeFromNbt(ctx.nbt());
+            BlockEntityType<?> beType = DataBlockUtils.getBlockEntityType(ctx.data());
 
             if (beType == null) return null;
 
-            return this.parseNbt(ctx.world(), beType, ctx.nbt());
+            return this.parseData(ctx.world(), beType, ctx.data());
         }
 
         return ctx.be() != null ? this.parseBlockEnt(ctx.world(), ctx.be()) : null;
     }
 
     @Override
-    public List<Entry> parseNbt(@Nonnull World world, @Nonnull BlockEntityType<?> beType, @Nonnull NbtCompound nbt)
+    public List<Entry> parseData(@Nonnull World world, @Nonnull BlockEntityType<?> beType, @Nonnull CompoundData data)
     {
         List<Entry> list = new ArrayList<>();
 
@@ -60,7 +62,7 @@ public class InfoLineFurnaceExp extends InfoLine
         {
             if (world instanceof ServerWorld serverWorld)
             {
-                int exp = MiscUtils.getFurnaceXpAmount(serverWorld, nbt);
+                int exp = MiscUtils.getFurnaceXpAmount(serverWorld, data);
 
                 if (exp > 0)
                 {
@@ -69,7 +71,7 @@ public class InfoLineFurnaceExp extends InfoLine
             }
             else if (this.getHudData().hasServuxServer() && this.getHudData().hasRecipes())
             {
-                int exp = MiscUtils.getFurnaceXpAmount(nbt);
+                int exp = MiscUtils.getFurnaceXpAmount(data);
 
                 if (exp > 0)
                 {

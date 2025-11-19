@@ -318,25 +318,25 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
         BufferBuilder builder = ctx.start(() -> "minihud:spawn_chunk/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH);
 
         // The SpawnPos box looks better with white outlines.  You can't really see the `colorEntity` value
-        fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(this.center, cameraPos, Color4f.WHITE, 0.001, builder);
+        fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(this.center, cameraPos, Color4f.WHITE, 0.001, this.glLineWidth, builder);
 
 		if (this.isPlayerFollowing || HudDataManager.getInstance().isSpawnChunkRadiusKnown())
 		{
 			for (Box entry : this.boxesBrown)
 			{
-				RenderUtils.renderWallOutlines(entry, 16, 16, true, cameraPos, colorOuter, builder);
+				RenderUtils.renderWallOutlines(entry, 16, 16, true, cameraPos, colorOuter, this.glLineWidth, builder);
 			}
 			for (Box entry : this.boxesRed)
 			{
-				RenderUtils.renderWallOutlines(entry, 16, 16, true, cameraPos, colorLazy, builder);
+				RenderUtils.renderWallOutlines(entry, 16, 16, true, cameraPos, colorLazy, this.glLineWidth, builder);
 			}
 			for (Box entry : this.boxesYellow)
 			{
-				RenderUtils.renderWallOutlines(entry, 16, 16, true, cameraPos, colorRedstone, builder);
+				RenderUtils.renderWallOutlines(entry, 16, 16, true, cameraPos, colorRedstone, this.glLineWidth, builder);
 			}
 			for (Box entry : this.boxesGreen)
 			{
-				RenderUtils.renderWallOutlines(entry, 16, 16, true, cameraPos, colorEntity, builder);
+				RenderUtils.renderWallOutlines(entry, 16, 16, true, cameraPos, colorEntity, this.glLineWidth, builder);
 			}
 		}
 

@@ -14,7 +14,6 @@
         "debug.MixinPath",
         "entity.IMixinCopperGolemEntity",
         "entity.IMixinEntity",
-        "entity.IMixinLeashable",
         "entity.IMixinPassiveEntity",
         "entity.IMixinSkeletonEntity",
         "entity.IMixinZombieEntity",
@@ -43,7 +42,7 @@
         "network.MixinClientCommonNetworkHandler",
         "network.MixinClientPlayerInteractionManager",
         "network.MixinClientPlayNetworkHandler",
-        "render.IGlTimer",
+        "render.IMixinGlTimer",
         "render.IMixinWorldRenderer"
     ],
     "server": [],

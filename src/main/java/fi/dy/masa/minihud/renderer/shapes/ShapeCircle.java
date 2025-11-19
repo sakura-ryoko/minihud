@@ -76,9 +76,7 @@ public class ShapeCircle extends ShapeCircleBase
         profiler.push("circle_quads");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
         BufferBuilder builder = ctx.start(() -> "minihud:circle/quads", this.renderThroughShape ? MaLiLibPipelines.MINIHUD_SHAPE_NO_DEPTH_OFFSET : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL);
-//        MatrixStack matrices = new MatrixStack();
 
-//        matrices.push();
         this.renderCircleShapeQuads(cameraPos, builder);
 
         try
@@ -116,10 +114,8 @@ public class ShapeCircle extends ShapeCircleBase
         profiler.push("circle_outlines");
         RenderObjectVbo ctx = this.renderObjects.get(1);
         BufferBuilder builder = ctx.start(() -> "minihud:circle/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH);
-//        MatrixStack matrices = new MatrixStack();
 
-//        matrices.push();
-        this.renderCircleShapeOutlines(cameraPos, builder);
+        this.renderCircleShapeOutlines(cameraPos, this.glLineWidth, builder);
 
         try
         {
@@ -136,7 +132,6 @@ public class ShapeCircle extends ShapeCircleBase
             MiniHUD.LOGGER.error("ShapeCircle#renderOutlines(): Exception; {}", err.getMessage());
         }
 
-//        matrices.pop();
         profiler.pop();
     }
 
@@ -217,7 +212,7 @@ public class ShapeCircle extends ShapeCircleBase
     }
 
     protected void renderCircleShapeOutlines(Vec3d cameraPos,
-//                                             BufferBuilder builder, MatrixStack.Entry e)
+                                             float lineWidth,
                                              BufferBuilder builder)
     {
         LongOpenHashSet positions = new LongOpenHashSet();
@@ -245,7 +240,7 @@ public class ShapeCircle extends ShapeCircleBase
                     SphereUtils.buildSphereShellToStrips(positions, axis, test, this.renderType, this.layerRange);
             List<SideQuad> quads = buildStripsToQuadsForCircle(strips, this.mainAxis, this.height);
 
-            RenderUtils.renderQuadLines(quads, this.colorLines, expand, cameraPos, builder);
+            RenderUtils.renderQuadLines(quads, this.colorLines, expand, cameraPos, lineWidth, builder);
         }
         else
         {
@@ -272,7 +267,7 @@ public class ShapeCircle extends ShapeCircleBase
 
             Direction[] sides = this.getSides();
             RenderUtils.renderCircleBlockOutlines(positions, sides, test, this.renderType, this.layerRange,
-                                                  this.colorLines, expand, cameraPos, builder);
+                                                  this.colorLines, expand, cameraPos, lineWidth, builder);
         }
     }
 

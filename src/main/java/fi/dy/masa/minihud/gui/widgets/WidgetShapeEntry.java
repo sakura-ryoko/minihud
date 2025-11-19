@@ -1,14 +1,16 @@
 package fi.dy.masa.minihud.gui.widgets;
 
 import java.util.List;
+
 import net.minecraft.client.gui.Click;
-import net.minecraft.client.gui.DrawContext;
+
 import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.gui.button.ButtonBase;
 import fi.dy.masa.malilib.gui.button.ButtonGeneric;
 import fi.dy.masa.malilib.gui.button.ButtonOnOff;
 import fi.dy.masa.malilib.gui.button.IButtonActionListener;
 import fi.dy.masa.malilib.gui.widgets.WidgetListEntryBase;
+import fi.dy.masa.malilib.render.GuiContext;
 import fi.dy.masa.malilib.render.RenderUtils;
 import fi.dy.masa.malilib.util.GuiUtils;
 import fi.dy.masa.malilib.util.StringUtils;
@@ -67,105 +69,92 @@ public class WidgetShapeEntry extends WidgetListEntryBase<ShapeBase>
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, boolean selected)
+    public void render(GuiContext ctx, int mouseX, int mouseY, boolean selected)
     {
-//        RenderUtils.color(1f, 1f, 1f, 1f);
-
         boolean shapeSelected = ShapeManager.INSTANCE.getSelectedShape() == this.entry;
 
         // Draw a lighter background for the hovered and the selected entry
         if (selected || shapeSelected || this.isMouseOver(mouseX, mouseY))
         {
-            RenderUtils.drawRect(context, this.x, this.y, this.width, this.height, 0x70FFFFFF);
+            RenderUtils.drawRect(ctx, this.x, this.y, this.width, this.height, 0x70FFFFFF);
         }
         else if (this.isOdd)
         {
-            RenderUtils.drawRect(context, this.x, this.y, this.width, this.height, 0x20FFFFFF);
+            RenderUtils.drawRect(ctx, this.x, this.y, this.width, this.height, 0x20FFFFFF);
         }
         // Draw a slightly lighter background for even entries
         else
         {
-            RenderUtils.drawRect(context, this.x, this.y, this.width, this.height, 0x50FFFFFF);
+            RenderUtils.drawRect(ctx, this.x, this.y, this.width, this.height, 0x50FFFFFF);
         }
 
         if (shapeSelected)
         {
-            RenderUtils.drawOutline(context, this.x, this.y, this.width, this.height, 0xFFE0E0E0);
+            RenderUtils.drawOutline(ctx, this.x, this.y, this.width, this.height, 0xFFE0E0E0);
         }
 
         String name = this.shape.getDisplayName();
-        this.drawString(context, this.x + 4, this.y + 7, 0xFFFFFFFF, name);
+        this.drawString(ctx, this.x + 4, this.y + 7, 0xFFFFFFFF, name);
 
-//        RenderUtils.color(1f, 1f, 1f, 1f);
-
-        super.render(context, mouseX, mouseY, selected);
+        super.render(ctx, mouseX, mouseY, selected);
     }
 
     @Override
-    public void postRenderHovered(DrawContext context, int mouseX, int mouseY, boolean selected)
+    public void postRenderHovered(GuiContext ctx, int mouseX, int mouseY, boolean selected)
     {
-        super.postRenderHovered(context, mouseX, mouseY, selected);
+        super.postRenderHovered(ctx, mouseX, mouseY, selected);
 
         if (mouseX >= this.x && mouseX < this.buttonsStartX && mouseY >= this.y && mouseY <= this.y + this.height)
         {
-            RenderUtils.drawHoverText(context, mouseX, mouseY, this.hoverLines);
+            RenderUtils.drawHoverText(ctx, mouseX, mouseY, this.hoverLines);
         }
     }
 
-    private static class ButtonListener implements IButtonActionListener
-    {
-        private final Type type;
-        private final WidgetShapeEntry widget;
+	private record ButtonListener(Type type, WidgetShapeEntry widget) implements IButtonActionListener
+	{
+		@Override
+		public void actionPerformedWithButton(ButtonBase button, int mouseButton)
+		{
+			if (this.type == Type.CONFIGURE)
+			{
+				GuiShapeEditor gui = new GuiShapeEditor(this.widget.shape);
+				gui.setParent(GuiUtils.getCurrentScreen());
+				GuiBase.openGui(gui);
+			}
+			else if (this.type == Type.ENABLED)
+			{
+				this.widget.shape.toggleEnabled();
+				this.widget.parent.refreshEntries();
+			}
+			else if (this.type == Type.REMOVE)
+			{
+				ShapeManager.INSTANCE.removeShape(this.widget.shape);
+				this.widget.parent.refreshEntries();
+			}
+		}
 
-        public ButtonListener(Type type, WidgetShapeEntry widget)
-        {
-            this.type = type;
-            this.widget = widget;
-        }
+		public enum Type
+		{
+			CONFIGURE("minihud.gui.button.configure"),
+			ENABLED("minihud.gui.button.shape_entry.enabled"),
+			REMOVE("minihud.gui.button.remove");
 
-        @Override
-        public void actionPerformedWithButton(ButtonBase button, int mouseButton)
-        {
-            if (this.type == Type.CONFIGURE)
-            {
-                GuiShapeEditor gui = new GuiShapeEditor(this.widget.shape);
-                gui.setParent(GuiUtils.getCurrentScreen());
-                GuiBase.openGui(gui);
-            }
-            else if (this.type == Type.ENABLED)
-            {
-                this.widget.shape.toggleEnabled();
-                this.widget.parent.refreshEntries();
-            }
-            else if (this.type == Type.REMOVE)
-            {
-                ShapeManager.INSTANCE.removeShape(this.widget.shape);
-                this.widget.parent.refreshEntries();
-            }
-        }
+			private final String translationKey;
 
-        public enum Type
-        {
-            CONFIGURE   ("minihud.gui.button.configure"),
-            ENABLED     ("minihud.gui.button.shape_entry.enabled"),
-            REMOVE      ("minihud.gui.button.remove");
+			Type(String translationKey)
+			{
+				this.translationKey = translationKey;
+			}
 
-            private final String translationKey;
+			public String getTranslationKey()
+			{
+				return this.translationKey;
+			}
 
-            Type(String translationKey)
-            {
-                this.translationKey = translationKey;
-            }
-
-            public String getTranslationKey()
-            {
-                return this.translationKey;
-            }
-            
-            public String getDisplayName(Object... args)
-            {
-                return StringUtils.translate(this.translationKey, args);
-            }
-        }
-    }
+			public String getDisplayName(Object... args)
+			{
+				return StringUtils.translate(this.translationKey, args);
+			}
+		}
+	}
 }

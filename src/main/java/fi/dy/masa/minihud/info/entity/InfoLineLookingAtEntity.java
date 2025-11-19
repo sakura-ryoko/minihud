@@ -4,13 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import javax.annotation.Nonnull;
+import org.apache.commons.lang3.tuple.Pair;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.Tameable;
 import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.util.Util;
-import org.apache.commons.lang3.tuple.Pair;
-import fi.dy.masa.malilib.util.nbt.NbtEntityUtils;
+
+import fi.dy.masa.malilib.util.data.DataEntityUtils;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.info.InfoLine;
@@ -40,11 +42,11 @@ public class InfoLineLookingAtEntity extends InfoLine
         if (ctx.world() == null) return null;
         List<Entry> list = new ArrayList<>();
 
-        if (ctx.ent() instanceof LivingEntity living && ctx.hasNbt())
+        if (ctx.ent() instanceof LivingEntity living && ctx.hasData())
         {
-            Pair<Double, Double> healthPair = NbtEntityUtils.getHealthFromNbt(ctx.nbt());
-            Pair<UUID, Boolean> ownerPair = NbtEntityUtils.getTamableOwner(ctx.nbt());
-            Pair<Integer, Integer> agePair = NbtEntityUtils.getAgeFromNbt(ctx.nbt());
+            Pair<Double, Double> healthPair = DataEntityUtils.getHealth(ctx.data());
+            Pair<UUID, Boolean> ownerPair = DataEntityUtils.getTamableOwner(ctx.data());
+            Pair<Integer, Integer> agePair = DataEntityUtils.getAge(ctx.data());
 
             double health = healthPair.getLeft();
             double maxHealth = healthPair.getRight();

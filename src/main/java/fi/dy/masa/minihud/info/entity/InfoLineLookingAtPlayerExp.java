@@ -3,13 +3,15 @@ package fi.dy.masa.minihud.info.entity;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nonnull;
+import org.apache.commons.lang3.tuple.Triple;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.world.World;
-import org.apache.commons.lang3.tuple.Triple;
-import fi.dy.masa.malilib.util.nbt.NbtEntityUtils;
+
+import fi.dy.masa.malilib.util.data.DataEntityUtils;
+import fi.dy.masa.malilib.util.data.tag.CompoundData;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.info.InfoLine;
@@ -36,25 +38,25 @@ public class InfoLineLookingAtPlayerExp extends InfoLine
     {
         if (ctx.world() == null) return null;
 
-        if (ctx.hasLiving() && ctx.hasNbt())
+        if (ctx.hasLiving() && ctx.hasData())
         {
-            EntityType<?> entityType = NbtEntityUtils.getEntityTypeFromNbt(ctx.nbt());
+            EntityType<?> entityType = DataEntityUtils.getEntityType(ctx.data());
             if (entityType == null) return null;
 
-            return this.parseNbt(ctx.world(), entityType, ctx.nbt());
+            return this.parseData(ctx.world(), entityType, ctx.data());
         }
 
         return ctx.ent() != null ? this.parseEnt(ctx.world(), ctx.ent()) : null;
     }
 
     @Override
-    public List<Entry> parseNbt(@Nonnull World world, @Nonnull EntityType<?> entityType, @Nonnull NbtCompound nbt)
+    public List<Entry> parseData(@Nonnull World world, @Nonnull EntityType<?> entityType, @Nonnull CompoundData data)
     {
         List<Entry> list = new ArrayList<>();
 
         if (entityType.equals(EntityType.PLAYER))
         {
-            Triple<Integer, Integer, Float> triple = NbtEntityUtils.getPlayerExpFromNbt(nbt);
+            Triple<Integer, Integer, Float> triple = DataEntityUtils.getPlayerExp(data);
 
             if (triple.getLeft() > 0)
             {

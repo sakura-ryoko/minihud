@@ -11,7 +11,6 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.decoration.painting.PaintingEntity;
 import net.minecraft.entity.decoration.painting.PaintingVariant;
 import net.minecraft.entity.passive.*;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.text.Text;
 import net.minecraft.util.DyeColor;
@@ -19,7 +18,8 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 
 import fi.dy.masa.malilib.util.EntityUtils;
-import fi.dy.masa.malilib.util.nbt.NbtEntityUtils;
+import fi.dy.masa.malilib.util.data.DataEntityUtils;
+import fi.dy.masa.malilib.util.data.tag.CompoundData;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.info.InfoLine;
@@ -46,25 +46,25 @@ public class InfoLineEntityVariant extends InfoLine
     {
         if (ctx.world() == null) return null;
 
-        if (ctx.hasLiving() && ctx.hasNbt())
+        if (ctx.hasLiving() && ctx.hasData())
         {
-            EntityType<?> entityType = NbtEntityUtils.getEntityTypeFromNbt(ctx.nbt());
+            EntityType<?> entityType = DataEntityUtils.getEntityType(ctx.data());
             if (entityType == null) return null;
 
-            return this.parseNbt(ctx.world(), entityType, ctx.nbt());
+            return this.parseData(ctx.world(), entityType, ctx.data());
         }
 
         return ctx.ent() != null ? this.parseEnt(ctx.world(), ctx.ent()) : null;
     }
 
     @Override
-    public List<Entry> parseNbt(@Nonnull World world, @Nonnull EntityType<?> entityType, @Nonnull NbtCompound nbt)
+    public List<Entry> parseData(@Nonnull World world, @Nonnull EntityType<?> entityType, @Nonnull CompoundData data)
     {
         List<Entry> list = new ArrayList<>();
 
         if (entityType.equals(EntityType.AXOLOTL))
         {
-            AxolotlEntity.Variant variant = NbtEntityUtils.getAxolotlVariantFromNbt(nbt);
+            AxolotlEntity.Variant variant = DataEntityUtils.getAxolotlVariant(data);
 
             if (variant != null)
             {
@@ -73,7 +73,7 @@ public class InfoLineEntityVariant extends InfoLine
         }
         else if (entityType.equals(EntityType.CAT))
         {
-            Pair<RegistryKey<CatVariant>, DyeColor> catPair = NbtEntityUtils.getCatVariantFromNbt(nbt, world.getRegistryManager());
+            Pair<RegistryKey<CatVariant>, DyeColor> catPair = DataEntityUtils.getCatVariant(data, world.getRegistryManager());
 
             if (catPair.getLeft() != null)
             {
@@ -82,7 +82,7 @@ public class InfoLineEntityVariant extends InfoLine
         }
         else if (entityType.equals(EntityType.COW))
         {
-            RegistryKey<CowVariant> variant = NbtEntityUtils.getCowVariantFromNbt(nbt, world.getRegistryManager());
+            RegistryKey<CowVariant> variant = DataEntityUtils.getCowVariant(data, world.getRegistryManager());
 
             if (variant != null)
             {
@@ -91,7 +91,7 @@ public class InfoLineEntityVariant extends InfoLine
         }
         else if (entityType.equals(EntityType.CHICKEN))
         {
-            RegistryKey<ChickenVariant> variant = NbtEntityUtils.getChickenVariantFromNbt(nbt, world.getRegistryManager());
+            RegistryKey<ChickenVariant> variant = DataEntityUtils.getChickenVariant(data, world.getRegistryManager());
 
             if (variant != null)
             {
@@ -100,7 +100,7 @@ public class InfoLineEntityVariant extends InfoLine
         }
         else if (entityType.equals(EntityType.MOOSHROOM))
         {
-            MooshroomEntity.Variant mooType = NbtEntityUtils.getMooshroomVariantFromNbt(nbt);
+            MooshroomEntity.Variant mooType = DataEntityUtils.getMooshroomVariant(data);
 
             if (mooType != null)
             {
@@ -109,7 +109,7 @@ public class InfoLineEntityVariant extends InfoLine
         }
         else if (entityType.equals(EntityType.FOX))
         {
-            FoxEntity.Variant foxType = NbtEntityUtils.getFoxVariantFromNbt(nbt);
+            FoxEntity.Variant foxType = DataEntityUtils.getFoxVariant(data);
 
             if (foxType != null)
             {
@@ -118,7 +118,7 @@ public class InfoLineEntityVariant extends InfoLine
         }
         else if (entityType.equals(EntityType.FROG))
         {
-            RegistryKey<FrogVariant> variant = NbtEntityUtils.getFrogVariantFromNbt(nbt, world.getRegistryManager());
+            RegistryKey<FrogVariant> variant = DataEntityUtils.getFrogVariant(data, world.getRegistryManager());
 
             if (variant != null)
             {
@@ -127,7 +127,7 @@ public class InfoLineEntityVariant extends InfoLine
         }
         else if (entityType.equals(EntityType.HORSE))
         {
-            Pair<HorseColor, HorseMarking> horsePair = NbtEntityUtils.getHorseVariantFromNbt(nbt);
+            Pair<HorseColor, HorseMarking> horsePair = DataEntityUtils.getHorseVariant(data);
 
             if (horsePair.getLeft() != null)
             {
@@ -136,7 +136,7 @@ public class InfoLineEntityVariant extends InfoLine
         }
         else if (entityType.equals(EntityType.LLAMA) || entityType.equals(EntityType.TRADER_LLAMA))
         {
-            Pair<LlamaEntity.Variant, Integer> llamaPair = NbtEntityUtils.getLlamaTypeFromNbt(nbt);
+            Pair<LlamaEntity.Variant, Integer> llamaPair = DataEntityUtils.getLlamaType(data);
 
             if (llamaPair.getLeft() != null)
             {
@@ -145,7 +145,7 @@ public class InfoLineEntityVariant extends InfoLine
         }
         else if (entityType.equals(EntityType.PAINTING))
         {
-            Pair<Direction, PaintingVariant> paintingPair = NbtEntityUtils.getPaintingDataFromNbt(nbt, world.getRegistryManager());
+            Pair<Direction, PaintingVariant> paintingPair = DataEntityUtils.getPaintingData(data, world.getRegistryManager());
 
             if (paintingPair.getRight() != null)
             {
@@ -168,7 +168,7 @@ public class InfoLineEntityVariant extends InfoLine
         }
         else if (entityType.equals(EntityType.PARROT))
         {
-            ParrotEntity.Variant variant = NbtEntityUtils.getParrotVariantFromNbt(nbt);
+            ParrotEntity.Variant variant = DataEntityUtils.getParrotVariant(data);
 
             if (variant != null)
             {
@@ -177,7 +177,7 @@ public class InfoLineEntityVariant extends InfoLine
         }
         else if (entityType.equals(EntityType.PIG))
         {
-            RegistryKey<PigVariant> variant = NbtEntityUtils.getPigVariantFromNbt(nbt, world.getRegistryManager());
+            RegistryKey<PigVariant> variant = DataEntityUtils.getPigVariant(data, world.getRegistryManager());
 
             if (variant != null)
             {
@@ -186,7 +186,7 @@ public class InfoLineEntityVariant extends InfoLine
         }
         else if (entityType.equals(EntityType.RABBIT))
         {
-            RabbitEntity.Variant rabbitType = NbtEntityUtils.getRabbitTypeFromNbt(nbt);
+            RabbitEntity.Variant rabbitType = DataEntityUtils.getRabbitType(data);
 
             if (rabbitType != null)
             {
@@ -195,7 +195,7 @@ public class InfoLineEntityVariant extends InfoLine
         }
         else if (entityType.equals(EntityType.SALMON))
         {
-            SalmonEntity.Variant salmonVariant = NbtEntityUtils.getSalmonVariantFromNbt(nbt);
+            SalmonEntity.Variant salmonVariant = DataEntityUtils.getSalmonVariant(data);
 
             if (salmonVariant != null)
             {
@@ -204,7 +204,7 @@ public class InfoLineEntityVariant extends InfoLine
         }
         else if (entityType.equals(EntityType.SHEEP))
         {
-            DyeColor color = NbtEntityUtils.getSheepColorFromNbt(nbt);
+            DyeColor color = DataEntityUtils.getSheepColor(data);
 
             if (color != null)
             {
@@ -213,17 +213,17 @@ public class InfoLineEntityVariant extends InfoLine
         }
         else if (entityType.equals(EntityType.TROPICAL_FISH))
         {
-            TropicalFishEntity.Pattern variant = NbtEntityUtils.getFishVariantFromNbt(nbt);
+            TropicalFishEntity.Variant variant = DataEntityUtils.getFishVariant(data);
 
             if (variant != null)
             {
-                list.add(this.translate(VARIANT_KEY+".tropical_fish", variant.asString()));
+                list.add(this.translate(VARIANT_KEY+".tropical_fish", variant.pattern().asString(), variant.baseColor().asString(), variant.patternColor().asString()));
             }
         }
         else if (entityType.equals(EntityType.WOLF))
         {
-            Pair<RegistryKey<WolfVariant>, DyeColor> wolfPair = NbtEntityUtils.getWolfVariantFromNbt(nbt, world.getRegistryManager());
-            RegistryKey<WolfSoundVariant> soundType = NbtEntityUtils.getWolfSoundTypeFromNbt(nbt, world.getRegistryManager());
+            Pair<RegistryKey<WolfVariant>, DyeColor> wolfPair = DataEntityUtils.getWolfVariant(data, world.getRegistryManager());
+            RegistryKey<WolfSoundVariant> soundType = DataEntityUtils.getWolfSoundType(data, world.getRegistryManager());
 
             if (wolfPair.getLeft() != null)
             {

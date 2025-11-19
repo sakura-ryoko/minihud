@@ -3,6 +3,7 @@ package fi.dy.masa.minihud.info;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
@@ -10,11 +11,12 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.malilib.util.WorldUtils;
+import fi.dy.masa.malilib.util.data.tag.CompoundData;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.data.EntitiesDataManager;
@@ -62,12 +64,12 @@ public abstract class InfoLine
         return null;
     }
 
-    public List<Entry> parseNbt(@Nonnull World world, @Nonnull EntityType<?> entityType, @Nonnull NbtCompound nbt)
+    public List<Entry> parseData(@Nonnull World world, @Nonnull EntityType<?> entityType, @Nonnull CompoundData data)
     {
         return null;
     }
 
-    public List<Entry> parseNbt(@Nonnull World world, @Nonnull BlockEntityType<?> beType, @Nonnull NbtCompound nbt)
+    public List<Entry> parseData(@Nonnull World world, @Nonnull BlockEntityType<?> beType, @Nonnull CompoundData data)
     {
         return null;
     }
@@ -121,7 +123,7 @@ public abstract class InfoLine
 
     public abstract boolean succeededType();
 
-    public record Context(@Nullable World world, @Nullable Entity ent, @Nullable BlockEntity be, @Nullable BlockPos pos, @Nullable BlockState state, NbtCompound nbt)
+    public record Context(@Nullable World world, @Nullable Entity ent, @Nullable BlockEntity be, @Nullable BlockPos pos, @Nullable BlockState state, CompoundData data)
     {
         public boolean hasEntity()
         {
@@ -158,9 +160,9 @@ public abstract class InfoLine
             return this.state != null && this.state instanceof BlockState;
         }
 
-        public boolean hasNbt()
+        public boolean hasData()
         {
-            return this.nbt != null && !this.nbt.isEmpty();
+            return this.data != null && !this.data.isEmpty();
         }
     }
 

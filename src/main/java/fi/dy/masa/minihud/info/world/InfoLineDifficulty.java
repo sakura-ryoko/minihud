@@ -6,8 +6,11 @@ import javax.annotation.Nonnull;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.LocalDifficulty;
+import net.minecraft.world.MoonPhase;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.WorldChunk;
+import net.minecraft.world.dimension.DimensionType;
+
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.info.InfoLine;
@@ -53,7 +56,10 @@ public class InfoLineDifficulty extends InfoLine
 
         if (serverChunk != null)
         {
-            moonPhaseFactor = world.getMoonSize();
+			MoonPhase moonPhase = this.mc().gameRenderer.getEntityRenderStates().skyRenderState.moonPhase;
+	        moonPhaseFactor = DimensionType.MOON_SIZES[moonPhase.getIndex()];
+//            moonPhaseFactor = world.getMoonSize();
+	        // That was harder....
             chunkInhabitedTime = serverChunk.getInhabitedTime();
         }
 

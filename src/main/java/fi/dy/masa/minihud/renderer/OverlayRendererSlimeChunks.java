@@ -216,10 +216,6 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
         profiler.push("slime_chunk_outlines");
         RenderObjectVbo ctx = this.renderObjects.get(1);
         BufferBuilder builder = ctx.start(() -> "minihud:slime_chunk/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH);
-//        MatrixStack matrices = new MatrixStack();
-
-//        matrices.push();
-//        MatrixStack.Entry e = matrices.peek();
 
         for (Box bb : this.slimeChunks)
         {
@@ -230,7 +226,7 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
             float y2 = (float)(bb.maxY - cameraPos.y);
             float z2 = (float)(bb.maxZ - cameraPos.z);
 
-            fi.dy.masa.malilib.render.RenderUtils.drawBoxAllEdgesBatchedLines(x1, y1, z1, x2, y2, z2, colorLines, builder);
+            fi.dy.masa.malilib.render.RenderUtils.drawBoxAllEdgesBatchedLines(x1, y1, z1, x2, y2, z2, colorLines, this.glLineWidth, builder);
         }
 
         try
@@ -248,7 +244,6 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
             MiniHUD.LOGGER.error("OverlayRendererSlimeChunks#renderOutlines(): Exception; {}", err.getMessage());
         }
 
-//        matrices.pop();
         profiler.pop();
     }
 

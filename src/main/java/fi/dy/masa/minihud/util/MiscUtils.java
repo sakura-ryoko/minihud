@@ -40,7 +40,8 @@ import net.minecraft.world.World;
 
 import fi.dy.masa.malilib.util.IntBoundingBox;
 import fi.dy.masa.malilib.util.StringUtils;
-import fi.dy.masa.malilib.util.nbt.NbtBlockUtils;
+import fi.dy.masa.malilib.util.data.DataBlockUtils;
+import fi.dy.masa.malilib.util.data.tag.CompoundData;
 import fi.dy.masa.malilib.util.time.DurationFormat;
 import fi.dy.masa.malilib.util.time.TimeFormat;
 import fi.dy.masa.minihud.config.Configs;
@@ -100,7 +101,7 @@ public class MiscUtils
 
     public static boolean isOverworld(World world)
     {
-        return world.getDimension().natural();
+        return world.getRegistryKey() == World.OVERWORLD;
     }
 
     public static boolean isStructureWithinRange(@Nullable BlockBox bb, BlockPos playerPos, int maxRange)
@@ -333,9 +334,9 @@ public class MiscUtils
         return (int) xp;
     }
 
-    public static int getFurnaceXpAmount(ServerWorld world, @Nonnull NbtCompound nbt)
+    public static int getFurnaceXpAmount(ServerWorld world, @Nonnull CompoundData data)
     {
-        Reference2IntOpenHashMap<RegistryKey<Recipe<?>>> recipes = NbtBlockUtils.getRecipesUsedFromNbt(nbt);
+        Reference2IntOpenHashMap<RegistryKey<Recipe<?>>> recipes = DataBlockUtils.getRecipesUsed(data);
         double xp = 0.0;
 
         if (recipes.isEmpty())
@@ -380,9 +381,9 @@ public class MiscUtils
         return (int) xp;
     }
 
-    public static int getFurnaceXpAmount(@Nonnull NbtCompound nbt)
+    public static int getFurnaceXpAmount(@Nonnull CompoundData data)
     {
-        Reference2IntOpenHashMap<RegistryKey<Recipe<?>>> recipes = NbtBlockUtils.getRecipesUsedFromNbt(nbt);
+        Reference2IntOpenHashMap<RegistryKey<Recipe<?>>> recipes = DataBlockUtils.getRecipesUsed(data);
         double xp = 0.0;
 
         if (recipes.isEmpty() || HudDataManager.getInstance().getPreparedRecipes() == null)

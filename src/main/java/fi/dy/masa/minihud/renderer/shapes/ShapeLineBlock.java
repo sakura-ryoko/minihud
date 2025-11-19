@@ -178,10 +178,8 @@ public class ShapeLineBlock extends ShapeBlocky
         profiler.push("line_block_outlines");
         RenderObjectVbo ctx = this.renderObjects.get(1);
         BufferBuilder builder = ctx.start(() -> "minihud:line_block/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH);
-//        MatrixStack matrices = new MatrixStack();
 
-//        matrices.push();
-        this.renderLineShapeLines(cameraPos, builder);
+        this.renderLineShapeLines(cameraPos, this.glLineWidth, builder);
 
         try
         {
@@ -198,7 +196,6 @@ public class ShapeLineBlock extends ShapeBlocky
             MiniHUD.LOGGER.error("ShapeLineBlock#renderOutlines(): Exception; {}", err.getMessage());
         }
 
-//        matrices.pop();
         profiler.pop();
     }
 
@@ -306,7 +303,7 @@ public class ShapeLineBlock extends ShapeBlocky
     }
 
     protected void renderLineShapeLines(Vec3d cameraPos,
-//                                        BufferBuilder builder, MatrixStack.Entry e)
+										float lineWidth,
                                         BufferBuilder builder)
     {
         final double maxDist = 30000;
@@ -325,11 +322,11 @@ public class ShapeLineBlock extends ShapeBlocky
         if (this.getCombineQuads())
         {
             Long2ObjectOpenHashMap<SideQuad> strips = this.buildPositionsToStrips(positions, this.layerRange);
-            RenderUtils.renderQuadLines(strips.values(), this.colorLines, expand, cameraPos, builder);
+            RenderUtils.renderQuadLines(strips.values(), this.colorLines, expand, cameraPos, lineWidth, builder);
         }
         else
         {
-            RenderUtils.renderBlockPositionOutlines(positions, this.layerRange, this.colorLines, expand, cameraPos, builder);
+            RenderUtils.renderBlockPositionOutlines(positions, this.layerRange, this.colorLines, expand, cameraPos, lineWidth, builder);
         }
     }
 

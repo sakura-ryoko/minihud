@@ -3,13 +3,13 @@ package fi.dy.masa.minihud.renderer;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
+import com.google.gson.JsonObject;
+
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.WorldChunk;
-import com.google.gson.JsonObject;
 
-import com.mojang.blaze3d.vertex.VertexFormat;
 import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.WorldUtils;
 
@@ -119,15 +119,7 @@ public abstract class OverlayRendererBase implements IOverlayRenderer
                 obj.resortTranslucent(obj.createVertexSorter(cameraPos));
             }
 
-            if (obj.getDrawMode() == VertexFormat.DrawMode.LINES || obj.getDrawMode() == VertexFormat.DrawMode.DEBUG_LINES)
-            {
-                obj.lineWidth(this.glLineWidth);
-                obj.drawPost(null, false, true);
-            }
-            else
-            {
-                obj.drawPost(null, false, false);
-            }
+            obj.drawPost(null, false, false);
         }
     }
 

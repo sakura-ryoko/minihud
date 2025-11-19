@@ -174,10 +174,6 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
 
         RenderObjectVbo ctx = this.renderObjects.getFirst();
         BufferBuilder builder = ctx.start(() -> "minihud:random_tick/quads", MaLiLibPipelines.POSITION_COLOR_MASA_LEQUAL_DEPTH_OFFSET_1);
-//        MatrixStack matrices = new MatrixStack();
-
-//        matrices.push();
-//        MatrixStack.Entry e = matrices.peek();
 
         this.chunkMap.forEach(
                 (pos, boxes) ->
@@ -209,7 +205,6 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
             MiniHUD.LOGGER.error("OverlayRendererRandomTickableChunks#renderQuads(): Exception; {}", err.getMessage());
         }
 
-//        matrices.pop();
         profiler.pop();
     }
 
@@ -227,17 +222,13 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
 
         RenderObjectVbo ctx = this.renderObjects.get(1);
         BufferBuilder builder = ctx.start(() -> "minihud:random_tick/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH);
-//        MatrixStack matrices = new MatrixStack();
-
-//        matrices.push();
-//        MatrixStack.Entry e = matrices.peek();
 
         this.chunkMap.forEach(
                 (pos, boxes) ->
                 {
                     for (Box bb : boxes)
                     {
-                        RenderUtils.renderWallOutlines(bb, 16, 16, true, cameraPos, color, builder);
+                        RenderUtils.renderWallOutlines(bb, 16, 16, true, cameraPos, color, this.glLineWidth, builder);
                     }
                 });
 
@@ -256,7 +247,6 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
             MiniHUD.LOGGER.error("OverlayRendererRandomTickableChunks#renderOutlines(): Exception; {}", err.getMessage());
         }
 
-//        matrices.pop();
         profiler.pop();
     }
 

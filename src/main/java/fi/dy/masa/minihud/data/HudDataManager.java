@@ -36,8 +36,9 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.GlobalPos;
-import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
+import net.minecraft.world.rule.GameRules;
+
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -382,7 +383,7 @@ public class HudDataManager
         {
             IntegratedServer server = DataStorage.getInstance().getIntegratedServer();
 
-            return (server.getOverworld().getGameRules().getBoolean(GameRules.DO_WEATHER_CYCLE));
+            return (server.getOverworld().getGameRules().getValue(GameRules.ADVANCE_WEATHER));
         }
 
         return this.getClearTime() >= 0 || this.getRainTime() >= 0 || this.getThunderTime() >= 0;

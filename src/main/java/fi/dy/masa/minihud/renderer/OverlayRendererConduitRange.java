@@ -160,13 +160,9 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
 
         Color4f color = Configs.Colors.CONDUIT_RANGE_OVERLAY_COLOR.getColor();
 
-        // MaLiLibPipelines.POSITION_COLOR_MASA_LESSER_DEPTH
         profiler.push("conduit_quads");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
         BufferBuilder builder = ctx.start(() -> "minihud:conduit/quads", this.renderThrough ? MaLiLibPipelines.MINIHUD_SHAPE_NO_DEPTH_OFFSET : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL);
-//        MatrixStack matrices = new MatrixStack();
-//
-//        matrices.push();
 
         this.conduits.forEach(
                 (entry) ->
@@ -208,7 +204,6 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
             MiniHUD.LOGGER.error("OverlayRendererConduitRange#renderQuads(): Exception; {}", err.getMessage());
         }
 
-//        matrices.pop();
         profiler.pop();
 
     }
@@ -223,9 +218,6 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
         profiler.push("conduit_outlines");
         RenderObjectVbo ctx = this.renderObjects.get(1);
         BufferBuilder builder = ctx.start(() -> "minihud:conduit/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH);
-//        MatrixStack matrices = new MatrixStack();
-
-//        matrices.push();
 
         this.conduits.forEach(
                 (entry) ->
@@ -234,14 +226,14 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
 
                     if (this.combineQuads)
                     {
-                        RenderUtils.renderQuadLines(entry.getQuads(), this.colorLines, 0, cameraPos, builder);
+                        RenderUtils.renderQuadLines(entry.getQuads(), this.colorLines, 0, cameraPos, this.glLineWidth, builder);
                     }
                     else
                     {
                         RenderUtils.renderCircleBlockOutlines(entry.getPositions(), PositionUtils.ALL_DIRECTIONS,
                                                               entry.getTest(), this.renderType,
                                                               this.layerRange, this.colorLines, 0,
-                                                              cameraPos, builder);
+                                                              cameraPos, this.glLineWidth, builder);
                     }
                 }
         );
@@ -261,7 +253,6 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
             MiniHUD.LOGGER.error("OverlayRendererConduitRange#renderBlockRange(): Exception; {}", err.getMessage());
         }
 
-//        matrices.pop();
         profiler.pop();
 
     }

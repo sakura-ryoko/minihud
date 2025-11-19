@@ -3,6 +3,9 @@ package fi.dy.masa.minihud.renderer;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nullable;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import org.apache.commons.lang3.tuple.Pair;
+
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ItemEnchantmentsComponent;
@@ -13,27 +16,22 @@ import net.minecraft.entity.ai.brain.MemoryModuleType;
 import net.minecraft.entity.mob.ZombieVillagerEntity;
 import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.EnchantmentTags;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.GlobalPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.*;
 import net.minecraft.util.profiler.Profiler;
 import net.minecraft.village.TradeOffer;
 import net.minecraft.village.TradeOfferList;
 import net.minecraft.village.VillagerProfession;
 import net.minecraft.world.World;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import org.apache.commons.lang3.tuple.Pair;
+
 import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.interfaces.IClientTickHandler;
 import fi.dy.masa.malilib.mixin.entity.IMixinMerchantEntity;
 import fi.dy.masa.malilib.render.RenderUtils;
 import fi.dy.masa.malilib.util.WorldUtils;
-import fi.dy.masa.malilib.util.nbt.NbtEntityUtils;
+import fi.dy.masa.malilib.util.data.DataEntityUtils;
+import fi.dy.masa.malilib.util.data.tag.CompoundData;
 import fi.dy.masa.malilib.util.nbt.NbtKeys;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
@@ -47,7 +45,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
     public static final OverlayRendererVillagerInfo INSTANCE = new OverlayRendererVillagerInfo();
 
     // Mini Secondary Cache so villagers' data doesn't ... `Flash`
-    private final ConcurrentHashMap<Integer, Pair<Long, Pair<Entity, NbtCompound>>> recentEntityData;
+    private final ConcurrentHashMap<Integer, Pair<Long, Pair<Entity, CompoundData>>> recentEntityData;
     private long lastTick;
 
     protected OverlayRendererVillagerInfo()
@@ -124,25 +122,25 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
         }
     }
 
-    private boolean isNbtValid(NbtCompound nbt)
+    private boolean isDataValid(CompoundData data)
     {
-        if (nbt.contains(NbtKeys.OFFERS))
+        if (data.containsLenient(NbtKeys.OFFERS))
         {
             return true;
         }
-        else return (nbt.contains(NbtKeys.ZOMBIE_CONVERSION) &&
-                     nbt.getInt(NbtKeys.ZOMBIE_CONVERSION, -1) > 0) ||
-                     nbt.contains(NbtKeys.CONVERSION_PLAYER);
+        else return (data.containsLenient(NbtKeys.ZOMBIE_CONVERSION) &&
+                     data.getInt(NbtKeys.ZOMBIE_CONVERSION) > 0) ||
+                     data.containsLenient(NbtKeys.CONVERSION_PLAYER);
     }
 
-    private @Nullable Pair<Entity, NbtCompound> getVillagerData(World world, int entityId)
+    private @Nullable Pair<Entity, CompoundData> getVillagerData(World world, int entityId)
     {
-        Pair<Entity, NbtCompound> pair = EntitiesDataManager.getInstance().requestEntity(world, entityId);
+        Pair<Entity, CompoundData> pair = EntitiesDataManager.getInstance().requestEntity(world, entityId);
 
         if (pair != null &&
             pair.getRight() != null &&
             !pair.getRight().isEmpty() &&
-            this.isNbtValid(pair.getRight()))
+            this.isDataValid(pair.getRight()))
         {
             long now = System.currentTimeMillis();
 
@@ -168,14 +166,14 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
             return null;
         }
 
-        Pair<Entity, NbtCompound> pair = this.getVillagerData(world, villager.getId());
+        Pair<Entity, CompoundData> pair = this.getVillagerData(world, villager.getId());
         TradeOfferList list = null;
 
         if (pair != null)
         {
             if (pair.getRight() != null && !pair.getRight().isEmpty())
             {
-                list = NbtEntityUtils.getTradeOffersFromNbt(pair.getRight(), world.getRegistryManager());
+                list = DataEntityUtils.getTradeOffers(pair.getRight(), world.getRegistryManager());
             }
             else if (pair.getLeft() != null && pair.getLeft() instanceof VillagerEntity entity)
             {
@@ -193,14 +191,14 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
             return -1;
         }
 
-        Pair<Entity, NbtCompound> pair = this.getVillagerData(world, villager.getId());
+        Pair<Entity, CompoundData> pair = this.getVillagerData(world, villager.getId());
         int conversionTime = -1;
 
         if (pair != null)
         {
             if (pair.getRight() != null && !pair.getRight().isEmpty())
             {
-                Pair<Integer, UUID> zombiePair = NbtEntityUtils.getZombieConversionTimerFromNbt(pair.getRight());
+                Pair<Integer, UUID> zombiePair = DataEntityUtils.getZombieConversionTimer(pair.getRight());
 
                 if (zombiePair != null && zombiePair.getLeft() > -1)
                 {

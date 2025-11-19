@@ -54,8 +54,8 @@ public class RenderContainer
     public void render(Entity entity, Matrix4f posMatrix, Matrix4f projMatrix, MinecraftClient mc, Camera camera, Frustum frustum, Profiler profiler)
     {
         profiler.push("render_container");
-        this.update(camera.getPos(), entity, mc, profiler);
-        this.draw(camera.getPos(), profiler);
+        this.update(camera.getCameraPos(), entity, mc, profiler);
+        this.draw(camera.getCameraPos(), profiler);
         profiler.pop();
     }
 

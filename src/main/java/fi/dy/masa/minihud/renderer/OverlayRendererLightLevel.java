@@ -234,11 +234,11 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
 
         if (markerMode == LightLevelMarkerMode.SQUARE)
         {
-            this.renderMarkers(this::renderLightLevelSquare, cameraPos, safeThreshold, dimThreshold, builder);
+            this.renderMarkers(this::renderLightLevelSquare, cameraPos, safeThreshold, dimThreshold, this.glLineWidth, builder);
         }
         else if (markerMode == LightLevelMarkerMode.CROSS)
         {
-            this.renderMarkers(this::renderLightLevelCross, cameraPos, safeThreshold, dimThreshold, builder);
+            this.renderMarkers(this::renderLightLevelCross, cameraPos, safeThreshold, dimThreshold, this.glLineWidth, builder);
         }
 
         try
@@ -320,8 +320,8 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
                                Vec3d cameraPos,
                                int safeThreshold,
                                int dimThreshold,
+							   float lineWidth,
                                BufferBuilder buffer)
-//                               MatrixStack.Entry e)
     {
         Color4f colorBlockLit = Configs.Colors.LIGHT_LEVEL_MARKER_BLOCK_LIT.getColor();
         Color4f colorDim = Configs.Colors.LIGHT_LEVEL_MARKER_DIM.getColor();
@@ -359,7 +359,7 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
                     color = colorDim;
                 }
 
-                renderer.render((float) x, (float) y, (float) z, color, (float) offset1, (float) offset2, buffer);
+                renderer.render((float) x, (float) y, (float) z, color, (float) offset1, (float) offset2, lineWidth, buffer);
             }
         }
     }
@@ -450,32 +450,32 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
         }
     }
 
-    private void renderLightLevelCross(float x, float y, float z, Color4f color, float offset1, float offset2, BufferBuilder buffer)
+    private void renderLightLevelCross(float x, float y, float z, Color4f color, float offset1, float offset2, float lineWidth, BufferBuilder buffer)
     {
         y += 0.005F;
 
-        buffer.vertex(x + offset1, y, z + offset1).color(color.r, color.g, color.b, color.a);
-        buffer.vertex(x + offset2, y, z + offset2).color(color.r, color.g, color.b, color.a);
+        buffer.vertex(x + offset1, y, z + offset1).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+        buffer.vertex(x + offset2, y, z + offset2).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
 
-        buffer.vertex(x + offset1, y, z + offset2).color(color.r, color.g, color.b, color.a);
-        buffer.vertex(x + offset2, y, z + offset1).color(color.r, color.g, color.b, color.a);
+        buffer.vertex(x + offset1, y, z + offset2).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+        buffer.vertex(x + offset2, y, z + offset1).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
     }
 
-    private void renderLightLevelSquare(float x, float y, float z, Color4f color, float offset1, float offset2, BufferBuilder buffer)
+    private void renderLightLevelSquare(float x, float y, float z, Color4f color, float offset1, float offset2, float lineWidth, BufferBuilder buffer)
     {
         y += 0.005F;
 
-        buffer.vertex(x + offset1, y, z + offset1).color(color.r, color.g, color.b, color.a);
-        buffer.vertex(x + offset1, y, z + offset2).color(color.r, color.g, color.b, color.a);
+        buffer.vertex(x + offset1, y, z + offset1).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+        buffer.vertex(x + offset1, y, z + offset2).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
 
-        buffer.vertex(x + offset1, y, z + offset2).color(color.r, color.g, color.b, color.a);
-        buffer.vertex(x + offset2, y, z + offset2).color(color.r, color.g, color.b, color.a);
+        buffer.vertex(x + offset1, y, z + offset2).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+        buffer.vertex(x + offset2, y, z + offset2).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
 
-        buffer.vertex(x + offset2, y, z + offset2).color(color.r, color.g, color.b, color.a);
-        buffer.vertex(x + offset2, y, z + offset1).color(color.r, color.g, color.b, color.a);
+        buffer.vertex(x + offset2, y, z + offset2).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+        buffer.vertex(x + offset2, y, z + offset1).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
 
-        buffer.vertex(x + offset2, y, z + offset1).color(color.r, color.g, color.b, color.a);
-        buffer.vertex(x + offset1, y, z + offset1).color(color.r, color.g, color.b, color.a);
+        buffer.vertex(x + offset2, y, z + offset1).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
+        buffer.vertex(x + offset1, y, z + offset1).color(color.r, color.g, color.b, color.a).lineWidth(lineWidth);
     }
 
     private boolean updateLightLevels(World world, BlockPos center)
@@ -660,6 +660,6 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
 
     private interface IMarkerRenderer
     {
-        void render(float x, float y, float z, Color4f color, float offset1, float offset2, BufferBuilder buffer);
+        void render(float x, float y, float z, Color4f color, float offset1, float offset2, float lineWidth, BufferBuilder buffer);
     }
 }
