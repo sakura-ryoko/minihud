@@ -213,7 +213,7 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         //TODO: Maybe Change that +12 to 0 and reset to 0 also createShapeEditorElementIntField or add some type of offset
         this.addLabel(x4 + 12, y4, -1, 12, 0xFFFFFFFF, StringUtils.translate("minihud.gui.label.center_colon"));
         y4 += 12;
-        GuiUtils.createVec3dInputsVertical(x4, y4, textFieldWidth, shape.getCorner2(), new Vec3dEditor(shape::getCenter, shape::setCenter, this), true, this);
+        GuiUtils.createVec3dInputsVertical(x4, y4, textFieldWidth, shape.getCenter(), new Vec3dEditor(shape::getCenter, shape::setCenter, this), true, this);
 
         int x = x1 + 12;
         ButtonGeneric btn = new ButtonGeneric(x, y4 + 50, -1, 14, StringUtils.translate("malilib.gui.button.render_layers_gui.set_to_player"));
