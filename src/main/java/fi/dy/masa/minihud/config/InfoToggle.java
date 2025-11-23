@@ -5,6 +5,7 @@ import javax.annotation.Nullable;
 import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
+import org.jetbrains.annotations.NotNull;
 
 import fi.dy.masa.malilib.config.ConfigType;
 import fi.dy.masa.malilib.config.IConfigInteger;
@@ -106,7 +107,7 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
 	ENTITY_COPPER_AGING		("infoEntityCopperAging",       InfoLineTypes.COPPER_AGING, false, ""),
     ;
 
-    public static final ImmutableList<InfoToggle> VALUES = ImmutableList.copyOf(values());
+    public static final ImmutableList<@NotNull InfoToggle> VALUES = ImmutableList.copyOf(values());
     private static final String INFO_KEY = Reference.MOD_ID+".config.info_toggle";
 
     private final String name;
@@ -488,7 +489,7 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     @Override
     public boolean isModified(String newValue)
     {
-        return String.valueOf(this.defaultValueBoolean).equals(newValue) == false;
+        return !String.valueOf(this.defaultValueBoolean).equals(newValue);
     }
 
     @Override
