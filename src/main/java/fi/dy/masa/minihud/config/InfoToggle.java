@@ -39,19 +39,19 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     COORDINATES_SCALED      ("infoCoordinatesScaled",       null, false, ""),
     BLOCK_POS               ("infoBlockPosition",           null, false, ""),
     CHUNK_POS               ("infoChunkPosition",           null, false, ""),
-    BLOCK_IN_CHUNK          ("infoBlockInChunk",            null, false, ""),
+    BLOCK_IN_CHUNK          ("infoBlockInChunk",            InfoLineTypes.BLOCK_IN_CHUNK, false, ""),
     DIMENSION               ("infoDimensionId",             null, false, ""),
-    FACING                  ("infoFacing",                  null, true,  ""),
+    FACING                  ("infoFacing",                  InfoLineTypes.FACING, true,  ""),
     ROTATION_YAW            ("infoRotationYaw",             null, false, ""),
     ROTATION_PITCH          ("infoRotationPitch",           null, false, ""),
 
     // Player
-    BLOCK_BREAK_SPEED       ("infoBlockBreakSpeed",         null, false, ""),
-    PLAYER_EXPERIENCE       ("infoPlayerExperience",        null, false, ""),
+    BLOCK_BREAK_SPEED       ("infoBlockBreakSpeed",         InfoLineTypes.BLOCK_BREAK_SPEED, false, ""),
+    PLAYER_EXPERIENCE       ("infoPlayerExperience",        InfoLineTypes.PLAYER_EXP, false, ""),
     SPEED                   ("infoSpeed",                   null, false, ""),
-    SPEED_AXIS              ("infoSpeedAxis",               null, false, ""),
-    SPEED_HV                ("infoSpeedHV",                 null, false, ""),
-    SPRINTING               ("infoSprinting",               null, false, ""),
+    SPEED_AXIS              ("infoSpeedAxis",               InfoLineTypes.SPEED_AXIS, false, ""),
+    SPEED_HV                ("infoSpeedHV",                 InfoLineTypes.SPEED_HV, false, ""),
+    SPRINTING               ("infoSprinting",               InfoLineTypes.SPRINTING, false, ""),
 
     // Server
     SERVER_TPS              ("infoServerTPS",               InfoLineTypes.SERVER_TPS, false, ""),
@@ -65,15 +65,15 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     MOB_CAPS                ("infoMobCaps",                 InfoLineTypes.MOB_CAPS, false, true,""),
     PARTICLE_COUNT          ("infoParticleCount",           InfoLineTypes.PARTICLE_COUNT, false, ""),
     DIFFICULTY              ("infoDifficulty",              InfoLineTypes.DIFFICULTY, false, ""),
-    ENTITIES                ("infoEntities",                null, false, ""),
-    ENTITIES_CLIENT_WORLD   ("infoEntitiesClientWorld",     null, false, ""),
-    TILE_ENTITIES           ("infoTileEntities",            null, false, ""),
+    ENTITIES                ("infoEntities",                InfoLineTypes.ENTITIES, false, ""),
+    ENTITIES_CLIENT_WORLD   ("infoEntitiesClientWorld",     InfoLineTypes.ENTITIES_CLIENT_WORLD, false, ""),
+    TILE_ENTITIES           ("infoTileEntities",            InfoLineTypes.TILE_ENTITIES, false, ""),
 
     // World (Current position)
-    LIGHT_LEVEL             ("infoLightLevel",              null, false, ""),
-    BIOME                   ("infoBiome",                   null, false, ""),
-    BIOME_REG_NAME          ("infoBiomeRegistryName",       null, false, ""),
-    DISTANCE                ("infoDistance",                null, false, ""),
+    LIGHT_LEVEL             ("infoLightLevel",              InfoLineTypes.LIGHT_LEVEL, false, ""),
+    BIOME                   ("infoBiome",                   InfoLineTypes.BIOME, false, ""),
+    BIOME_REG_NAME          ("infoBiomeRegistryName",       InfoLineTypes.BIOME_REG_NAME, false, ""),
+    DISTANCE                ("infoDistance",                InfoLineTypes.DISTANCE, false, ""),
 
     // Chunk
     LOADED_CHUNKS_COUNT     ("infoLoadedChunksCount",       InfoLineTypes.LOADED_CHUNKS, false, ""),

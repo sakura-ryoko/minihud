@@ -12,6 +12,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 
 import fi.dy.masa.malilib.util.StringUtils;
@@ -94,7 +95,12 @@ public abstract class InfoLine
         return null;
     }
 
-    public List<Entry> parseWorld(@Nonnull World world)
+	public List<Entry> parseChunkPos(@Nonnull World world, @Nonnull ChunkPos pos)
+	{
+		return null;
+	}
+
+	public List<Entry> parseWorld(@Nonnull World world)
     {
         return null;
     }
@@ -123,7 +129,7 @@ public abstract class InfoLine
 
     public abstract boolean succeededType();
 
-    public record Context(@Nullable World world, @Nullable Entity ent, @Nullable BlockEntity be, @Nullable BlockPos pos, @Nullable BlockState state, CompoundData data)
+    public record Context(@Nullable World world, @Nullable Entity ent, @Nullable BlockEntity be, @Nullable BlockPos pos, @Nullable BlockState state, ChunkPos chunkPos, CompoundData data)
     {
         public boolean hasEntity()
         {
@@ -160,7 +166,12 @@ public abstract class InfoLine
             return this.state != null && this.state instanceof BlockState;
         }
 
-        public boolean hasData()
+	    public boolean hasChunkPos()
+	    {
+		    return this.chunkPos != null;
+	    }
+
+	    public boolean hasData()
         {
             return this.data != null && !this.data.isEmpty();
         }
