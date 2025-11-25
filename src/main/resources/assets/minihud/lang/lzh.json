@@ -885,6 +885,7 @@
     "minihud.info_line.home_pos": "Home Position: §b%s§r / Radius: §b%d",
     "minihud.info_line.honey_level": "Honey: §b%d",
     "minihud.info_line.horse_jump": "%s Jump: §b%.3f§r m",
+    "minihud.info_line.horse_max_health": "%s 最大生命值：§b%.0f§r ❤",
     "minihud.info_line.horse_speed": "%s Speed: §b%.3f§r m/s",
     "minihud.info_line.invalid_value": "Invalid",
     "minihud.info_line.light_level": "Light (block): %d",

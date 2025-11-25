@@ -885,6 +885,7 @@
     "minihud.info_line.home_pos": "홈 위치: §b%s§r / 반경: §b%d",
     "minihud.info_line.honey_level": "꿀: §b%d",
     "minihud.info_line.horse_jump": "%s 점프: §b%.3f§r m",
+    "minihud.info_line.horse_max_health": "%s 최대 체력: §b%.0f§r ❤",
     "minihud.info_line.horse_speed": "%s 속도: §b%.3f§r m/s",
     "minihud.info_line.invalid_value": "유효하지 않음",
     "minihud.info_line.light_level": "밝기 (블록): %d",

@@ -21,6 +21,7 @@ import fi.dy.masa.minihud.info.InfoLine;
 public class InfoLineHorseSpeed extends InfoLine
 {
     private static final String HORSE_KEY = Reference.MOD_ID+".info_line.horse_speed";
+    private static final double HORSE_SPEED_CONVERSION_FACTOR = 43.17;
 
     public InfoLineHorseSpeed(InfoToggle type)
     {
@@ -86,7 +87,7 @@ public class InfoLineHorseSpeed extends InfoLine
 
             if (speed > 0d)
             {
-                speed *= 42.1629629629629f;
+                speed *= HORSE_SPEED_CONVERSION_FACTOR;
                 list.add(this.translate(HORSE_KEY, horseType, speed));
                 this.succeeded = true;
             }
@@ -107,7 +108,7 @@ public class InfoLineHorseSpeed extends InfoLine
 
             if (speed > 0d)
             {
-                speed *= 42.1629629629629f;
+                speed *= HORSE_SPEED_CONVERSION_FACTOR;
                 list.add(this.translate(HORSE_KEY, horseType, speed));
                 this.succeeded = true;
             }
