@@ -1050,7 +1050,8 @@ public class RenderHandler implements IRenderer
             }
         }
         else if (type == InfoToggle.HORSE_SPEED ||
-                 type == InfoToggle.HORSE_JUMP)
+                 type == InfoToggle.HORSE_JUMP ||
+                 type == InfoToggle.HORSE_MAX_HEALTH)
         {
             if (this.addedTypes.contains(type))
             {
