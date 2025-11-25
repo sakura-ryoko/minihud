@@ -42,13 +42,13 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     BLOCK_IN_CHUNK          ("infoBlockInChunk",            InfoLineTypes.BLOCK_IN_CHUNK, false, ""),
     DIMENSION               ("infoDimensionId",             null, false, ""),
     FACING                  ("infoFacing",                  InfoLineTypes.FACING, true,  ""),
-    ROTATION_YAW            ("infoRotationYaw",             null, false, ""),
-    ROTATION_PITCH          ("infoRotationPitch",           null, false, ""),
+    ROTATION_YAW            ("infoRotationYaw",             InfoLineTypes.ROTATION_YAW, false, ""),
+    ROTATION_PITCH          ("infoRotationPitch",           InfoLineTypes.ROTATION_PITCH, false, ""),
 
     // Player
     BLOCK_BREAK_SPEED       ("infoBlockBreakSpeed",         InfoLineTypes.BLOCK_BREAK_SPEED, false, ""),
     PLAYER_EXPERIENCE       ("infoPlayerExperience",        InfoLineTypes.PLAYER_EXP, false, ""),
-    SPEED                   ("infoSpeed",                   null, false, ""),
+    SPEED                   ("infoSpeed",                   InfoLineTypes.SPEED, false, ""),
     SPEED_AXIS              ("infoSpeedAxis",               InfoLineTypes.SPEED_AXIS, false, ""),
     SPEED_HV                ("infoSpeedHV",                 InfoLineTypes.SPEED_HV, false, ""),
     SPRINTING               ("infoSprinting",               InfoLineTypes.SPRINTING, false, ""),
@@ -56,7 +56,7 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     // Server
     SERVER_TPS              ("infoServerTPS",               InfoLineTypes.SERVER_TPS, false, ""),
     SERVUX                  ("infoServux",                  InfoLineTypes.SERVUX, false, true, ""),
-    PING                    ("infoPing",                    null, false, ""),
+    PING                    ("infoPing",                    InfoLineTypes.PING, false, ""),
 
     // World
     WEATHER                 ("infoWeather",                 InfoLineTypes.WEATHER, false, true, ""),

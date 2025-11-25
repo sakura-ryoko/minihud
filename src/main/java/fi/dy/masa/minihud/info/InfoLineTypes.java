@@ -58,13 +58,17 @@ public class InfoLineTypes
 	public static final InfoLineType<InfoLineBiomeRegName>          BIOME_REG_NAME          = InfoLineType.build(InfoLineBiomeRegName::new,         InfoToggle.BIOME_REG_NAME, List.of(InfoLineFlag.WORLD, InfoLineFlag.CHUNK_POS, InfoLineFlag.BLOCK_POS));
 
 	// Camera
-	public static final InfoLineType<InfoLineDistance>              DISTANCE                = InfoLineType.build(InfoLineDistance::new,             InfoToggle.DISTANCE, List.of(InfoLineFlag.CAMERA));
-	public static final InfoLineType<InfoLineFacing>                FACING                  = InfoLineType.build(InfoLineFacing::new,               InfoToggle.FACING, List.of(InfoLineFlag.CAMERA));
-	public static final InfoLineType<InfoLineSpeedHV>               SPEED_HV                = InfoLineType.build(InfoLineSpeedHV::new,              InfoToggle.SPEED_HV, List.of(InfoLineFlag.CAMERA));
-	public static final InfoLineType<InfoLineSpeedAxis>             SPEED_AXIS              = InfoLineType.build(InfoLineSpeedAxis::new,            InfoToggle.SPEED_AXIS, List.of(InfoLineFlag.CAMERA));
+	public static final InfoLineType<InfoLineDistance>              DISTANCE                = InfoLineType.build(InfoLineDistance::new,             InfoToggle.DISTANCE, List.of(InfoLineFlag.WORLD, InfoLineFlag.CAMERA));
+	public static final InfoLineType<InfoLineFacing>                FACING                  = InfoLineType.build(InfoLineFacing::new,               InfoToggle.FACING, List.of(InfoLineFlag.WORLD, InfoLineFlag.CAMERA));
+	public static final InfoLineType<InfoLineRotationYaw>           ROTATION_YAW            = InfoLineType.build(InfoLineRotationYaw::new,          InfoToggle.ROTATION_YAW, List.of(InfoLineFlag.WORLD, InfoLineFlag.CAMERA));
+	public static final InfoLineType<InfoLineRotationPitch>         ROTATION_PITCH          = InfoLineType.build(InfoLineRotationPitch::new,        InfoToggle.ROTATION_PITCH, List.of(InfoLineFlag.WORLD, InfoLineFlag.CAMERA));
+	public static final InfoLineType<InfoLineSpeed>                 SPEED                   = InfoLineType.build(InfoLineSpeed::new,                InfoToggle.SPEED, List.of(InfoLineFlag.WORLD, InfoLineFlag.CAMERA));
+	public static final InfoLineType<InfoLineSpeedHV>               SPEED_HV                = InfoLineType.build(InfoLineSpeedHV::new,              InfoToggle.SPEED_HV, List.of(InfoLineFlag.WORLD, InfoLineFlag.CAMERA));
+	public static final InfoLineType<InfoLineSpeedAxis>             SPEED_AXIS              = InfoLineType.build(InfoLineSpeedAxis::new,            InfoToggle.SPEED_AXIS, List.of(InfoLineFlag.WORLD, InfoLineFlag.CAMERA));
 
 	// Player
-	public static final InfoLineType<InfoLinePlayerExp>             PLAYER_EXP              = InfoLineType.build(InfoLinePlayerExp::new,            InfoToggle.PLAYER_EXPERIENCE, List.of(InfoLineFlag.PLAYER));
+	public static final InfoLineType<InfoLinePlayerExp>             PLAYER_EXP              = InfoLineType.build(InfoLinePlayerExp::new,            InfoToggle.PLAYER_EXPERIENCE, List.of(InfoLineFlag.WORLD, InfoLineFlag.PLAYER));
+	public static final InfoLineType<InfoLinePing>                  PING                    = InfoLineType.build(InfoLinePing::new,                 InfoToggle.PING, List.of(InfoLineFlag.WORLD, InfoLineFlag.PLAYER));
 
     // Block Entity
     public static final InfoLineType<InfoLineFurnaceExp>            FURNACE_EXP             = InfoLineType.build(InfoLineFurnaceExp::new,           InfoToggle.FURNACE_XP, List.of(InfoLineFlag.WORLD, InfoLineFlag.TILE_ENTITY));
