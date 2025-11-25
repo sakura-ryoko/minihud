@@ -8,31 +8,61 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.passive.AbstractHorseEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.world.World;
-import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 import fi.dy.masa.malilib.util.nbt.NbtEntityUtils;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.info.InfoLine;
 
-public class InfoLineHorseSpeed extends InfoLine
+public class InfoLineHorseMaxHealth extends InfoLine
 {
-    private static final String HORSE_KEY = Reference.MOD_ID+".info_line.horse_speed";
-    private static final double HORSE_SPEED_CONVERSION_FACTOR = 43.17;
+    private static final String HORSE_KEY = Reference.MOD_ID + ".info_line.horse_max_health";
+    private static final String MAX_HEALTH_ATTRIBUTE_ID = "minecraft:max_health";
 
-    public InfoLineHorseSpeed(InfoToggle type)
+    public InfoLineHorseMaxHealth(InfoToggle type)
     {
         super(type);
     }
 
-    public InfoLineHorseSpeed()
+    public InfoLineHorseMaxHealth()
     {
-        super(InfoToggle.HORSE_SPEED);
+        super(InfoToggle.HORSE_MAX_HEALTH);
     }
 
     @Override
     public boolean succeededType() { return this.succeeded; }
+
+    /**
+     * Gets the max health value from NBT attributes.
+     * Looks for the attribute with ID "minecraft:max_health" in the Attributes
+     * list.
+     */
+    private static double getMaxHealthFromNbt(@NotNull NbtCompound nbt)
+    {
+        if (nbt.contains("Attributes"))
+        {
+            NbtList attributes = nbt.getListOrEmpty("Attributes");
+
+            for (int i = 0; i < attributes.size(); i++)
+            {
+                NbtElement element = attributes.get(i);
+                if (element instanceof NbtCompound attribute)
+                {
+                    if (MAX_HEALTH_ATTRIBUTE_ID.equals(attribute.getString("Name")))
+                    {
+                        if (attribute.contains("Base"))
+                        {
+                            return attribute.getDouble("Base", 0.0);
+                        }
+                    }
+                }
+            }
+        }
+        return 0.0;
+    }
 
     @Override
     public List<Entry> parse(@NotNull InfoLine.Context ctx)
@@ -49,17 +79,19 @@ public class InfoLineHorseSpeed extends InfoLine
             }
         }
 
+        // Prefer entity parsing when entity is available (more reliable than NBT)
+        if (ctx.ent() != null)
+        {
+            return this.parseEnt(ctx.world(), ctx.ent());
+        }
+
+        // Fall back to NBT parsing if entity is not available
         if (ctx.hasLiving() && ctx.hasNbt())
         {
             EntityType<?> entityType = NbtEntityUtils.getEntityTypeFromNbt(ctx.nbt());
             if (entityType == null) return null;
 
             return this.parseNbt(ctx.world(), entityType, ctx.nbt());
-        }
-
-        if (ctx.ent() != null)
-        {
-            return this.parseEnt(ctx.world(), ctx.ent());
         }
 
         return null;
@@ -80,13 +112,11 @@ public class InfoLineHorseSpeed extends InfoLine
             entityType.equals(EntityType.TRADER_LLAMA) ||
             entityType.equals(EntityType.ZOMBIE_HORSE))
         {
-            Pair<Double, Double> horsePair = NbtEntityUtils.getSpeedAndJumpStrengthFromNbt(nbt);
-            double speed = horsePair.getLeft();
+            double maxHealth = getMaxHealthFromNbt(nbt);
 
-            if (speed > 0d)
+            if (maxHealth > 0d)
             {
-                speed *= HORSE_SPEED_CONVERSION_FACTOR;
-                list.add(this.translate(HORSE_KEY, horseType, speed));
+                list.add(this.translate(HORSE_KEY, horseType, maxHealth));
                 this.succeeded = true;
             }
         }
@@ -102,12 +132,11 @@ public class InfoLineHorseSpeed extends InfoLine
         if (ent instanceof AbstractHorseEntity horse)
         {
             String horseType = horse.getType().getName().getString();
-            double speed = horse.getAttributeValue(EntityAttributes.MOVEMENT_SPEED);
+            double maxHealth = horse.getAttributeValue(EntityAttributes.MAX_HEALTH);
 
-            if (speed > 0d)
+            if (maxHealth > 0d)
             {
-                speed *= HORSE_SPEED_CONVERSION_FACTOR;
-                list.add(this.translate(HORSE_KEY, horseType, speed));
+                list.add(this.translate(HORSE_KEY, horseType, maxHealth));
                 this.succeeded = true;
             }
         }

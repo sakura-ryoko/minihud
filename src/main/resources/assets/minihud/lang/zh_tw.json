@@ -885,6 +885,7 @@
     "minihud.info_line.home_pos": "Home Position: §b%s§r / Radius: §b%d",
     "minihud.info_line.honey_level": "蜂蜜：§b%d",
     "minihud.info_line.horse_jump": "%s 跳躍高度：§b%.3f§r 米",
+    "minihud.info_line.horse_max_health": "%s 最大生命值：§b%.0f§r ❤",
     "minihud.info_line.horse_speed": "%s 速度：§b%.3f§r 米/秒",
     "minihud.info_line.invalid_value": "無效",
     "minihud.info_line.light_level": "方塊亮度：%d",
