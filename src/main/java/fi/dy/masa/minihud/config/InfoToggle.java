@@ -37,8 +37,8 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     // Player (Camera)
     COORDINATES             ("infoCoordinates",             null, true,  ""),
     COORDINATES_SCALED      ("infoCoordinatesScaled",       null, false, ""),
-    BLOCK_POS               ("infoBlockPosition",           null, false, ""),
-    CHUNK_POS               ("infoChunkPosition",           null, false, ""),
+    BLOCK_POS               ("infoBlockPosition",           InfoLineTypes.BLOCK_POS, false, ""),
+    CHUNK_POS               ("infoChunkPosition",           InfoLineTypes.CHUNK_POS, false, ""),
     BLOCK_IN_CHUNK          ("infoBlockInChunk",            InfoLineTypes.BLOCK_IN_CHUNK, false, ""),
     DIMENSION               ("infoDimensionId",             null, false, ""),
     FACING                  ("infoFacing",                  InfoLineTypes.FACING, true,  ""),
@@ -80,7 +80,7 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     CHUNK_SECTIONS          ("infoChunkSections",           InfoLineTypes.CHUNK_SECTIONS, false, ""),
     CHUNK_SECTIONS_FULL     ("infoChunkSectionsLine",       InfoLineTypes.CHUNK_SECTIONS_FULL, false, ""),
     CHUNK_UPDATES           ("infoChunkUpdates",            InfoLineTypes.CHUNK_UPDATES, false, ""),
-    REGION_FILE             ("infoRegionFile",              null, false, ""),
+    REGION_FILE             ("infoRegionFile",              InfoLineTypes.REGION_FILE, false, ""),
     SLIME_CHUNK             ("infoSlimeChunk",              InfoLineTypes.SLIME_CHUNK, false, ""),
 
     // Block

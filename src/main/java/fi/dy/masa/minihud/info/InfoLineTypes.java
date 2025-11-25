@@ -56,6 +56,9 @@ public class InfoLineTypes
 	public static final InfoLineType<InfoLineLightLevel>            LIGHT_LEVEL             = InfoLineType.build(InfoLineLightLevel::new,           InfoToggle.LIGHT_LEVEL, List.of(InfoLineFlag.WORLD, InfoLineFlag.CHUNK_POS, InfoLineFlag.BLOCK_POS));
 	public static final InfoLineType<InfoLineBiome>                 BIOME                   = InfoLineType.build(InfoLineBiome::new,                InfoToggle.BIOME, List.of(InfoLineFlag.WORLD, InfoLineFlag.CHUNK_POS, InfoLineFlag.BLOCK_POS));
 	public static final InfoLineType<InfoLineBiomeRegName>          BIOME_REG_NAME          = InfoLineType.build(InfoLineBiomeRegName::new,         InfoToggle.BIOME_REG_NAME, List.of(InfoLineFlag.WORLD, InfoLineFlag.CHUNK_POS, InfoLineFlag.BLOCK_POS));
+	public static final InfoLineType<InfoLineBlockPos>              BLOCK_POS               = InfoLineType.build(InfoLineBlockPos::new,             InfoToggle.BLOCK_POS, List.of(InfoLineFlag.WORLD, InfoLineFlag.CHUNK_POS, InfoLineFlag.BLOCK_POS));
+	public static final InfoLineType<InfoLineChunkPos>              CHUNK_POS               = InfoLineType.build(InfoLineChunkPos::new,             InfoToggle.CHUNK_POS, List.of(InfoLineFlag.WORLD, InfoLineFlag.CHUNK_POS, InfoLineFlag.BLOCK_POS));
+	public static final InfoLineType<InfoLineRegionFile>            REGION_FILE             = InfoLineType.build(InfoLineRegionFile::new,           InfoToggle.REGION_FILE, List.of(InfoLineFlag.WORLD, InfoLineFlag.CHUNK_POS, InfoLineFlag.BLOCK_POS));
 
 	// Camera
 	public static final InfoLineType<InfoLineDistance>              DISTANCE                = InfoLineType.build(InfoLineDistance::new,             InfoToggle.DISTANCE, List.of(InfoLineFlag.WORLD, InfoLineFlag.CAMERA));

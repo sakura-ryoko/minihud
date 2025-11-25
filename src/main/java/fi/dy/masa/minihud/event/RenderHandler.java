@@ -824,41 +824,22 @@ public class RenderHandler implements IRenderer
                 return;
             }
 
-            String pre = "";
-            StringBuilder str = new StringBuilder(256);
+	        InfoLine parser = type.initParser();
 
-            if (InfoToggle.BLOCK_POS.getBooleanValue())
-            {
-                try
-                {
-                    String fmt = Configs.Generic.BLOCK_POS_FORMAT_STRING.getStringValue();
-                    str.append(String.format(fmt, pos.getX(), pos.getY(), pos.getZ()));
-                }
-                // Uh oh, someone done goofed their format string... :P
-                catch (Exception e)
-                {
-                    str.append(StringUtils.translate("minihud.info_line.block_pos.exception"));
-                }
+	        if (parser != null)
+	        {
+		        InfoLine.Context ctx = new InfoLine.Context(world, null, null, pos, null, chunkPos, null);
+		        this.processEntries(parser.parse(ctx));
 
-                pre = " / ";
-            }
-
-            if (InfoToggle.CHUNK_POS.getBooleanValue())
-            {
-                str.append(pre).append(StringUtils.translate("minihud.info_line.chunk_pos", chunkPos.x, pos.getY() >> 4, chunkPos.z));
-                pre = " / ";
-            }
-
-            if (InfoToggle.REGION_FILE.getBooleanValue())
-            {
-                str.append(pre).append(StringUtils.translate("minihud.info_line.region_file", pos.getX() >> 9, pos.getZ() >> 9));
-            }
-
-            this.addLine(str.toString());
-
-            this.addedTypes.add(InfoToggle.BLOCK_POS);
-            this.addedTypes.add(InfoToggle.CHUNK_POS);
-            this.addedTypes.add(InfoToggle.REGION_FILE);
+				if (parser.succeededType())
+				{
+					this.addedTypes.add(type);
+				}
+	        }
+	        else
+	        {
+		        return;
+	        }
         }
         else if (type == InfoToggle.BLOCK_IN_CHUNK)
         {
