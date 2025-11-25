@@ -3,16 +3,17 @@ package fi.dy.masa.minihud.info.entity;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import org.apache.commons.lang3.tuple.Pair;
+import org.jetbrains.annotations.NotNull;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.passive.AbstractHorseEntity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
 import net.minecraft.world.World;
-import org.jetbrains.annotations.NotNull;
-import fi.dy.masa.malilib.util.nbt.NbtEntityUtils;
+
+import fi.dy.masa.malilib.util.data.DataEntityUtils;
+import fi.dy.masa.malilib.util.data.tag.CompoundData;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.info.InfoLine;
@@ -20,7 +21,6 @@ import fi.dy.masa.minihud.info.InfoLine;
 public class InfoLineHorseMaxHealth extends InfoLine
 {
     private static final String HORSE_KEY = Reference.MOD_ID + ".info_line.horse_max_health";
-    private static final String MAX_HEALTH_ATTRIBUTE_ID = "minecraft:max_health";
 
     public InfoLineHorseMaxHealth(InfoToggle type)
     {
@@ -34,35 +34,6 @@ public class InfoLineHorseMaxHealth extends InfoLine
 
     @Override
     public boolean succeededType() { return this.succeeded; }
-
-    /**
-     * Gets the max health value from NBT attributes.
-     * Looks for the attribute with ID "minecraft:max_health" in the Attributes
-     * list.
-     */
-    private static double getMaxHealthFromNbt(@NotNull NbtCompound nbt)
-    {
-        if (nbt.contains("Attributes"))
-        {
-            NbtList attributes = nbt.getListOrEmpty("Attributes");
-
-            for (int i = 0; i < attributes.size(); i++)
-            {
-                NbtElement element = attributes.get(i);
-                if (element instanceof NbtCompound attribute)
-                {
-                    if (MAX_HEALTH_ATTRIBUTE_ID.equals(attribute.getString("Name")))
-                    {
-                        if (attribute.contains("Base"))
-                        {
-                            return attribute.getDouble("Base", 0.0);
-                        }
-                    }
-                }
-            }
-        }
-        return 0.0;
-    }
 
     @Override
     public List<Entry> parse(@NotNull InfoLine.Context ctx)
@@ -79,26 +50,24 @@ public class InfoLineHorseMaxHealth extends InfoLine
             }
         }
 
-        // Prefer entity parsing when entity is available (more reliable than NBT)
+        if (ctx.hasLiving() && ctx.hasData())
+        {
+            EntityType<?> entityType = DataEntityUtils.getEntityType(ctx.data());
+            if (entityType == null) return null;
+
+            return this.parseData(ctx.world(), entityType, ctx.data());
+        }
+
         if (ctx.ent() != null)
         {
             return this.parseEnt(ctx.world(), ctx.ent());
-        }
-
-        // Fall back to NBT parsing if entity is not available
-        if (ctx.hasLiving() && ctx.hasNbt())
-        {
-            EntityType<?> entityType = NbtEntityUtils.getEntityTypeFromNbt(ctx.nbt());
-            if (entityType == null) return null;
-
-            return this.parseNbt(ctx.world(), entityType, ctx.nbt());
         }
 
         return null;
     }
 
     @Override
-    public List<Entry> parseNbt(@NotNull World world, @NotNull EntityType<?> entityType, @NotNull NbtCompound nbt)
+    public List<Entry> parseData(@NotNull World world, @NotNull EntityType<?> entityType, @NotNull CompoundData data)
     {
         List<Entry> list = new ArrayList<>();
         String horseType = entityType.getName().getString();
@@ -110,9 +79,11 @@ public class InfoLineHorseMaxHealth extends InfoLine
             entityType.equals(EntityType.MULE) ||
             entityType.equals(EntityType.SKELETON_HORSE) ||
             entityType.equals(EntityType.TRADER_LLAMA) ||
-            entityType.equals(EntityType.ZOMBIE_HORSE))
+            entityType.equals(EntityType.ZOMBIE_HORSE) ||
+            entityType.equals(EntityType.CAMEL_HUSK))
         {
-            double maxHealth = getMaxHealthFromNbt(nbt);
+            Pair<Double, Double> healthPair = DataEntityUtils.getHealth(data);
+            double maxHealth = healthPair.getRight();
 
             if (maxHealth > 0d)
             {

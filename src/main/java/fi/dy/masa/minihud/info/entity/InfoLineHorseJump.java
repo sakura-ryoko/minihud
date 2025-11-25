@@ -51,7 +51,7 @@ public class InfoLineHorseJump extends InfoLine
      * @param jumpStrength The jump strength attribute value (typically 0.4 to 1.0)
      * @return The maximum jump height in blocks
      */
-    private static double calculateJumpHeight(double jumpStrength) {
+    private double calculateJumpHeight(double jumpStrength) {
         // Calculate jump velocity from jump strength attribute
         // Quadratic fit: v = a*jump² + b*jump + c
         // Coefficients: a ≈ -0.09333, b ≈ 1.05367, c ≈ 0.01177
@@ -113,7 +113,7 @@ public class InfoLineHorseJump extends InfoLine
 
             if (jump > 0d)
             {
-                double jumpHeight = calculateJumpHeight(jump);
+                double jumpHeight = this.calculateJumpHeight(jump);
                 list.add(this.translate(HORSE_KEY, horseType, jumpHeight));
                 this.succeeded = true;
             }
@@ -134,7 +134,7 @@ public class InfoLineHorseJump extends InfoLine
 
             if (jump > 0d)
             {
-                double jumpHeight = calculateJumpHeight(jump);
+                double jumpHeight = this.calculateJumpHeight(jump);
                 list.add(this.translate(HORSE_KEY, horseType, jumpHeight));
                 this.succeeded = true;
             }
