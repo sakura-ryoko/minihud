@@ -132,13 +132,8 @@ public class InfoLineHorseJump extends InfoLine
 
             if (jump > 0d)
             {
-                double calculatedJumpHeight =
-                        -0.1817584952d * jump * jump * jump +
-                                3.689713992d * jump * jump +
-                                2.128599134d * jump +
-                                -0.343930367;
-
-                list.add(this.translate(HORSE_KEY, horseType, calculatedJumpHeight));
+                double jumpHeight = calculateJumpHeight(jump);
+                list.add(this.translate(HORSE_KEY, horseType, jumpHeight));
                 this.succeeded = true;
             }
         }
