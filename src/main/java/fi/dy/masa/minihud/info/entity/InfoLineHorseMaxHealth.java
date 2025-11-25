@@ -3,39 +3,33 @@ package fi.dy.masa.minihud.info.entity;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import org.apache.commons.lang3.tuple.Pair;
+import org.jetbrains.annotations.NotNull;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.passive.AbstractHorseEntity;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.world.World;
-import org.apache.commons.lang3.tuple.Pair;
-import org.jetbrains.annotations.NotNull;
-import fi.dy.masa.malilib.util.nbt.NbtEntityUtils;
+
+import fi.dy.masa.malilib.util.data.DataEntityUtils;
+import fi.dy.masa.malilib.util.data.tag.CompoundData;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.info.InfoLine;
 
-public class InfoLineHorseSpeed extends InfoLine
+public class InfoLineHorseMaxHealth extends InfoLine
 {
-    private static final String HORSE_KEY = Reference.MOD_ID+".info_line.horse_speed";
+    private static final String HORSE_KEY = Reference.MOD_ID + ".info_line.horse_max_health";
 
-    // Linear conversion: max_speed = HORSE_SPEED_CONVERSION_FACTOR * base_speed + HORSE_SPEED_CONVERSION_OFFSET
-    // Calculated from data points (best linear fit):
-    //   baseSpeed = 0.1125 → maxSpeed = 4.85682890 m/s
-    //   baseSpeed = 0.225  → maxSpeed = 9.71365773 m/s
-    //   baseSpeed = 0.3375 → maxSpeed = 14.57048738 m/s
-    private static final double HORSE_SPEED_CONVERSION_FACTOR = 43.171815466666658;
-    private static final double HORSE_SPEED_CONVERSION_OFFSET = -0.000000339999999;
-
-    public InfoLineHorseSpeed(InfoToggle type)
+    public InfoLineHorseMaxHealth(InfoToggle type)
     {
         super(type);
     }
 
-    public InfoLineHorseSpeed()
+    public InfoLineHorseMaxHealth()
     {
-        super(InfoToggle.HORSE_SPEED);
+        super(InfoToggle.HORSE_MAX_HEALTH);
     }
 
     @Override
@@ -56,12 +50,12 @@ public class InfoLineHorseSpeed extends InfoLine
             }
         }
 
-        if (ctx.hasLiving() && ctx.hasNbt())
+        if (ctx.hasLiving() && ctx.hasData())
         {
-            EntityType<?> entityType = NbtEntityUtils.getEntityTypeFromNbt(ctx.nbt());
+            EntityType<?> entityType = DataEntityUtils.getEntityType(ctx.data());
             if (entityType == null) return null;
 
-            return this.parseNbt(ctx.world(), entityType, ctx.nbt());
+            return this.parseData(ctx.world(), entityType, ctx.data());
         }
 
         if (ctx.ent() != null)
@@ -73,28 +67,27 @@ public class InfoLineHorseSpeed extends InfoLine
     }
 
     @Override
-    public List<Entry> parseNbt(@NotNull World world, @NotNull EntityType<?> entityType, @NotNull NbtCompound nbt)
+    public List<Entry> parseData(@NotNull World world, @NotNull EntityType<?> entityType, @NotNull CompoundData data)
     {
         List<Entry> list = new ArrayList<>();
         String horseType = entityType.getName().getString();
 
         if (entityType.equals(EntityType.CAMEL) ||
-            entityType.equals(EntityType.CAMEL_HUSK) ||
             entityType.equals(EntityType.DONKEY) ||
             entityType.equals(EntityType.HORSE) ||
             entityType.equals(EntityType.LLAMA) ||
             entityType.equals(EntityType.MULE) ||
             entityType.equals(EntityType.SKELETON_HORSE) ||
             entityType.equals(EntityType.TRADER_LLAMA) ||
-            entityType.equals(EntityType.ZOMBIE_HORSE))
+            entityType.equals(EntityType.ZOMBIE_HORSE) ||
+            entityType.equals(EntityType.CAMEL_HUSK))
         {
-            Pair<Double, Double> horsePair = NbtEntityUtils.getSpeedAndJumpStrengthFromNbt(nbt);
-            double speed = horsePair.getLeft();
+            Pair<Double, Double> healthPair = DataEntityUtils.getHealth(data);
+            double maxHealth = healthPair.getRight();
 
-            if (speed > 0d)
+            if (maxHealth > 0d)
             {
-                speed = speed * HORSE_SPEED_CONVERSION_FACTOR + HORSE_SPEED_CONVERSION_OFFSET;
-                list.add(this.translate(HORSE_KEY, horseType, speed));
+                list.add(this.translate(HORSE_KEY, horseType, maxHealth));
                 this.succeeded = true;
             }
         }
@@ -110,12 +103,11 @@ public class InfoLineHorseSpeed extends InfoLine
         if (ent instanceof AbstractHorseEntity horse)
         {
             String horseType = horse.getType().getName().getString();
-            double speed = horse.getAttributeValue(EntityAttributes.MOVEMENT_SPEED);
+            double maxHealth = horse.getAttributeValue(EntityAttributes.MAX_HEALTH);
 
-            if (speed > 0d)
+            if (maxHealth > 0d)
             {
-                speed = speed * HORSE_SPEED_CONVERSION_FACTOR + HORSE_SPEED_CONVERSION_OFFSET;
-                list.add(this.translate(HORSE_KEY, horseType, speed));
+                list.add(this.translate(HORSE_KEY, horseType, maxHealth));
                 this.succeeded = true;
             }
         }
