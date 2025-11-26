@@ -35,8 +35,8 @@ public class ShapeCenteredBox extends ShapeBox
 
     protected void setBoxFromDimension()
 	{
-        this.corner1 = new Vec3d(this.center.x - (this.width / 2), this.center.y ,this.center.z - (this.depth/2));
-        this.corner2 = new Vec3d(this.center.x + (this.width / 2), this.center.y + this.height, this.center.z + (this.depth/2));
+        this.corner1 = new Vec3d(this.center.x - (this.width / 2), this.center.y - (this.height / 2), this.center.z - (this.depth/2));
+        this.corner2 = new Vec3d(this.center.x + (this.width / 2), this.center.y + (this.height / 2), this.center.z + (this.depth/2));
         this.setBoxFromCorners();
     }
 
