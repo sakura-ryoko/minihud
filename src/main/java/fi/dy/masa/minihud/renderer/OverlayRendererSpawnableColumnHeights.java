@@ -33,7 +33,7 @@ public class OverlayRendererSpawnableColumnHeights extends OverlayRendererBase
     {
         this.boxes = new ArrayList<>();
         this.renderThrough = false;
-        this.useCulling = true;
+        this.useCulling = false;
     }
 
     @Override

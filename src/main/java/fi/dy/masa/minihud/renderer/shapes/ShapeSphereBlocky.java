@@ -35,7 +35,7 @@ public class ShapeSphereBlocky extends ShapeCircleBase
     {
         super(type, color, radius);
         this.hasData = false;
-        this.useCulling = true;
+        this.useCulling = false;
     }
 
     @Override

@@ -57,7 +57,7 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
     {
         this.renderQuads = new ArrayList<>();
         this.hasData = false;
-        this.useCulling = true;
+        this.useCulling = false;
         this.renderThrough = false;
     }
 

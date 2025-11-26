@@ -906,7 +906,7 @@
     "minihud.info_line.entity_variant.rabbit": "Rabbit Variant: §b%s§r",
     "minihud.info_line.entity_variant.salmon": "Salmon Variant: §b%s§r",
     "minihud.info_line.entity_variant.sheep": "Sheep Color: §b%s§r",
-    "minihud.info_line.entity_variant.tropical_fish": "Tropical Fish Variant: §b%s§r",
+    "minihud.info_line.entity_variant.tropical_fish": "Tropical Fish Variant: §b%s§r [§e§l%s§r/§d%s§r]",
     "minihud.info_line.entity_variant.wolf": "Wolf Variant: §b%s§r (%s collar)",
     "minihud.info_line.entity_variant.wolf.sound_type": "Wolf Variant: §b%s§r / §d%s§r (%s collar)",
     "minihud.info_line.facing": "Facing: %s (%s)",

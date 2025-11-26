@@ -170,6 +170,10 @@ public class HudDataManager
                 this.unregisterChannel();
             }
         }
+        else if (!this.isWorldSpawnKnown())
+        {
+            MiniHUD.LOGGER.error("onWorldJoin: WS Not known.");
+        }
     }
 
     public void onPacketFailure()

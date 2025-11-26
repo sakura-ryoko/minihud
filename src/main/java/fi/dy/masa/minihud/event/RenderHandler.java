@@ -1018,7 +1018,7 @@ public class RenderHandler implements IRenderer
                 Pair<Entity, NbtCompound> pair = this.getTargetEntity(bestWorld, mc);
                 InfoLineContext ctx;
 
-                if (mc.player.isRiding() && pair == null)
+                if (mc.player.hasVehicle() && pair == null)
                 {
                     ctx = new InfoLineContext(bestWorld, mc.player.getVehicle(), null, null, null, null, null);
                 }

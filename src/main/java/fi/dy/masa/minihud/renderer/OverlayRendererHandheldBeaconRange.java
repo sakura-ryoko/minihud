@@ -33,7 +33,7 @@ public class OverlayRendererHandheldBeaconRange extends OverlayRendererBase
     protected OverlayRendererHandheldBeaconRange()
     {
         this.level = -1;
-        this.useCulling = true;
+        this.useCulling = false;
         this.renderThrough = false;
         this.box = null;
         this.hasData = false;
@@ -112,7 +112,7 @@ public class OverlayRendererHandheldBeaconRange extends OverlayRendererBase
         Color4f color = OverlayRendererBeaconRange.getColorForLevel(this.level);
 
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "minihud:held_beacon/quads", MaLiLibPipelines.POSITION_COLOR_MASA_LEQUAL_DEPTH_OFFSET_1);
+        BufferBuilder builder = ctx.start(() -> "minihud:held_beacon/quads", MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL);
         MatrixStack matrices = new MatrixStack();
 
         matrices.push();

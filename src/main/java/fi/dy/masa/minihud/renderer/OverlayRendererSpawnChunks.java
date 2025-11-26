@@ -53,6 +53,7 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
         this.boxesYellow = new ArrayList<>();
         this.boxesGreen = new ArrayList<>();
         this.center = BlockPos.ORIGIN;
+        this.useCulling = false;
         this.hasData = false;
     }
 

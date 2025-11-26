@@ -46,7 +46,7 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
         this.wasSeedKnown = false;
         this.seed = -1L;
         this.topY = 40;
-        this.useCulling = true;
+        this.useCulling = false;
         this.hasData = false;
     }
 
@@ -164,7 +164,7 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
         final Color4f colorSides = Configs.Colors.SLIME_CHUNKS_OVERLAY_COLOR.getColor();
         profiler.push("slime_chunk_quads");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "minihud:slime_chunk/quads", this.renderThrough ? MaLiLibPipelines.POSITION_COLOR_MASA_NO_DEPTH_NO_CULL : MaLiLibPipelines.POSITION_COLOR_MASA_LEQUAL_DEPTH_OFFSET_1);
+        BufferBuilder builder = ctx.start(() -> "minihud:slime_chunk/quads", this.renderThrough ? MaLiLibPipelines.POSITION_COLOR_MASA_NO_DEPTH_NO_CULL : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL);
         // MaLiLibPipelines.POSITION_COLOR_LESSER_DEPTH
         MatrixStack matrices = new MatrixStack();
 

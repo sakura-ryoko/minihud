@@ -30,11 +30,14 @@ public class OverlayRendererStructures extends OverlayRendererBase
     public static final OverlayRendererStructures INSTANCE = new OverlayRendererStructures();
     private List<StructureData> structures;
     private boolean hasData;
+	private boolean renderOutlines;
 
     private OverlayRendererStructures()
     {
         this.structures = new ArrayList<>();
         this.hasData = false;
+		this.renderOutlines = false;
+	    this.useCulling = false;
     }
 
     @Override
@@ -80,6 +83,7 @@ public class OverlayRendererStructures extends OverlayRendererBase
         this.structures = this.getStructuresToRender(this.lastUpdatePos, maxRange);
         this.hasData = !this.structures.isEmpty();
         this.renderThrough = Configs.Generic.STRUCTURES_RENDER_THROUGH.getBooleanValue();
+		this.renderOutlines = Configs.Generic.STRUCTURES_RENDER_OUTLINES.getBooleanValue();
 
         if (this.hasData())
         {
@@ -99,7 +103,12 @@ public class OverlayRendererStructures extends OverlayRendererBase
         this.clearBuffers();
         this.renderObjects.add(new RenderObjectVbo(() -> this.getName()+" Main Quads",  MaLiLibPipelines.POSITION_COLOR_TRANSLUCENT_LEQUAL_DEPTH_OFFSET_1));
         this.renderObjects.add(new RenderObjectVbo(() -> this.getName()+" Components",  MaLiLibPipelines.POSITION_COLOR_MASA_NO_DEPTH));
-//        this.renderObjects.add(new RenderObjectVbo(() -> this.getName()+" Sub Surface", MaLiLibPipelines.POSITION_COLOR_MASA_LESSER_DEPTH_OFFSET_2));
+
+		if (this.renderOutlines)
+		{
+			this.renderObjects.add(new RenderObjectVbo(() -> this.getName() + " Main Outlines", MaLiLibPipelines.DEBUG_LINES_TRANSLUCENT_OFFSET_1));
+			this.renderObjects.add(new RenderObjectVbo(() -> this.getName() + " Component Outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH));
+		}
     }
 
     @Override
@@ -108,7 +117,12 @@ public class OverlayRendererStructures extends OverlayRendererBase
         this.allocateBuffers();
         this.renderStructureMain(cameraPos, mc, profiler);
         this.renderStructureComponents(cameraPos, mc, profiler);
-//        this.renderStructureSubSurface(cameraPos, mc, profiler);
+
+		if (this.renderOutlines)
+		{
+			this.renderStructureMainOutlines(cameraPos, mc, profiler);
+			this.renderStructureComponentOutlines(cameraPos, mc, profiler);
+		}
     }
 
     private void renderStructureMain(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
@@ -118,13 +132,9 @@ public class OverlayRendererStructures extends OverlayRendererBase
             return;
         }
 
-        profiler.push("structure main");
+        profiler.push("structure_main_quads");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
         BufferBuilder builder = ctx.start(() -> "minihud:structure/main_quads", this.renderThrough ? MaLiLibPipelines.MINIHUD_SHAPE_NO_DEPTH_OFFSET : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL);
-//        MatrixStack matrices = new MatrixStack();
-
-//        matrices.push();
-//        MatrixStack.Entry e = matrices.peek();
 
         for (StructureData structure : this.structures)
         {
@@ -153,14 +163,57 @@ public class OverlayRendererStructures extends OverlayRendererBase
         }
         catch (Exception err)
         {
-            MiniHUD.LOGGER.error("OverlayRendererStructures#renderStructureMain(): Exception; {}", err.getMessage());
+            MiniHUD.LOGGER.error("OverlayRendererStructures#renderStructureMainQuads(): Exception; {}", err.getMessage());
         }
 
-//        matrices.pop();
         profiler.pop();
     }
 
-    private void renderStructureComponents(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
+	private void renderStructureMainOutlines(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
+	{
+		if (mc.world == null || mc.player == null)
+		{
+			return;
+		}
+
+		profiler.push("structure_main_outlines");
+		RenderObjectVbo ctx = this.renderObjects.get(2);
+		BufferBuilder builder = ctx.start(() -> "minihud:structure/main_outlines", this.renderThrough ? MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_NO_DEPTH_NO_CULL : MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH);
+
+		for (StructureData structure : this.structures)
+		{
+//			StructureToggle toggle = structure.getStructureType().getToggle();
+//			Color4f mainColor = toggle.getColorMain().getColor();
+			IntBoundingBox bb = structure.getBoundingBox();
+
+			RenderUtils.drawBoxOutlines(bb, cameraPos, Color4f.WHITE, builder);
+		}
+
+		try
+		{
+			BuiltBuffer meshData = builder.endNullable();
+
+			if (meshData != null)
+			{
+				ctx.upload(meshData, this.shouldResort);
+
+				if (this.shouldResort)
+				{
+					ctx.startResorting(meshData, ctx.createVertexSorter(cameraPos));
+				}
+
+				meshData.close();
+			}
+		}
+		catch (Exception err)
+		{
+			MiniHUD.LOGGER.error("OverlayRendererStructures#renderStructureMainOutlines(): Exception; {}", err.getMessage());
+		}
+
+		profiler.pop();
+	}
+
+	private void renderStructureComponents(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
     {
         if (mc.world == null || mc.player == null)
         {
@@ -168,13 +221,9 @@ public class OverlayRendererStructures extends OverlayRendererBase
         }
 
         // ShaderPipelines.DEBUG_QUADS
-        profiler.push("structure components");
+        profiler.push("structure_component_quads");
         RenderObjectVbo ctx = this.renderObjects.get(1);
         BufferBuilder builder = ctx.start(() -> "minihud:structure/component_quads", this.renderThrough ? MaLiLibPipelines.MINIHUD_SHAPE_NO_DEPTH_OFFSET : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL);
-//        MatrixStack matrices = new MatrixStack();
-
-//        matrices.push();
-//        MatrixStack.Entry e = matrices.peek();
 
         for (StructureData structure : this.structures)
         {
@@ -215,11 +264,64 @@ public class OverlayRendererStructures extends OverlayRendererBase
             MiniHUD.LOGGER.error("OverlayRendererStructures#renderStructureComponents(): Exception; {}", err.getMessage());
         }
 
-//        matrices.pop();
         profiler.pop();
     }
 
-    @Override
+	private void renderStructureComponentOutlines(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
+	{
+		if (mc.world == null || mc.player == null)
+		{
+			return;
+		}
+
+		// ShaderPipelines.DEBUG_QUADS
+		profiler.push("structure_component_outlines");
+		RenderObjectVbo ctx = this.renderObjects.get(3);
+		BufferBuilder builder = ctx.start(() -> "minihud:structure/component_outlines", this.renderThrough ? MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_NO_DEPTH_NO_CULL : MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH);
+
+		for (StructureData structure : this.structures)
+		{
+//			StructureToggle toggle = structure.getStructureType().getToggle();
+//			Color4f componentColor = toggle.getColorComponents().getColor();
+			ImmutableList<IntBoundingBox> components = structure.getComponents();
+
+			if (!components.isEmpty())
+			{
+				if (components.size() > 1 || !MiscUtils.areBoxesEqual(components.getFirst(), structure.getBoundingBox()))
+				{
+					for (IntBoundingBox bb : components)
+					{
+						RenderUtils.drawBoxOutlines(bb, cameraPos, Color4f.WHITE, builder);
+					}
+				}
+			}
+		}
+
+		try
+		{
+			BuiltBuffer meshData = builder.endNullable();
+
+			if (meshData != null)
+			{
+				ctx.upload(meshData, this.shouldResort);
+
+				if (this.shouldResort)
+				{
+					ctx.startResorting(meshData, ctx.createVertexSorter(cameraPos));
+				}
+
+				meshData.close();
+			}
+		}
+		catch (Exception err)
+		{
+			MiniHUD.LOGGER.error("OverlayRendererStructures#renderStructureComponentOutlines(): Exception; {}", err.getMessage());
+		}
+
+		profiler.pop();
+	}
+
+	@Override
     public void reset()
     {
         super.reset();

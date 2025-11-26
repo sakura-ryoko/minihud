@@ -195,6 +195,7 @@ public abstract class BaseBlockRangeOverlay<T extends BlockEntity> extends Overl
 
             if (distSq > max)
             {
+                this.expireBlockRange(mutablePos.toImmutable());
                 continue;
             }
 
@@ -208,6 +209,8 @@ public abstract class BaseBlockRangeOverlay<T extends BlockEntity> extends Overl
     protected abstract void updateBlockRange(World world, BlockPos pos, T be, Vec3d cameraPos, MinecraftClient mc, Profiler profiler);
 
     protected abstract void renderBlockRange(World world, Vec3d cameraPos, MinecraftClient mc, Profiler profiler);
+
+    protected abstract void expireBlockRange(BlockPos pos);
 
     protected abstract void resetBlockRange();
 }
