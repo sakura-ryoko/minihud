@@ -26,11 +26,10 @@ import fi.dy.masa.minihud.network.ServuxDebugPacket;
 import fi.dy.masa.minihud.util.DataStorage;
 import fi.dy.masa.minihud.util.DebugRenderType;
 
-//@SuppressWarnings({"unchecked", "deprecation"})
 public class DebugDataManager
 {
     private static final DebugDataManager INSTANCE = new DebugDataManager();
-    private final static ServuxDebugHandler<ServuxDebugPacket.Payload> HANDLER = ServuxDebugHandler.getInstance();
+//    private final static ServuxDebugHandler<ServuxDebugPacket.Payload> HANDLER = ServuxDebugHandler.getInstance();
 
 	private final MinecraftClient mc;
     private boolean servuxServer;
@@ -53,21 +52,21 @@ public class DebugDataManager
 
     public void onGameInit()
     {
-        ClientPlayHandler.getInstance().registerClientPlayHandler(HANDLER);
-        HANDLER.registerPlayPayload(ServuxDebugPacket.Payload.ID, ServuxDebugPacket.Payload.CODEC, IPluginClientPlayHandler.BOTH_CLIENT);
+//        ClientPlayHandler.getInstance().registerClientPlayHandler(HANDLER);
+//        HANDLER.registerPlayPayload(ServuxDebugPacket.Payload.ID, ServuxDebugPacket.Payload.CODEC, IPluginClientPlayHandler.BOTH_CLIENT);
     }
 
-    public Identifier getNetworkChannel() {return ServuxDebugHandler.CHANNEL_ID;}
-
-    public IPluginClientPlayHandler<ServuxDebugPacket.Payload> getNetworkHandler() {return HANDLER;}
+//    public Identifier getNetworkChannel() {return ServuxDebugHandler.CHANNEL_ID;}
+//
+//    public IPluginClientPlayHandler<ServuxDebugPacket.Payload> getNetworkHandler() {return HANDLER;}
 
     public void reset(boolean isLogout)
     {
         if (isLogout)
         {
             MiniHUD.debugLog("DebugDataManager#reset() - log-out");
-            HANDLER.reset(this.getNetworkChannel());
-            HANDLER.resetFailures(this.getNetworkChannel());
+//            HANDLER.reset(this.getNetworkChannel());
+//            HANDLER.resetFailures(this.getNetworkChannel());
 
 			// reset config
             this.servuxServer = false;
@@ -82,7 +81,7 @@ public class DebugDataManager
     {
         if (!DataStorage.getInstance().hasIntegratedServer())
         {
-            HANDLER.registerPlayReceiver(ServuxDebugPacket.Payload.ID, HANDLER::receivePlayPayload);
+//            HANDLER.registerPlayReceiver(ServuxDebugPacket.Payload.ID, HANDLER::receivePlayPayload);
         }
 
 	    this.onConfigSync();
@@ -291,15 +290,16 @@ public class DebugDataManager
 
         if (!this.hasServuxServer() && !DataStorage.getInstance().hasIntegratedServer() && !this.hasInValidServux)
         {
-            if (HANDLER.isPlayRegistered(this.getNetworkChannel()))
-            {
-                MiniHUD.debugLog("DebugDataManager#registerDebugService(): sending DEBUG_SERVICE_REGISTER to Servux");
-
-                NbtCompound nbt = new NbtCompound();
-                nbt.putString("version", Reference.MOD_STRING);
-
-                HANDLER.encodeClientData(ServuxDebugPacket.DebugServiceRegister(nbt));
-            }
+//            if (HANDLER.isPlayRegistered(this.getNetworkChannel()))
+//            {
+//                MiniHUD.debugLog("DebugDataManager#registerDebugService(): sending DEBUG_SERVICE_REGISTER to Servux");
+//
+//                NbtCompound nbt = new NbtCompound();
+//                nbt.putInt("version", ServuxDebugPacket.PROTOCOL_VERSION);
+//	            nbt.putString("minihud", Reference.MOD_STRING);
+//
+//                HANDLER.encodeClientData(ServuxDebugPacket.DebugServiceRegister(nbt));
+//            }
         }
         else
         {
@@ -313,16 +313,17 @@ public class DebugDataManager
         {
             if (!this.hasServuxServer() && !DataStorage.getInstance().hasIntegratedServer() && !this.hasInValidServux)
             {
-                if (HANDLER.isPlayRegistered(this.getNetworkChannel()))
-                {
-                    MiniHUD.debugLog("DebugDataManager#requestMetadata(): sending REQUEST_METADATA to Servux");
-
-                    NbtCompound nbt = new NbtCompound();
-                    nbt.putString("version", Reference.MOD_STRING);
-					nbt.put("enabledRenderers", this.toNbtList());
-
-                    HANDLER.encodeClientData(ServuxDebugPacket.MetadataRequest(nbt));
-                }
+//                if (HANDLER.isPlayRegistered(this.getNetworkChannel()))
+//                {
+//                    MiniHUD.debugLog("DebugDataManager#requestMetadata(): sending REQUEST_METADATA to Servux");
+//
+//                    NbtCompound nbt = new NbtCompound();
+//	                nbt.putInt("version", ServuxDebugPacket.PROTOCOL_VERSION);
+//	                nbt.putString("minihud", Reference.MOD_STRING);
+//					nbt.put("enabledRenderers", this.toNbtList());
+//
+//                    HANDLER.encodeClientData(ServuxDebugPacket.MetadataRequest(nbt));
+//                }
             }
         }
     }
@@ -333,16 +334,17 @@ public class DebugDataManager
 		{
 			if (this.hasServuxServer() && !DataStorage.getInstance().hasIntegratedServer() && !this.hasInValidServux)
 			{
-				if (HANDLER.isPlayRegistered(this.getNetworkChannel()))
-				{
-					MiniHUD.debugLog("DebugDataManager#requestMetadata(): sending UPDATE_METADATA to Servux");
-
-					NbtCompound nbt = new NbtCompound();
-					nbt.putString("version", Reference.MOD_STRING);
-					nbt.put("enabledRenderers", this.toNbtList());
-
-					HANDLER.encodeClientData(ServuxDebugPacket.MetadataUpdate(nbt));
-				}
+//				if (HANDLER.isPlayRegistered(this.getNetworkChannel()))
+//				{
+//					MiniHUD.debugLog("DebugDataManager#requestMetadata(): sending UPDATE_METADATA to Servux");
+//
+//					NbtCompound nbt = new NbtCompound();
+//					nbt.putInt("version", ServuxDebugPacket.PROTOCOL_VERSION);
+//					nbt.putString("minihud", Reference.MOD_STRING);
+//					nbt.put("enabledRenderers", this.toNbtList());
+//
+//					HANDLER.encodeClientData(ServuxDebugPacket.MetadataUpdate(nbt));
+//				}
 			}
 		}
 	}
@@ -427,28 +429,30 @@ public class DebugDataManager
         {
             MiniHUD.debugLog("DebugDataManager#receiveMetadata(): received METADATA from Servux");
 
-            if (data.getInt("version", -1) != ServuxDebugPacket.PROTOCOL_VERSION)
-            {
-                MiniHUD.LOGGER.warn("debugDataChannel: Mis-matched protocol version!");
-            }
-
-            this.setServuxVersion(data.getString("servux", "?"));
-            this.setIsServuxServer();
-
-            if (RendererToggle.DEBUG_DATA_MAIN_TOGGLE.getBooleanValue())
-            {
-                this.shouldRegisterDebugService = true;
-
-                NbtCompound nbt = new NbtCompound();
-                nbt.putString("version", Reference.MOD_STRING);
-
-                HANDLER.encodeClientData(ServuxDebugPacket.MetadataConfirm(nbt));
-                return true;
-            }
-            else
-            {
-                this.unregisterDebugService();
-            }
+//            if (data.getInt("version", -1) != ServuxDebugPacket.PROTOCOL_VERSION)
+//            {
+//                MiniHUD.LOGGER.warn("debugDataChannel: Mis-matched protocol version!");
+//            }
+//
+//            this.setServuxVersion(data.getString("servux", "?"));
+//            this.setIsServuxServer();
+//
+//            if (RendererToggle.DEBUG_DATA_MAIN_TOGGLE.getBooleanValue())
+//            {
+//                this.shouldRegisterDebugService = true;
+//
+//                NbtCompound nbt = new NbtCompound();
+//	            nbt.putInt("version", ServuxDebugPacket.PROTOCOL_VERSION);
+//	            nbt.putString("minihud", Reference.MOD_STRING);
+//	            nbt.put("enabledRenderers", this.toNbtList());
+//
+//	            HANDLER.encodeClientData(ServuxDebugPacket.MetadataConfirm(nbt));
+//                return true;
+//            }
+//            else
+//            {
+//                this.unregisterDebugService();
+//            }
         }
 
         return false;
@@ -463,8 +467,8 @@ public class DebugDataManager
             {
                 MiniHUD.debugLog("DebugDataManager#unregisterDebugService(): for {}", this.servuxVersion != null ? this.servuxVersion : "<unknown>");
 
-                HANDLER.encodeClientData(ServuxDebugPacket.DebugServiceUnregister(new NbtCompound()));
-                HANDLER.reset(HANDLER.getPayloadChannel());
+//                HANDLER.encodeClientData(ServuxDebugPacket.DebugServiceUnregister(new NbtCompound()));
+//                HANDLER.reset(HANDLER.getPayloadChannel());
             }
         }
         this.shouldRegisterDebugService = false;

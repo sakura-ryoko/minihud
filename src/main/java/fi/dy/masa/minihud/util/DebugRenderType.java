@@ -110,8 +110,6 @@ public enum DebugRenderType implements StringIdentifiable
 
 	public static @Nullable DebugRenderType fromPropertyStatic(String property)
 	{
-		System.out.printf("fromPropertyStatic: %s\n", property);
-
 		for (DebugRenderType val : VALUES)
 		{
 			if (val.property.equalsIgnoreCase(property))
