@@ -227,28 +227,40 @@ public class DebugDataManager
 	public void toggleDebugRendering(boolean toggle)
 	{
 		this.setDebugRenderer(DebugRenderType.DEBUG_ENABLED, toggle);
-
-		if (this.mc.getNetworkHandler() != null)
-		{
-			((IMixinClientPlayNetworkHandler) this.mc.getNetworkHandler())
-					.minihud_getDebugManager().clearAllSubscriptions();
-		}
+		this.reloadDebugRenderer();
 	}
 
 	public void onConfigSync()
 	{
-		this.isDebugRenderingEnabled();
+		boolean changed = false;
 
 		for (DebugRenderType entry : DebugRenderType.VALUES)
 		{
 			boolean config = entry.getCallback().getBooleanValue();
 			boolean enabled = this.isDebugRendererEnabled(entry);
 
-			if (config && !enabled)
+			if (config != enabled)
 			{
 				this.setDebugRenderer(entry, config);
+				changed = true;
 			}
 		}
+
+		if (changed)
+		{
+			this.reloadDebugRenderer();
+		}
+	}
+
+	public void reloadDebugRenderer()
+	{
+		if (this.mc.getNetworkHandler() != null)
+		{
+			((IMixinClientPlayNetworkHandler) this.mc.getNetworkHandler())
+					.minihud_getDebugManager().clearAllSubscriptions();
+		}
+
+		this.mc.worldRenderer.debugRenderer.initRenderers();
 	}
 
 	public void setIsServuxServer()

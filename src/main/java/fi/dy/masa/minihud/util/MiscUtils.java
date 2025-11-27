@@ -115,16 +115,16 @@ public class MiscUtils
     public static boolean isStructureWithinRange(@Nullable IntBoundingBox bb, BlockPos playerPos, int maxRange)
     {
         return bb != null &&
-                playerPos.getX() >= (bb.minX() - maxRange) &&
-                playerPos.getX() <= (bb.maxX() + maxRange) &&
-                playerPos.getZ() >= (bb.minZ() - maxRange) &&
-                playerPos.getZ() <= (bb.maxZ() + maxRange);
+                playerPos.getX() >= (bb.minX - maxRange) &&
+                playerPos.getX() <= (bb.maxX + maxRange) &&
+                playerPos.getZ() >= (bb.minZ - maxRange) &&
+                playerPos.getZ() <= (bb.maxZ + maxRange);
     }
 
     public static boolean areBoxesEqual(IntBoundingBox bb1, IntBoundingBox bb2)
     {
-        return bb1.minX() == bb2.minX() && bb1.minY() == bb2.minY() && bb1.minZ() == bb2.minZ() &&
-               bb1.maxX() == bb2.maxX() && bb1.maxY() == bb2.maxY() && bb1.maxZ() == bb2.maxZ();
+        return bb1.minX == bb2.minX && bb1.minY == bb2.minY && bb1.minZ == bb2.minZ &&
+               bb1.maxX == bb2.maxX && bb1.maxY == bb2.maxY && bb1.maxZ == bb2.maxZ;
     }
 
     public static int getSpawnableChunksCount(@Nonnull ServerWorld world)

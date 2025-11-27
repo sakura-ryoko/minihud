@@ -2,22 +2,7 @@ package fi.dy.masa.minihud.renderer;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.Nullable;
-import fi.dy.masa.malilib.interfaces.IDataSyncer;
-import fi.dy.masa.malilib.interfaces.IInventoryOverlayHandler;
-import fi.dy.masa.malilib.mixin.entity.IMixinAbstractHorseEntity;
-import fi.dy.masa.malilib.mixin.entity.IMixinPiglinEntity;
-import fi.dy.masa.malilib.render.InventoryOverlay;
-import fi.dy.masa.malilib.util.EntityUtils;
-import fi.dy.masa.malilib.util.InventoryUtils;
-import fi.dy.masa.malilib.util.WorldUtils;
-import fi.dy.masa.malilib.util.game.RayTraceUtils;
-import fi.dy.masa.malilib.util.nbt.NbtBlockUtils;
-import fi.dy.masa.malilib.util.nbt.NbtEntityUtils;
-import fi.dy.masa.malilib.util.nbt.NbtInventory;
-import fi.dy.masa.malilib.util.nbt.NbtKeys;
-import fi.dy.masa.minihud.Reference;
-import fi.dy.masa.minihud.config.Configs;
-import fi.dy.masa.minihud.data.EntitiesDataManager;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockEntityProvider;
 import net.minecraft.block.BlockState;
@@ -46,6 +31,23 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.profiler.Profiler;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
+
+import fi.dy.masa.malilib.interfaces.IDataSyncer;
+import fi.dy.masa.malilib.interfaces.IInventoryOverlayHandler;
+import fi.dy.masa.malilib.mixin.entity.IMixinAbstractHorseEntity;
+import fi.dy.masa.malilib.mixin.entity.IMixinPiglinEntity;
+import fi.dy.masa.malilib.render.InventoryOverlay;
+import fi.dy.masa.malilib.util.EntityUtils;
+import fi.dy.masa.malilib.util.InventoryUtils;
+import fi.dy.masa.malilib.util.WorldUtils;
+import fi.dy.masa.malilib.util.game.RayTraceUtils;
+import fi.dy.masa.malilib.util.nbt.NbtBlockUtils;
+import fi.dy.masa.malilib.util.nbt.NbtEntityUtils;
+import fi.dy.masa.malilib.util.nbt.NbtInventory;
+import fi.dy.masa.malilib.util.nbt.NbtKeys;
+import fi.dy.masa.minihud.Reference;
+import fi.dy.masa.minihud.config.Configs;
+import fi.dy.masa.minihud.data.EntitiesDataManager;
 
 public class InventoryOverlayHandler implements IInventoryOverlayHandler
 {
@@ -186,14 +188,6 @@ public class InventoryOverlayHandler implements IInventoryOverlayHandler
             Block blockTmp = state.getBlock();
             BlockEntity be = null;
 
-            // Keep screen from getting 'stuck' if trying to use toggle on a lectern
-            /*
-            if (blockTmp instanceof LecternBlock && !newScreen)
-            {
-                return null;
-            }
-             */
-
             //MiniHUD.LOGGER.warn("getTarget():1: pos [{}], state [{}]", pos.toShortString(), state.toString());
 
             if (blockTmp instanceof BlockEntityProvider)
@@ -256,16 +250,6 @@ public class InventoryOverlayHandler implements IInventoryOverlayHandler
 
                 if (entity != null)
                 {
-//                    NbtView view = NbtView.getWriter(world.getRegistryManager());
-//                    entity.writeData(view.getWriter());
-//                    nbt = view.readNbt() != null ? view.readNbt() : nbt;
-//                    Identifier id = EntityType.getId(entity.getType());
-
-//                    if (nbt != null && id != null)
-//                    {
-//                        nbt.putString("id", id.toString());
-//                    }
-
                     nbt = NbtEntityUtils.invokeEntityNbtDataNoPassengers(entity, entity.getId());
                 }
                 else
@@ -284,9 +268,9 @@ public class InventoryOverlayHandler implements IInventoryOverlayHandler
                 }
             }
 
-            //MiniHUD.LOGGER.error("getTarget(): Entity [{}] raw NBT [{}]", entity.getId(), nbt.toString());
+//            MiniHUD.LOGGER.error("getTarget(): Entity [{}] raw NBT [{}]", entity.getId(), nbt.toString());
             InventoryOverlay.Context ctx = getTargetInventoryFromEntity(world.getEntityById(entity.getId()), nbt);
-            //dumpContext(ctx);
+//            dumpContext(ctx);
 
             if (this.lastEntityContext != null && this.lastEntityContext.getLeft() != entity.getId())
             {
@@ -465,8 +449,8 @@ public class InventoryOverlayHandler implements IInventoryOverlayHandler
         {
             Inventory inv2;
 
-            //MiniHUD.LOGGER.warn("getTargetInventoryFromEntity(): rawNbt: [{}]", nbt.toString());
-            //MiniHUD.LOGGER.warn("getTargetInventoryFromEntity(): pre-inv: [{}]", inv != null ? inv.size() : "<NULL>");
+//            MiniHUD.LOGGER.warn("getTargetInventoryFromEntity(): rawNbt: [{}]", nbt.toString());
+//            MiniHUD.LOGGER.warn("getTargetInventoryFromEntity(): pre-inv: [{}]", inv != null ? inv.size() : "<NULL>");
 
             // Fix for empty horse inv
             if (inv != null &&
@@ -475,11 +459,11 @@ public class InventoryOverlayHandler implements IInventoryOverlayHandler
             {
                 if (entity instanceof AbstractHorseEntity)
                 {
-                    inv2 = InventoryUtils.getNbtInventoryHorseFix(nbt, inv.size(), entity.getRegistryManager());
+                    inv2 = InventoryUtils.getNbtInventoryHorseFix(nbt, -1, entity.getRegistryManager());
                 }
                 else
                 {
-                    inv2 = InventoryUtils.getNbtInventory(nbt, inv.size(), entity.getRegistryManager());
+                    inv2 = InventoryUtils.getNbtInventory(nbt, -1, entity.getRegistryManager());
                 }
 
                 inv = null;
@@ -488,7 +472,7 @@ public class InventoryOverlayHandler implements IInventoryOverlayHandler
             else if (inv != null &&
                     nbt.contains(NbtKeys.EQUIPMENT) && nbt.contains(NbtKeys.EATING_HAY))
             {
-                inv2 = InventoryUtils.getNbtInventoryHorseFix(nbt, inv.size(), entity.getRegistryManager());
+                inv2 = InventoryUtils.getNbtInventoryHorseFix(nbt, -1, entity.getRegistryManager());
                 inv = null;
             }
             // Fix for empty Villager/Piglin inv
@@ -509,7 +493,7 @@ public class InventoryOverlayHandler implements IInventoryOverlayHandler
                 }
             }
 
-            //MiniHUD.LOGGER.error("getTargetInventoryFromEntity(): inv.size [{}], inv2.size [{}]", inv != null ? inv.size() : "null", inv2 != null ? inv2.size() : "null");
+//            MiniHUD.LOGGER.error("getTargetInventoryFromEntity(): inv.size [{}], inv2.size [{}]", inv != null ? inv.size() : "null", inv2 != null ? inv2.size() : "null");
 
             if (inv2 != null)
             {

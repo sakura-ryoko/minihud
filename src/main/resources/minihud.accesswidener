@@ -1,15 +1,23 @@
 accessWidener v2 named
 mutable field net/minecraft/SharedConstants DEBUG_ENABLED Z
 mutable field net/minecraft/SharedConstants PATHFINDING Z
+mutable field net/minecraft/SharedConstants WATER Z
+mutable field net/minecraft/SharedConstants HEIGHTMAP Z
+mutable field net/minecraft/SharedConstants COLLISION Z
+mutable field net/minecraft/SharedConstants SUPPORT_BLOCKS Z
 mutable field net/minecraft/SharedConstants NEIGHBORSUPDATE Z
 mutable field net/minecraft/SharedConstants EXPERIMENTAL_REDSTONEWIRE_UPDATE_ORDER Z
 mutable field net/minecraft/SharedConstants STRUCTURES Z
+mutable field net/minecraft/SharedConstants LIGHT Z
+mutable field net/minecraft/SharedConstants SOLID_FACE Z
 mutable field net/minecraft/SharedConstants GAME_EVENT_LISTENERS Z
 mutable field net/minecraft/SharedConstants GOAL_SELECTOR Z
+mutable field net/minecraft/SharedConstants CHUNKS Z
 mutable field net/minecraft/SharedConstants VILLAGE_SECTIONS Z
 mutable field net/minecraft/SharedConstants BRAIN Z
 mutable field net/minecraft/SharedConstants POI Z
 mutable field net/minecraft/SharedConstants BEES Z
 mutable field net/minecraft/SharedConstants RAIDS Z
+mutable field net/minecraft/SharedConstants SKY_LIGHT_SECTIONS Z
 mutable field net/minecraft/SharedConstants BREEZE_MOB Z
 mutable field net/minecraft/SharedConstants ENTITY_BLOCK_INTERSECTION Z

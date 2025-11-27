@@ -29,42 +29,42 @@ public class DebugInfoUtils
         {
 			toggleDebugHud(DebugHudEntries.CHUNK_SECTION_OCTREE, config, true);
         }
-        else if (config == RendererToggle.DEBUG_WATER)
-        {
-	        toggleDebugHud(DebugHudEntries.VISUALIZE_WATER_LEVELS, config, true);
-        }
-        else if (config == RendererToggle.DEBUG_HEIGHTMAP)
-        {
-	        toggleDebugHud(DebugHudEntries.VISUALIZE_HEIGHTMAP, config, true);
-        }
-        else if (config == RendererToggle.DEBUG_COLLISION_BOXES)
-        {
-	        toggleDebugHud(DebugHudEntries.VISUALIZE_COLLISION_BOXES, config, true);
-        }
-        else if (config == RendererToggle.DEBUG_SUPPORTING_BLOCK)
-        {
-	        toggleDebugHud(DebugHudEntries.VISUALIZE_ENTITY_SUPPORTING_BLOCKS, config, true);
-        }
-        else if (config == RendererToggle.DEBUG_BLOCK_LIGHT)
-        {
-	        toggleDebugHud(DebugHudEntries.VISUALIZE_BLOCK_LIGHT_LEVELS, config, true);
-        }
-        else if (config == RendererToggle.DEBUG_SKY_LIGHT)
-        {
-	        toggleDebugHud(DebugHudEntries.VISUALIZE_SKY_LIGHT_LEVELS, config, true);
-        }
-        else if (config == RendererToggle.DEBUG_BLOCK_OUTLINE)
-        {
-	        toggleDebugHud(DebugHudEntries.VISUALIZE_SOLID_FACES, config, true);
-        }
-        else if (config == RendererToggle.DEBUG_CHUNK_LOADING)
-        {
-	        toggleDebugHud(DebugHudEntries.VISUALIZE_CHUNKS_ON_SERVER, config, true);
-        }
-        else if (config == RendererToggle.DEBUG_SKYLIGHT_SECTIONS)
-        {
-	        toggleDebugHud(DebugHudEntries.VISUALIZE_SKY_LIGHT_SECTIONS, config, true);
-        }
+//        else if (config == RendererToggle.DEBUG_WATER)
+//        {
+//	        toggleDebugHud(DebugHudEntries.VISUALIZE_WATER_LEVELS, config, true);
+//        }
+//        else if (config == RendererToggle.DEBUG_HEIGHTMAP)
+//        {
+//	        toggleDebugHud(DebugHudEntries.VISUALIZE_HEIGHTMAP, config, true);
+//        }
+//        else if (config == RendererToggle.DEBUG_COLLISION_BOXES)
+//        {
+//	        toggleDebugHud(DebugHudEntries.VISUALIZE_COLLISION_BOXES, config, true);
+//        }
+//        else if (config == RendererToggle.DEBUG_SUPPORTING_BLOCK)
+//        {
+//	        toggleDebugHud(DebugHudEntries.VISUALIZE_ENTITY_SUPPORTING_BLOCKS, config, true);
+//        }
+//        else if (config == RendererToggle.DEBUG_BLOCK_LIGHT)
+//        {
+//	        toggleDebugHud(DebugHudEntries.VISUALIZE_BLOCK_LIGHT_LEVELS, config, true);
+//        }
+//        else if (config == RendererToggle.DEBUG_SKY_LIGHT)
+//        {
+//	        toggleDebugHud(DebugHudEntries.VISUALIZE_SKY_LIGHT_LEVELS, config, true);
+//        }
+//        else if (config == RendererToggle.DEBUG_BLOCK_OUTLINE)
+//        {
+//	        toggleDebugHud(DebugHudEntries.VISUALIZE_SOLID_FACES, config, true);
+//        }
+//        else if (config == RendererToggle.DEBUG_CHUNK_LOADING)
+//        {
+//	        toggleDebugHud(DebugHudEntries.VISUALIZE_CHUNKS_ON_SERVER, config, true);
+//        }
+//        else if (config == RendererToggle.DEBUG_SKYLIGHT_SECTIONS)
+//        {
+//	        toggleDebugHud(DebugHudEntries.VISUALIZE_SKY_LIGHT_SECTIONS, config, true);
+//        }
         else if (config == RendererToggle.DEBUG_ENTITY_HITBOXES)
         {
 	        toggleDebugHud(DebugHudEntries.ENTITY_HITBOXES, config, true);
@@ -100,11 +100,8 @@ public class DebugInfoUtils
 
 		if (type != null)
 		{
-			if (DebugDataManager.getInstance().isDebugRendererEnabled(type) != config.getBooleanValue())
-			{
-				DebugDataManager.getInstance().setDebugRenderer(type, config.getBooleanValue());
-				DebugDataManager.getInstance().updateMetadata();
-			}
+			DebugDataManager.getInstance().onConfigSync();
+			DebugDataManager.getInstance().updateMetadata();
 		}
 	}
 

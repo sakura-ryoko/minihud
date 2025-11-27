@@ -45,6 +45,8 @@ import fi.dy.masa.malilib.network.ClientPlayHandler;
 import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
 import fi.dy.masa.malilib.util.InventoryUtils;
 import fi.dy.masa.malilib.util.WorldUtils;
+import fi.dy.masa.malilib.util.data.tag.CompoundData;
+import fi.dy.masa.malilib.util.data.tag.converter.DataConverterNbt;
 import fi.dy.masa.malilib.util.nbt.NbtEntityUtils;
 import fi.dy.masa.malilib.util.nbt.NbtKeys;
 import fi.dy.masa.malilib.util.nbt.NbtView;
@@ -621,6 +623,13 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
         return null;
     }
 
+	@Nullable
+	@Override
+	public Inventory getBlockInventoryNew(World world, BlockPos pos, boolean useNbt)
+	{
+		return this.getBlockInventory(world, pos, useNbt);
+	}
+
     @Nullable
     @Override
     public Inventory getBlockInventory(World world, BlockPos pos, boolean useNbt)
@@ -705,6 +714,13 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
 
         return null;
     }
+
+	@Nullable
+	@Override
+	public Inventory getEntityInventoryNew(World world, int entityId, boolean useNbt)
+	{
+		return this.getEntityInventory(world, entityId, useNbt);
+	}
 
     @Nullable
     @Override
@@ -807,6 +823,13 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
         }
     }
 
+	@Nullable
+	@Override
+	public BlockEntity handleBlockEntityData(BlockPos pos, CompoundData data, @Nullable Identifier type)
+	{
+		return this.handleBlockEntityData(pos, DataConverterNbt.toVanillaCompound(data), type);
+	}
+
     @Nullable
     @Override
     public BlockEntity handleBlockEntityData(BlockPos pos, NbtCompound nbt, @Nullable Identifier type)
@@ -878,6 +901,13 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
         return null;
     }
 
+	@Nullable
+	@Override
+	public Entity handleEntityData(int entityId, CompoundData data)
+	{
+		return this.handleEntityData(entityId, DataConverterNbt.toVanillaCompound(data));
+	}
+
     @Nullable
     @Override
     public Entity handleEntityData(int entityId, NbtCompound nbt)
@@ -912,13 +942,26 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
         return entity;
     }
 
-    @Override
+	@Override
+	public void handleBulkEntityData(int transactionId, CompoundData data)
+	{
+		this.handleBulkEntityData(transactionId, DataConverterNbt.toVanillaCompound(data));
+	}
+
+	@Override
     public void handleBulkEntityData(int transactionId, NbtCompound nbt)
     {
         // todo
     }
 
-    @Override
+	@Override
+	public void handleVanillaQueryNbt(int transactionId, CompoundData data)
+	{
+		this.handleVanillaQueryNbt(transactionId, DataConverterNbt.toVanillaCompound(data));
+
+	}
+
+	@Override
     public void handleVanillaQueryNbt(int transactionId, NbtCompound nbt)
     {
         if (this.checkOpStatus)
