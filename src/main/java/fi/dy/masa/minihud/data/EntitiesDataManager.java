@@ -339,7 +339,20 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
         return null;
     }
 
-    @Override
+	@Override
+	public @Nullable NbtCompound getFromEntityCacheNbt(int entityId)
+	{
+		CompoundData data = this.getFromEntityCacheData(entityId);
+
+		if (data != null)
+		{
+			return DataConverterNbt.toVanillaCompound(data);
+		}
+
+		return null;
+	}
+
+	@Override
     public @Nullable CompoundData getFromEntityCacheData(int entityId)
     {
         if (this.entityCache.containsKey(entityId))
@@ -361,7 +374,20 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
         return null;
     }
 
-    public void setIsServuxServer()
+	@Override
+	public @Nullable Pair<BlockEntity, NbtCompound> requestBlockEntityNbt(World world, BlockPos pos)
+	{
+		Pair<BlockEntity, CompoundData> pair = this.requestBlockEntity(world, pos);
+
+		if (pair != null)
+		{
+			return Pair.of(pair.getLeft(), DataConverterNbt.toVanillaCompound(pair.getRight()));
+		}
+
+		return null;
+	}
+
+	public void setIsServuxServer()
     {
         this.servuxServer = true;
         this.hasInValidServux = false;
@@ -437,7 +463,20 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
         // NO-OP
     }
 
-    public void onEntityDataSyncToggled(ConfigBoolean config)
+	@Override
+	public @Nullable NbtCompound getFromBlockEntityCacheNbt(BlockPos pos)
+	{
+		CompoundData data = this.getFromBlockEntityCacheData(pos);
+
+		if (data != null)
+		{
+			return DataConverterNbt.toVanillaCompound(data);
+		}
+
+		return null;
+	}
+
+	public void onEntityDataSyncToggled(ConfigBoolean config)
     {
         if (this.hasInValidServux)
         {
@@ -527,7 +566,20 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
         return null;
     }
 
-    private @Nullable Pair<BlockEntity, CompoundData> refreshBlockEntityFromWorld(World world, BlockPos pos)
+	@Override
+	public @Nullable Pair<Entity, NbtCompound> requestEntityNbt(World world, int entityId)
+	{
+		Pair<Entity, CompoundData> pair = this.requestEntity(world, entityId);
+
+		if (pair != null)
+		{
+			return Pair.of(pair.getLeft(), DataConverterNbt.toVanillaCompound(pair.getRight()));
+		}
+
+		return null;
+	}
+
+	private @Nullable Pair<BlockEntity, CompoundData> refreshBlockEntityFromWorld(World world, BlockPos pos)
     {
         if (world != null && world.getBlockState(pos).hasBlockEntity())
         {
@@ -920,7 +972,19 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
         return entity;
     }
 
-    @Override
+	@Override
+	public void handleBulkEntityData(int transactionId, CompoundData data)
+	{
+		this.handleBulkEntityData(transactionId, DataConverterNbt.toVanillaCompound(data));
+	}
+
+	@Override
+	public void handleVanillaQueryNbt(int transactionId, CompoundData data)
+	{
+		this.handleVanillaQueryNbt(transactionId, DataConverterNbt.toVanillaCompound(data));
+	}
+
+	@Override
     public void handleBulkEntityData(int transactionId, NbtCompound nbt)
     {
         // todo

@@ -184,7 +184,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
         return list;
     }
 
-    private int getConversionTime(World world, ZombieVillagerEntity villager)
+	private int getConversionTime(World world, ZombieVillagerEntity villager)
     {
         if (world == null || villager == null)
         {
