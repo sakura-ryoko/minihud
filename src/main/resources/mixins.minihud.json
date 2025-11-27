@@ -9,9 +9,6 @@
         "block.IMixinBeaconBlockEntity",
         "block.MixinBeaconBlockEntity",
         "block.MixinConduitBlockEntity",
-        "debug.IMixinEntityNavigation",
-        "debug.IMixinMobEntity",
-        "debug.MixinPath",
         "entity.IMixinCopperGolemEntity",
         "entity.IMixinEntity",
         "entity.IMixinLeashable",
@@ -37,7 +34,7 @@
     ],
     "client": [
         "MixinMinecraftClient",
-        "debug.MixinDebugRenderer",
+        "debug.IMixinClientPlayNetworkHandler",
         "hud.MixinChatScreen",
         "hud.MixinSubtitlesHud",
         "network.MixinClientCommonNetworkHandler",
