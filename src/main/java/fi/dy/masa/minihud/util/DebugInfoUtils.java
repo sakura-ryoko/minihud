@@ -2,6 +2,7 @@ package fi.dy.masa.minihud.util;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.hud.debug.DebugHudEntries;
+import net.minecraft.client.gui.hud.debug.DebugHudProfile;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
@@ -25,9 +26,17 @@ public class DebugInfoUtils
                 debugWarn(enabled ? "debug.chunk_boundaries.on" : "debug.chunk_boundaries.off");
             }
         }
-        else if (config == RendererToggle.DEBUG_OCTREEE)
+        else if (config == RendererToggle.DEBUG_CHUNK_SECTION_OCTREEE)
         {
 			toggleDebugHud(DebugHudEntries.CHUNK_SECTION_OCTREE, config, true);
+        }
+        else if (config == RendererToggle.DEBUG_ENTITY_HITBOXES)
+        {
+	        toggleDebugHud(DebugHudEntries.ENTITY_HITBOXES, config, true);
+        }
+        else if (config == RendererToggle.DEBUG_BLOCK_OUTLINE)
+        {
+	        toggleDebugHud(DebugHudEntries.VISUALIZE_SOLID_FACES, config, true);
         }
         else if (config == RendererToggle.DEBUG_WATER)
         {
@@ -53,10 +62,6 @@ public class DebugInfoUtils
         {
 	        toggleDebugHud(DebugHudEntries.VISUALIZE_SKY_LIGHT_LEVELS, config, true);
         }
-        else if (config == RendererToggle.DEBUG_BLOCK_OUTLINE)
-        {
-	        toggleDebugHud(DebugHudEntries.VISUALIZE_SOLID_FACES, config, true);
-        }
         else if (config == RendererToggle.DEBUG_CHUNK_LOADING)
         {
 	        toggleDebugHud(DebugHudEntries.VISUALIZE_CHUNKS_ON_SERVER, config, true);
@@ -65,15 +70,11 @@ public class DebugInfoUtils
         {
 	        toggleDebugHud(DebugHudEntries.VISUALIZE_SKY_LIGHT_SECTIONS, config, true);
         }
-        else if (config == RendererToggle.DEBUG_ENTITY_HITBOXES)
-        {
-	        toggleDebugHud(DebugHudEntries.ENTITY_HITBOXES, config, true);
-        }
-        else if (config == RendererToggle.DEBUG_CHUNK_INFO)
+        else if (config == RendererToggle.DEBUG_CHUNK_SECTION_PATHS)
         {
 	        toggleDebugHud(DebugHudEntries.CHUNK_SECTION_PATHS, config, true);
         }
-        else if (config == RendererToggle.DEBUG_CHUNK_OCCLUSION)
+        else if (config == RendererToggle.DEBUG_CHUNK_SECTION_VISIBILITY)
         {
 	        toggleDebugHud(DebugHudEntries.CHUNK_SECTION_VISIBILITY, config, true);
         }
@@ -100,11 +101,8 @@ public class DebugInfoUtils
 
 		if (type != null)
 		{
-			if (DebugDataManager.getInstance().isDebugRendererEnabled(type) != config.getBooleanValue())
-			{
-				DebugDataManager.getInstance().setDebugRenderer(type, config.getBooleanValue());
-				DebugDataManager.getInstance().updateMetadata();
-			}
+			DebugDataManager.getInstance().onConfigSync();
+			DebugDataManager.getInstance().updateMetadata();
 		}
 	}
 
@@ -119,4 +117,28 @@ public class DebugInfoUtils
 		                        )
 		        );
     }
+
+	/**
+	 * Keep the debug Hud status configs in sync with Vanilla.
+	 */
+	public static void onUpdateVisibleEntries(DebugHudProfile inst)
+	{
+		if (inst != null)
+		{
+			RendererToggle.DEBUG_CHUNK_BORDER.setBooleanValueNoCallback(inst.isEntryVisible(DebugHudEntries.CHUNK_BORDERS));
+			RendererToggle.DEBUG_ENTITY_HITBOXES.setBooleanValueNoCallback(inst.isEntryVisible(DebugHudEntries.ENTITY_HITBOXES));
+			RendererToggle.DEBUG_BLOCK_OUTLINE.setBooleanValueNoCallback(inst.isEntryVisible(DebugHudEntries.VISUALIZE_SOLID_FACES));
+			RendererToggle.DEBUG_WATER.setBooleanValueNoCallback(inst.isEntryVisible(DebugHudEntries.VISUALIZE_WATER_LEVELS));
+			RendererToggle.DEBUG_HEIGHTMAP.setBooleanValueNoCallback(inst.isEntryVisible(DebugHudEntries.VISUALIZE_HEIGHTMAP));
+			RendererToggle.DEBUG_COLLISION_BOXES.setBooleanValueNoCallback(inst.isEntryVisible(DebugHudEntries.VISUALIZE_COLLISION_BOXES));
+			RendererToggle.DEBUG_SUPPORTING_BLOCK.setBooleanValueNoCallback(inst.isEntryVisible(DebugHudEntries.VISUALIZE_ENTITY_SUPPORTING_BLOCKS));
+			RendererToggle.DEBUG_BLOCK_LIGHT.setBooleanValueNoCallback(inst.isEntryVisible(DebugHudEntries.VISUALIZE_BLOCK_LIGHT_LEVELS));
+			RendererToggle.DEBUG_SKY_LIGHT.setBooleanValueNoCallback(inst.isEntryVisible(DebugHudEntries.VISUALIZE_SKY_LIGHT_LEVELS));
+			RendererToggle.DEBUG_CHUNK_LOADING.setBooleanValueNoCallback(inst.isEntryVisible(DebugHudEntries.VISUALIZE_CHUNKS_ON_SERVER));
+			RendererToggle.DEBUG_SKYLIGHT_SECTIONS.setBooleanValueNoCallback(inst.isEntryVisible(DebugHudEntries.VISUALIZE_SKY_LIGHT_SECTIONS));
+			RendererToggle.DEBUG_CHUNK_SECTION_OCTREEE.setBooleanValueNoCallback(inst.isEntryVisible(DebugHudEntries.CHUNK_SECTION_OCTREE));
+			RendererToggle.DEBUG_CHUNK_SECTION_PATHS.setBooleanValueNoCallback(inst.isEntryVisible(DebugHudEntries.CHUNK_SECTION_PATHS));
+			RendererToggle.DEBUG_CHUNK_SECTION_VISIBILITY.setBooleanValueNoCallback(inst.isEntryVisible(DebugHudEntries.CHUNK_SECTION_VISIBILITY));
+		}
+	}
 }

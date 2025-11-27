@@ -24,6 +24,7 @@ import fi.dy.masa.minihud.mixin.debug.IMixinClientPlayNetworkHandler;
 import fi.dy.masa.minihud.network.ServuxDebugHandler;
 import fi.dy.masa.minihud.network.ServuxDebugPacket;
 import fi.dy.masa.minihud.util.DataStorage;
+import fi.dy.masa.minihud.util.DebugInfoUtils;
 import fi.dy.masa.minihud.util.DebugRenderType;
 
 public class DebugDataManager
@@ -170,6 +171,15 @@ public class DebugDataManager
 				case "3d_crosshair" -> { continue; }
 				case "chunk_section_paths" -> { continue; }
 				case "chunk_section_octree" -> { continue; }
+				case "visualize_water_levels" -> { continue; }
+				case "visualize_heightmap" -> { continue; }
+				case "visualize_collision_boxes" -> { continue; }
+				case "visualize_entity_supporting_blocks" -> { continue; }
+				case "visualize_block_light_levels" -> { continue; }
+				case "visualize_sky_light_levels" -> { continue; }
+				case "visualize_solid_faces" -> { continue; }
+				case "visualize_chunks_on_server" -> { continue; }
+				case "visualize_sky_light_sections" -> { continue; }
 				case "chunk_section_visibility" -> { continue; }
 				default -> { return false; }
 			}
@@ -227,28 +237,40 @@ public class DebugDataManager
 	public void toggleDebugRendering(boolean toggle)
 	{
 		this.setDebugRenderer(DebugRenderType.DEBUG_ENABLED, toggle);
-
-		if (this.mc.getNetworkHandler() != null)
-		{
-			((IMixinClientPlayNetworkHandler) this.mc.getNetworkHandler())
-					.minihud_getDebugManager().clearAllSubscriptions();
-		}
+		this.reloadDebugRenderer();
 	}
 
 	public void onConfigSync()
 	{
-		this.isDebugRenderingEnabled();
+		boolean changed = false;
 
 		for (DebugRenderType entry : DebugRenderType.VALUES)
 		{
 			boolean config = entry.getCallback().getBooleanValue();
 			boolean enabled = this.isDebugRendererEnabled(entry);
 
-			if (config && !enabled)
+			if (config != enabled)
 			{
 				this.setDebugRenderer(entry, config);
+				changed = true;
 			}
 		}
+
+		if (changed)
+		{
+			this.reloadDebugRenderer();
+		}
+	}
+
+	public void reloadDebugRenderer()
+	{
+		if (this.mc.getNetworkHandler() != null)
+		{
+			((IMixinClientPlayNetworkHandler) this.mc.getNetworkHandler())
+					.minihud_getDebugManager().clearAllSubscriptions();
+		}
+
+		this.mc.worldRenderer.debugRenderer.initRenderers();
 	}
 
 	public void setIsServuxServer()

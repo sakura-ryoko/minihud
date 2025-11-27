@@ -41,21 +41,22 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
 
 	// Does not need server side data
 	DEBUG_CHUNK_BORDER                  ("debugChunkBorder",            ""),
-	DEBUG_OCTREEE                       ("debugOctreeEnabled",          ""),
+	DEBUG_ENTITY_HITBOXES               ("debugEntityHitboxes",         ""),
+	DEBUG_BLOCK_OUTLINE                 ("debugBlockOutline" ,          ""),
 	DEBUG_WATER                         ("debugWaterEnabled",           ""),
 	DEBUG_HEIGHTMAP                     ("debugHeightmapEnabled",       ""),
 	DEBUG_COLLISION_BOXES               ("debugCollisionBoxEnabled",    ""),
 	DEBUG_SUPPORTING_BLOCK              ("debugSupportingBlock",        ""),
+//	DEBUG_LIGHT                         ("debugLightEnabled",           ""),
 	DEBUG_BLOCK_LIGHT                   ("debugBlockLightEnabled",      ""),
 	DEBUG_SKY_LIGHT                     ("debugSkyLightEnabled",        ""),
-	DEBUG_BLOCK_OUTLINE                 ("debugBlockOutline" ,          ""),
-	DEBUG_CHUNK_LOADING                 ("debugChunkLoading",           ""),
 	DEBUG_SKYLIGHT_SECTIONS             ("debugSkylightSectionsEnabled",""),
-	DEBUG_ENTITY_HITBOXES               ("debugEntityHitboxes",         ""),
 
 	// Not in Debug Renderer (?)
-    DEBUG_CHUNK_INFO                    ("debugChunkInfo",              ""),
-    DEBUG_CHUNK_OCCLUSION               ("debugChunkOcclusion",         ""),
+	DEBUG_CHUNK_LOADING                 ("debugChunkLoading",           ""),
+	DEBUG_CHUNK_SECTION_OCTREEE         ("debugChunkSectionOctree",     ""),
+	DEBUG_CHUNK_SECTION_PATHS           ("debugChunkSectionPaths",      ""),
+	DEBUG_CHUNK_SECTION_VISIBILITY      ("debugChunkSectionVisibility", ""),
 
 	// Needs server side data
 	DEBUG_DATA_MAIN_TOGGLE              ("debugDataMainToggle",                 true, ""),
@@ -377,7 +378,12 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
         }
     }
 
-    @Override
+	public void setBooleanValueNoCallback(boolean value)
+	{
+		this.valueBoolean = value;
+	}
+
+	@Override
     public void setValueChangeCallback(IValueChangeCallback<IConfigBoolean> callback)
     {
         this.callback = callback;
