@@ -6,6 +6,7 @@ import fi.dy.masa.malilib.interfaces.IInitializationHandler;
 import fi.dy.masa.malilib.registry.Registry;
 import fi.dy.masa.malilib.util.data.ModInfo;
 import fi.dy.masa.minihud.config.Configs;
+import fi.dy.masa.minihud.data.DebugDataManager;
 import fi.dy.masa.minihud.data.EntitiesDataManager;
 import fi.dy.masa.minihud.data.HudDataManager;
 import fi.dy.masa.minihud.event.*;
@@ -27,7 +28,7 @@ public class InitHandler implements IInitializationHandler
         DataStorage.getInstance().onGameInit();
         HudDataManager.getInstance().onGameInit();
         EntitiesDataManager.getInstance().onGameInit();
-//        DebugDataManager.getInstance().onGameInit();
+        DebugDataManager.getInstance().onGameInit();
 
         InputEventHandler.getKeybindManager().registerKeybindProvider(InputHandler.getInstance());
         InputEventHandler.getInputManager().registerMouseInputHandler(InputHandler.getInstance());
@@ -35,9 +36,6 @@ public class InitHandler implements IInitializationHandler
         RenderHandler renderer = RenderHandler.getInstance();
         RenderEventHandler.getInstance().registerGameOverlayRenderer(renderer);
         RenderEventHandler.getInstance().registerTooltipLastRenderer(renderer);
-//        RenderEventHandler.getInstance().registerWorldPreMainRenderer(renderer);
-//        RenderEventHandler.getInstance().registerWorldPreParticleRenderer(renderer);
-//        RenderEventHandler.getInstance().registerWorldPreWeatherRenderer(renderer);
         RenderEventHandler.getInstance().registerWorldLastRenderer(renderer);
 
         WorldLoadListener listener = new WorldLoadListener();

@@ -37,7 +37,9 @@ base {
 }
 
 loom {
-	def commonVmArgs = ['-Dmixin.debug.export=true', '-Dmixin.debug.countInjections=true']
+    accessWidenerPath = file("src/main/resources/minihud.accesswidener")
+
+    def commonVmArgs = ['-Dmixin.debug.export=true', '-Dmixin.debug.countInjections=true']
 	// [FEATURE] MIXIN_AUDITOR
 	runs {
 		def auditVmArgs = [*commonVmArgs, '-DmixinAuditor.audit=true']

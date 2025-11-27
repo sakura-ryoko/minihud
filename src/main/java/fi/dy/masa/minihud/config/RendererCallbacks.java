@@ -5,6 +5,7 @@ import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.util.EntityUtils;
 import fi.dy.masa.malilib.util.InfoUtils;
 import fi.dy.masa.malilib.util.StringUtils;
+import fi.dy.masa.minihud.data.DebugDataManager;
 import fi.dy.masa.minihud.data.HudDataManager;
 import fi.dy.masa.minihud.renderer.*;
 import fi.dy.masa.minihud.renderer.shapes.ShapeManager;
@@ -197,24 +198,27 @@ public class RendererCallbacks
         }
     }
 
-//    public static void onDebugServiceToggled(IConfigBoolean config)
-//    {
-//        MinecraftClient mc = MinecraftClient.getInstance();
-//
-//        if (mc != null && mc.player != null)
-//        {
-//            if (!mc.isIntegratedServerRunning() && !DataStorage.getInstance().hasIntegratedServer())
-//            {
-//                if (config.getBooleanValue())
-//                {
-//                    DebugDataManager.getInstance().registerDebugService();
-//                    DebugDataManager.getInstance().requestMetadata();
-//                }
-//                else
-//                {
-//                    DebugDataManager.getInstance().unregisterDebugService();
-//                }
-//            }
-//        }
-//    }
+    public static void onDebugServiceToggled(IConfigBoolean config)
+    {
+        MinecraftClient mc = MinecraftClient.getInstance();
+	    DebugDataManager.getInstance().onConfigSync();
+
+        if (mc != null && mc.player != null)
+        {
+            if (!mc.isIntegratedServerRunning() && !DataStorage.getInstance().hasIntegratedServer())
+            {
+                if (config.getBooleanValue())
+                {
+					DebugDataManager.getInstance().toggleDebugRendering(true);
+                    DebugDataManager.getInstance().registerDebugService();
+                    DebugDataManager.getInstance().requestMetadata();
+                }
+                else
+                {
+	                DebugDataManager.getInstance().toggleDebugRendering(false);
+                    DebugDataManager.getInstance().unregisterDebugService();
+                }
+            }
+        }
+    }
 }

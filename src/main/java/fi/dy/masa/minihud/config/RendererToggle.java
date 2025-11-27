@@ -4,6 +4,7 @@ import javax.annotation.Nullable;
 import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
+import org.jetbrains.annotations.NotNull;
 
 import fi.dy.masa.malilib.config.ConfigType;
 import fi.dy.masa.malilib.config.IConfigBoolean;
@@ -38,40 +39,42 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
     OVERLAY_VILLAGER_INFO               ("overlayVillagerInfo",         true, ""),
     SHAPE_RENDERER                      ("shapeRenderer",               ""),
 
-//    DEBUG_DATA_MAIN_TOGGLE              ("debugDataMainToggle",         true, ""),
-//    DEBUG_BEEDATA                       ("debugBeeDataEnabled",         true, ""),
-//    DEBUG_BRAIN                         ("debugBrainEnabled",           true, ""),
-//    DEBUG_BREEZE_JUMP                   ("debugBreezeJumpEnabled",      true, ""),
-    DEBUG_CHUNK_BORDER                  ("debugChunkBorder",            ""),
-    // todo not needed
-    //DEBUG_CHUNK_DEBUG                   ("debugChunkDebug",             ""),
+	// Does not need server side data
+	DEBUG_CHUNK_BORDER                  ("debugChunkBorder",            ""),
+	DEBUG_OCTREEE                       ("debugOctreeEnabled",          ""),
+	DEBUG_WATER                         ("debugWaterEnabled",           ""),
+	DEBUG_HEIGHTMAP                     ("debugHeightmapEnabled",       ""),
+	DEBUG_COLLISION_BOXES               ("debugCollisionBoxEnabled",    ""),
+	DEBUG_SUPPORTING_BLOCK              ("debugSupportingBlock",        ""),
+	DEBUG_BLOCK_LIGHT                   ("debugBlockLightEnabled",      ""),
+	DEBUG_SKY_LIGHT                     ("debugSkyLightEnabled",        ""),
+	DEBUG_BLOCK_OUTLINE                 ("debugBlockOutline" ,          ""),
+	DEBUG_CHUNK_LOADING                 ("debugChunkLoading",           ""),
+	DEBUG_SKYLIGHT_SECTIONS             ("debugSkylightSectionsEnabled",""),
+	DEBUG_ENTITY_HITBOXES               ("debugEntityHitboxes",         ""),
+
+	// Not in Debug Renderer (?)
     DEBUG_CHUNK_INFO                    ("debugChunkInfo",              ""),
-//    DEBUG_CHUNK_LOADING                 ("debugChunkLoading",           true, ""),
     DEBUG_CHUNK_OCCLUSION               ("debugChunkOcclusion",         ""),
-//    DEBUG_COLLISION_BOXES               ("debugCollisionBoxEnabled",    ""),
-//    DEBUG_HEIGHTMAP                     ("debugHeightmapEnabled",       ""),
-//    DEBUG_LIGHT                         ("debugLightEnabled",           ""),
-//    DEBUG_NEIGHBOR_UPDATES              ("debugNeighborsUpdateEnabled", true, ""),
-    // todo not needed
-    //DEBUG_GAME_TEST                     ("debugGameTestEnabled",        true, ""),
-//    DEBUG_GAME_EVENT                    ("debugGameEventsEnabled",      true,""),
-//    DEBUG_GOAL_SELECTOR                 ("debugGoalSelectorEnabled",    true, ""),
-    DEBUG_OCTREEE                       ("debugOctreeEnabled",          ""),
-//    DEBUG_PATH_FINDING                  ("debugPathfindingEnabled",     true, ""),
-//    DEBUG_RAID_CENTER                   ("debugRaidCenterEnabled",      true, ""),
-    // todo fix
-    //DEBUG_REDSTONE_UPDATE_ORDER         ("debugRedstoneUpdateOrder",    true, ""),
-//    DEBUG_SKYLIGHT                      ("debugSkylightEnabled",        ""),
-//    DEBUG_SOLID_FACES                   ("debugSolidFaceEnabled",       ""),
-//    DEBUG_STRUCTURES                    ("debugStructuresEnabled",      true, ""),
-//    DEBUG_SUPPORTING_BLOCK              ("debugSupportingBlock",        ""),
-//    DEBUG_WATER                         ("debugWaterEnabled",           ""),
-//    DEBUG_VILLAGE                       ("debugVillageEnabled",         true, ""),
-//    DEBUG_VILLAGE_SECTIONS              ("debugVillageSectionsEnabled", true, ""),
-//    DEBUG_WORLDGEN                      ("debugWorldGenEnabled",        true, ""),
+
+	// Needs server side data
+	DEBUG_DATA_MAIN_TOGGLE              ("debugDataMainToggle",                 true, ""),
+	DEBUG_PATH_FINDING                  ("debugPathfindingEnabled",             true, ""),
+	DEBUG_NEIGHBOR_UPDATES              ("debugNeighborsUpdateEnabled",         true, ""),
+	DEBUG_REDSTONE_UPDATE_ORDER         ("debugRedstoneUpdateOrder",            true, ""),
+	DEBUG_STRUCTURES                    ("debugStructuresEnabled",              true, ""),
+	DEBUG_VILLAGE_SECTIONS              ("debugVillageSectionsEnabled",         true, ""),
+	DEBUG_BRAIN                         ("debugBrainEnabled",                   true, ""),
+	DEBUG_POI                           ("debugPoiEnabled",                     true, ""),
+    DEBUG_BEEDATA                       ("debugBeeDataEnabled",                 true, ""),
+	DEBUG_RAID_CENTER                   ("debugRaidCenterEnabled",              true, ""),
+	DEBUG_GOAL_SELECTOR                 ("debugGoalSelectorEnabled",            true, ""),
+    DEBUG_GAME_EVENT                    ("debugGameEventsEnabled",              true, ""),
+	DEBUG_BREEZE_JUMP                   ("debugBreezeJumpEnabled",              true, ""),
+	DEBUG_ENTITY_BLOCK_INTERSECTION     ("debugEntityBlockIntersectionEnabled", true, ""),
     ;
 
-    public static final ImmutableList<RendererToggle> VALUES = ImmutableList.copyOf(values());
+    public static final ImmutableList<@NotNull RendererToggle> VALUES = ImmutableList.copyOf(values());
     private static final String RENDER_KEY = Reference.MOD_ID+".config.render_toggle";
 
     private final String name;
@@ -410,7 +413,7 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
     @Override
     public boolean isModified(String newValue)
     {
-        return String.valueOf(this.defaultValueBoolean).equals(newValue) == false;
+        return !String.valueOf(this.defaultValueBoolean).equals(newValue);
     }
 
     @Override

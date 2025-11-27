@@ -8,6 +8,7 @@ import fi.dy.masa.malilib.util.JsonUtils;
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.Reference;
+import fi.dy.masa.minihud.data.DebugDataManager;
 import fi.dy.masa.minihud.data.EntitiesDataManager;
 import fi.dy.masa.minihud.data.HudDataManager;
 import fi.dy.masa.minihud.renderer.OverlayRenderer;
@@ -42,7 +43,7 @@ public class WorldLoadListener implements IWorldLoadListener
             DataStorage.getInstance().onWorldPre();
             HudDataManager.getInstance().onWorldPre();
             EntitiesDataManager.getInstance().onWorldPre();
-//            DebugDataManager.getInstance().onWorldPre();
+            DebugDataManager.getInstance().onWorldPre();
         }
     }
 
@@ -54,7 +55,7 @@ public class WorldLoadListener implements IWorldLoadListener
         HudDataManager.getInstance().reset(worldAfter == null);
         EntitiesDataManager.getInstance().reset(worldAfter == null);
         OverlayRendererVillagerInfo.INSTANCE.reset(worldAfter == null);
-//        DebugDataManager.getInstance().reset(worldAfter == null);
+        DebugDataManager.getInstance().reset(worldAfter == null);
         OverlayRenderer.reset();
 
         // Logging in to a world or changing dimensions or respawning
@@ -72,7 +73,7 @@ public class WorldLoadListener implements IWorldLoadListener
             DataStorage.getInstance().setWorldRegistryManager(worldAfter.getRegistryManager());
             HudDataManager.getInstance().onWorldJoin();
             EntitiesDataManager.getInstance().onWorldJoin();
-//            DebugDataManager.getInstance().onWorldJoin();
+            DebugDataManager.getInstance().onWorldJoin();
         }
     }
 

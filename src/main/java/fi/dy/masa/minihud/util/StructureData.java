@@ -3,18 +3,17 @@ package fi.dy.masa.minihud.util;
 import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
+import com.google.common.collect.ImmutableList;
+import org.jetbrains.annotations.NotNull;
+
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.structure.StructurePiece;
 import net.minecraft.structure.StructureStart;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.gen.StructureTerrainAdaptation;
 import net.minecraft.world.gen.structure.Structure;
-
-import com.google.common.collect.ImmutableList;
-import org.jetbrains.annotations.NotNull;
 
 import fi.dy.masa.malilib.util.IntBoundingBox;
 import fi.dy.masa.minihud.MiniHUD;
@@ -184,22 +183,22 @@ public class StructureData
         if (iterator.hasNext())
         {
             IntBoundingBox box = iterator.next();
-            int minX = box.minX;
-            int minY = box.minY;
-            int minZ = box.minZ;
-            int maxX = box.maxX;
-            int maxY = box.maxY;
-            int maxZ = box.maxZ;
+            int minX = box.minX();
+            int minY = box.minY();
+            int minZ = box.minZ();
+            int maxX = box.maxX();
+            int maxY = box.maxY();
+            int maxZ = box.maxZ();
 
             while (iterator.hasNext())
             {
                 box = iterator.next();
-                minX = Math.min(minX, box.minX);
-                minY = Math.min(minY, box.minY);
-                minZ = Math.min(minZ, box.minZ);
-                maxX = Math.max(maxX, box.maxX);
-                maxY = Math.max(maxY, box.maxY);
-                maxZ = Math.max(maxZ, box.maxZ);
+                minX = Math.min(minX, box.minX());
+                minY = Math.min(minY, box.minY());
+                minZ = Math.min(minZ, box.minZ());
+                maxX = Math.max(maxX, box.maxX());
+                maxY = Math.max(maxY, box.maxY());
+                maxZ = Math.max(maxZ, box.maxZ());
             }
 
             IntBoundingBox bb = new IntBoundingBox(minX, minY, minZ, maxX, maxY, maxZ);
@@ -207,7 +206,7 @@ public class StructureData
 			// Vanilla says to expand it if != StructureTerrainAdaptation.NONE
 			if (expandBox)
 			{
-				bb.expand(12);
+				bb = bb.expand(12);
 			}
 
 			return bb;

@@ -30,6 +30,7 @@
 	"mixins": [
 		"mixins.minihud.json"
 	],
+    "accessWidener": "minihud.accesswidener",
 
     "depends": {
         "minecraft": ">=1.21.11-beta.2 <1.21.12",

@@ -154,12 +154,12 @@ public class RenderUtils
     public static void drawBoxQuads(IntBoundingBox bb, Vec3d cameraPos, Color4f color,
                                     BufferBuilder bufferQuads)
     {
-        float minX = (float) (bb.minX - cameraPos.x);
-        float minY = (float) (bb.minY - cameraPos.y);
-        float minZ = (float) (bb.minZ - cameraPos.z);
-        float maxX = (float) (bb.maxX + 1 - cameraPos.x);
-        float maxY = (float) (bb.maxY + 1 - cameraPos.y);
-        float maxZ = (float) (bb.maxZ + 1 - cameraPos.z);
+        float minX = (float) (bb.minX() - cameraPos.x);
+        float minY = (float) (bb.minY() - cameraPos.y);
+        float minZ = (float) (bb.minZ() - cameraPos.z);
+        float maxX = (float) (bb.maxX() + 1 - cameraPos.x);
+        float maxY = (float) (bb.maxY() + 1 - cameraPos.y);
+        float maxZ = (float) (bb.maxZ() + 1 - cameraPos.z);
 
         fi.dy.masa.malilib.render.RenderUtils.drawBoxAllSidesBatchedQuads(minX, minY, minZ, maxX, maxY, maxZ, color, bufferQuads);
     }
@@ -168,12 +168,12 @@ public class RenderUtils
 									   float lineWidth,
 	                                   BufferBuilder bufferQuads)
 	{
-		float minX = (float) (bb.minX - cameraPos.x);
-		float minY = (float) (bb.minY - cameraPos.y);
-		float minZ = (float) (bb.minZ - cameraPos.z);
-		float maxX = (float) (bb.maxX + 1 - cameraPos.x);
-		float maxY = (float) (bb.maxY + 1 - cameraPos.y);
-		float maxZ = (float) (bb.maxZ + 1 - cameraPos.z);
+		float minX = (float) (bb.minX() - cameraPos.x);
+		float minY = (float) (bb.minY() - cameraPos.y);
+		float minZ = (float) (bb.minZ() - cameraPos.z);
+		float maxX = (float) (bb.maxX() + 1 - cameraPos.x);
+		float maxY = (float) (bb.maxY() + 1 - cameraPos.y);
+		float maxZ = (float) (bb.maxZ() + 1 - cameraPos.z);
 
 		fi.dy.masa.malilib.render.RenderUtils.drawBoxAllEdgesBatchedLines(minX, minY, minZ, maxX, maxY, maxZ, color, lineWidth, bufferQuads);
 	}
