@@ -378,7 +378,12 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
         }
     }
 
-    @Override
+	public void setBooleanValueNoCallback(boolean value)
+	{
+		this.valueBoolean = value;
+	}
+
+	@Override
     public void setValueChangeCallback(IValueChangeCallback<IConfigBoolean> callback)
     {
         this.callback = callback;

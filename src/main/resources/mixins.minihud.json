@@ -35,6 +35,7 @@
     "client": [
         "MixinMinecraftClient",
         "debug.IMixinClientPlayNetworkHandler",
+        "debug.MixinDebugHudProfile",
         "hud.MixinChatScreen",
         "hud.MixinSubtitlesHud",
         "network.MixinClientCommonNetworkHandler",

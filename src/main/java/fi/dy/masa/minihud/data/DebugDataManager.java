@@ -24,6 +24,7 @@ import fi.dy.masa.minihud.mixin.debug.IMixinClientPlayNetworkHandler;
 import fi.dy.masa.minihud.network.ServuxDebugHandler;
 import fi.dy.masa.minihud.network.ServuxDebugPacket;
 import fi.dy.masa.minihud.util.DataStorage;
+import fi.dy.masa.minihud.util.DebugInfoUtils;
 import fi.dy.masa.minihud.util.DebugRenderType;
 
 public class DebugDataManager
@@ -102,6 +103,11 @@ public class DebugDataManager
                 this.unregisterDebugService();
             }
         }
+
+		if (this.mc.debugHudEntryList != null)
+		{
+			DebugInfoUtils.onUpdateVisibleEntries(this.mc.debugHudEntryList);
+		}
     }
 
 	public boolean isF3Enabled()
