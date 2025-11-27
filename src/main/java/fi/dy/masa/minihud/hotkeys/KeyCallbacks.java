@@ -77,7 +77,7 @@ public class KeyCallbacks
         RendererToggle.SHAPE_RENDERER.setValueChangeCallback(RendererCallbacks::onShapeRendererToggled);
 
         RendererToggle.DEBUG_CHUNK_BORDER.setValueChangeCallback(DebugInfoUtils::toggleDebugRenderer);
-	    RendererToggle.DEBUG_OCTREEE.setValueChangeCallback(DebugInfoUtils::toggleDebugRenderer);
+	    RendererToggle.DEBUG_CHUNK_SECTION_OCTREEE.setValueChangeCallback(DebugInfoUtils::toggleDebugRenderer);
 	    RendererToggle.DEBUG_WATER.setValueChangeCallback(DebugInfoUtils::toggleDebugDataConfig);
 	    RendererToggle.DEBUG_HEIGHTMAP.setValueChangeCallback(DebugInfoUtils::toggleDebugDataConfig);
 	    RendererToggle.DEBUG_COLLISION_BOXES.setValueChangeCallback(DebugInfoUtils::toggleDebugDataConfig);
@@ -89,8 +89,8 @@ public class KeyCallbacks
 	    RendererToggle.DEBUG_CHUNK_LOADING.setValueChangeCallback(DebugInfoUtils::toggleDebugDataConfig);
 	    RendererToggle.DEBUG_SKYLIGHT_SECTIONS.setValueChangeCallback(DebugInfoUtils::toggleDebugDataConfig);
 	    RendererToggle.DEBUG_ENTITY_HITBOXES.setValueChangeCallback(DebugInfoUtils::toggleDebugRenderer);
-        RendererToggle.DEBUG_CHUNK_INFO.setValueChangeCallback(DebugInfoUtils::toggleDebugRenderer);
-        RendererToggle.DEBUG_CHUNK_OCCLUSION.setValueChangeCallback(DebugInfoUtils::toggleDebugRenderer);
+        RendererToggle.DEBUG_CHUNK_SECTION_PATHS.setValueChangeCallback(DebugInfoUtils::toggleDebugRenderer);
+        RendererToggle.DEBUG_CHUNK_SECTION_VISIBILITY.setValueChangeCallback(DebugInfoUtils::toggleDebugRenderer);
 
 	    RendererToggle.DEBUG_DATA_MAIN_TOGGLE.setValueChangeCallback(RendererCallbacks::onDebugServiceToggled);
 	    RendererToggle.DEBUG_PATH_FINDING.setValueChangeCallback(DebugInfoUtils::toggleDebugDataConfig);

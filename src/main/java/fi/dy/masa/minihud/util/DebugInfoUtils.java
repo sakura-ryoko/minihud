@@ -26,10 +26,14 @@ public class DebugInfoUtils
                 debugWarn(enabled ? "debug.chunk_boundaries.on" : "debug.chunk_boundaries.off");
             }
         }
-        else if (config == RendererToggle.DEBUG_OCTREEE)
+        else if (config == RendererToggle.DEBUG_ENTITY_HITBOXES)
         {
-			toggleDebugHud(DebugHudEntries.CHUNK_SECTION_OCTREE, config, true);
+	        toggleDebugHud(DebugHudEntries.ENTITY_HITBOXES, config, true);
         }
+//        else if (config == RendererToggle.DEBUG_BLOCK_OUTLINE)
+//        {
+//	        toggleDebugHud(DebugHudEntries.VISUALIZE_SOLID_FACES, config, true);
+//        }
 //        else if (config == RendererToggle.DEBUG_WATER)
 //        {
 //	        toggleDebugHud(DebugHudEntries.VISUALIZE_WATER_LEVELS, config, true);
@@ -54,10 +58,6 @@ public class DebugInfoUtils
 //        {
 //	        toggleDebugHud(DebugHudEntries.VISUALIZE_SKY_LIGHT_LEVELS, config, true);
 //        }
-//        else if (config == RendererToggle.DEBUG_BLOCK_OUTLINE)
-//        {
-//	        toggleDebugHud(DebugHudEntries.VISUALIZE_SOLID_FACES, config, true);
-//        }
 //        else if (config == RendererToggle.DEBUG_CHUNK_LOADING)
 //        {
 //	        toggleDebugHud(DebugHudEntries.VISUALIZE_CHUNKS_ON_SERVER, config, true);
@@ -66,15 +66,15 @@ public class DebugInfoUtils
 //        {
 //	        toggleDebugHud(DebugHudEntries.VISUALIZE_SKY_LIGHT_SECTIONS, config, true);
 //        }
-        else if (config == RendererToggle.DEBUG_ENTITY_HITBOXES)
+        else if (config == RendererToggle.DEBUG_CHUNK_SECTION_OCTREEE)
         {
-	        toggleDebugHud(DebugHudEntries.ENTITY_HITBOXES, config, true);
+	        toggleDebugHud(DebugHudEntries.CHUNK_SECTION_OCTREE, config, true);
         }
-        else if (config == RendererToggle.DEBUG_CHUNK_INFO)
+        else if (config == RendererToggle.DEBUG_CHUNK_SECTION_PATHS)
         {
 	        toggleDebugHud(DebugHudEntries.CHUNK_SECTION_PATHS, config, true);
         }
-        else if (config == RendererToggle.DEBUG_CHUNK_OCCLUSION)
+        else if (config == RendererToggle.DEBUG_CHUNK_SECTION_VISIBILITY)
         {
 	        toggleDebugHud(DebugHudEntries.CHUNK_SECTION_VISIBILITY, config, true);
         }
@@ -126,10 +126,10 @@ public class DebugInfoUtils
 		if (inst != null)
 		{
 			RendererToggle.DEBUG_CHUNK_BORDER.setBooleanValueNoCallback(inst.isEntryVisible(DebugHudEntries.CHUNK_BORDERS));
-			RendererToggle.DEBUG_OCTREEE.setBooleanValueNoCallback(inst.isEntryVisible(DebugHudEntries.CHUNK_SECTION_OCTREE));
+			RendererToggle.DEBUG_CHUNK_SECTION_OCTREEE.setBooleanValueNoCallback(inst.isEntryVisible(DebugHudEntries.CHUNK_SECTION_OCTREE));
 			RendererToggle.DEBUG_ENTITY_HITBOXES.setBooleanValueNoCallback(inst.isEntryVisible(DebugHudEntries.ENTITY_HITBOXES));
-			RendererToggle.DEBUG_CHUNK_INFO.setBooleanValueNoCallback(inst.isEntryVisible(DebugHudEntries.CHUNK_SECTION_PATHS));
-			RendererToggle.DEBUG_CHUNK_OCCLUSION.setBooleanValueNoCallback(inst.isEntryVisible(DebugHudEntries.CHUNK_SECTION_VISIBILITY));
+			RendererToggle.DEBUG_CHUNK_SECTION_PATHS.setBooleanValueNoCallback(inst.isEntryVisible(DebugHudEntries.CHUNK_SECTION_PATHS));
+			RendererToggle.DEBUG_CHUNK_SECTION_VISIBILITY.setBooleanValueNoCallback(inst.isEntryVisible(DebugHudEntries.CHUNK_SECTION_VISIBILITY));
 		}
 	}
 }
