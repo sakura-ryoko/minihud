@@ -98,7 +98,7 @@ public class InfoLineHorseJump extends InfoLine
         String horseType = entityType.getName().getString();
 
         if (entityType.equals(EntityType.CAMEL) ||
-            entityType.equals(EntityType.CAMEL_HUSK) ||
+//            entityType.equals(EntityType.CAMEL_HUSK) ||
             entityType.equals(EntityType.DONKEY) ||
             entityType.equals(EntityType.HORSE) ||
             entityType.equals(EntityType.LLAMA) ||

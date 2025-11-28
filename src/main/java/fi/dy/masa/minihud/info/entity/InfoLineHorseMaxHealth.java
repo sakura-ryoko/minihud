@@ -10,10 +10,10 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.passive.AbstractHorseEntity;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.world.World;
 
-import fi.dy.masa.malilib.util.data.DataEntityUtils;
-import fi.dy.masa.malilib.util.data.tag.CompoundData;
+import fi.dy.masa.malilib.util.nbt.NbtEntityUtils;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.info.InfoLine;
@@ -50,12 +50,12 @@ public class InfoLineHorseMaxHealth extends InfoLine
             }
         }
 
-        if (ctx.hasLiving() && ctx.hasData())
+        if (ctx.hasLiving() && ctx.hasNbt())
         {
-            EntityType<?> entityType = DataEntityUtils.getEntityType(ctx.data());
+            EntityType<?> entityType = NbtEntityUtils.getEntityTypeFromNbt(ctx.nbt());
             if (entityType == null) return null;
 
-            return this.parseData(ctx.world(), entityType, ctx.data());
+            return this.parseNbt(ctx.world(), entityType, ctx.nbt());
         }
 
         if (ctx.ent() != null)
@@ -67,7 +67,7 @@ public class InfoLineHorseMaxHealth extends InfoLine
     }
 
     @Override
-    public List<Entry> parseData(@NotNull World world, @NotNull EntityType<?> entityType, @NotNull CompoundData data)
+    public List<Entry> parseNbt(@NotNull World world, @NotNull EntityType<?> entityType, @NotNull NbtCompound nbt)
     {
         List<Entry> list = new ArrayList<>();
         String horseType = entityType.getName().getString();
@@ -79,10 +79,10 @@ public class InfoLineHorseMaxHealth extends InfoLine
             entityType.equals(EntityType.MULE) ||
             entityType.equals(EntityType.SKELETON_HORSE) ||
             entityType.equals(EntityType.TRADER_LLAMA) ||
-            entityType.equals(EntityType.ZOMBIE_HORSE) ||
-            entityType.equals(EntityType.CAMEL_HUSK))
+            entityType.equals(EntityType.ZOMBIE_HORSE))
+//            entityType.equals(EntityType.CAMEL_HUSK))
         {
-            Pair<Double, Double> healthPair = DataEntityUtils.getHealth(data);
+            Pair<Double, Double> healthPair = NbtEntityUtils.getHealthFromNbt(nbt);
             double maxHealth = healthPair.getRight();
 
             if (maxHealth > 0d)
