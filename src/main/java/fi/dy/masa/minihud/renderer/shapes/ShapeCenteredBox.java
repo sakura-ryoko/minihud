@@ -4,16 +4,15 @@ import com.google.gson.JsonObject;
 import fi.dy.masa.malilib.util.EntityUtils;
 import fi.dy.masa.malilib.util.JsonUtils;
 import fi.dy.masa.minihud.config.Configs;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.Vec3;
 
 public class ShapeCenteredBox extends ShapeBox
 {
     protected double width = 16;
     protected double depth = 16;
     protected double height = 16;
-    protected Vec3d center = Vec3d.ZERO;
+    protected Vec3 center = Vec3.ZERO;
 
     public ShapeCenteredBox()
 	{
@@ -27,20 +26,20 @@ public class ShapeCenteredBox extends ShapeBox
 		Entity cameraEntity = EntityUtils.getCameraEntity();
 
 		if (cameraEntity != null &&
-			this.center == Vec3d.ZERO)
+			this.center == Vec3.ZERO)
 		{
-			this.setCenter(cameraEntity.getEntityPos());
+			this.setCenter(cameraEntity.position());
 		}
 	}
 
     protected void setBoxFromDimension()
 	{
-        this.corner1 = new Vec3d(this.center.x - (this.width / 2), this.center.y - (this.height / 2), this.center.z - (this.depth/2));
-        this.corner2 = new Vec3d(this.center.x + (this.width / 2), this.center.y + (this.height / 2), this.center.z + (this.depth/2));
+        this.corner1 = new Vec3(this.center.x - (this.width / 2), this.center.y - (this.height / 2), this.center.z - (this.depth/2));
+        this.corner2 = new Vec3(this.center.x + (this.width / 2), this.center.y + (this.height / 2), this.center.z + (this.depth/2));
         this.setBoxFromCorners();
     }
 
-    public void setCenter(Vec3d center)
+    public void setCenter(Vec3 center)
 	{
         this.center = center;
         this.setBoxFromDimension();
@@ -64,7 +63,7 @@ public class ShapeCenteredBox extends ShapeBox
         this.setBoxFromDimension();
     }
 
-    public Vec3d getCenter()
+    public Vec3 getCenter()
 	{
         return this.center;
     }

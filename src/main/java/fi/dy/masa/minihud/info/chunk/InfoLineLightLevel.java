@@ -2,12 +2,10 @@ package fi.dy.masa.minihud.info.chunk;
 
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.world.level.LightLayer;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.lighting.LevelLightEngine;
 import org.jetbrains.annotations.NotNull;
-
-import net.minecraft.world.LightType;
-import net.minecraft.world.chunk.WorldChunk;
-import net.minecraft.world.chunk.light.LightingProvider;
-
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.info.InfoLine;
@@ -39,15 +37,15 @@ public class InfoLineLightLevel extends InfoLine
         {
 	        List<Entry> list = new ArrayList<>();
 
-	        WorldChunk clientChunk = InfoLineChunkCache.INSTANCE.getClientChunk(ctx.chunkPos());
+	        LevelChunk clientChunk = InfoLineChunkCache.INSTANCE.getClientChunk(ctx.chunkPos());
 
 	        if (!clientChunk.isEmpty())
 	        {
-		        LightingProvider lightingProvider = ctx.world().getChunkManager().getLightingProvider();
+		        LevelLightEngine lightingProvider = ctx.world().getChunkSource().getLightEngine();
 
 		        list.add(this.translate(BLOCK_KEY,
-		                                lightingProvider.get(LightType.BLOCK)
-		                                                .getLightLevel(ctx.pos()))
+		                                lightingProvider.getLayerListener(LightLayer.BLOCK)
+		                                                .getLightValue(ctx.pos()))
 		        );
 
 		        return list;

@@ -35,7 +35,7 @@ public class InfoLineChunkSectionsFull extends InfoLine
             return null;
         }
 
-	    String str = mc().worldRenderer.getChunksDebugString();
+	    String str = mc().levelRenderer.getSectionStatistics();
 
 		if (str != null)
 		{

@@ -2,13 +2,11 @@ package fi.dy.masa.minihud.info.entity;
 
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
-
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.util.Identifier;
-import net.minecraft.world.World;
-
 import fi.dy.masa.malilib.util.data.DataEntityUtils;
 import fi.dy.masa.malilib.util.data.tag.CompoundData;
 import fi.dy.masa.minihud.Reference;
@@ -49,10 +47,10 @@ public class InfoLineEntityRegName extends InfoLine
     }
 
     @Override
-    public List<Entry> parseData(@NotNull World world, @NotNull EntityType<?> entityType, @NotNull CompoundData data)
+    public List<Entry> parseData(@NotNull Level world, @NotNull EntityType<?> entityType, @NotNull CompoundData data)
     {
         List<Entry> list = new ArrayList<>();
-        Identifier regName = EntityType.getId(entityType);
+        Identifier regName = EntityType.getKey(entityType);
 
         list.add(this.translate(ENTITY_KEY, regName));
 
@@ -60,11 +58,11 @@ public class InfoLineEntityRegName extends InfoLine
     }
 
     @Override
-    public List<Entry> parseEnt(@NotNull World world, @NotNull Entity ent)
+    public List<Entry> parseEnt(@NotNull Level world, @NotNull Entity ent)
     {
         List<Entry> list = new ArrayList<>();
 
-        Identifier regName = EntityType.getId(ent.getType());
+        Identifier regName = EntityType.getKey(ent.getType());
 
         list.add(this.translate(ENTITY_KEY, regName));
 

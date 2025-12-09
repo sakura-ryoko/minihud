@@ -3,12 +3,10 @@ package fi.dy.masa.minihud.info.te;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nonnull;
-
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.block.entity.ComparatorBlockEntity;
-import net.minecraft.world.World;
-
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.ComparatorBlockEntity;
 import fi.dy.masa.malilib.util.data.DataBlockUtils;
 import fi.dy.masa.malilib.util.data.tag.CompoundData;
 import fi.dy.masa.minihud.Reference;
@@ -50,7 +48,7 @@ public class InfoLineComparator extends InfoLine
     }
 
     @Override
-    public List<Entry> parseData(@Nonnull World world, @Nonnull BlockEntityType<?> beType, @Nonnull CompoundData data)
+    public List<Entry> parseData(@Nonnull Level world, @Nonnull BlockEntityType<?> beType, @Nonnull CompoundData data)
     {
         List<Entry> list = new ArrayList<>();
 
@@ -68,7 +66,7 @@ public class InfoLineComparator extends InfoLine
     }
 
     @Override
-    public List<Entry> parseBlockEnt(@Nonnull World world, @Nonnull BlockEntity be)
+    public List<Entry> parseBlockEnt(@Nonnull Level world, @Nonnull BlockEntity be)
     {
         List<Entry> list = new ArrayList<>();
 

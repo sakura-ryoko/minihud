@@ -6,16 +6,45 @@ import java.util.Optional;
 import javax.annotation.Nonnull;
 import org.apache.commons.lang3.tuple.Pair;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.decoration.painting.PaintingEntity;
-import net.minecraft.entity.decoration.painting.PaintingVariant;
-import net.minecraft.entity.passive.*;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.text.Text;
-import net.minecraft.util.DyeColor;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
+import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.animal.axolotl.Axolotl;
+import net.minecraft.world.entity.animal.chicken.Chicken;
+import net.minecraft.world.entity.animal.chicken.ChickenVariant;
+import net.minecraft.world.entity.animal.chicken.ChickenVariants;
+import net.minecraft.world.entity.animal.cow.Cow;
+import net.minecraft.world.entity.animal.cow.CowVariant;
+import net.minecraft.world.entity.animal.cow.CowVariants;
+import net.minecraft.world.entity.animal.cow.MushroomCow;
+import net.minecraft.world.entity.animal.equine.Horse;
+import net.minecraft.world.entity.animal.equine.Llama;
+import net.minecraft.world.entity.animal.equine.Markings;
+import net.minecraft.world.entity.animal.equine.Variant;
+import net.minecraft.world.entity.animal.feline.Cat;
+import net.minecraft.world.entity.animal.feline.CatVariant;
+import net.minecraft.world.entity.animal.feline.CatVariants;
+import net.minecraft.world.entity.animal.fish.Salmon;
+import net.minecraft.world.entity.animal.fish.TropicalFish;
+import net.minecraft.world.entity.animal.fox.Fox;
+import net.minecraft.world.entity.animal.frog.Frog;
+import net.minecraft.world.entity.animal.frog.FrogVariant;
+import net.minecraft.world.entity.animal.frog.FrogVariants;
+import net.minecraft.world.entity.animal.parrot.Parrot;
+import net.minecraft.world.entity.animal.pig.Pig;
+import net.minecraft.world.entity.animal.pig.PigVariant;
+import net.minecraft.world.entity.animal.pig.PigVariants;
+import net.minecraft.world.entity.animal.rabbit.Rabbit;
+import net.minecraft.world.entity.animal.sheep.Sheep;
+import net.minecraft.world.entity.animal.wolf.Wolf;
+import net.minecraft.world.entity.animal.wolf.WolfSoundVariant;
+import net.minecraft.world.entity.animal.wolf.WolfVariant;
+import net.minecraft.world.entity.decoration.painting.Painting;
+import net.minecraft.world.entity.decoration.painting.PaintingVariant;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.level.Level;
 
 import fi.dy.masa.malilib.util.EntityUtils;
 import fi.dy.masa.malilib.util.data.DataEntityUtils;
@@ -58,99 +87,99 @@ public class InfoLineEntityVariant extends InfoLine
     }
 
     @Override
-    public List<Entry> parseData(@Nonnull World world, @Nonnull EntityType<?> entityType, @Nonnull CompoundData data)
+    public List<Entry> parseData(@Nonnull Level world, @Nonnull EntityType<?> entityType, @Nonnull CompoundData data)
     {
         List<Entry> list = new ArrayList<>();
 
         if (entityType.equals(EntityType.AXOLOTL))
         {
-            AxolotlEntity.Variant variant = DataEntityUtils.getAxolotlVariant(data);
+            Axolotl.Variant variant = DataEntityUtils.getAxolotlVariant(data);
 
             if (variant != null)
             {
-                list.add(this.translate(VARIANT_KEY+".axolotl", variant.getId()));
+                list.add(this.translate(VARIANT_KEY+".axolotl", variant.getName()));
             }
         }
         else if (entityType.equals(EntityType.CAT))
         {
-            Pair<RegistryKey<CatVariant>, DyeColor> catPair = DataEntityUtils.getCatVariant(data, world.getRegistryManager());
+            Pair<ResourceKey<CatVariant>, DyeColor> catPair = DataEntityUtils.getCatVariant(data, world.registryAccess());
 
             if (catPair.getLeft() != null)
             {
-                list.add(this.translate(VARIANT_KEY+".cat", catPair.getLeft().getValue().getPath(), catPair.getRight().getId()));
+                list.add(this.translate(VARIANT_KEY+".cat", catPair.getLeft().identifier().getPath(), catPair.getRight().getName()));
             }
         }
         else if (entityType.equals(EntityType.COW))
         {
-            RegistryKey<CowVariant> variant = DataEntityUtils.getCowVariant(data, world.getRegistryManager());
+            ResourceKey<CowVariant> variant = DataEntityUtils.getCowVariant(data, world.registryAccess());
 
             if (variant != null)
             {
-                list.add(this.translate(VARIANT_KEY+".cow", variant.getValue().getPath()));
+                list.add(this.translate(VARIANT_KEY+".cow", variant.identifier().getPath()));
             }
         }
         else if (entityType.equals(EntityType.CHICKEN))
         {
-            RegistryKey<ChickenVariant> variant = DataEntityUtils.getChickenVariant(data, world.getRegistryManager());
+            ResourceKey<ChickenVariant> variant = DataEntityUtils.getChickenVariant(data, world.registryAccess());
 
             if (variant != null)
             {
-                list.add(this.translate(VARIANT_KEY+".chicken", variant.getValue().getPath()));
+                list.add(this.translate(VARIANT_KEY+".chicken", variant.identifier().getPath()));
             }
         }
         else if (entityType.equals(EntityType.MOOSHROOM))
         {
-            MooshroomEntity.Variant mooType = DataEntityUtils.getMooshroomVariant(data);
+            MushroomCow.Variant mooType = DataEntityUtils.getMooshroomVariant(data);
 
             if (mooType != null)
             {
-                list.add(this.translate(VARIANT_KEY + ".mooshroom", mooType.asString()));
+                list.add(this.translate(VARIANT_KEY + ".mooshroom", mooType.getSerializedName()));
             }
         }
         else if (entityType.equals(EntityType.FOX))
         {
-            FoxEntity.Variant foxType = DataEntityUtils.getFoxVariant(data);
+            Fox.Variant foxType = DataEntityUtils.getFoxVariant(data);
 
             if (foxType != null)
             {
-                list.add(this.translate(VARIANT_KEY+".fox", foxType.asString()));
+                list.add(this.translate(VARIANT_KEY+".fox", foxType.getSerializedName()));
             }
         }
         else if (entityType.equals(EntityType.FROG))
         {
-            RegistryKey<FrogVariant> variant = DataEntityUtils.getFrogVariant(data, world.getRegistryManager());
+            ResourceKey<FrogVariant> variant = DataEntityUtils.getFrogVariant(data, world.registryAccess());
 
             if (variant != null)
             {
-                list.add(this.translate(VARIANT_KEY+".frog", variant.getValue().getPath()));
+                list.add(this.translate(VARIANT_KEY+".frog", variant.identifier().getPath()));
             }
         }
         else if (entityType.equals(EntityType.HORSE))
         {
-            Pair<HorseColor, HorseMarking> horsePair = DataEntityUtils.getHorseVariant(data);
+            Pair<Variant, Markings> horsePair = DataEntityUtils.getHorseVariant(data);
 
             if (horsePair.getLeft() != null)
             {
-                list.add(this.translate(VARIANT_KEY+".horse", horsePair.getLeft().asString(), horsePair.getRight().name().toLowerCase()));
+                list.add(this.translate(VARIANT_KEY+".horse", horsePair.getLeft().getSerializedName(), horsePair.getRight().name().toLowerCase()));
             }
         }
         else if (entityType.equals(EntityType.LLAMA) || entityType.equals(EntityType.TRADER_LLAMA))
         {
-            Pair<LlamaEntity.Variant, Integer> llamaPair = DataEntityUtils.getLlamaType(data);
+            Pair<Llama.Variant, Integer> llamaPair = DataEntityUtils.getLlamaType(data);
 
             if (llamaPair.getLeft() != null)
             {
-                list.add(this.translate(VARIANT_KEY+".llama", llamaPair.getLeft().asString(), llamaPair.getRight()));
+                list.add(this.translate(VARIANT_KEY+".llama", llamaPair.getLeft().getSerializedName(), llamaPair.getRight()));
             }
         }
         else if (entityType.equals(EntityType.PAINTING))
         {
-            Pair<Direction, PaintingVariant> paintingPair = DataEntityUtils.getPaintingData(data, world.getRegistryManager());
+            Pair<Direction, PaintingVariant> paintingPair = DataEntityUtils.getPaintingData(data, world.registryAccess());
 
             if (paintingPair.getRight() != null)
             {
-                Optional<net.minecraft.text.Text> title = paintingPair.getRight().title();
-                Optional<net.minecraft.text.Text> author = paintingPair.getRight().author();
+                Optional<net.minecraft.network.chat.Component> title = paintingPair.getRight().title();
+                Optional<net.minecraft.network.chat.Component> author = paintingPair.getRight().author();
 
                 if (title.isPresent() && author.isPresent())
                 {
@@ -168,38 +197,38 @@ public class InfoLineEntityVariant extends InfoLine
         }
         else if (entityType.equals(EntityType.PARROT))
         {
-            ParrotEntity.Variant variant = DataEntityUtils.getParrotVariant(data);
+            Parrot.Variant variant = DataEntityUtils.getParrotVariant(data);
 
             if (variant != null)
             {
-                list.add(this.translate(VARIANT_KEY+".parrot", variant.asString()));
+                list.add(this.translate(VARIANT_KEY+".parrot", variant.getSerializedName()));
             }
         }
         else if (entityType.equals(EntityType.PIG))
         {
-            RegistryKey<PigVariant> variant = DataEntityUtils.getPigVariant(data, world.getRegistryManager());
+            ResourceKey<PigVariant> variant = DataEntityUtils.getPigVariant(data, world.registryAccess());
 
             if (variant != null)
             {
-                list.add(this.translate(VARIANT_KEY+".pig", variant.getValue().getPath()));
+                list.add(this.translate(VARIANT_KEY+".pig", variant.identifier().getPath()));
             }
         }
         else if (entityType.equals(EntityType.RABBIT))
         {
-            RabbitEntity.Variant rabbitType = DataEntityUtils.getRabbitType(data);
+            Rabbit.Variant rabbitType = DataEntityUtils.getRabbitType(data);
 
             if (rabbitType != null)
             {
-                list.add(this.translate(VARIANT_KEY+".rabbit", rabbitType.asString()));
+                list.add(this.translate(VARIANT_KEY+".rabbit", rabbitType.getSerializedName()));
             }
         }
         else if (entityType.equals(EntityType.SALMON))
         {
-            SalmonEntity.Variant salmonVariant = DataEntityUtils.getSalmonVariant(data);
+            Salmon.Variant salmonVariant = DataEntityUtils.getSalmonVariant(data);
 
             if (salmonVariant != null)
             {
-                list.add(this.translate(VARIANT_KEY+".salmon", salmonVariant.asString()));
+                list.add(this.translate(VARIANT_KEY+".salmon", salmonVariant.getSerializedName()));
             }
         }
         else if (entityType.equals(EntityType.SHEEP))
@@ -208,32 +237,32 @@ public class InfoLineEntityVariant extends InfoLine
 
             if (color != null)
             {
-                list.add(this.translate(VARIANT_KEY+".sheep", color.getId()));
+                list.add(this.translate(VARIANT_KEY+".sheep", color.getName()));
             }
         }
         else if (entityType.equals(EntityType.TROPICAL_FISH))
         {
-            TropicalFishEntity.Variant variant = DataEntityUtils.getFishVariant(data);
+            TropicalFish.Variant variant = DataEntityUtils.getFishVariant(data);
 
             if (variant != null)
             {
-                list.add(this.translate(VARIANT_KEY+".tropical_fish", variant.pattern().asString(), variant.baseColor().asString(), variant.patternColor().asString()));
+                list.add(this.translate(VARIANT_KEY+".tropical_fish", variant.pattern().getSerializedName(), variant.baseColor().getSerializedName(), variant.patternColor().getSerializedName()));
             }
         }
         else if (entityType.equals(EntityType.WOLF))
         {
-            Pair<RegistryKey<WolfVariant>, DyeColor> wolfPair = DataEntityUtils.getWolfVariant(data, world.getRegistryManager());
-            RegistryKey<WolfSoundVariant> soundType = DataEntityUtils.getWolfSoundType(data, world.getRegistryManager());
+            Pair<ResourceKey<WolfVariant>, DyeColor> wolfPair = DataEntityUtils.getWolfVariant(data, world.registryAccess());
+            ResourceKey<WolfSoundVariant> soundType = DataEntityUtils.getWolfSoundType(data, world.registryAccess());
 
             if (wolfPair.getLeft() != null)
             {
                 if (soundType != null)
                 {
-                    list.add(this.translate(VARIANT_KEY + ".wolf.sound_type", wolfPair.getLeft().getValue().getPath(), soundType.getValue().getPath(), wolfPair.getRight().getId()));
+                    list.add(this.translate(VARIANT_KEY + ".wolf.sound_type", wolfPair.getLeft().identifier().getPath(), soundType.identifier().getPath(), wolfPair.getRight().getName()));
                 }
                 else
                 {
-                    list.add(this.translate(VARIANT_KEY + ".wolf", wolfPair.getLeft().getValue().getPath(), wolfPair.getRight().getId()));
+                    list.add(this.translate(VARIANT_KEY + ".wolf", wolfPair.getLeft().identifier().getPath(), wolfPair.getRight().getName()));
                 }
             }
         }
@@ -242,33 +271,33 @@ public class InfoLineEntityVariant extends InfoLine
     }
 
     @Override
-    public List<Entry> parseEnt(@Nonnull World world, @Nonnull Entity ent)
+    public List<Entry> parseEnt(@Nonnull Level world, @Nonnull Entity ent)
     {
         List<Entry> list = new ArrayList<>();
 
         switch (ent)
         {
-            case AxolotlEntity axolotl -> list.add(this.translate(VARIANT_KEY + ".axolotl", axolotl.getVariant().getId()));
-            case CatEntity cat ->
+            case Axolotl axolotl -> list.add(this.translate(VARIANT_KEY + ".axolotl", axolotl.getVariant().getName()));
+            case Cat cat ->
             {
-                RegistryKey<CatVariant> variant = cat.getVariant().getKey().orElse(CatVariants.BLACK);
-                list.add(this.translate(VARIANT_KEY + ".cat", variant.getValue().getPath(), cat.getCollarColor().getId()));
+                ResourceKey<CatVariant> variant = cat.getVariant().unwrapKey().orElse(CatVariants.BLACK);
+                list.add(this.translate(VARIANT_KEY + ".cat", variant.identifier().getPath(), cat.getCollarColor().getName()));
             }
-            case ChickenEntity chicken -> list.add(this.translate(VARIANT_KEY + ".chicken", chicken.getVariant().getKey().orElse(ChickenVariants.DEFAULT).getValue().getPath()));
-            case CowEntity cow -> list.add(this.translate(VARIANT_KEY + ".cow", cow.getVariant().getKey().orElse(CowVariants.DEFAULT).getValue().getPath()));
-            case MooshroomEntity mooshroom -> list.add(this.translate(VARIANT_KEY + ".mooshroom", mooshroom.getVariant().asString()));
-            case FoxEntity fox -> list.add(this.translate(VARIANT_KEY + ".fox", fox.getVariant().asString()));
-            case FrogEntity frog -> list.add(this.translate(VARIANT_KEY + ".frog", frog.getVariant().getKey().orElse(FrogVariants.TEMPERATE).getValue().getPath()));
-            case HorseEntity horse -> list.add(this.translate(VARIANT_KEY + ".horse", horse.getHorseColor().asString(), horse.getMarking().name().toLowerCase()));
-            case LlamaEntity llama -> list.add(this.translate(VARIANT_KEY + ".llama", llama.getVariant().asString(), llama.getStrength()));
-            case PaintingEntity painting ->
+            case Chicken chicken -> list.add(this.translate(VARIANT_KEY + ".chicken", chicken.getVariant().unwrapKey().orElse(ChickenVariants.DEFAULT).identifier().getPath()));
+            case Cow cow -> list.add(this.translate(VARIANT_KEY + ".cow", cow.getVariant().unwrapKey().orElse(CowVariants.DEFAULT).identifier().getPath()));
+            case MushroomCow mooshroom -> list.add(this.translate(VARIANT_KEY + ".mooshroom", mooshroom.getVariant().getSerializedName()));
+            case Fox fox -> list.add(this.translate(VARIANT_KEY + ".fox", fox.getVariant().getSerializedName()));
+            case Frog frog -> list.add(this.translate(VARIANT_KEY + ".frog", frog.getVariant().unwrapKey().orElse(FrogVariants.TEMPERATE).identifier().getPath()));
+            case Horse horse -> list.add(this.translate(VARIANT_KEY + ".horse", horse.getVariant().getSerializedName(), horse.getMarkings().name().toLowerCase()));
+            case Llama llama -> list.add(this.translate(VARIANT_KEY + ".llama", llama.getVariant().getSerializedName(), llama.getStrength()));
+            case Painting painting ->
             {
                 PaintingVariant paintingVariant = painting.getVariant().value();
 
                 if (paintingVariant != null)
                 {
-                    Optional<Text> title = paintingVariant.title();
-                    Optional<Text> author = paintingVariant.author();
+                    Optional<Component> title = paintingVariant.title();
+                    Optional<Component> author = paintingVariant.author();
 
                     if (title.isPresent() && author.isPresent())
                     {
@@ -284,24 +313,24 @@ public class InfoLineEntityVariant extends InfoLine
                     }
                 }
             }
-            case ParrotEntity parrot -> list.add(this.translate(VARIANT_KEY + ".parrot", parrot.getVariant().asString()));
-            case PigEntity pig -> list.add(this.translate(VARIANT_KEY + ".pig", pig.getVariant().getKey().orElse(PigVariants.DEFAULT).getValue().getPath()));
-            case RabbitEntity rabbit -> list.add(this.translate(VARIANT_KEY + ".rabbit", rabbit.getVariant().asString()));
-            case SalmonEntity salmon -> list.add(this.translate(VARIANT_KEY + ".salmon", salmon.getVariant().asString()));
-            case SheepEntity sheep -> list.add(this.translate(VARIANT_KEY + ".sheep", sheep.getColor().getId()));
-            case TropicalFishEntity fish -> list.add(this.translate(VARIANT_KEY + ".tropical_fish", fish.getVariety().asString()));
-            case WolfEntity wolf ->
+            case Parrot parrot -> list.add(this.translate(VARIANT_KEY + ".parrot", parrot.getVariant().getSerializedName()));
+            case Pig pig -> list.add(this.translate(VARIANT_KEY + ".pig", pig.getVariant().unwrapKey().orElse(PigVariants.DEFAULT).identifier().getPath()));
+            case Rabbit rabbit -> list.add(this.translate(VARIANT_KEY + ".rabbit", rabbit.getVariant().getSerializedName()));
+            case Salmon salmon -> list.add(this.translate(VARIANT_KEY + ".salmon", salmon.getVariant().getSerializedName()));
+            case Sheep sheep -> list.add(this.translate(VARIANT_KEY + ".sheep", sheep.getColor().getName()));
+            case TropicalFish fish -> list.add(this.translate(VARIANT_KEY + ".tropical_fish", fish.getPattern().getSerializedName()));
+            case Wolf wolf ->
             {
-                Pair<RegistryKey<WolfVariant>, DyeColor> wolfPair = EntityUtils.getWolfVariantFromComponents(wolf);
-                RegistryKey<WolfSoundVariant> soundType = EntityUtils.getWolfSoundTypeFromComponents(wolf);
+                Pair<ResourceKey<WolfVariant>, DyeColor> wolfPair = EntityUtils.getWolfVariantFromComponents(wolf);
+                ResourceKey<WolfSoundVariant> soundType = EntityUtils.getWolfSoundTypeFromComponents(wolf);
 
                 if (soundType != null)
                 {
-                    list.add(this.translate(VARIANT_KEY + ".wolf.sound_type", wolfPair.getLeft().getValue().getPath(), soundType.getValue().getPath(), wolfPair.getRight().getId()));
+                    list.add(this.translate(VARIANT_KEY + ".wolf.sound_type", wolfPair.getLeft().identifier().getPath(), soundType.identifier().getPath(), wolfPair.getRight().getName()));
                 }
                 else
                 {
-                    list.add(this.translate(VARIANT_KEY + ".wolf", wolfPair.getLeft().getValue().getPath(), wolfPair.getRight().getId()));
+                    list.add(this.translate(VARIANT_KEY + ".wolf", wolfPair.getLeft().identifier().getPath(), wolfPair.getRight().getName()));
                 }
             }
             default -> {}

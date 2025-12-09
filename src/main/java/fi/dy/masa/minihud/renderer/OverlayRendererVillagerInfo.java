@@ -6,24 +6,28 @@ import javax.annotation.Nullable;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import org.apache.commons.lang3.tuple.Pair;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.ItemEnchantmentsComponent;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.brain.MemoryModuleType;
-import net.minecraft.entity.mob.ZombieVillagerEntity;
-import net.minecraft.entity.passive.VillagerEntity;
-import net.minecraft.item.Items;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.registry.tag.EnchantmentTags;
-import net.minecraft.util.math.*;
-import net.minecraft.util.profiler.Profiler;
-import net.minecraft.village.TradeOffer;
-import net.minecraft.village.TradeOfferList;
-import net.minecraft.village.VillagerProfession;
-import net.minecraft.world.World;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.GlobalPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.tags.EnchantmentTags;
+import net.minecraft.util.Mth;
+import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import net.minecraft.world.entity.monster.zombie.ZombieVillager;
+import net.minecraft.world.entity.npc.villager.Villager;
+import net.minecraft.world.entity.npc.villager.VillagerProfession;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
+import net.minecraft.world.item.trading.MerchantOffer;
+import net.minecraft.world.item.trading.MerchantOffers;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.interfaces.IClientTickHandler;
@@ -78,7 +82,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
     }
 
     @Override
-    public void onClientTick(MinecraftClient mc)
+    public void onClientTick(Minecraft mc)
     {
         long now = System.currentTimeMillis();
 
@@ -133,7 +137,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
                      data.containsLenient(NbtKeys.CONVERSION_PLAYER);
     }
 
-    private @Nullable Pair<Entity, CompoundData> getVillagerData(World world, int entityId)
+    private @Nullable Pair<Entity, CompoundData> getVillagerData(Level world, int entityId)
     {
         Pair<Entity, CompoundData> pair = EntitiesDataManager.getInstance().requestEntity(world, entityId);
 
@@ -159,7 +163,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
         return null;
     }
 
-    private @Nullable TradeOfferList getTrades(World world, VillagerEntity villager)
+    private @Nullable MerchantOffers getTrades(Level world, Villager villager)
     {
         if (world == null || villager == null)
         {
@@ -167,15 +171,15 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
         }
 
         Pair<Entity, CompoundData> pair = this.getVillagerData(world, villager.getId());
-        TradeOfferList list = null;
+        MerchantOffers list = null;
 
         if (pair != null)
         {
             if (pair.getRight() != null && !pair.getRight().isEmpty())
             {
-                list = DataEntityUtils.getTradeOffers(pair.getRight(), world.getRegistryManager());
+                list = DataEntityUtils.getTradeOffers(pair.getRight(), world.registryAccess());
             }
-            else if (pair.getLeft() != null && pair.getLeft() instanceof VillagerEntity entity)
+            else if (pair.getLeft() != null && pair.getLeft() instanceof Villager entity)
             {
                 list = ((IMixinMerchantEntity) entity).malilib_offers();
             }
@@ -184,7 +188,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
         return list;
     }
 
-	private int getConversionTime(World world, ZombieVillagerEntity villager)
+	private int getConversionTime(Level world, ZombieVillager villager)
     {
         if (world == null || villager == null)
         {
@@ -205,7 +209,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
                     conversionTime = zombiePair.getLeft();
                 }
             }
-            else if (pair.getLeft() != null && pair.getLeft() instanceof ZombieVillagerEntity zombert)
+            else if (pair.getLeft() != null && pair.getLeft() instanceof ZombieVillager zombert)
             {
                 conversionTime = ((IMixinZombieVillagerEntity) zombert).minihud_conversionTimer();
             }
@@ -221,49 +225,49 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
     }
 
     @Override
-    public boolean shouldRender(MinecraftClient mc)
+    public boolean shouldRender(Minecraft mc)
     {
         return RendererToggle.OVERLAY_VILLAGER_INFO.getBooleanValue();
     }
 
     @Override
-    public boolean needsUpdate(Entity entity, MinecraftClient mc)
+    public boolean needsUpdate(Entity entity, Minecraft mc)
     {
         return true;
     }
 
     @Override
-    public void update(Vec3d cameraPos, Entity entity, MinecraftClient mc, Profiler profiler)
+    public void update(Vec3 cameraPos, Entity entity, Minecraft mc, ProfilerFiller profiler)
     {
-        Box box = entity.getBoundingBox().expand(30, 10, 30);
-        World world = WorldUtils.getBestWorld(mc);
+        AABB box = entity.getBoundingBox().inflate(30, 10, 30);
+        Level world = WorldUtils.getBestWorld(mc);
 
         if (world == null) return;
 
         if (Configs.Generic.VILLAGER_OFFER_ENCHANTMENT_BOOKS.getBooleanValue())
         {
-            List<VillagerEntity> librarians = EntityUtils.getEntitiesByClass(mc, VillagerEntity.class, box, villager -> villager.getVillagerData().profession().matchesKey(VillagerProfession.LIBRARIAN));
-            Map<Object2IntMap.Entry<RegistryEntry<Enchantment>>, Integer> lowestPrices = new HashMap<>();
+            List<Villager> librarians = EntityUtils.getEntitiesByClass(mc, Villager.class, box, villager -> villager.getVillagerData().profession().is(VillagerProfession.LIBRARIAN));
+            Map<Object2IntMap.Entry<Holder<Enchantment>>, Integer> lowestPrices = new HashMap<>();
 
             // Prepare
             if (Configs.Generic.VILLAGER_OFFER_LOWEST_PRICE_NEARBY.getBooleanValue())
             {
-                for (VillagerEntity librarian : librarians)
+                for (Villager librarian : librarians)
                 {
-                    TradeOfferList offers = this.getTrades(world, librarian);
+                    MerchantOffers offers = this.getTrades(world, librarian);
 
                     if (offers == null || offers.isEmpty())
                     {
                         continue;
                     }
 
-                    for (TradeOffer tradeOffer : offers)
+                    for (MerchantOffer tradeOffer : offers)
                     {
-                        if (tradeOffer.getSellItem().getItem() == Items.ENCHANTED_BOOK && tradeOffer.getFirstBuyItem().item().value() == Items.EMERALD)
+                        if (tradeOffer.getResult().getItem() == Items.ENCHANTED_BOOK && tradeOffer.getItemCostA().item().value() == Items.EMERALD)
                         {
-                            for (Object2IntMap.Entry<RegistryEntry<Enchantment>> entry : tradeOffer.getSellItem().getOrDefault(DataComponentTypes.STORED_ENCHANTMENTS, ItemEnchantmentsComponent.DEFAULT).getEnchantmentEntries())
+                            for (Object2IntMap.Entry<Holder<Enchantment>> entry : tradeOffer.getResult().getOrDefault(DataComponents.STORED_ENCHANTMENTS, ItemEnchantments.EMPTY).entrySet())
                             {
-                                int emeraldCost = tradeOffer.getFirstBuyItem().count();
+                                int emeraldCost = tradeOffer.getItemCostA().count();
 
                                 if (lowestPrices.containsKey(entry))
                                 {
@@ -283,9 +287,9 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
             }
 
             // Render
-            for (VillagerEntity librarian : librarians)
+            for (Villager librarian : librarians)
             {
-                TradeOfferList offers = this.getTrades(world, librarian);
+                MerchantOffers offers = this.getTrades(world, librarian);
 
                 if (offers == null || offers.isEmpty())
                 {
@@ -294,11 +298,11 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
 
                 List<String> overlay = new ArrayList<>();
 
-                for (TradeOffer tradeOffer : offers)
+                for (MerchantOffer tradeOffer : offers)
                 {
-                    if (tradeOffer.getSellItem().getItem() == Items.ENCHANTED_BOOK)
+                    if (tradeOffer.getResult().getItem() == Items.ENCHANTED_BOOK)
                     {
-                        for (Object2IntMap.Entry<RegistryEntry<Enchantment>> entry : tradeOffer.getSellItem().getOrDefault(DataComponentTypes.STORED_ENCHANTMENTS, ItemEnchantmentsComponent.DEFAULT).getEnchantmentEntries())
+                        for (Object2IntMap.Entry<Holder<Enchantment>> entry : tradeOffer.getResult().getOrDefault(DataComponents.STORED_ENCHANTMENTS, ItemEnchantments.EMPTY).entrySet())
                         {
                             StringBuilder sb = new StringBuilder();
 
@@ -311,13 +315,13 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
                                 continue;
                             }
 
-                            sb.append(Enchantment.getName(entry.getKey(), entry.getIntValue()).getString());
+                            sb.append(Enchantment.getFullname(entry.getKey(), entry.getIntValue()).getString());
                             sb.append(GuiBase.TXT_RST);
 
-                            if (tradeOffer.getFirstBuyItem().item().value() == Items.EMERALD)
+                            if (tradeOffer.getItemCostA().item().value() == Items.EMERALD)
                             {
                                 sb.append(" ");
-                                int emeraldCost = tradeOffer.getFirstBuyItem().count();
+                                int emeraldCost = tradeOffer.getItemCostA().count();
 
                                 if (Configs.Generic.VILLAGER_OFFER_LOWEST_PRICE_NEARBY.getBooleanValue())
                                 {
@@ -330,20 +334,20 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
                                 int lowest = 2 + 3 * entry.getIntValue();
                                 int highest = 6 + 13 * entry.getIntValue();
 
-                                if (entry.getKey().isIn(EnchantmentTags.DOUBLE_TRADE_PRICE))
+                                if (entry.getKey().is(EnchantmentTags.DOUBLE_TRADE_PRICE))
                                 {
                                     lowest *= 2;
                                     highest *= 2;
                                 }
-                                if (emeraldCost > MathHelper.lerp(Configs.Generic.VILLAGER_OFFER_PRICE_THRESHOLD.getDoubleValue(), lowest, highest))
+                                if (emeraldCost > Mth.lerp(Configs.Generic.VILLAGER_OFFER_PRICE_THRESHOLD.getDoubleValue(), lowest, highest))
                                 {
                                     continue;
                                 }
-                                if (emeraldCost < MathHelper.lerp(1.0 / 3, lowest, highest))
+                                if (emeraldCost < Mth.lerp(1.0 / 3, lowest, highest))
                                 {
                                     sb.append(GuiBase.TXT_GREEN);
                                 }
-                                if (emeraldCost > MathHelper.lerp(2.0 / 3, lowest, highest))
+                                if (emeraldCost > Mth.lerp(2.0 / 3, lowest, highest))
                                 {
                                     sb.append(GuiBase.TXT_RED);
                                 }
@@ -371,9 +375,9 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
 
         if (Configs.Generic.VILLAGER_CONVERSION_TICKS.getBooleanValue())
         {
-            List<ZombieVillagerEntity> zombieVillagers = EntityUtils.getEntitiesByClass(mc, ZombieVillagerEntity.class, box, e -> true);
+            List<ZombieVillager> zombieVillagers = EntityUtils.getEntitiesByClass(mc, ZombieVillager.class, box, e -> true);
 
-            for (ZombieVillagerEntity villager : zombieVillagers)
+            for (ZombieVillager villager : zombieVillagers)
             {
                 int conversionTimer = this.getConversionTime(world, villager);
 
@@ -392,7 +396,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
     }
 
     @Override
-    public void render(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
+    public void render(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
         // NO-OP
     }
@@ -405,23 +409,23 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
 
     private void renderAtEntity(List<String> texts, Entity entity, Entity targetEntity)
     {
-        float delta = MinecraftClient.getInstance().getRenderTickCounter().getTickProgress(true);
-        var cameraPos = entity.getLerpedPos(delta);
-        var targetPos = targetEntity.getLerpedPos(delta);
-        double hypot = MathHelper.hypot(cameraPos.getX() - targetPos.getX(), cameraPos.getZ() - targetPos.getZ());
+        float delta = Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(true);
+        var cameraPos = entity.getPosition(delta);
+        var targetPos = targetEntity.getPosition(delta);
+        double hypot = Mth.length(cameraPos.x() - targetPos.x(), cameraPos.z() - targetPos.z());
         double distance = 0.8;
-        double x = targetPos.getX() + (cameraPos.getX() - targetPos.getX()) / hypot * distance;
-        double z = targetPos.getZ() + (cameraPos.getZ() - targetPos.getZ()) / hypot * distance;
-        double y = targetPos.getY() + 1.5 + 0.1 * texts.size();
+        double x = targetPos.x() + (cameraPos.x() - targetPos.x()) / hypot * distance;
+        double z = targetPos.z() + (cameraPos.z() - targetPos.z()) / hypot * distance;
+        double y = targetPos.y() + 1.5 + 0.1 * texts.size();
 
         // Render the overlay at its job site, this is useful in trading halls
         if (targetEntity instanceof LivingEntity living)
         {
-            Optional<GlobalPos> jobSite = living.getBrain().getOptionalMemory(MemoryModuleType.JOB_SITE);
+            Optional<GlobalPos> jobSite = living.getBrain().getMemoryInternal(MemoryModuleType.JOB_SITE);
             if (jobSite != null && jobSite.isPresent())
             {
                 BlockPos pos = jobSite.get().pos();
-                if (targetPos.distanceTo(pos.toCenterPos()) < 1.7)
+                if (targetPos.distanceTo(pos.getCenter()) < 1.7)
                 {
                     x = pos.getX() + 0.5;
                     z = pos.getZ() + 0.5;

@@ -17,8 +17,8 @@ import fi.dy.masa.minihud.renderer.shapes.ShapeBase;
 import fi.dy.masa.minihud.renderer.shapes.ShapeManager;
 import fi.dy.masa.minihud.util.DataStorage;
 import fi.dy.masa.minihud.util.DebugInfoUtils;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.Entity;
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.entity.Entity;
 
 public class KeyCallbacks
 {
@@ -119,7 +119,7 @@ public class KeyCallbacks
         @Override
         public boolean onKeyAction(KeyAction action, IKeybind key)
         {
-            MinecraftClient mc = MinecraftClient.getInstance();
+            Minecraft mc = Minecraft.getInstance();
 
             if (mc.player == null)
             {
@@ -137,13 +137,13 @@ public class KeyCallbacks
 
                 if (shape != null)
                 {
-                    shape.moveToPosition(entity.getEntityPos());
+                    shape.moveToPosition(entity.position());
                 }
             }
             else if (key == Configs.Generic.SET_DISTANCE_REFERENCE_POINT.getKeybind())
             {
                 Entity entity = mc.getCameraEntity() != null ? mc.getCameraEntity() : mc.player;
-                DataStorage.getInstance().setDistanceReferencePoint(entity.getEntityPos());
+                DataStorage.getInstance().setDistanceReferencePoint(entity.position());
             }
             else if (key == Configs.Generic.SHAPE_EDITOR.getKeybind())
             {
@@ -161,7 +161,7 @@ public class KeyCallbacks
             }
             else if (key == Configs.Generic.INVENTORY_PREVIEW_TOGGLE_SCREEN.getKeybind())
             {
-                if (mc.currentScreen instanceof InventoryOverlayScreen)
+                if (mc.screen instanceof InventoryOverlayScreen)
                 {
                     mc.setScreen(null);
                 }

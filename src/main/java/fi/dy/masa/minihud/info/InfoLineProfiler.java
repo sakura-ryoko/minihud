@@ -1,20 +1,20 @@
 package fi.dy.masa.minihud.info;
 
+import com.mojang.blaze3d.systems.TimerQuery;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.mixin.render.IMixinGlTimer;
 import org.jetbrains.annotations.ApiStatus;
 
 import javax.annotation.Nullable;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.GlTimer;
-import net.minecraft.client.gui.hud.debug.DebugHudEntries;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.debug.DebugScreenEntries;
 import net.minecraft.util.Util;
 
 public class InfoLineProfiler
 {
 	public static final InfoLineProfiler INSTANCE = new InfoLineProfiler();
 	@Nullable
-	private GlTimer.Query glQuery;
+	private TimerQuery.FrameProfile glQuery;
 	private long metricsDuration;
 	private long lastMetricsTime;
 	private double gpuUtilization;
@@ -25,13 +25,13 @@ public class InfoLineProfiler
 	@ApiStatus.Internal
 	private boolean shouldGPUProfilerStop()
 	{
-		return MinecraftClient.getInstance().debugHudEntryList.isEntryVisible(DebugHudEntries.GPU_UTILIZATION) || !InfoToggle.GPU.getBooleanValue();
+		return Minecraft.getInstance().debugEntries.isCurrentlyEnabled(DebugScreenEntries.GPU_UTILIZATION) || !InfoToggle.GPU.getBooleanValue();
 	}
 
 	private boolean isGPUQuerySafe()
 	{
-        return  ((IMixinGlTimer) GlTimer.getInstance()).minihud_getQuery() != null &&
-		        ((IMixinGlTimer) GlTimer.getInstance()).minihud_getCommandEncoder() != null;
+        return  ((IMixinGlTimer) TimerQuery.getInstance()).minihud_getQuery() != null &&
+		        ((IMixinGlTimer) TimerQuery.getInstance()).minihud_getCommandEncoder() != null;
 	}
 
 	@ApiStatus.Internal
@@ -43,10 +43,10 @@ public class InfoLineProfiler
 			return;
 		}
 
-		if ((this.glQuery == null || this.glQuery.isResultAvailable()) && !this.isGPUQuerySafe())
+		if ((this.glQuery == null || this.glQuery.isDone()) && !this.isGPUQuerySafe())
 		{
 			this.measurementEnable = true;
-			GlTimer.getInstance().beginProfile();
+			TimerQuery.getInstance().beginProfile();
 		}
 		else
 		{
@@ -65,7 +65,7 @@ public class InfoLineProfiler
 
 		if (this.measurementEnable && this.isGPUQuerySafe())
 		{
-			GlTimer.getInstance().endProfile();
+			TimerQuery.getInstance().endProfile();
 		}
 		else
 		{
@@ -82,7 +82,7 @@ public class InfoLineProfiler
 			return;
 		}
 
-		final long nanoTime = Util.getMeasuringTimeNano();
+		final long nanoTime = Util.getNanos();
 
 		if (this.measurementEnable)
 		{
@@ -103,9 +103,9 @@ public class InfoLineProfiler
 
 		if (this.measurementEnable)
 		{
-			if (this.glQuery != null && this.glQuery.isResultAvailable())
+			if (this.glQuery != null && this.glQuery.isDone())
 			{
-				this.gpuUtilization = this.glQuery.queryResult() * 100.0 / this.metricsDuration;
+				this.gpuUtilization = this.glQuery.get() * 100.0 / this.metricsDuration;
 			}
 		}
 	}
@@ -115,7 +115,7 @@ public class InfoLineProfiler
 	{
 		if (this.glQuery != null)
 		{
-			this.glQuery.close();
+			this.glQuery.cancel();
 			this.glQuery = null;
 		}
 

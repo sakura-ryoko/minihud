@@ -3,18 +3,16 @@ package fi.dy.masa.minihud.info;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.World;
-
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.malilib.util.WorldUtils;
 import fi.dy.masa.malilib.util.data.tag.CompoundData;
@@ -48,16 +46,16 @@ public abstract class InfoLine
 
     public InfoLineChunkCache getChunkCache() { return InfoLineChunkCache.INSTANCE; }
 
-    public MinecraftClient mc() { return MinecraftClient.getInstance(); }
+    public Minecraft mc() { return Minecraft.getInstance(); }
 
-    public World getBestWorld()
+    public Level getBestWorld()
     {
         return WorldUtils.getBestWorld(this.mc());
     }
 
-    public World getClientWorld()
+    public Level getClientWorld()
     {
-        return this.mc().world;
+        return this.mc().level;
     }
 
     public List<Entry> parse(@Nonnull Context ctx)
@@ -65,42 +63,42 @@ public abstract class InfoLine
         return null;
     }
 
-    public List<Entry> parseData(@Nonnull World world, @Nonnull EntityType<?> entityType, @Nonnull CompoundData data)
+    public List<Entry> parseData(@Nonnull Level world, @Nonnull EntityType<?> entityType, @Nonnull CompoundData data)
     {
         return null;
     }
 
-    public List<Entry> parseData(@Nonnull World world, @Nonnull BlockEntityType<?> beType, @Nonnull CompoundData data)
+    public List<Entry> parseData(@Nonnull Level world, @Nonnull BlockEntityType<?> beType, @Nonnull CompoundData data)
     {
         return null;
     }
 
-    public List<Entry> parseEnt(@Nonnull World world, @Nonnull Entity ent)
+    public List<Entry> parseEnt(@Nonnull Level world, @Nonnull Entity ent)
     {
         return null;
     }
 
-    public List<Entry> parseBlockEnt(@Nonnull World world, @Nonnull BlockEntity be)
+    public List<Entry> parseBlockEnt(@Nonnull Level world, @Nonnull BlockEntity be)
     {
         return null;
     }
 
-    public List<Entry> parseBlockPos(@Nonnull World world, @Nonnull BlockPos pos)
+    public List<Entry> parseBlockPos(@Nonnull Level world, @Nonnull BlockPos pos)
     {
         return null;
     }
 
-    public List<Entry> parseBlockState(@Nonnull World world, @Nonnull BlockState state)
+    public List<Entry> parseBlockState(@Nonnull Level world, @Nonnull BlockState state)
     {
         return null;
     }
 
-	public List<Entry> parseChunkPos(@Nonnull World world, @Nonnull ChunkPos pos)
+	public List<Entry> parseChunkPos(@Nonnull Level world, @Nonnull ChunkPos pos)
 	{
 		return null;
 	}
 
-	public List<Entry> parseWorld(@Nonnull World world)
+	public List<Entry> parseWorld(@Nonnull Level world)
     {
         return null;
     }
@@ -129,7 +127,7 @@ public abstract class InfoLine
 
     public abstract boolean succeededType();
 
-    public record Context(@Nullable World world, @Nullable Entity ent, @Nullable BlockEntity be, @Nullable BlockPos pos, @Nullable BlockState state, ChunkPos chunkPos, CompoundData data)
+    public record Context(@Nullable Level world, @Nullable Entity ent, @Nullable BlockEntity be, @Nullable BlockPos pos, @Nullable BlockState state, ChunkPos chunkPos, CompoundData data)
     {
         public boolean hasEntity()
         {

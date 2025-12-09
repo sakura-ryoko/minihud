@@ -3,13 +3,11 @@ package fi.dy.masa.minihud.info.entity;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nonnull;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.level.Level;
 import org.apache.commons.lang3.tuple.Triple;
-
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.world.World;
-
 import fi.dy.masa.malilib.util.data.DataEntityUtils;
 import fi.dy.masa.malilib.util.data.tag.CompoundData;
 import fi.dy.masa.minihud.Reference;
@@ -50,7 +48,7 @@ public class InfoLineLookingAtPlayerExp extends InfoLine
     }
 
     @Override
-    public List<Entry> parseData(@Nonnull World world, @Nonnull EntityType<?> entityType, @Nonnull CompoundData data)
+    public List<Entry> parseData(@Nonnull Level world, @Nonnull EntityType<?> entityType, @Nonnull CompoundData data)
     {
         List<Entry> list = new ArrayList<>();
 
@@ -68,11 +66,11 @@ public class InfoLineLookingAtPlayerExp extends InfoLine
     }
 
     @Override
-    public List<Entry> parseEnt(@Nonnull World world, @Nonnull Entity ent)
+    public List<Entry> parseEnt(@Nonnull Level world, @Nonnull Entity ent)
     {
         List<Entry> list = new ArrayList<>();
 
-        if (ent instanceof ServerPlayerEntity player)
+        if (ent instanceof ServerPlayer player)
         {
             list.add(this.translate(PLAYER_KEY, player.experienceLevel, 100 * player.experienceProgress, player.totalExperience));
         }

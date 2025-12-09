@@ -5,19 +5,19 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import fi.dy.masa.minihud.util.DataStorage;
-import net.minecraft.client.gui.screen.ChatScreen;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.screens.ChatScreen;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
 
 @Mixin(ChatScreen.class)
 public abstract class MixinChatScreen extends Screen
 {
-    private MixinChatScreen(Text title)
+    private MixinChatScreen(Component title)
     {
         super(title);
     }
 
-    @Inject(method = "sendMessage", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "handleChatInput", at = @At("HEAD"), cancellable = true)
     private void onSendChatMessage(String msg, boolean addToHistory, CallbackInfo ci)
     {
         if (DataStorage.getInstance().onSendChatMessage(msg))

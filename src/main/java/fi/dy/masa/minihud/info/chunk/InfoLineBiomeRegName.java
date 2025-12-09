@@ -2,13 +2,11 @@ package fi.dy.masa.minihud.info.chunk;
 
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.chunk.LevelChunk;
 import org.jetbrains.annotations.NotNull;
-
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.util.Identifier;
-import net.minecraft.world.biome.Biome;
-import net.minecraft.world.chunk.WorldChunk;
-
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.info.InfoLine;
@@ -39,12 +37,12 @@ public class InfoLineBiomeRegName extends InfoLine
 	    if (ctx.pos() != null && ctx.chunkPos() != null)
 	    {
 		    List<Entry> list = new ArrayList<>();
-		    WorldChunk clientChunk = InfoLineChunkCache.INSTANCE.getClientChunk(ctx.chunkPos());
+		    LevelChunk clientChunk = InfoLineChunkCache.INSTANCE.getClientChunk(ctx.chunkPos());
 
 		    if (clientChunk.isEmpty() == false)
 		    {
 			    Biome biome = this.getClientWorld().getBiome(ctx.pos()).value();
-			    Identifier rl = this.getClientWorld().getRegistryManager().getOrThrow(RegistryKeys.BIOME).getId(biome);
+			    Identifier rl = this.getClientWorld().registryAccess().lookupOrThrow(Registries.BIOME).getKey(biome);
 			    String name = rl != null ? rl.toString() : "?";
 
 			    list.add(this.translate(BIOME_KEY, name));

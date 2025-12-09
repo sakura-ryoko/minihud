@@ -5,17 +5,17 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.block.entity.ConduitBlockEntity;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.BuiltBuffer;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.profiler.Profiler;
-import net.minecraft.world.World;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.ConduitBlockEntity;
+import net.minecraft.world.phys.Vec3;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.MeshData;
 import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.LayerRange;
 import fi.dy.masa.malilib.util.data.Color4f;
@@ -70,7 +70,7 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
 //    }
 
     @Override
-    protected void updateBlockRange(World world, BlockPos pos, ConduitBlockEntity be, Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
+    protected void updateBlockRange(Level world, BlockPos pos, ConduitBlockEntity be, Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
         if (!be.isActive())
         {
@@ -89,7 +89,7 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
     {
         Entry entry = new Entry(pos, range);
 
-        Consumer<BlockPos.Mutable> positionCollector = (p) -> entry.addPosition(p.asLong());
+        Consumer<BlockPos.MutableBlockPos> positionCollector = (p) -> entry.addPosition(p.asLong());
         entry.setTest(this.getPositionTest(pos, entry.range));
         SphereUtils.collectSpherePositions(positionCollector, entry.getTest(), pos, entry.range);
 
@@ -127,7 +127,7 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
     }
 
     @Override
-    protected void renderBlockRange(World world, Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
+    protected void renderBlockRange(Level world, Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
         boolean outlines = Configs.Generic.CONDUIT_RANGE_OVERLAY_RENDER_OUTLINES.getBooleanValue();
 
@@ -151,9 +151,9 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
         this.conduits.clear();
     }
 
-    private void renderQuads(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
+    private void renderQuads(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
-        if (mc.world == null || mc.player == null)
+        if (mc.level == null || mc.player == null)
         {
             return;
         }
@@ -185,7 +185,7 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
 
         try
         {
-            BuiltBuffer meshData = builder.endNullable();
+            MeshData meshData = builder.build();
 
             if (meshData != null)
             {
@@ -208,9 +208,9 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
 
     }
 
-    private void renderOutlines(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
+    private void renderOutlines(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
-        if (mc.world == null || mc.player == null || !Configs.Generic.CONDUIT_RANGE_OVERLAY_RENDER_OUTLINES.getBooleanValue())
+        if (mc.level == null || mc.player == null || !Configs.Generic.CONDUIT_RANGE_OVERLAY_RENDER_OUTLINES.getBooleanValue())
         {
             return;
         }
@@ -240,7 +240,7 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
 
         try
         {
-            BuiltBuffer meshData = builder.endNullable();
+            MeshData meshData = builder.build();
 
             if (meshData != null)
             {
@@ -272,7 +272,7 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
 
     protected SphereUtils.RingPositionTest getPositionTest(BlockPos centerPos, int range)
     {
-        Vec3d center = new Vec3d(centerPos.getX() + 0.5, centerPos.getY() + 0.5, centerPos.getZ() + 0.5);
+        Vec3 center = new Vec3(centerPos.getX() + 0.5, centerPos.getY() + 0.5, centerPos.getZ() + 0.5);
         double squareRange = range * range;
 
         return (x, y, z, dir) -> SphereUtils.isPositionInsideOrClosestToRadiusOnBlockRing(

@@ -8,41 +8,35 @@ import javax.annotation.Nullable;
 import org.apache.commons.lang3.tuple.Pair;
 import org.joml.Matrix4f;
 
-import net.minecraft.block.BeehiveBlock;
-import net.minecraft.block.BlockEntityProvider;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.ChestBlock;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.enums.ChestType;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.Framebuffer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.network.PlayerListEntry;
-import net.minecraft.client.render.BufferBuilderStorage;
-import net.minecraft.client.render.Camera;
-import net.minecraft.client.render.Frustum;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.EnderChestInventory;
-import net.minecraft.item.*;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.*;
-import net.minecraft.util.profiler.Profiler;
-import net.minecraft.world.LightType;
-import net.minecraft.world.World;
-import net.minecraft.world.biome.Biome;
-import net.minecraft.world.chunk.WorldChunk;
-import net.minecraft.world.chunk.light.LightingProvider;
+import com.mojang.blaze3d.pipeline.RenderTarget;
+import net.minecraft.client.Camera;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.RenderBuffers;
+import net.minecraft.client.renderer.culling.Frustum;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.PlayerEnderChestContainer;
+import net.minecraft.world.item.*;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.BeehiveBlock;
+import net.minecraft.world.level.block.ChestBlock;
+import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.ChestType;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
 
 import fi.dy.masa.malilib.config.HudAlignment;
 import fi.dy.masa.malilib.gui.GuiBase;
@@ -57,7 +51,6 @@ import fi.dy.masa.malilib.util.data.DataEntityUtils;
 import fi.dy.masa.malilib.util.data.tag.CompoundData;
 import fi.dy.masa.malilib.util.data.tag.converter.DataConverterNbt;
 import fi.dy.masa.malilib.util.game.BlockUtils;
-import fi.dy.masa.malilib.util.nbt.NbtEntityUtils;
 import fi.dy.masa.malilib.util.nbt.NbtInventory;
 import fi.dy.masa.malilib.util.nbt.NbtKeys;
 import fi.dy.masa.minihud.Reference;
@@ -69,11 +62,9 @@ import fi.dy.masa.minihud.data.EntitiesDataManager;
 import fi.dy.masa.minihud.data.HudDataManager;
 import fi.dy.masa.minihud.info.InfoLine;
 import fi.dy.masa.minihud.info.InfoLineChunkCache;
-import fi.dy.masa.minihud.mixin.world.IMixinServerWorld;
 import fi.dy.masa.minihud.renderer.InventoryOverlayHandler;
 import fi.dy.masa.minihud.renderer.OverlayRenderer;
 import fi.dy.masa.minihud.util.DataStorage;
-import fi.dy.masa.minihud.util.IServerEntityManager;
 import fi.dy.masa.minihud.util.MiscUtils;
 import fi.dy.masa.minihud.util.SpeedUnits;
 
@@ -81,7 +72,7 @@ public class RenderHandler implements IRenderer
 {
     private static final RenderHandler INSTANCE = new RenderHandler();
 
-    private final MinecraftClient mc;
+    private final Minecraft mc;
     private final DataStorage data;
     private final HudDataManager hudData;
     private final Date date;
@@ -98,7 +89,7 @@ public class RenderHandler implements IRenderer
 
     public RenderHandler()
     {
-        this.mc = MinecraftClient.getInstance();
+        this.mc = Minecraft.getInstance();
         this.data = DataStorage.getInstance();
         this.hudData = HudDataManager.getInstance();
         this.date = new Date();
@@ -132,7 +123,7 @@ public class RenderHandler implements IRenderer
     }
 
     @Override
-    public void onRenderGameOverlayPostAdvanced(GuiContext ctx, float partialTicks, Profiler profiler)
+    public void onRenderGameOverlayPostAdvanced(GuiContext ctx, float partialTicks, ProfilerFiller profiler)
     {
         if (Configs.Generic.MAIN_RENDERING_TOGGLE.getBooleanValue() == false)
         {
@@ -143,8 +134,8 @@ public class RenderHandler implements IRenderer
 
 		if (DebugDataManager.getInstance().shouldShowDebugHudFix() == false &&
 //        if (mc.getDebugHud().shouldShowDebugHud() == false &&
-            mc.player != null && mc.options.hudHidden == false &&
-            (Configs.Generic.REQUIRE_SNEAK.getBooleanValue() == false || mc.player.isSneaking()) &&
+            mc.player != null && mc.options.hideGui == false &&
+            (Configs.Generic.REQUIRE_SNEAK.getBooleanValue() == false || mc.player.isShiftKeyDown()) &&
             Configs.Generic.REQUIRED_KEY.getKeybind().isKeybindHeld())
         {
 
@@ -190,7 +181,7 @@ public class RenderHandler implements IRenderer
     }
 
     @Override
-    public void onRenderWorldPreWeather(Framebuffer fb, Matrix4f posMatrix, Matrix4f projMatrix, Frustum frustum, Camera camera, BufferBuilderStorage buffers, Profiler profiler)
+    public void onRenderWorldPreWeather(RenderTarget fb, Matrix4f posMatrix, Matrix4f projMatrix, Frustum frustum, Camera camera, RenderBuffers buffers, ProfilerFiller profiler)
     {
 //        if (Configs.Generic.MAIN_RENDERING_TOGGLE.getBooleanValue() &&
 //            this.mc.world != null && this.mc.player != null && this.mc.options.hudHidden == false)
@@ -200,10 +191,10 @@ public class RenderHandler implements IRenderer
     }
 
     @Override
-    public void onRenderWorldLastAdvanced(Framebuffer fb, Matrix4f posMatrix, Matrix4f projMatrix, Frustum frustum, Camera camera, BufferBuilderStorage buffers, Profiler profiler)
+    public void onRenderWorldLastAdvanced(RenderTarget fb, Matrix4f posMatrix, Matrix4f projMatrix, Frustum frustum, Camera camera, RenderBuffers buffers, ProfilerFiller profiler)
     {
         if (Configs.Generic.MAIN_RENDERING_TOGGLE.getBooleanValue() &&
-            this.mc.world != null && this.mc.player != null && this.mc.options.hudHidden == false)
+            this.mc.level != null && this.mc.player != null && this.mc.options.hideGui == false)
         {
             OverlayRenderer.renderOverlays(posMatrix, projMatrix, this.mc, frustum, camera, profiler);
         }
@@ -213,7 +204,7 @@ public class RenderHandler implements IRenderer
     public void onRenderTooltipLast(GuiContext ctx, ItemStack stack, int x, int y)
     {
         Item item = stack.getItem();
-        if (item instanceof FilledMapItem)
+        if (item instanceof MapItem)
         {
             if (Configs.Generic.MAP_PREVIEW.getBooleanValue() &&
                (Configs.Generic.MAP_PREVIEW_REQUIRE_SHIFT.getBooleanValue() == false || GuiBase.isShiftDown()))
@@ -221,7 +212,7 @@ public class RenderHandler implements IRenderer
                 RenderUtils.renderMapPreview(ctx, stack, x, y, Configs.Generic.MAP_PREVIEW_SIZE.getIntegerValue(), false);
             }
         }
-        else if (stack.getComponents().contains(DataComponentTypes.CONTAINER) && InventoryUtils.shulkerBoxHasItems(stack))
+        else if (stack.getComponents().has(DataComponents.CONTAINER) && InventoryUtils.shulkerBoxHasItems(stack))
         {
             if (Configs.Generic.SHULKER_BOX_PREVIEW.getBooleanValue() &&
                (Configs.Generic.SHULKER_DISPLAY_REQUIRE_SHIFT.getBooleanValue() == false || GuiBase.isShiftDown()))
@@ -229,31 +220,31 @@ public class RenderHandler implements IRenderer
                 RenderUtils.renderShulkerBoxPreview(ctx, stack, x, y, Configs.Generic.SHULKER_DISPLAY_BACKGROUND_COLOR.getBooleanValue());
             }
         }
-        else if (stack.isOf(Items.ENDER_CHEST) && Configs.Generic.SHULKER_DISPLAY_ENDER_CHEST.getBooleanValue())
+        else if (stack.is(Items.ENDER_CHEST) && Configs.Generic.SHULKER_DISPLAY_ENDER_CHEST.getBooleanValue())
         {
             if (Configs.Generic.SHULKER_BOX_PREVIEW.getBooleanValue() &&
                 (Configs.Generic.SHULKER_DISPLAY_REQUIRE_SHIFT.getBooleanValue() == false || GuiBase.isShiftDown()))
             {
-                World world = WorldUtils.getBestWorld(this.mc);
-                PlayerEntity player = world.getPlayerByUuid(this.mc.player.getUuid());
+                Level world = WorldUtils.getBestWorld(this.mc);
+                Player player = world.getPlayerByUUID(this.mc.player.getUUID());
 
                 if (player != null)
                 {
                     Pair<Entity, CompoundData> pair = EntitiesDataManager.getInstance().requestEntity(world, player.getId());
-                    EnderChestInventory inv;
+                    PlayerEnderChestContainer inv;
 
                     if (pair != null && pair.getRight() != null && pair.getRight().contains(NbtKeys.ENDER_ITEMS, Constants.NBT.TAG_LIST))
                     {
-                        inv = InventoryUtils.getPlayerEnderItemsFromData(pair.getRight(), world.getRegistryManager());
+                        inv = InventoryUtils.getPlayerEnderItemsFromData(pair.getRight(), world.registryAccess());
                         this.lastEnderItems = pair;
                     }
-                    else if (pair != null && pair.getLeft() instanceof PlayerEntity pe && !pe.getEnderChestInventory().isEmpty())
+                    else if (pair != null && pair.getLeft() instanceof Player pe && !pe.getEnderChestInventory().isEmpty())
                     {
                         inv = pe.getEnderChestInventory();
                     }
                     else if (this.lastEnderItems != null)
                     {
-                        inv = InventoryUtils.getPlayerEnderItemsFromData(this.lastEnderItems.getRight(), world.getRegistryManager());
+                        inv = InventoryUtils.getPlayerEnderItemsFromData(this.lastEnderItems.getRight(), world.registryAccess());
                     }
                     else
                     {
@@ -265,8 +256,8 @@ public class RenderHandler implements IRenderer
                     {
                         try (NbtInventory nbtInv = NbtInventory.fromInventory(inv))
                         {
-                            NbtCompound nbt = new NbtCompound();
-                            NbtList list = nbtInv.toNbtList(world.getRegistryManager());
+                            CompoundTag nbt = new CompoundTag();
+                            ListTag list = nbtInv.toNbtList(world.registryAccess());
 
                             nbt.put(NbtKeys.ENDER_ITEMS, list);
                             fi.dy.masa.malilib.render.RenderUtils.renderNbtItemsPreview(ctx, stack, nbt, x, y, false);
@@ -276,7 +267,7 @@ public class RenderHandler implements IRenderer
                 }
             }
         }
-        else if (stack.getComponents().contains(DataComponentTypes.BUNDLE_CONTENTS) && InventoryUtils.bundleHasItems(stack))
+        else if (stack.getComponents().has(DataComponents.BUNDLE_CONTENTS) && InventoryUtils.bundleHasItems(stack))
         {
             if (Configs.Generic.BUNDLE_PREVIEW.getBooleanValue() &&
                 (Configs.Generic.BUNDLE_DISPLAY_REQUIRE_SHIFT.getBooleanValue() == false || GuiBase.isShiftDown()))
@@ -293,13 +284,13 @@ public class RenderHandler implements IRenderer
     }
 
     @Override
-    public void onRenderTooltipComponentInsertFirst(Item.TooltipContext context, ItemStack stack, Consumer<Text> list)
+    public void onRenderTooltipComponentInsertFirst(Item.TooltipContext context, ItemStack stack, Consumer<Component> list)
     {
         // NO-OP
     }
 
     @Override
-    public void onRenderTooltipComponentInsertMiddle(Item.TooltipContext context, ItemStack stack, Consumer<Text> list)
+    public void onRenderTooltipComponentInsertMiddle(Item.TooltipContext context, ItemStack stack, Consumer<Component> list)
     {
         if (Configs.Generic.BUNDLE_TOOLTIPS.getBooleanValue() &&
             stack.getItem() instanceof BundleItem)
@@ -309,7 +300,7 @@ public class RenderHandler implements IRenderer
     }
 
     @Override
-    public void onRenderTooltipComponentInsertLast(Item.TooltipContext context, ItemStack stack, Consumer<Text> list)
+    public void onRenderTooltipComponentInsertLast(Item.TooltipContext context, ItemStack stack, Consumer<Component> list)
     {
         if (Configs.Generic.AXOLOTL_TOOLTIPS.getBooleanValue() &&
             stack.getItem() == Items.AXOLOTL_BUCKET)
@@ -320,19 +311,19 @@ public class RenderHandler implements IRenderer
         if (Configs.Generic.BEE_TOOLTIPS.getBooleanValue() &&
             //stack.getItem() instanceof BlockItem blockItem &&
             //blockItem.getBlock() instanceof BeehiveBlock)
-            stack.contains(DataComponentTypes.BEES))
+            stack.has(DataComponents.BEES))
         {
             MiscUtils.addBeeTooltip(stack, list);
         }
 
         if (Configs.Generic.CUSTOM_MODEL_TOOLTIPS.getBooleanValue() &&
-            stack.contains(DataComponentTypes.CUSTOM_MODEL_DATA))
+            stack.has(DataComponents.CUSTOM_MODEL_DATA))
         {
             MiscUtils.addCustomModelTooltip(stack, list);
         }
 
         if (Configs.Generic.FOOD_TOOLTIPS.getBooleanValue() &&
-            stack.contains(DataComponentTypes.FOOD))
+            stack.has(DataComponents.FOOD))
         {
             MiscUtils.addFoodTooltip(stack, list);
         }
@@ -345,7 +336,7 @@ public class RenderHandler implements IRenderer
         }
 
         if (Configs.Generic.LODESTONE_TOOLTIPS.getBooleanValue() &&
-            stack.contains(DataComponentTypes.LODESTONE_TRACKER))
+            stack.has(DataComponents.LODESTONE_TRACKER))
         {
             MiscUtils.addLodestoneTooltip(stack, list);
         }
@@ -365,9 +356,9 @@ public class RenderHandler implements IRenderer
         return 0;
     }
 
-    public void updateData(MinecraftClient mc)
+    public void updateData(Minecraft mc)
     {
-        if (mc.world != null)
+        if (mc.level != null)
         {
             if (RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue())
             {
@@ -465,16 +456,16 @@ public class RenderHandler implements IRenderer
 
     private void addLine(InfoToggle type)
     {
-        MinecraftClient mc = this.mc;
+        Minecraft mc = this.mc;
         Entity entity = mc.getCameraEntity();
-        World world = entity != null ? entity.getEntityWorld() : null;
-		if (world == null || mc.world == null) return;
+        Level world = entity != null ? entity.level() : null;
+		if (world == null || mc.level == null) return;
         double y = entity.getY();
-        BlockPos pos = BlockPos.ofFloored(entity.getX(), y, entity.getZ());
+        BlockPos pos = BlockPos.containing(entity.getX(), y, entity.getZ());
         ChunkPos chunkPos = new ChunkPos(pos);
 
         @SuppressWarnings("deprecation")
-        boolean isChunkLoaded = mc.world.isChunkLoaded(pos);
+        boolean isChunkLoaded = mc.level.hasChunkAt(pos);
         
         SpeedUnits speedUnits = (SpeedUnits) Configs.Generic.SPEED_UNITS.getOptionListValue();
 
@@ -611,7 +602,7 @@ public class RenderHandler implements IRenderer
             }
 
             // Make into a generic call
-            World bestWorld = WorldUtils.getBestWorld(mc);
+            Level bestWorld = WorldUtils.getBestWorld(mc);
             InfoLine parser = type.initParser();
 
             if (parser != null)
@@ -637,7 +628,7 @@ public class RenderHandler implements IRenderer
             }
 
             // Make into a generic call
-            World bestWorld = WorldUtils.getBestWorld(mc);
+            Level bestWorld = WorldUtils.getBestWorld(mc);
             InfoLine parser = type.initParser();
 
             if (parser != null)
@@ -663,7 +654,7 @@ public class RenderHandler implements IRenderer
             }
 
             // Make into a generic call
-            World bestWorld = WorldUtils.getBestWorld(mc);
+            Level bestWorld = WorldUtils.getBestWorld(mc);
             InfoLine parser = type.initParser();
 
             if (parser != null)
@@ -689,7 +680,7 @@ public class RenderHandler implements IRenderer
             }
 
             // Make into a generic call
-            World bestWorld = WorldUtils.getBestWorld(mc);
+            Level bestWorld = WorldUtils.getBestWorld(mc);
             InfoLine parser = type.initParser();
 
             if (parser != null)
@@ -762,9 +753,9 @@ public class RenderHandler implements IRenderer
             }
 
             if (InfoToggle.COORDINATES_SCALED.getBooleanValue() &&
-                (world.getRegistryKey() == World.NETHER || world.getRegistryKey() == World.OVERWORLD))
+                (world.dimension() == Level.NETHER || world.dimension() == Level.OVERWORLD))
             {
-                boolean isNether = world.getRegistryKey() == World.NETHER;
+                boolean isNether = world.dimension() == Level.NETHER;
                 double scale = isNether ? 8.0 : 1.0 / 8.0;
                 x *= scale;
                 z *= scale;
@@ -802,7 +793,7 @@ public class RenderHandler implements IRenderer
 
             if (InfoToggle.DIMENSION.getBooleanValue())
             {
-                String dimName = world.getRegistryKey().getValue().toString();
+                String dimName = world.dimension().identifier().toString();
                 str.append(pre).append(StringUtils.translate("minihud.info_line.dimension")).append(dimName);
             }
 
@@ -933,7 +924,7 @@ public class RenderHandler implements IRenderer
 
             if (parser != null)
             {
-                World bestWorld = WorldUtils.getBestWorld(mc);
+                Level bestWorld = WorldUtils.getBestWorld(mc);
                 Pair<BlockEntity, CompoundData> pair = this.getTargetedBlockEntity(bestWorld, mc);
 
                 if (pair != null)
@@ -963,7 +954,7 @@ public class RenderHandler implements IRenderer
 
             if (parser != null)
             {
-                World bestWorld = WorldUtils.getBestWorld(mc);
+                Level bestWorld = WorldUtils.getBestWorld(mc);
                 Pair<BlockEntity, CompoundData> pair = this.getTargetedBlockEntity(bestWorld, mc);
 
                 if (pair != null)
@@ -1026,7 +1017,7 @@ public class RenderHandler implements IRenderer
 
             if (parser != null)
             {
-                World bestWorld = WorldUtils.getBestWorld(mc);
+                Level bestWorld = WorldUtils.getBestWorld(mc);
                 Pair<BlockEntity, CompoundData> pair = this.getTargetedBlockEntity(bestWorld, mc);
 
                 if (pair != null)
@@ -1059,7 +1050,7 @@ public class RenderHandler implements IRenderer
             }
 
             // Make into a generic call
-            World bestWorld = WorldUtils.getBestWorld(mc);
+            Level bestWorld = WorldUtils.getBestWorld(mc);
             InfoLine parser = type.initParser();
 
             if (parser != null)
@@ -1067,7 +1058,7 @@ public class RenderHandler implements IRenderer
                 Pair<Entity, CompoundData> pair = this.getTargetEntity(bestWorld, mc);
                 InfoLine.Context ctx;
 
-                if (mc.player.hasVehicle() && pair == null)
+                if (mc.player.isPassenger() && pair == null)
                 {
                     ctx = new InfoLine.Context(bestWorld, mc.player.getVehicle(), null, null, null, null, null);
                 }
@@ -1202,7 +1193,7 @@ public class RenderHandler implements IRenderer
             }
 
             // Make into a generic call
-            World bestWorld = WorldUtils.getBestWorld(mc);
+            Level bestWorld = WorldUtils.getBestWorld(mc);
             InfoLine parser = type.initParser();
 
             if (parser != null)
@@ -1640,7 +1631,7 @@ public class RenderHandler implements IRenderer
             }
 
             // Make into a generic call
-            World bestWorld = WorldUtils.getBestWorld(mc);
+            Level bestWorld = WorldUtils.getBestWorld(mc);
             InfoLine parser = type.initParser();
 
             if (parser != null)
@@ -1649,7 +1640,7 @@ public class RenderHandler implements IRenderer
 
                 if (state != null)
                 {
-                    BlockPos lookPos = ((BlockHitResult) mc.crosshairTarget).getBlockPos();
+                    BlockPos lookPos = ((BlockHitResult) mc.hitResult).getBlockPos();
                     InfoLine.Context ctx = new InfoLine.Context(bestWorld, null, null, lookPos, state, null, null);
                     this.processEntries(parser.parse(ctx));
 
@@ -1676,7 +1667,7 @@ public class RenderHandler implements IRenderer
             }
 
             // Make into a generic call
-            World bestWorld = WorldUtils.getBestWorld(mc);
+            Level bestWorld = WorldUtils.getBestWorld(mc);
             InfoLine parser = type.initParser();
 
             if (parser != null)
@@ -1685,7 +1676,7 @@ public class RenderHandler implements IRenderer
 
                 if (state != null)
                 {
-                    BlockPos lookPos = ((BlockHitResult) mc.crosshairTarget).getBlockPos();
+                    BlockPos lookPos = ((BlockHitResult) mc.hitResult).getBlockPos();
                     InfoLine.Context ctx = new InfoLine.Context(bestWorld, null, null, lookPos, state, null, null);
                     this.processEntries(parser.parse(ctx));
 
@@ -1783,11 +1774,11 @@ public class RenderHandler implements IRenderer
     }
 
     @Nullable
-    public Pair<Entity, CompoundData> getTargetEntity(World world, MinecraftClient mc)
+    public Pair<Entity, CompoundData> getTargetEntity(Level world, Minecraft mc)
     {
-        if (mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.ENTITY)
+        if (mc.hitResult != null && mc.hitResult.getType() == HitResult.Type.ENTITY)
         {
-            Entity lookedEntity = ((EntityHitResult) mc.crosshairTarget).getEntity();
+            Entity lookedEntity = ((EntityHitResult) mc.hitResult).getEntity();
 
             // Don't return the player entity (Apparently this is a thing in modern Minecraft versions)
             if (lookedEntity == null || lookedEntity.getId() == mc.player.getId())
@@ -1795,12 +1786,12 @@ public class RenderHandler implements IRenderer
                 return null;
             }
 
-            World bestWorld = WorldUtils.getBestWorld(mc);
+            Level bestWorld = WorldUtils.getBestWorld(mc);
             Pair<Entity, CompoundData> pair = null;
 
-            if (bestWorld instanceof ServerWorld serverWorld)
+            if (bestWorld instanceof ServerLevel serverWorld)
             {
-                Entity serverEntity = serverWorld.getEntityById(lookedEntity.getId());
+                Entity serverEntity = serverWorld.getEntity(lookedEntity.getId());
 	            CompoundData data = DataEntityUtils.invokeEntityDataTagNoPassengers(serverEntity, lookedEntity.getId());
 
                 if (!data.isEmpty())
@@ -1839,22 +1830,22 @@ public class RenderHandler implements IRenderer
     }
 
     @Nullable
-    public Pair<BlockEntity, CompoundData> getTargetedBlockEntity(World world, MinecraftClient mc)
+    public Pair<BlockEntity, CompoundData> getTargetedBlockEntity(Level world, Minecraft mc)
     {
-        if (mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.BLOCK)
+        if (mc.hitResult != null && mc.hitResult.getType() == HitResult.Type.BLOCK)
         {
-            BlockPos posLooking = ((BlockHitResult) mc.crosshairTarget).getBlockPos();
-            World bestWorld = WorldUtils.getBestWorld(mc);
+            BlockPos posLooking = ((BlockHitResult) mc.hitResult).getBlockPos();
+            Level bestWorld = WorldUtils.getBestWorld(mc);
             BlockState state = bestWorld.getBlockState(posLooking);
             Pair<BlockEntity, CompoundData> pair = null;
 
-            if (state.getBlock() instanceof BlockEntityProvider)
+            if (state.getBlock() instanceof EntityBlock)
             {
-                if (bestWorld instanceof ServerWorld)
+                if (bestWorld instanceof ServerLevel)
                 {
 	                CompoundData data = new CompoundData();
-                    BlockEntity be = bestWorld.getWorldChunk(posLooking).getBlockEntity(posLooking);
-                    pair = Pair.of(be, be != null ? DataConverterNbt.fromVanillaCompound(be.createNbtWithIdentifyingData(bestWorld.getRegistryManager())) : data);
+                    BlockEntity be = bestWorld.getChunkAt(posLooking).getBlockEntity(posLooking);
+                    pair = Pair.of(be, be != null ? DataConverterNbt.fromVanillaCompound(be.saveWithFullMetadata(bestWorld.registryAccess())) : data);
                 }
                 else
                 {
@@ -1863,7 +1854,7 @@ public class RenderHandler implements IRenderer
 
                 // Remember the last entity so the "refresh time" is smoothed over.
                 if (pair == null && this.lastBlockEntity != null &&
-                    this.lastBlockEntity.getLeft().getPos().equals(posLooking))
+                    this.lastBlockEntity.getLeft().getBlockPos().equals(posLooking))
                 {
                     pair = this.lastBlockEntity;
                 }
@@ -1880,9 +1871,9 @@ public class RenderHandler implements IRenderer
     }
 
     @Nullable
-    public Pair<BlockEntity, CompoundData> requestBlockEntityAt(World world, BlockPos pos)
+    public Pair<BlockEntity, CompoundData> requestBlockEntityAt(Level world, BlockPos pos)
     {
-        if (!(world instanceof ServerWorld))
+        if (!(world instanceof ServerLevel))
         {
             Pair<BlockEntity, CompoundData> pair = EntitiesDataManager.getInstance().requestBlockEntity(world, pos);
 
@@ -1890,11 +1881,11 @@ public class RenderHandler implements IRenderer
 
             if (state.getBlock() instanceof ChestBlock)
             {
-                ChestType type = state.get(ChestBlock.CHEST_TYPE);
+                ChestType type = state.getValue(ChestBlock.TYPE);
 
                 if (type != ChestType.SINGLE)
                 {
-                    return EntitiesDataManager.getInstance().requestBlockEntity(world, pos.offset(ChestBlock.getFacing(state)));
+                    return EntitiesDataManager.getInstance().requestBlockEntity(world, pos.relative(ChestBlock.getConnectedDirection(state)));
                 }
             }
 
@@ -1905,24 +1896,24 @@ public class RenderHandler implements IRenderer
     }
 
     @Nullable
-    private BlockState getTargetedBlock(MinecraftClient mc)
+    private BlockState getTargetedBlock(Minecraft mc)
     {
-        if (mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.BLOCK)
+        if (mc.hitResult != null && mc.hitResult.getType() == HitResult.Type.BLOCK)
         {
-            BlockPos posLooking = ((BlockHitResult) mc.crosshairTarget).getBlockPos();
-            return mc.world.getBlockState(posLooking);
+            BlockPos posLooking = ((BlockHitResult) mc.hitResult).getBlockPos();
+            return mc.level.getBlockState(posLooking);
         }
 
         return null;
     }
 
-    private <T extends Comparable<T>> void getBlockProperties(MinecraftClient mc)
+    private <T extends Comparable<T>> void getBlockProperties(Minecraft mc)
     {
-        if (mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.BLOCK)
+        if (mc.hitResult != null && mc.hitResult.getType() == HitResult.Type.BLOCK)
         {
-            BlockPos posLooking = ((BlockHitResult) mc.crosshairTarget).getBlockPos();
-            BlockState state = mc.world.getBlockState(posLooking);
-            Identifier rl = Registries.BLOCK.getId(state.getBlock());
+            BlockPos posLooking = ((BlockHitResult) mc.hitResult).getBlockPos();
+            BlockState state = mc.level.getBlockState(posLooking);
+            Identifier rl = BuiltInRegistries.BLOCK.getKey(state.getBlock());
 
             this.addLine(rl != null ? rl.toString() : "<null>");
 

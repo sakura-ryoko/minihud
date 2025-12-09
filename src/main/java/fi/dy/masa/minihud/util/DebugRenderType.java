@@ -5,16 +5,16 @@ import com.google.common.collect.ImmutableList;
 import io.netty.buffer.ByteBuf;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import net.minecraft.SharedConstants;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.util.StringIdentifiable;
-
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.StringRepresentable;
 import fi.dy.masa.malilib.config.IConfigBoolean;
 import fi.dy.masa.minihud.config.RendererToggle;
 
-public enum DebugRenderType implements StringIdentifiable
+public enum DebugRenderType implements StringRepresentable
 {
 	DEBUG_ENABLED             ("debug_enabled",         RendererToggle.DEBUG_DATA_MAIN_TOGGLE),
 	PATHFINDING               ("pathfinding",           RendererToggle.DEBUG_PATH_FINDING),
@@ -40,8 +40,8 @@ public enum DebugRenderType implements StringIdentifiable
 //	SKYLIGHT_SECTIONS         ("skylight_sections",     RendererToggle.DEBUG_SKYLIGHT_SECTIONS),
 	;
 
-	public static final StringIdentifiable.EnumCodec<DebugRenderType> CODEC = StringIdentifiable.createCodec(DebugRenderType::values);
-	public static final PacketCodec<ByteBuf, DebugRenderType> PACKET_CODEC = PacketCodecs.STRING.xmap(DebugRenderType::fromStringStatic, DebugRenderType::asString);
+	public static final StringRepresentable.EnumCodec<DebugRenderType> CODEC = StringRepresentable.fromEnum(DebugRenderType::values);
+	public static final StreamCodec<ByteBuf, DebugRenderType> PACKET_CODEC = ByteBufCodecs.STRING_UTF8.map(DebugRenderType::fromStringStatic, DebugRenderType::getSerializedName);
 	public static final ImmutableList<@NotNull DebugRenderType> VALUES = ImmutableList.copyOf(values());
 
 	private final String name;
@@ -54,7 +54,7 @@ public enum DebugRenderType implements StringIdentifiable
 	}
 
 	@Override
-	public String asString()
+	public @NonNull String getSerializedName()
 	{
 		return this.getName();
 	}
@@ -75,19 +75,19 @@ public enum DebugRenderType implements StringIdentifiable
 		switch (this.name.toLowerCase())
 		{
 			case "debug_enabled" -> SharedConstants.DEBUG_ENABLED = toggle;
-			case "pathfinding" -> SharedConstants.PATHFINDING = toggle;
-			case "neighbor_updates" -> SharedConstants.NEIGHBORSUPDATE = toggle;
-			case "redstone_update_order" -> SharedConstants.EXPERIMENTAL_REDSTONEWIRE_UPDATE_ORDER = toggle;
-			case "structures" -> SharedConstants.STRUCTURES = toggle;
-			case "game_event_listeners" -> SharedConstants.GAME_EVENT_LISTENERS = toggle;
-			case "goal_selector" -> SharedConstants.GOAL_SELECTOR = toggle;
-			case "village_sections" -> SharedConstants.VILLAGE_SECTIONS = toggle;
-			case "brain" -> SharedConstants.BRAIN = toggle;
-			case "poi" -> SharedConstants.POI = toggle;
-			case "bees" -> SharedConstants.BEES = toggle;
-			case "raids" -> SharedConstants.RAIDS = toggle;
-			case "breeze" -> SharedConstants.BREEZE_MOB = toggle;
-			case "entity_block_intersect" -> SharedConstants.ENTITY_BLOCK_INTERSECTION = toggle;
+			case "pathfinding" -> SharedConstants.DEBUG_PATHFINDING = toggle;
+			case "neighbor_updates" -> SharedConstants.DEBUG_NEIGHBORSUPDATE = toggle;
+			case "redstone_update_order" -> SharedConstants.DEBUG_EXPERIMENTAL_REDSTONEWIRE_UPDATE_ORDER = toggle;
+			case "structures" -> SharedConstants.DEBUG_STRUCTURES = toggle;
+			case "game_event_listeners" -> SharedConstants.DEBUG_GAME_EVENT_LISTENERS = toggle;
+			case "goal_selector" -> SharedConstants.DEBUG_GOAL_SELECTOR = toggle;
+			case "village_sections" -> SharedConstants.DEBUG_VILLAGE_SECTIONS = toggle;
+			case "brain" -> SharedConstants.DEBUG_BRAIN = toggle;
+			case "poi" -> SharedConstants.DEBUG_POI = toggle;
+			case "bees" -> SharedConstants.DEBUG_BEES = toggle;
+			case "raids" -> SharedConstants.DEBUG_RAIDS = toggle;
+			case "breeze" -> SharedConstants.DEBUG_BREEZE_MOB = toggle;
+			case "entity_block_intersect" -> SharedConstants.DEBUG_ENTITY_BLOCK_INTERSECTION = toggle;
 			// 1.21.10-Only
 //			case "water" -> SharedConstants.WATER = toggle;
 //			case "heightmap" -> SharedConstants.HEIGHTMAP = toggle;

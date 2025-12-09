@@ -3,15 +3,15 @@ package fi.dy.masa.minihud.data;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.SpawnGroup;
-import net.minecraft.registry.RegistryKey;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.world.SpawnHelper;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.NaturalSpawner;
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.data.MobCapData.EntityCategory;
@@ -22,7 +22,7 @@ public class MobCapDataHandler
     protected static final Pattern PATTERN_CARPET_MOBCAPS = Pattern.compile("(?<hocu>[0-9-]+)/(?<hoca>-?[0-9]+),(?<pacu>[0-9-]+)/(?<paca>-?[0-9]+),(?<amcu>[0-9-]+)/(?<amca>-?[0-9]+),(?<axcu>[0-9-]+)/(?<axca>-?[0-9]+),(?<uwccu>[0-9-]+)/(?<uwcca>-?[0-9]+),(?<wccu>[0-9-]+)/(?<wcca>-?[0-9]+),(?<wacu>[0-9-]+)/(?<waca>-?[0-9]+),(?<micu>[0-9-]+)/(?<mica>-?[0-9]+)");
     protected static final EntityCategory[] ENTITY_CATEGORIES = EntityCategory.values();
 
-    protected final MinecraftClient mc = MinecraftClient.getInstance();
+    protected final Minecraft mc = Minecraft.getInstance();
     protected final MobCapData localData = new MobCapData();
     protected final MobCapData parsedServerData = new MobCapData();
     protected final MobCapData subscribedServerData = new MobCapData();
@@ -116,7 +116,7 @@ public class MobCapDataHandler
 
     protected long getWorldTick()
     {
-        return this.mc.world.getTime();
+        return this.mc.level.getGameTime();
     }
 
     private void setPlayerListParsedData(EntityCategory type, int currentValue, int capValue, long worldTick)
@@ -137,10 +137,10 @@ public class MobCapDataHandler
 
     public void updateIntegratedServerMobCaps()
     {
-        if (this.mc.isIntegratedServerRunning() && this.mc.world != null)
+        if (this.mc.hasSingleplayerServer() && this.mc.level != null)
         {
-            MinecraftServer server = this.mc.getServer();
-            RegistryKey<World> dim = this.mc.world.getRegistryKey();
+            MinecraftServer server = this.mc.getSingleplayerServer();
+            ResourceKey<Level> dim = this.mc.level.dimension();
 
             if (server == null)
             {
@@ -148,25 +148,25 @@ public class MobCapDataHandler
             }
 
             server.execute(() -> {
-                ServerWorld world = server.getWorld(dim);
+                ServerLevel world = server.getLevel(dim);
 
                 if (world != null)
                 {
                     MobCapData.Cap[] data = MobCapData.createCapArray();
-                    SpawnHelper.Info info = world.getChunkManager().getSpawnInfo();
+                    NaturalSpawner.SpawnState info = world.getChunkSource().getLastSpawnState();
 
                     if (info != null)
                     {
                         int spawnableChunks = MiscUtils.getSpawnableChunksCount(world);
                         int divisor = 17 * 17;
-                        long worldTime = world.getTime();
+                        long worldTime = world.getGameTime();
 
-                        for (Object2IntMap.Entry<SpawnGroup> entry : info.getGroupToCount().object2IntEntrySet())
+                        for (Object2IntMap.Entry<MobCategory> entry : info.getMobCategoryCounts().object2IntEntrySet())
                         {
                             EntityCategory category = EntityCategory.fromVanillaCategory(entry.getKey());
 
                             int current = entry.getIntValue();
-                            int cap = entry.getKey().getCapacity() * spawnableChunks / divisor;
+                            int cap = entry.getKey().getMaxInstancesPerChunk() * spawnableChunks / divisor;
                             data[category.ordinal()].setCurrentAndCap(current, cap);
                         }
 
@@ -184,9 +184,9 @@ public class MobCapDataHandler
         }
     }
 
-    public void parsePlayerListFooterMobCapData(Text textComponent)
+    public void parsePlayerListFooterMobCapData(Component textComponent)
     {
-        if (this.mc.world == null || InfoToggle.MOB_CAPS.getBooleanValue() == false)
+        if (this.mc.level == null || InfoToggle.MOB_CAPS.getBooleanValue() == false)
         {
             return;
         }
@@ -202,7 +202,7 @@ public class MobCapDataHandler
 
         if (str.isEmpty() == false)
         {
-            String text = Formatting.strip(str);
+            String text = ChatFormatting.stripFormatting(str);
             String[] lines = text.split("\n");
 
             for (String line : lines)

@@ -3,9 +3,7 @@ package fi.dy.masa.minihud.info.world;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nonnull;
-
-import net.minecraft.world.World;
-
+import net.minecraft.world.level.Level;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.info.InfoLine;
@@ -39,10 +37,10 @@ public class InfoLineEntities extends InfoLine
     }
 
     @Override
-    public List<Entry> parseWorld(@Nonnull World world)
+    public List<Entry> parseWorld(@Nonnull Level world)
     {
 		List<Entry> list = new ArrayList<>();
-	    String ent = this.mc().worldRenderer.getEntitiesDebugString();
+	    String ent = this.mc().levelRenderer.getEntityStatistics();
 
 		if (ent != null && !ent.isEmpty())
 		{

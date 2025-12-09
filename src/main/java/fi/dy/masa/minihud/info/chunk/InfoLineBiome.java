@@ -2,13 +2,11 @@ package fi.dy.masa.minihud.info.chunk;
 
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.chunk.LevelChunk;
 import org.jetbrains.annotations.NotNull;
-
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.util.Identifier;
-import net.minecraft.world.biome.Biome;
-import net.minecraft.world.chunk.WorldChunk;
-
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
@@ -40,12 +38,12 @@ public class InfoLineBiome extends InfoLine
         if (ctx.pos() != null && ctx.chunkPos() != null)
         {
 	        List<Entry> list = new ArrayList<>();
-			WorldChunk clientChunk = InfoLineChunkCache.INSTANCE.getClientChunk(ctx.chunkPos());
+			LevelChunk clientChunk = InfoLineChunkCache.INSTANCE.getClientChunk(ctx.chunkPos());
 
 	        if (clientChunk.isEmpty() == false)
 	        {
-		        Biome biome = this.mc().world.getBiome(ctx.pos()).value();
-		        Identifier id = this.mc().world.getRegistryManager().getOrThrow(RegistryKeys.BIOME).getId(biome);
+		        Biome biome = this.mc().level.getBiome(ctx.pos()).value();
+		        Identifier id = this.mc().level.registryAccess().lookupOrThrow(Registries.BIOME).getKey(biome);
 		        String translationKey = "biome." + id.toString().replace(":", ".");
 		        String biomeName = StringUtils.translate(translationKey);
 

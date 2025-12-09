@@ -3,11 +3,9 @@ package fi.dy.masa.minihud.info.camera;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nonnull;
-
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
-
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.info.InfoLine;
@@ -39,11 +37,11 @@ public class InfoLineDistance extends InfoLine
     }
 
     @Override
-    public List<Entry> parseEnt(@Nonnull World world, @Nonnull Entity ent)
+    public List<Entry> parseEnt(@Nonnull Level world, @Nonnull Entity ent)
     {
         List<Entry> list = new ArrayList<>();
-	    Vec3d ref = DataStorage.getInstance().getDistanceReferencePoint();
-	    double dist = Math.sqrt(ref.squaredDistanceTo(ent.getX(), ent.getY(), ent.getZ()));
+	    Vec3 ref = DataStorage.getInstance().getDistanceReferencePoint();
+	    double dist = Math.sqrt(ref.distanceToSqr(ent.getX(), ent.getY(), ent.getZ()));
 
 	    list.add(this.translate(DIST_KEY,
                                 dist,

@@ -2,12 +2,10 @@ package fi.dy.masa.minihud.info.player;
 
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
-
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.world.World;
-
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.info.InfoLine;
@@ -38,11 +36,11 @@ public class InfoLinePlayerExp extends InfoLine
     }
 
     @Override
-    public List<Entry> parseEnt(@NotNull World world, @NotNull Entity ent)
+    public List<Entry> parseEnt(@NotNull Level world, @NotNull Entity ent)
     {
         List<Entry> list = new ArrayList<>();
 
-		if (ent instanceof PlayerEntity player)
+		if (ent instanceof Player player)
 		{
 			list.add(this.translate(ENTITY_KEY,
 			                        player.experienceLevel,

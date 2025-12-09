@@ -3,8 +3,8 @@ package fi.dy.masa.minihud.info.world;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nonnull;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.info.InfoLine;
@@ -39,15 +39,15 @@ public class InfoLineLoadedChunks extends InfoLine
     }
 
     @Override
-    public List<Entry> parseWorld(@Nonnull World world)
+    public List<Entry> parseWorld(@Nonnull Level world)
     {
         List<Entry> list = new ArrayList<>();
-        String chunksClient = this.getClientWorld().asString();
+        String chunksClient = this.getClientWorld().gatherChunkSourceStats();
 
-        if (world instanceof ServerWorld sw)
+        if (world instanceof ServerLevel sw)
         {
-            int chunksServer = sw.getChunkManager().getLoadedChunkCount();
-            int chunksServerTot = ((IServerChunkLoading) sw.getChunkManager().chunkLoadingManager).minihud_getTotalLoadedChunksCount();
+            int chunksServer = sw.getChunkSource().getLoadedChunksCount();
+            int chunksServerTot = ((IServerChunkLoading) sw.getChunkSource().chunkMap).minihud_getTotalLoadedChunksCount();
             list.add(this.translate(CHUNKS_KEY+".server", chunksServer, chunksServerTot, chunksClient));
         }
         else

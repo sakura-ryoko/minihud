@@ -2,14 +2,12 @@ package fi.dy.masa.minihud.info.entity;
 
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.animal.dolphin.Dolphin;
+import net.minecraft.world.level.Level;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
-
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.passive.DolphinEntity;
-import net.minecraft.world.World;
-
 import fi.dy.masa.malilib.util.data.DataEntityUtils;
 import fi.dy.masa.malilib.util.data.tag.CompoundData;
 import fi.dy.masa.minihud.Reference;
@@ -51,7 +49,7 @@ public class InfoLineDolphinTreasure extends InfoLine
     }
 
     @Override
-    public List<Entry> parseData(@NotNull World world, @NotNull EntityType<?> entityType, @NotNull CompoundData data)
+    public List<Entry> parseData(@NotNull Level world, @NotNull EntityType<?> entityType, @NotNull CompoundData data)
     {
         Pair<Integer, Boolean> dolphiPair = DataEntityUtils.getDolphinData(data);
         List<Entry> list = new ArrayList<>();
@@ -88,13 +86,13 @@ public class InfoLineDolphinTreasure extends InfoLine
     }
 
     @Override
-    public List<Entry> parseEnt(@NotNull World world, @NotNull Entity ent)
+    public List<Entry> parseEnt(@NotNull Level world, @NotNull Entity ent)
     {
         List<Entry> list = new ArrayList<>();
 
-        if (ent instanceof DolphinEntity dolphin)
+        if (ent instanceof Dolphin dolphin)
         {
-            int dryTime = dolphin.getMoistness();
+            int dryTime = dolphin.getMoistnessLevel();
 
             /*
             if (dryTime == 2400)

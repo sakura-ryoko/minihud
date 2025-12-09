@@ -3,13 +3,11 @@ package fi.dy.masa.minihud.renderer;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.phys.Vec3;
 import com.google.gson.JsonObject;
-
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
-import net.minecraft.world.chunk.WorldChunk;
-
 import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.WorldUtils;
 
@@ -20,14 +18,14 @@ public abstract class OverlayRendererBase implements IOverlayRenderer
     protected boolean useCulling;
     protected float glLineWidth;
     @Nullable protected BlockPos lastUpdatePos;
-    private Vec3d updateCameraPos;
+    private Vec3 updateCameraPos;
     protected boolean shouldResort;
 
     public OverlayRendererBase()
     {
         this.glLineWidth = 1.0f;
-        this.lastUpdatePos = BlockPos.ORIGIN;
-        this.updateCameraPos = Vec3d.ZERO;
+        this.lastUpdatePos = BlockPos.ZERO;
+        this.updateCameraPos = Vec3.ZERO;
         this.renderThrough = false;
         this.useCulling = false;
         this.shouldResort = false;
@@ -64,18 +62,18 @@ public abstract class OverlayRendererBase implements IOverlayRenderer
     }
 
     @Override
-    public final Vec3d getUpdatePosition()
+    public final Vec3 getUpdatePosition()
     {
         return this.updateCameraPos;
     }
 
     @Override
-    public final void setUpdatePosition(Vec3d cameraPosition)
+    public final void setUpdatePosition(Vec3 cameraPosition)
     {
         this.updateCameraPos = cameraPosition;
     }
 
-    protected int getTopYOverTerrain(World world, BlockPos pos, int range)
+    protected int getTopYOverTerrain(Level world, BlockPos pos, int range)
     {
         final int minX = pos.getX() - range;
         final int minZ = pos.getZ() - range;
@@ -92,7 +90,7 @@ public abstract class OverlayRendererBase implements IOverlayRenderer
         {
             for (int cx = minCX; cx <= maxCX; ++cx)
             {
-                WorldChunk chunk = world.getChunk(cx, cz);
+                LevelChunk chunk = world.getChunk(cx, cz);
                 int height = WorldUtils.getHighestSectionYOffset(chunk) + 15;
 
                 if (height > maxY)
@@ -106,7 +104,7 @@ public abstract class OverlayRendererBase implements IOverlayRenderer
     }
 
     @Override
-    public void draw(Vec3d cameraPos)
+    public void draw(Vec3 cameraPos)
     {
         for (RenderObjectVbo obj : this.renderObjects)
         {
@@ -128,8 +126,8 @@ public abstract class OverlayRendererBase implements IOverlayRenderer
     {
         this.resetBuffers();
         this.glLineWidth = 1f;
-        this.lastUpdatePos = BlockPos.ORIGIN;
-        this.updateCameraPos = Vec3d.ZERO;
+        this.lastUpdatePos = BlockPos.ZERO;
+        this.updateCameraPos = Vec3.ZERO;
     }
 
     public void setRenderThrough(boolean renderThrough)

@@ -3,8 +3,8 @@ package fi.dy.masa.minihud.info.block;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nonnull;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
@@ -41,7 +41,7 @@ public class InfoLineLookingAtBlock extends InfoLine
     }
 
     @Override
-    public List<Entry> parseBlockPos(@Nonnull World world, @Nonnull BlockPos pos)
+    public List<Entry> parseBlockPos(@Nonnull Level world, @Nonnull BlockPos pos)
     {
         List<Entry> list = new ArrayList<>();
 

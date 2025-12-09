@@ -5,9 +5,9 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import javax.annotation.Nullable;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.phys.Vec3;
 import it.unimi.dsi.fastutil.longs.Long2ByteOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
@@ -18,11 +18,11 @@ import fi.dy.masa.minihud.util.ShapeRenderType;
 
 public class SphereUtils
 {
-    public static void collectSpherePositions(Consumer<BlockPos.Mutable> positionConsumer,
+    public static void collectSpherePositions(Consumer<BlockPos.MutableBlockPos> positionConsumer,
                                               SphereUtils.RingPositionTest test,
                                               BlockPos centerPos, int radius)
     {
-        BlockPos.Mutable mutablePos = new BlockPos.Mutable();
+        BlockPos.MutableBlockPos mutablePos = new BlockPos.MutableBlockPos();
 
         //long before = System.nanoTime();
         mutablePos.set(centerPos);
@@ -52,13 +52,13 @@ public class SphereUtils
         //System.out.printf("time: %.6f s\n", (double) (System.nanoTime() - before) / 1000000000D);
     }
 
-    public static boolean movePositionToRing(BlockPos.Mutable posMutable,
+    public static boolean movePositionToRing(BlockPos.MutableBlockPos posMutable,
                                              Direction moveDirection,
                                              RingPositionTest test)
     {
-        final int incX = moveDirection.getOffsetX();
-        final int incY = moveDirection.getOffsetY();
-        final int incZ = moveDirection.getOffsetZ();
+        final int incX = moveDirection.getStepX();
+        final int incY = moveDirection.getStepY();
+        final int incZ = moveDirection.getStepZ();
         int x = posMutable.getX();
         int y = posMutable.getY();
         int z = posMutable.getZ();
@@ -86,8 +86,8 @@ public class SphereUtils
         return false;
     }
 
-    public static void addPositionsOnHorizontalBlockRing(Consumer<BlockPos.Mutable> positionConsumer,
-                                                         BlockPos.Mutable mutablePos,
+    public static void addPositionsOnHorizontalBlockRing(Consumer<BlockPos.MutableBlockPos> positionConsumer,
+                                                         BlockPos.MutableBlockPos mutablePos,
                                                          RingPositionTest test)
     {
         Function<Direction, Direction> nextDirectionFunction = SphereUtils::getNextHorizontalDirection;
@@ -95,8 +95,8 @@ public class SphereUtils
         addPositionsOnBlockRing(positionConsumer, mutablePos, startDirection, test, nextDirectionFunction);
     }
 
-    public static void addPositionsOnVerticalBlockRing(Consumer<BlockPos.Mutable> positionConsumer,
-                                                       BlockPos.Mutable mutablePos,
+    public static void addPositionsOnVerticalBlockRing(Consumer<BlockPos.MutableBlockPos> positionConsumer,
+                                                       BlockPos.MutableBlockPos mutablePos,
                                                        Direction mainAxis,
                                                        RingPositionTest test)
     {
@@ -105,8 +105,8 @@ public class SphereUtils
         addPositionsOnBlockRing(positionConsumer, mutablePos, startDirection, test, nextDirectionFunction);
     }
 
-    public static void addPositionsOnBlockRing(Consumer<BlockPos.Mutable> positionConsumer,
-                                               BlockPos.Mutable mutablePos,
+    public static void addPositionsOnBlockRing(Consumer<BlockPos.MutableBlockPos> positionConsumer,
+                                               BlockPos.MutableBlockPos mutablePos,
                                                Direction startDirection,
                                                RingPositionTest test,
                                                Function<Direction, Direction> nextDirectionFunction)
@@ -114,7 +114,7 @@ public class SphereUtils
         if (movePositionToRing(mutablePos, startDirection, test))
         {
             LongOpenHashSet seenPositions = new LongOpenHashSet();
-            final BlockPos firstPos = mutablePos.toImmutable();
+            final BlockPos firstPos = mutablePos.immutable();
             Direction direction = startDirection;
 
             positionConsumer.accept(mutablePos);
@@ -136,7 +136,7 @@ public class SphereUtils
     }
 
     @Nullable
-    public static Direction getNextPositionOnBlockRing(BlockPos.Mutable posMutable,
+    public static Direction getNextPositionOnBlockRing(BlockPos.MutableBlockPos posMutable,
                                                        Direction escapeDirection,
                                                        RingPositionTest test,
                                                        Function<Direction, Direction> nextDirectionFunction)
@@ -146,9 +146,9 @@ public class SphereUtils
 
         for (int i = 0; i < 4; ++i)
         {
-            int x = posMutable.getX() + escapeDirection.getOffsetX();
-            int y = posMutable.getY() + escapeDirection.getOffsetY();
-            int z = posMutable.getZ() + escapeDirection.getOffsetZ();
+            int x = posMutable.getX() + escapeDirection.getStepX();
+            int y = posMutable.getY() + escapeDirection.getStepY();
+            int z = posMutable.getZ() + escapeDirection.getStepZ();
 
             // First check the adjacent position
             if (test.isInsideOrCloserThan(x, y, z, escapeDirection))
@@ -160,9 +160,9 @@ public class SphereUtils
             ccw90 = nextDirectionFunction.apply(escapeDirection);
 
             // Then check the diagonal position
-            x += ccw90.getOffsetX();
-            y += ccw90.getOffsetY();
-            z += ccw90.getOffsetZ();
+            x += ccw90.getStepX();
+            y += ccw90.getStepY();
+            z += ccw90.getStepZ();
 
             if (test.isInsideOrCloserThan(x, y, z, escapeDirection))
             {
@@ -181,14 +181,14 @@ public class SphereUtils
     public static boolean isPositionInsideOrClosestToRadiusOnBlockRing(int blockX,
                                                                        int blockY,
                                                                        int blockZ,
-                                                                       Vec3d center,
+                                                                       Vec3 center,
                                                                        double squareRadius,
                                                                        Direction escapeDirection)
     {
         double x = (double) blockX + 0.5;
         double y = (double) blockY + 0.5;
         double z = (double) blockZ + 0.5;
-        double dist = center.squaredDistanceTo(x, y, z);
+        double dist = center.distanceToSqr(x, y, z);
         double diff = squareRadius - dist;
 
 	    return diff >= 0;
@@ -199,7 +199,7 @@ public class SphereUtils
      */
     public static Direction getNextHorizontalDirection(Direction dirIn)
     {
-        return dirIn.rotateYCounterclockwise();
+        return dirIn.getCounterClockWise();
     }
 
     /**
@@ -393,7 +393,7 @@ public class SphereUtils
                                                   Direction side,
                                                   Long2ByteOpenHashMap handledPositions)
     {
-        byte sideMask = (byte) (1 << side.getIndex());
+        byte sideMask = (byte) (1 << side.get3DDataValue());
         byte val = handledPositions.get(pos);
 
         if ((val & sideMask) != 0)
@@ -425,9 +425,9 @@ public class SphereUtils
             return true;
         }
 
-        int adjX = BlockPos.unpackLongX(adjPos);
-        int adjY = BlockPos.unpackLongY(adjPos);
-        int adjZ = BlockPos.unpackLongZ(adjPos);
+        int adjX = BlockPos.getX(adjPos);
+        int adjY = BlockPos.getY(adjPos);
+        int adjZ = BlockPos.getZ(adjPos);
         boolean onOrIn = test.isInsideOrCloserThan(adjX, adjY, adjZ, side);
 
         return ((renderType == ShapeRenderType.OUTER_EDGE && onOrIn == false) ||
@@ -464,18 +464,18 @@ public class SphereUtils
 
     public static long offsetPos(long pos, Direction direction, int amount)
     {
-        return BlockPos.add(pos,
-                            direction.getOffsetX() * amount,
-                            direction.getOffsetY() * amount,
-                            direction.getOffsetZ() * amount);
+        return BlockPos.offset(pos,
+                            direction.getStepX() * amount,
+                            direction.getStepY() * amount,
+                            direction.getStepZ() * amount);
     }
 
     public static long getCompressedPosSide(long pos, Direction side)
     {
-        int x = BlockPos.unpackLongX(pos);
-        int y = BlockPos.unpackLongY(pos);
-        int z = BlockPos.unpackLongZ(pos);
-        long val = (1L << side.getIndex()) << 58;
+        int x = BlockPos.getX(pos);
+        int y = BlockPos.getY(pos);
+        int z = BlockPos.getZ(pos);
+        long val = (1L << side.get3DDataValue()) << 58;
         val |= (y & 0x3FFFL  ) << 44; // 14 bits for the y
         val |= (z & 0x3FFFFFL) << 22; // 22 bits for the z
         val |= (x & 0x3FFFFFL)      ; // 22 bits for the x

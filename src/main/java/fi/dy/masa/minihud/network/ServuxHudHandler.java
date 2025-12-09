@@ -1,16 +1,18 @@
 package fi.dy.masa.minihud.network;
 
+import org.jspecify.annotations.NonNull;
+
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtSizeTracker;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtAccounter;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.RandomSource;
 import net.minecraft.util.Util;
-import net.minecraft.util.math.random.Random;
 import fi.dy.masa.malilib.network.IClientPayloadData;
 import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
 import fi.dy.masa.malilib.network.PacketSplitter;
@@ -18,18 +20,19 @@ import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.data.HudDataManager;
 
 @Environment(EnvType.CLIENT)
-public abstract class ServuxHudHandler<T extends CustomPayload> implements IPluginClientPlayHandler<T>
+public abstract class ServuxHudHandler<T extends CustomPacketPayload> implements IPluginClientPlayHandler<T>
 {
-    private static final ServuxHudHandler<ServuxHudPacket.Payload> INSTANCE = new ServuxHudHandler<>() {
+    private static final ServuxHudHandler<ServuxHudPacket.Payload> INSTANCE = new ServuxHudHandler<>()
+    {
         @Override
-        public void receive(ServuxHudPacket.Payload payload, ClientPlayNetworking.Context context)
+        public void receive(ServuxHudPacket.Payload payload, ClientPlayNetworking.@NonNull Context context)
         {
             ServuxHudHandler.INSTANCE.receivePlayPayload(payload, context);
         }
     };
     public static ServuxHudHandler<ServuxHudPacket.Payload> getInstance() { return INSTANCE; }
 
-    public static final Identifier CHANNEL_ID = Identifier.of("servux", "hud_metadata");
+    public static final Identifier CHANNEL_ID = Identifier.fromNamespaceAndPath("servux", "hud_metadata");
 
     private boolean servuxRegistered;
     private boolean payloadRegistered = false;
@@ -85,18 +88,18 @@ public abstract class ServuxHudHandler<T extends CustomPayload> implements IPlug
             {
                 if (this.readingSessionKey == -1)
                 {
-                    this.readingSessionKey = Random.create(Util.getMeasuringTimeMs()).nextLong();
+                    this.readingSessionKey = RandomSource.create(Util.getMillis()).nextLong();
                 }
 
                 MiniHUD.debugLog("ServuxHudHandler#decodeClientData(): received Hud Data Packet Slice of size {} (in bytes) // reading session key [{}]", packet.getTotalSize(), this.readingSessionKey);
-                PacketByteBuf fullPacket = PacketSplitter.receive(this, this.readingSessionKey, packet.getBuffer());
+                FriendlyByteBuf fullPacket = PacketSplitter.receive(this, this.readingSessionKey, packet.getBuffer());
 
                 if (fullPacket != null)
                 {
                     try
                     {
                         this.readingSessionKey = -1;
-                        HudDataManager.getInstance().receiveRecipeManager((NbtCompound) fullPacket.readNbt(NbtSizeTracker.ofUnlimitedBytes()));
+                        HudDataManager.getInstance().receiveRecipeManager((CompoundTag) fullPacket.readNbt(NbtAccounter.unlimitedHeap()));
                     }
                     catch (Exception e)
                     {
@@ -128,7 +131,7 @@ public abstract class ServuxHudHandler<T extends CustomPayload> implements IPlug
     }
 
     @Override
-    public void encodeWithSplitter(PacketByteBuf buf, ClientPlayNetworkHandler handler)
+    public void encodeWithSplitter(FriendlyByteBuf buf, ClientPacketListener handler)
     {
         // NO-OP
     }
@@ -136,7 +139,7 @@ public abstract class ServuxHudHandler<T extends CustomPayload> implements IPlug
     @Override
     public void receivePlayPayload(T payload, ClientPlayNetworking.Context ctx)
     {
-        if (payload.getId().id().equals(CHANNEL_ID))
+        if (payload.type().id().equals(CHANNEL_ID))
         {
             ServuxHudHandler.INSTANCE.decodeClientData(CHANNEL_ID, ((ServuxHudPacket.Payload) payload).data());
         }

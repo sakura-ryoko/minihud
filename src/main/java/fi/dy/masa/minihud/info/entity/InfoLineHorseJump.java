@@ -3,15 +3,13 @@ package fi.dy.masa.minihud.info.entity;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.level.Level;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
-
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.passive.AbstractHorseEntity;
-import net.minecraft.world.World;
-
 import fi.dy.masa.malilib.util.data.DataEntityUtils;
 import fi.dy.masa.malilib.util.data.tag.CompoundData;
 import fi.dy.masa.minihud.Reference;
@@ -39,7 +37,7 @@ public class InfoLineHorseJump extends InfoLine
     /**
      * Calculates the maximum jump height in blocks from a horse's jump strength
      * attribute.
-     *
+     * -
      * The calculation is based on:
      * 1. Converting jump strength attribute to jump velocity using a quadratic
      * formula
@@ -71,7 +69,7 @@ public class InfoLineHorseJump extends InfoLine
         {
             Entity vehicle = Objects.requireNonNull(this.mc().player).getVehicle();
 
-            if (vehicle instanceof AbstractHorseEntity)
+            if (vehicle instanceof AbstractHorse)
             {
                 return this.parseEnt(ctx.world(), vehicle);
             }
@@ -94,10 +92,10 @@ public class InfoLineHorseJump extends InfoLine
     }
 
     @Override
-    public List<Entry> parseData(@NotNull World world, @NotNull EntityType<?> entityType, @NotNull CompoundData data)
+    public List<Entry> parseData(@NotNull Level world, @NotNull EntityType<?> entityType, @NotNull CompoundData data)
     {
         List<Entry> list = new ArrayList<>();
-        String horseType = entityType.getName().getString();
+        String horseType = entityType.getDescription().getString();
 
         if (entityType.equals(EntityType.CAMEL) ||
             entityType.equals(EntityType.CAMEL_HUSK) ||
@@ -124,14 +122,14 @@ public class InfoLineHorseJump extends InfoLine
     }
 
     @Override
-    public List<Entry> parseEnt(@NotNull World world, @NotNull Entity ent)
+    public List<Entry> parseEnt(@NotNull Level world, @NotNull Entity ent)
     {
         List<Entry> list = new ArrayList<>();
 
-        if (ent instanceof AbstractHorseEntity horse)
+        if (ent instanceof AbstractHorse horse)
         {
-            String horseType = horse.getType().getName().getString();
-            double jump = horse.getAttributeValue(EntityAttributes.JUMP_STRENGTH);
+            String horseType = horse.getType().getDescription().getString();
+            double jump = horse.getAttributeValue(Attributes.JUMP_STRENGTH);
 
             if (jump > 0d)
             {

@@ -2,11 +2,11 @@ package fi.dy.masa.minihud.renderer;
 
 import org.joml.Matrix4f;
 import fi.dy.masa.malilib.util.EntityUtils;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.Camera;
-import net.minecraft.client.render.Frustum;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.profiler.Profiler;
+import net.minecraft.client.Camera;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.culling.Frustum;
+import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.world.entity.Entity;
 
 public class OverlayRenderer
 {
@@ -19,7 +19,7 @@ public class OverlayRenderer
         loginTime = System.currentTimeMillis();
     }
 
-    public static void renderOverlays(Matrix4f posMatrix, Matrix4f projMatrix, MinecraftClient mc, Frustum frustum, Camera camera, Profiler profiler)
+    public static void renderOverlays(Matrix4f posMatrix, Matrix4f projMatrix, Minecraft mc, Frustum frustum, Camera camera, ProfilerFiller profiler)
     {
         Entity entity = EntityUtils.getCameraEntity();
 

@@ -3,11 +3,9 @@ package fi.dy.masa.minihud.info.camera;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nonnull;
-
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
-
+import net.minecraft.core.Direction;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
@@ -39,11 +37,11 @@ public class InfoLineFacing extends InfoLine
     }
 
     @Override
-    public List<Entry> parseEnt(@Nonnull World world, @Nonnull Entity ent)
+    public List<Entry> parseEnt(@Nonnull Level world, @Nonnull Entity ent)
     {
         List<Entry> list = new ArrayList<>();
 
-	    Direction facing = ent.getHorizontalFacing();
+	    Direction facing = ent.getDirection();
 	    String facingName = StringUtils.translate(FACING_KEY+"." + facing.name().toLowerCase() + ".name");
 	    String str;
 

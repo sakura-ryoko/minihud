@@ -3,11 +3,9 @@ package fi.dy.masa.minihud.info.world;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nonnull;
-
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.world.World;
-
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.info.InfoLine;
@@ -43,13 +41,13 @@ public class InfoLineEntitiesClientWorld extends InfoLine
     }
 
     @Override
-    public List<Entry> parseWorld(@Nonnull World world)
+    public List<Entry> parseWorld(@Nonnull Level world)
     {
         List<Entry> list = new ArrayList<>();
-	    int countClient = ((ClientWorld) this.getClientWorld()).getRegularEntityCount();
+	    int countClient = ((ClientLevel) this.getClientWorld()).getEntityCount();
 
-	    if (this.mc().isIntegratedServerRunning() &&
-		    world instanceof ServerWorld serverWorld)
+	    if (this.mc().hasSingleplayerServer() &&
+		    world instanceof ServerLevel serverWorld)
 	    {
 		    IServerEntityManager manager = (IServerEntityManager) ((IMixinServerWorld) serverWorld).minihud_getEntityManager();
 		    int indexSize = manager.minihud$getIndexSize();

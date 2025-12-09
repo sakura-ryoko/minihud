@@ -5,7 +5,9 @@ import java.util.List;
 import javax.annotation.Nonnull;
 
 import fi.dy.masa.minihud.Reference;
+import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.InfoToggle;
+import fi.dy.masa.minihud.config.RendererToggle;
 import fi.dy.masa.minihud.info.InfoLine;
 
 public class InfoLineServux extends InfoLine
@@ -32,73 +34,122 @@ public class InfoLineServux extends InfoLine
     {
         List<Entry> list = new ArrayList<>();
 
-        if (this.getEntData().hasServuxServer())
+        if (!this.getData().hasIntegratedServer())
         {
-            list.add(this.translate(SERVUX_KEY,
-                                    this.getEntData().getServuxVersion()
-            ));
-        }
-        else if (this.getData().hasServuxServer())
-        {
-            list.add(this.translate(SERVUX_KEY,
-                                    this.getData().getServuxVersion()
-            ));
-        }
-        else if (this.getHudData().hasServuxServer())
-        {
-            list.add(this.translate(SERVUX_KEY,
-                                    this.getHudData().getServuxVersion()
-            ));
-        }
-        else if (!this.getData().hasIntegratedServer() &&
-                !this.getEntData().hasServuxServer() &&
-                !this.getHudData().hasServuxServer())
-        {
-            list.add(this.translate(SERVUX_KEY+".not_connected"));
-        }
+            if (this.getEntData().hasServuxServer())
+            {
+                list.add(this.translate(SERVUX_KEY,
+                                        this.getEntData().getServuxVersion()
+                ));
+            }
+            else if (this.getData().hasServuxServer())
+            {
+                list.add(this.translate(SERVUX_KEY,
+                                        this.getData().getServuxVersion()
+                ));
+            }
+            else if (this.getHudData().hasServuxServer())
+            {
+                list.add(this.translate(SERVUX_KEY,
+                                        this.getHudData().getServuxVersion()
+                ));
+            }
 
-        if (this.getEntData().hasServuxServer() ||
-            this.getEntData().hasBackupStatus())
-        {
-            list.add(this.translate(SERVUX_KEY+".entity_sync",
-                                    this.getEntData().getBlockEntityCacheCount(),
-                                    this.getEntData().getPendingBlockEntitiesCount(),
-                                    this.getEntData().getEntityCacheCount(),
-                                    this.getEntData().getPendingEntitiesCount()
-            ));
-        }
-
-        if (this.getData().hasServuxServer())
-        {
-            list.add(this.translate(SERVUX_KEY+".structures",
-                                    this.getData().getStrucutreCount(),
+            if (!Configs.Generic.HUD_DATA_SYNC.getBooleanValue())
+            {
+                list.add(this.translate(SERVUX_KEY + ".hud_sync.not_enabled"));
+            }
+            else if (!this.getHudData().hasServuxServer())
+            {
+                list.add(this.translate(SERVUX_KEY + ".hud_sync.not_connected"));
+            }
+            else if (this.getHudData().hasServuxServer())
+            {
+                list.add(this.translate(SERVUX_KEY+".hud_sync",
 //                                    this.getHudData().getSpawnChunkRadius(),
-                                    this.getHudData().getWorldSpawnAsString(),
-                                    this.getHudData().isWorldSpawnKnown()
+                                        this.getHudData().getWorldSpawnAsString(),
+                                        this.getHudData().isWorldSpawnKnown()
                                         ? this.qt(YES_KEY)
                                         : this.qt(NO_KEY)
-            ));
-        }
-        else if (this.getHudData().hasServuxServer())
-        {
-            list.add(this.translate(SERVUX_KEY+".no_structures_hud",
-//                                    this.getHudData().getSpawnChunkRadius(),
-                                    this.getHudData().getWorldSpawnAsString(),
-                                    this.getHudData().isWorldSpawnKnown()
-                                        ? this.qt(YES_KEY)
-                                        : this.qt(NO_KEY)
-            ));
+                ));
+            }
+
+            if (!Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue() &&
+                !Configs.Generic.ENTITY_DATA_SYNC_BACKUP.getBooleanValue())
+            {
+                list.add(this.translate(SERVUX_KEY + ".entity_sync.not_enabled"));
+            }
+            else if (Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue() &&
+                     !this.getHudData().hasServuxServer())
+            {
+                list.add(this.translate(SERVUX_KEY + ".entity_sync.not_connected"));
+            }
+            else if (this.getEntData().hasServuxServer())
+            {
+                list.add(this.translate(SERVUX_KEY+".entity_sync",
+                                        this.getEntData().getBlockEntityCacheCount(),
+                                        this.getEntData().getPendingBlockEntitiesCount(),
+                                        this.getEntData().getEntityCacheCount(),
+                                        this.getEntData().getPendingEntitiesCount()
+                ));
+            }
+            else if (this.getEntData().hasBackupStatus())
+            {
+                    list.add(this.translate(SERVUX_KEY + ".entity_sync.backup",
+                                            this.getEntData().getBlockEntityCacheCount(),
+                                            this.getEntData().getPendingBlockEntitiesCount(),
+                                            this.getEntData().getEntityCacheCount(),
+                                            this.getEntData().getPendingEntitiesCount()
+                    ));
+            }
+            else if (Configs.Generic.ENTITY_DATA_SYNC_BACKUP.getBooleanValue() &&
+                     !this.getEntData().hasOperatorStatus())
+            {
+                list.add(this.translate(SERVUX_KEY + ".entity_sync.not_operator"));
+            }
+
+            if (!RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue())
+            {
+                list.add(this.translate(SERVUX_KEY + ".structures.not_enabled"));
+            }
+            else if (!this.getData().hasServuxServer())
+            {
+                list.add(this.translate(SERVUX_KEY + ".structures.not_connected"));
+            }
+            else if (this.getData().hasServuxServer())
+            {
+                list.add(this.translate(SERVUX_KEY+".structures.servux",
+                                        this.getData().getStrucutreCount(),
+                                        this.getData().getStructureDataMaxRange(),
+                                        this.getData().getServerRenderDistance()
+                ));
+            }
         }
         else if (this.getData().hasIntegratedServer())
         {
-            list.add(this.translate(SERVUX_KEY+".structures_integrated",
-                                    this.getData().getStrucutreCount(),
+            list.add(this.translate(SERVUX_KEY + ".hud_sync.integrated",
 //                                    this.getHudData().getSpawnChunkRadius(),
                                     this.getHudData().getWorldSpawnAsString(),
                                     this.getHudData().isWorldSpawnKnown()
-                                        ? this.qt(YES_KEY)
-                                        : this.qt(NO_KEY)
+                                    ? this.qt(YES_KEY)
+                                    : this.qt(NO_KEY)
             ));
+
+//            list.add(this.translate(SERVUX_KEY+".entity_sync.integrated",
+//                                    this.getEntData().getBlockEntityCacheCount(),
+//                                    this.getEntData().getPendingBlockEntitiesCount(),
+//                                    this.getEntData().getEntityCacheCount(),
+//                                    this.getEntData().getPendingEntitiesCount()
+//            ));
+
+            if (RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue())
+            {
+                list.add(this.translate(SERVUX_KEY + ".structures.integrated",
+                                        this.getData().getStrucutreCount(),
+                                        this.getData().getStructureDataMaxRange(),
+                                        this.getData().getServerRenderDistance()
+                ));
+            }
         }
 
         return list;

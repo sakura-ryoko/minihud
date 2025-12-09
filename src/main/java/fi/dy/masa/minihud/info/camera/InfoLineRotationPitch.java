@@ -3,11 +3,9 @@ package fi.dy.masa.minihud.info.camera;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nonnull;
-
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.World;
-
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.InfoToggle;
@@ -42,7 +40,7 @@ public class InfoLineRotationPitch extends InfoLine
     }
 
     @Override
-    public List<Entry> parseEnt(@Nonnull World world, @Nonnull Entity ent)
+    public List<Entry> parseEnt(@Nonnull Level world, @Nonnull Entity ent)
     {
 	    SpeedUnits speedUnits = (SpeedUnits) Configs.Generic.SPEED_UNITS.getOptionListValue();
 	    List<Entry> list = new ArrayList<>();
@@ -51,21 +49,21 @@ public class InfoLineRotationPitch extends InfoLine
 
 	    if (InfoToggle.ROTATION_YAW.getBooleanValue())
 	    {
-		    str.append(this.qt(ROT_YAW_KEY, MathHelper.wrapDegrees(ent.getYaw())));
+		    str.append(this.qt(ROT_YAW_KEY, Mth.wrapDegrees(ent.getYRot())));
 		    pre = " / ";
 	    }
 
 	    if (InfoToggle.ROTATION_PITCH.getBooleanValue())
 	    {
-		    str.append(pre).append(this.qt(ROT_PITCH_KEY, MathHelper.wrapDegrees(ent.getPitch())));
+		    str.append(pre).append(this.qt(ROT_PITCH_KEY, Mth.wrapDegrees(ent.getXRot())));
 		    pre = " / ";
 	    }
 
 	    if (InfoToggle.SPEED.getBooleanValue())
 	    {
-		    double dx = ent.getX() - ent.lastRenderX;
-		    double dy = ent.getY() - ent.lastRenderY;
-		    double dz = ent.getZ() - ent.lastRenderZ;
+		    double dx = ent.getX() - ent.xOld;
+		    double dy = ent.getY() - ent.yOld;
+		    double dz = ent.getZ() - ent.zOld;
 		    double dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
 
 		    str.append(pre).append(this.qt(SPEED_KEY + speedUnits.suffix,

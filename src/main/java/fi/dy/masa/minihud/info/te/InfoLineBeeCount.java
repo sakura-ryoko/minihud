@@ -3,14 +3,12 @@ package fi.dy.masa.minihud.info.te;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nonnull;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BeehiveBlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import org.apache.commons.lang3.tuple.Pair;
-
-import net.minecraft.block.entity.BeehiveBlockEntity;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-
 import fi.dy.masa.malilib.util.data.DataBlockUtils;
 import fi.dy.masa.malilib.util.data.tag.CompoundData;
 import fi.dy.masa.minihud.Reference;
@@ -52,16 +50,16 @@ public class InfoLineBeeCount extends InfoLine
     }
 
     @Override
-    public List<Entry> parseData(@Nonnull World world, @Nonnull BlockEntityType<?> beType, @Nonnull CompoundData data)
+    public List<Entry> parseData(@Nonnull Level world, @Nonnull BlockEntityType<?> beType, @Nonnull CompoundData data)
     {
         List<Entry> list = new ArrayList<>();
 
         if (beType.equals(BlockEntityType.BEEHIVE))
         {
-            Pair<List<BeehiveBlockEntity.BeeData>, BlockPos> bees = DataBlockUtils.getBeesData(data);
+            Pair<List<BeehiveBlockEntity.Occupant>, BlockPos> bees = DataBlockUtils.getBeesData(data);
 
             // This probably means no Server Data, so don't show the flower_pos
-            if (bees.getRight().equals(BlockPos.ORIGIN))
+            if (bees.getRight().equals(BlockPos.ZERO))
             {
                 list.add(this.translate(BEES_KEY, bees.getLeft().size()));
             }
@@ -75,13 +73,13 @@ public class InfoLineBeeCount extends InfoLine
     }
 
     @Override
-    public List<Entry> parseBlockEnt(@Nonnull World world, @Nonnull BlockEntity be)
+    public List<Entry> parseBlockEnt(@Nonnull Level world, @Nonnull BlockEntity be)
     {
         List<Entry> list = new ArrayList<>();
 
         if (be instanceof BeehiveBlockEntity bbe)
         {
-            list.add(this.translate(BEES_KEY, bbe.getBeeCount()));
+            list.add(this.translate(BEES_KEY, bbe.getOccupantCount()));
         }
 
         return list;

@@ -1,9 +1,9 @@
 package fi.dy.masa.minihud.mixin.network;
 
-import net.minecraft.client.network.ClientCommonNetworkHandler;
+import net.minecraft.client.multiplayer.ClientCommonPacketListenerImpl;
 import org.spongepowered.asm.mixin.Mixin;
 
-@Mixin(value = ClientCommonNetworkHandler.class, priority = 999)
+@Mixin(value = ClientCommonPacketListenerImpl.class, priority = 999)
 public abstract class MixinClientCommonNetworkHandler
 {
     /*

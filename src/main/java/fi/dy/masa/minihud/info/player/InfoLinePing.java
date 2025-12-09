@@ -2,14 +2,11 @@ package fi.dy.masa.minihud.info.player;
 
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.client.multiplayer.PlayerInfo;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
-
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.network.PlayerListEntry;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.world.World;
-
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.info.InfoLine;
@@ -40,13 +37,13 @@ public class InfoLinePing extends InfoLine
     }
 
     @Override
-    public List<Entry> parseEnt(@NotNull World world, @NotNull Entity ent)
+    public List<Entry> parseEnt(@NotNull Level world, @NotNull Entity ent)
     {
         List<Entry> list = new ArrayList<>();
 
-		if (ent instanceof ClientPlayerEntity player)
+		if (ent instanceof LocalPlayer player)
 		{
-			PlayerListEntry info = player.networkHandler.getPlayerListEntry(player.getUuid());
+			PlayerInfo info = player.connection.getPlayerInfo(player.getUUID());
 
 			if (info != null)
 			{

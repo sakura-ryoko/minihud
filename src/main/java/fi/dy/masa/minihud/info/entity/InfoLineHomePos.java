@@ -2,15 +2,13 @@ package fi.dy.masa.minihud.info.entity;
 
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.level.Level;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
-
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-
 import fi.dy.masa.malilib.util.data.DataEntityUtils;
 import fi.dy.masa.malilib.util.data.tag.CompoundData;
 import fi.dy.masa.minihud.Reference;
@@ -51,12 +49,12 @@ public class InfoLineHomePos extends InfoLine
     }
 
     @Override
-    public List<Entry> parseData(@NotNull World world, @NotNull EntityType<?> entityType, @NotNull CompoundData data)
+    public List<Entry> parseData(@NotNull Level world, @NotNull EntityType<?> entityType, @NotNull CompoundData data)
     {
         List<Entry> list = new ArrayList<>();
         Pair<BlockPos, Integer> pair = DataEntityUtils.getHomePos(data);
 
-        if (pair.getLeft() != BlockPos.ORIGIN && pair.getRight() != -1)
+        if (pair.getLeft() != BlockPos.ZERO && pair.getRight() != -1)
         {
             list.add(this.translate(HOME_KEY,
                                     pair.getLeft().toShortString(),
@@ -68,15 +66,15 @@ public class InfoLineHomePos extends InfoLine
     }
 
     @Override
-    public List<Entry> parseEnt(@NotNull World world, @NotNull Entity ent)
+    public List<Entry> parseEnt(@NotNull Level world, @NotNull Entity ent)
     {
         List<Entry> list = new ArrayList<>();
 
-        if (ent instanceof MobEntity mob && mob.hasPositionTarget())
+        if (ent instanceof Mob mob && mob.hasHome())
         {
             list.add(this.translate(HOME_KEY,
-                                    mob.getPositionTarget().toShortString(),
-                                    mob.getPositionTargetRange()
+                                    mob.getHomePosition().toShortString(),
+                                    mob.getHomeRadius()
             ));
         }
 

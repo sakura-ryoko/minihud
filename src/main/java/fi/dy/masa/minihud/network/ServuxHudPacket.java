@@ -2,10 +2,10 @@ package fi.dy.masa.minihud.network;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import io.netty.buffer.Unpooled;
 import fi.dy.masa.malilib.network.IClientPayloadData;
 import fi.dy.masa.minihud.MiniHUD;
@@ -13,110 +13,110 @@ import fi.dy.masa.minihud.MiniHUD;
 public class ServuxHudPacket implements IClientPayloadData
 {
     private Type packetType;
-    private NbtCompound nbt;
-    private PacketByteBuf buffer;
+    private CompoundTag nbt;
+    private FriendlyByteBuf buffer;
     public static final int PROTOCOL_VERSION = 2;
 
     private ServuxHudPacket(Type type)
     {
         this.packetType = type;
-        this.nbt = new NbtCompound();
+        this.nbt = new CompoundTag();
         this.clearPacket();
     }
 
-    public static ServuxHudPacket MetadataRequest(@Nullable NbtCompound nbt)
+    public static ServuxHudPacket MetadataRequest(@Nullable CompoundTag nbt)
     {
         var packet = new ServuxHudPacket(Type.PACKET_C2S_METADATA_REQUEST);
         if (nbt != null)
         {
-            packet.nbt.copyFrom(nbt);
+            packet.nbt.merge(nbt);
         }
         return packet;
     }
 
-    public static ServuxHudPacket MetadataResponse(@Nullable NbtCompound nbt)
+    public static ServuxHudPacket MetadataResponse(@Nullable CompoundTag nbt)
     {
         var packet = new ServuxHudPacket(Type.PACKET_S2C_METADATA);
         if (nbt != null)
         {
-            packet.nbt.copyFrom(nbt);
+            packet.nbt.merge(nbt);
         }
         return packet;
     }
 
-    public static ServuxHudPacket SpawnRequest(@Nullable NbtCompound nbt)
+    public static ServuxHudPacket SpawnRequest(@Nullable CompoundTag nbt)
     {
         var packet = new ServuxHudPacket(Type.PACKET_C2S_SPAWN_DATA_REQUEST);
         if (nbt != null)
         {
-            packet.nbt.copyFrom(nbt);
+            packet.nbt.merge(nbt);
         }
         return packet;
     }
 
-    public static ServuxHudPacket SpawnResponse(@Nullable NbtCompound nbt)
+    public static ServuxHudPacket SpawnResponse(@Nullable CompoundTag nbt)
     {
         var packet = new ServuxHudPacket(Type.PACKET_S2C_SPAWN_DATA);
         if (nbt != null)
         {
-            packet.nbt.copyFrom(nbt);
+            packet.nbt.merge(nbt);
         }
         return packet;
     }
 
-    public static ServuxHudPacket DataLoggerRequest(@Nullable NbtCompound nbt)
+    public static ServuxHudPacket DataLoggerRequest(@Nullable CompoundTag nbt)
     {
         var packet = new ServuxHudPacket(Type.PACKET_C2S_DATA_LOGGER_REQUEST);
         if (nbt != null)
         {
-            packet.nbt.copyFrom(nbt);
+            packet.nbt.merge(nbt);
         }
         return packet;
     }
 
-    public static ServuxHudPacket DataLoggerTick(@Nullable NbtCompound nbt)
+    public static ServuxHudPacket DataLoggerTick(@Nullable CompoundTag nbt)
     {
         var packet = new ServuxHudPacket(Type.PACKET_S2C_DATA_LOGGER_TICK);
         if (nbt != null)
         {
-            packet.nbt.copyFrom(nbt);
+            packet.nbt.merge(nbt);
         }
         return packet;
     }
 
-    public static ServuxHudPacket WeatherTick(@Nullable NbtCompound nbt)
+    public static ServuxHudPacket WeatherTick(@Nullable CompoundTag nbt)
     {
         var packet = new ServuxHudPacket(Type.PACKET_S2C_WEATHER_TICK);
         if (nbt != null)
         {
-            packet.nbt.copyFrom(nbt);
+            packet.nbt.merge(nbt);
         }
         return packet;
     }
 
-    public static ServuxHudPacket RecipeManagerRequest(@Nullable NbtCompound nbt)
+    public static ServuxHudPacket RecipeManagerRequest(@Nullable CompoundTag nbt)
     {
         var packet = new ServuxHudPacket(Type.PACKET_C2S_RECIPE_MANAGER_REQUEST);
         if (nbt != null)
         {
-            packet.nbt.copyFrom(nbt);
+            packet.nbt.merge(nbt);
         }
         return packet;
     }
 
     // Nbt Packet, using Packet Splitter
-    public static ServuxHudPacket ResponseS2CStart(@Nonnull NbtCompound nbt)
+    public static ServuxHudPacket ResponseS2CStart(@Nonnull CompoundTag nbt)
     {
         var packet = new ServuxHudPacket(Type.PACKET_S2C_NBT_RESPONSE_START);
-        packet.nbt.copyFrom(nbt);
+        packet.nbt.merge(nbt);
         return packet;
     }
 
-    public static ServuxHudPacket ResponseS2CData(@Nonnull PacketByteBuf buffer)
+    public static ServuxHudPacket ResponseS2CData(@Nonnull FriendlyByteBuf buffer)
     {
         var packet = new ServuxHudPacket(Type.PACKET_S2C_NBT_RESPONSE_DATA);
-        packet.buffer = new PacketByteBuf(buffer.copy());
-        packet.nbt = new NbtCompound();
+        packet.buffer = new FriendlyByteBuf(buffer.copy());
+        packet.nbt = new CompoundTag();
         return packet;
     }
 
@@ -125,7 +125,7 @@ public class ServuxHudPacket implements IClientPayloadData
         if (this.buffer != null)
         {
             this.buffer.clear();
-            this.buffer = new PacketByteBuf(Unpooled.buffer());
+            this.buffer = new FriendlyByteBuf(Unpooled.buffer());
         }
     }
 
@@ -148,7 +148,7 @@ public class ServuxHudPacket implements IClientPayloadData
 
         if (this.nbt != null && !this.nbt.isEmpty())
         {
-            total += this.nbt.getSizeInBytes();
+            total += this.nbt.sizeInBytes();
         }
         if (this.buffer != null)
         {
@@ -163,12 +163,12 @@ public class ServuxHudPacket implements IClientPayloadData
         return this.packetType;
     }
 
-    public NbtCompound getCompound()
+    public CompoundTag getCompound()
     {
         return this.nbt;
     }
 
-    public PacketByteBuf getBuffer()
+    public FriendlyByteBuf getBuffer()
     {
         return this.buffer;
     }
@@ -184,7 +184,7 @@ public class ServuxHudPacket implements IClientPayloadData
     }
 
     @Override
-    public void toPacket(PacketByteBuf output)
+    public void toPacket(FriendlyByteBuf output)
     {
         output.writeVarInt(this.packetType.get());
 
@@ -224,7 +224,7 @@ public class ServuxHudPacket implements IClientPayloadData
     }
 
     @Nullable
-    public static ServuxHudPacket fromPacket(PacketByteBuf input)
+    public static ServuxHudPacket fromPacket(FriendlyByteBuf input)
     {
         int i = input.readVarInt();
         Type type = getType(i);
@@ -242,7 +242,7 @@ public class ServuxHudPacket implements IClientPayloadData
                 // Read Packet Buffer Slice
                 try
                 {
-                    return ServuxHudPacket.ResponseS2CData(new PacketByteBuf(input.readBytes(input.readableBytes())));
+                    return ServuxHudPacket.ResponseS2CData(new FriendlyByteBuf(input.readBytes(input.readableBytes())));
                 }
                 catch (Exception e)
                 {
@@ -356,7 +356,7 @@ public class ServuxHudPacket implements IClientPayloadData
     {
         if (this.nbt != null && !this.nbt.isEmpty())
         {
-            this.nbt = new NbtCompound();
+            this.nbt = new CompoundTag();
         }
         this.clearPacket();
         this.packetType = null;
@@ -400,23 +400,23 @@ public class ServuxHudPacket implements IClientPayloadData
         int get() { return this.type; }
     }
 
-    public record Payload(ServuxHudPacket data) implements CustomPayload
+    public record Payload(ServuxHudPacket data) implements CustomPacketPayload
     {
-        public static final CustomPayload.Id<Payload> ID = new CustomPayload.Id<>(ServuxHudHandler.CHANNEL_ID);
-        public static final PacketCodec<PacketByteBuf, Payload> CODEC = CustomPayload.codecOf(Payload::write, Payload::new);
+        public static final CustomPacketPayload.Type<Payload> ID = new CustomPacketPayload.Type<>(ServuxHudHandler.CHANNEL_ID);
+        public static final StreamCodec<FriendlyByteBuf, Payload> CODEC = CustomPacketPayload.codec(Payload::write, Payload::new);
 
-        public Payload(PacketByteBuf input)
+        public Payload(FriendlyByteBuf input)
         {
             this(fromPacket(input));
         }
 
-        private void write(PacketByteBuf output)
+        private void write(FriendlyByteBuf output)
         {
             data.toPacket(output);
         }
 
         @Override
-        public @Nonnull CustomPayload.Id<? extends CustomPayload> getId()
+        public @Nonnull CustomPacketPayload.Type<? extends CustomPacketPayload> type()
         {
             return ID;
         }

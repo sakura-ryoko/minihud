@@ -5,26 +5,19 @@ import java.util.Collection;
 import java.util.List;
 
 import javax.annotation.Nonnull;
-
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.hud.debug.DebugHudEntryVisibility;
-import net.minecraft.client.gui.hud.debug.DebugHudProfile;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.debug.DebugScreenEntryList;
+import net.minecraft.client.gui.components.debug.DebugScreenEntryStatus;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.util.Identifier;
+import net.minecraft.nbt.Tag;
+import net.minecraft.resources.Identifier;
 
-import fi.dy.masa.malilib.network.ClientPlayHandler;
-import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
 import fi.dy.masa.minihud.MiniHUD;
-import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.RendererToggle;
 import fi.dy.masa.minihud.mixin.debug.IMixinClientPlayNetworkHandler;
-import fi.dy.masa.minihud.network.ServuxDebugHandler;
-import fi.dy.masa.minihud.network.ServuxDebugPacket;
 import fi.dy.masa.minihud.util.DataStorage;
-import fi.dy.masa.minihud.util.DebugInfoUtils;
 import fi.dy.masa.minihud.util.DebugRenderType;
 
 public class DebugDataManager
@@ -32,7 +25,7 @@ public class DebugDataManager
     private static final DebugDataManager INSTANCE = new DebugDataManager();
 //    private final static ServuxDebugHandler<ServuxDebugPacket.Payload> HANDLER = ServuxDebugHandler.getInstance();
 
-	private final MinecraftClient mc;
+	private final Minecraft mc;
     private boolean servuxServer;
     private boolean hasInValidServux;
     private String servuxVersion;
@@ -45,7 +38,7 @@ public class DebugDataManager
         this.servuxServer = false;
         this.hasInValidServux = false;
         this.servuxVersion = "";
-		this.mc = MinecraftClient.getInstance();
+		this.mc = Minecraft.getInstance();
 		this.enabledRenderers = new ArrayList<>();
     }
 
@@ -107,24 +100,24 @@ public class DebugDataManager
 
 	public boolean isF3Enabled()
 	{
-		return this.mc.debugHudEntryList.isF3Enabled();
+		return this.mc.debugEntries.isOverlayVisible();
 	}
 
 	public boolean isDebugAlwaysEnabled(Identifier type)
 	{
-		return this.mc.debugHudEntryList.getVisibility(type) == DebugHudEntryVisibility.ALWAYS_ON;
+		return this.mc.debugEntries.getStatus(type) == DebugScreenEntryStatus.ALWAYS_ON;
 	}
 
 	public boolean toggleDebugAlwaysEnabled(Identifier type)
 	{
 		if (this.isDebugAlwaysEnabled(type))
 		{
-			this.mc.debugHudEntryList.setEntryVisibility(type, DebugHudEntryVisibility.NEVER);
+			this.mc.debugEntries.setStatus(type, DebugScreenEntryStatus.NEVER);
 			return false;
 		}
 		else
 		{
-			this.mc.debugHudEntryList.setEntryVisibility(type, DebugHudEntryVisibility.ALWAYS_ON);
+			this.mc.debugEntries.setStatus(type, DebugScreenEntryStatus.ALWAYS_ON);
 			return true;
 		}
 	}
@@ -133,12 +126,12 @@ public class DebugDataManager
 	{
 		if (!enabled)
 		{
-			this.mc.debugHudEntryList.setEntryVisibility(type, DebugHudEntryVisibility.NEVER);
+			this.mc.debugEntries.setStatus(type, DebugScreenEntryStatus.NEVER);
 			return false;
 		}
 		else if (enabled)
 		{
-			this.mc.debugHudEntryList.setEntryVisibility(type, DebugHudEntryVisibility.ALWAYS_ON);
+			this.mc.debugEntries.setStatus(type, DebugScreenEntryStatus.ALWAYS_ON);
 			return true;
 		}
 
@@ -151,11 +144,11 @@ public class DebugDataManager
 	 */
 	public boolean shouldShowDebugHudFix()
 	{
-		DebugHudProfile profile = this.mc.debugHudEntryList;
-		Collection<Identifier> list = profile.getVisibleEntries();
+		DebugScreenEntryList profile = this.mc.debugEntries;
+		Collection<Identifier> list = profile.getCurrentlyEnabled();
 
-		return (profile.isF3Enabled() || !this.checkVisibleEntries(list))
-				&& (!this.mc.options.hudHidden || this.mc.currentScreen != null);
+		return (profile.isOverlayVisible() || !this.checkVisibleEntries(list))
+				&& (!this.mc.options.hideGui || this.mc.screen != null);
 	}
 
 	private boolean checkVisibleEntries(Collection<Identifier> list)
@@ -264,13 +257,13 @@ public class DebugDataManager
 
 	public void reloadDebugRenderer()
 	{
-		if (this.mc.getNetworkHandler() != null)
+		if (this.mc.getConnection() != null)
 		{
-			((IMixinClientPlayNetworkHandler) this.mc.getNetworkHandler())
-					.minihud_getDebugManager().clearAllSubscriptions();
+			((IMixinClientPlayNetworkHandler) this.mc.getConnection())
+					.minihud_getDebugManager().clear();
 		}
 
-		this.mc.worldRenderer.debugRenderer.initRenderers();
+		this.mc.levelRenderer.debugRenderer.refreshRendererList();
 	}
 
 	public void setIsServuxServer()
@@ -371,9 +364,9 @@ public class DebugDataManager
 		}
 	}
 
-	private NbtList toNbtList()
+	private ListTag toNbtList()
 	{
-		NbtList list = new NbtList();
+		ListTag list = new ListTag();
 
 		this.enabledRenderers.forEach(
 				(type) ->
@@ -385,7 +378,7 @@ public class DebugDataManager
 		return list;
 	}
 
-	private void fromNbtList(@Nonnull NbtList list)
+	private void fromNbtList(@Nonnull ListTag list)
 	{
 		if (list.isEmpty())
 		{
@@ -394,7 +387,7 @@ public class DebugDataManager
 
 		List<DebugRenderType> received = new ArrayList<>();
 
-		for (NbtElement entry : list)
+		for (Tag entry : list)
 		{
 			try
 			{
@@ -444,7 +437,7 @@ public class DebugDataManager
 		}
 	}
 
-    public boolean receiveMetadata(NbtCompound data)
+    public boolean receiveMetadata(CompoundTag data)
     {
         if (!this.hasServuxServer() && !DataStorage.getInstance().hasIntegratedServer() &&
             this.shouldRegisterDebugService)

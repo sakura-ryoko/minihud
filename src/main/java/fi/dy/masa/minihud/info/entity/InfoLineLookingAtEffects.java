@@ -5,15 +5,13 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
-
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.world.World;
-
+import net.minecraft.core.Holder;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
 import fi.dy.masa.malilib.util.data.DataEntityUtils;
 import fi.dy.masa.malilib.util.data.tag.CompoundData;
 import fi.dy.masa.minihud.Reference;
@@ -55,9 +53,9 @@ public class InfoLineLookingAtEffects extends InfoLine
     }
 
     @Override
-    public List<Entry> parseData(@Nonnull World world, @Nonnull EntityType<?> entityType, @Nonnull CompoundData data)
+    public List<Entry> parseData(@Nonnull Level world, @Nonnull EntityType<?> entityType, @Nonnull CompoundData data)
     {
-        Map<RegistryEntry<StatusEffect>, StatusEffectInstance> effects = DataEntityUtils.getActiveStatusEffects(data, world.getRegistryManager());
+        Map<Holder<MobEffect>, MobEffectInstance> effects = DataEntityUtils.getActiveStatusEffects(data, world.registryAccess());
         List<Entry> list = new ArrayList<>();
 
         if (effects == null || effects.isEmpty())
@@ -65,16 +63,16 @@ public class InfoLineLookingAtEffects extends InfoLine
             return list;
         }
 
-        for (RegistryEntry<StatusEffect> effectType : effects.keySet())
+        for (Holder<MobEffect> effectType : effects.keySet())
         {
-            StatusEffectInstance effect = effects.get(effectType);
+            MobEffectInstance effect = effects.get(effectType);
 
-            if (effect.isInfinite() || effect.getDuration() > 0)
+            if (effect.isInfiniteDuration() || effect.getDuration() > 0)
             {
                 list.add(this.translate(EFFECTS_KEY,
-                                        effectType.value().getName().getString(),
+                                        effectType.value().getDisplayName().getString(),
                                         effect.getAmplifier() > 0 ? this.qt(EFFECTS_KEY+".amplifier", effect.getAmplifier() + 1) : "",
-                                        effect.isInfinite() ? this.qt(EFFECTS_KEY+".infinite") :
+                                        effect.isInfiniteDuration() ? this.qt(EFFECTS_KEY+".infinite") :
                                         MiscUtils.formatDuration((effect.getDuration() / 20) * 1000L),
                                         this.qt(REMAINING_KEY)
                 ));
@@ -85,22 +83,22 @@ public class InfoLineLookingAtEffects extends InfoLine
     }
 
     @Override
-    public List<Entry> parseEnt(@Nonnull World world, @Nonnull Entity ent)
+    public List<Entry> parseEnt(@Nonnull Level world, @Nonnull Entity ent)
     {
         List<Entry> list = new ArrayList<>();
 
         if (ent instanceof LivingEntity living)
         {
-            Collection<StatusEffectInstance> effects = living.getStatusEffects();
+            Collection<MobEffectInstance> effects = living.getActiveEffects();
 
-            for (StatusEffectInstance effect : effects)
+            for (MobEffectInstance effect : effects)
             {
-                if (effect.isInfinite() || effect.getDuration() > 0)
+                if (effect.isInfiniteDuration() || effect.getDuration() > 0)
                 {
                     list.add(this.translate(EFFECTS_KEY,
-                                            effect.getEffectType().value().getName().getString(),
+                                            effect.getEffect().value().getDisplayName().getString(),
                                             effect.getAmplifier() > 0 ? this.qt(EFFECTS_KEY + ".amplifier", effect.getAmplifier() + 1) : "",
-                                            effect.isInfinite() ? this.qt(EFFECTS_KEY + ".infinite") :
+                                            effect.isInfiniteDuration() ? this.qt(EFFECTS_KEY + ".infinite") :
                                             MiscUtils.formatDuration((effect.getDuration() / 20) * 1000L),
                                             this.qt(REMAINING_KEY)
                     ));

@@ -6,14 +6,12 @@ import javax.annotation.Nullable;
 import com.google.common.collect.ImmutableList;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.structure.StructurePiece;
-import net.minecraft.structure.StructureStart;
-import net.minecraft.util.Identifier;
-import net.minecraft.world.gen.StructureTerrainAdaptation;
-import net.minecraft.world.gen.structure.Structure;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.world.level.levelgen.structure.Structure;
+import net.minecraft.world.level.levelgen.structure.StructurePiece;
+import net.minecraft.world.level.levelgen.structure.StructureStart;
+import net.minecraft.world.level.levelgen.structure.TerrainAdjustment;
 
 import fi.dy.masa.malilib.util.IntBoundingBox;
 import fi.dy.masa.minihud.MiniHUD;
@@ -29,11 +27,12 @@ public class StructureData
 	private final StructureStart vanilla;
 
 	private StructureData(StructureType type, ImmutableList<@NotNull IntBoundingBox> componentBoxes,
-	                      long refreshTime, Structure structure)
+	                      long refreshTime, boolean shouldExpandBox)
 	{
 		this.type = type;
 		this.vanilla = null;
-		this.mainBox = encompass(componentBoxes, this.shouldExpandBox(structure));
+//		this.mainBox = encompass(componentBoxes, this.shouldExpandBox(structure));
+        this.mainBox = encompass(componentBoxes, shouldExpandBox);
 		this.componentBoxes = componentBoxes;
 		this.refreshTime = refreshTime;
 	}
@@ -57,7 +56,7 @@ public class StructureData
 
 	public boolean shouldExpandBox(Structure structure)
 	{
-		return structure.getTerrainAdaptation() != StructureTerrainAdaptation.NONE;
+		return structure.terrainAdaptation() != TerrainAdjustment.NONE;
 	}
 
     public IntBoundingBox getBoundingBox()
@@ -78,7 +77,7 @@ public class StructureData
     public static StructureData fromStructureStart(StructureType type, StructureStart structure)
     {
         ImmutableList.Builder<@NotNull IntBoundingBox> builder = ImmutableList.builder();
-        List<StructurePiece> components = structure.getChildren();
+        List<StructurePiece> components = structure.getPieces();
 
         for (StructurePiece component : components)
         {
@@ -89,12 +88,12 @@ public class StructureData
     }
 
     @Nullable
-    public static StructureData fromStructureStartTag(NbtCompound tag, long currentTime)
+    public static StructureData fromStructureStartTag(CompoundTag tag, long currentTime)
     {
         if (tag.contains("id") &&
             tag.contains("Children"))
         {
-			String id = tag.getString("id", "?");
+            String id = tag.getStringOr("id", "?");
             StructureType type = StructureType.fromStructureId(id);
 
             if (type == StructureType.UNKNOWN && Configs.Generic.DEBUG_MESSAGES.getBooleanValue())
@@ -102,22 +101,31 @@ public class StructureData
                 MiniHUD.LOGGER.warn("StructureData.fromStructureStartTag(): Unknown structure type '{}'", id);
             }
 
-	        Structure structure = DataStorage.getInstance().getWorldRegistryManager().getOrThrow(RegistryKeys.STRUCTURE).get(Identifier.tryParse(id));
-
-			if (structure == null) return null;
-//			final int ref = tag.getInt("references", 0);
-//			ChunkPos pos = new ChunkPos(tag.getInt("ChunkX", 0), tag.getInt("ChunkZ", 0));
-            ImmutableList.Builder<@NotNull IntBoundingBox> builder = ImmutableList.builder();
-            NbtList pieces = tag.getListOrEmpty("Children");
-            final int count = pieces.size();
-
-            for (int i = 0; i < count; ++i)
+            try
             {
-                NbtCompound pieceTag = pieces.getCompoundOrEmpty(i);
-                builder.add(IntBoundingBox.fromArray(pieceTag.getIntArray("BB").orElseThrow()));
-            }
+//                Structure structure = DataStorage.getInstance().getWorldRegistryManager().lookupOrThrow(Registries.STRUCTURE).getValue(Identifier.tryParse(id));
+//                Structure structure = WorldUtils.getBestWorld(Minecraft.getInstance()).registryAccess().lookupOrThrow(Registries.STRUCTURE).getValue(Identifier.tryParse(id));
 
-            return new StructureData(type, builder.build(), currentTime, structure);
+//                if (structure == null) return null;
+//			    final int ref = tag.getInt("references", 0);
+//			    ChunkPos pos = new ChunkPos(tag.getInt("ChunkX", 0), tag.getInt("ChunkZ", 0));
+                ImmutableList.Builder<@NotNull IntBoundingBox> builder = ImmutableList.builder();
+                ListTag pieces = tag.getListOrEmpty("Children");
+                boolean shouldExpandBox = tag.getBooleanOr("ExpandBox", false);
+                final int count = pieces.size();
+
+                for (int i = 0; i < count; ++i)
+                {
+                    CompoundTag pieceTag = pieces.getCompoundOrEmpty(i);
+                    builder.add(IntBoundingBox.fromArray(pieceTag.getIntArray("BB").orElseThrow()));
+                }
+
+                return new StructureData(type, builder.build(), currentTime, shouldExpandBox);
+            }
+            catch (Exception e)
+            {
+                MiniHUD.LOGGER.warn("StructureData.fromStructureStartTag(): Failed to parse structure [{}] data; {}", id, e.getLocalizedMessage());
+            }
         }
 
         return null;
@@ -206,6 +214,7 @@ public class StructureData
 			// Vanilla says to expand it if != StructureTerrainAdaptation.NONE
 			if (expandBox)
 			{
+//                MiniHUD.debugLog("expanding structure bb");
 				bb = bb.expand(12);
 			}
 

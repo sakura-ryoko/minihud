@@ -2,28 +2,28 @@ package fi.dy.masa.minihud.mixin.world;
 
 import java.util.Set;
 import java.util.UUID;
-import net.minecraft.server.world.ServerEntityManager;
-import net.minecraft.world.entity.EntityIndex;
+import net.minecraft.world.level.entity.EntityLookup;
+import net.minecraft.world.level.entity.PersistentEntitySectionManager;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import fi.dy.masa.minihud.util.IServerEntityManager;
 
-@Mixin(ServerEntityManager.class)
+@Mixin(PersistentEntitySectionManager.class)
 public abstract class MixinServerEntityManager implements IServerEntityManager
 {
-    @Shadow @Final Set<UUID> entityUuids;
-    @Shadow @Final private EntityIndex<?> index;
+    @Shadow @Final Set<UUID> knownUuids;
+    @Shadow @Final private EntityLookup<?> visibleEntityStorage;
 
     @Override
     public int minihud$getUuidSize()
     {
-        return this.entityUuids.size();
+        return this.knownUuids.size();
     }
 
     @Override
     public int minihud$getIndexSize()
     {
-        return this.index.size();
+        return this.visibleEntityStorage.count();
     }
 }

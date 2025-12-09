@@ -3,35 +3,35 @@ package fi.dy.masa.minihud.data;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nullable;
-import net.minecraft.block.BlockEntityProvider;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.ChestBlock;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.block.entity.ChestBlockEntity;
-import net.minecraft.block.enums.ChestType;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.mob.PiglinEntity;
-import net.minecraft.entity.passive.AbstractHorseEntity;
-import net.minecraft.entity.passive.VillagerEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.DoubleInventory;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.registry.tag.BlockTags;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.World;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.util.Mth;
+import net.minecraft.world.CompoundContainer;
+import net.minecraft.world.Container;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.monster.piglin.Piglin;
+import net.minecraft.world.entity.npc.villager.Villager;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.ChestBlock;
+import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.ChestType;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.mojang.datafixers.util.Either;
@@ -65,7 +65,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
     public static EntitiesDataManager getInstance() { return INSTANCE; }
 
     private final static ServuxEntitiesHandler<ServuxEntitiesPacket.Payload> HANDLER = ServuxEntitiesHandler.getInstance();
-    private final MinecraftClient mc;
+    private final Minecraft mc;
     private boolean servuxServer = false;
     private boolean hasInValidServux = false;
     private String servuxVersion;
@@ -82,21 +82,21 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
     private final Set<Integer> pendingEntitiesQueue = new LinkedHashSet<>();
     // To save vanilla query packet transaction
     private final Map<Integer, Either<BlockPos, Integer>> transactionToBlockPosOrEntityId = new HashMap<>();
-    private ClientWorld clientWorld;
+    private ClientLevel clientWorld;
 
     @Nullable
     @Override
-    public World getWorld()
+    public Level getWorld()
     {
         return WorldUtils.getBestWorld(this.mc);
     }
 
     @Override
-    public ClientWorld getClientWorld()
+    public ClientLevel getClientWorld()
     {
         if (this.clientWorld == null)
         {
-            this.clientWorld = this.mc.world;
+            this.clientWorld = this.mc.level;
         }
 
         return clientWorld;
@@ -104,11 +104,11 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
 
     private EntitiesDataManager()
     {
-        this.mc = MinecraftClient.getInstance();
+        this.mc = Minecraft.getInstance();
     }
 
     @Override
-    public void onClientTick(MinecraftClient mc)
+    public void onClientTick(Minecraft mc)
     {
         long now = System.currentTimeMillis();
 
@@ -201,11 +201,11 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
         return ServuxEntitiesHandler.CHANNEL_ID;
     }
 
-    private ClientPlayNetworkHandler getVanillaHandler()
+    private ClientPacketListener getVanillaHandler()
     {
         if (this.mc.player != null)
         {
-            return this.mc.player.networkHandler;
+            return this.mc.player.connection;
         }
 
         return null;
@@ -237,7 +237,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
             this.serverTickTime = now - (this.getCacheTimeout() + 5000L);
             this.tickCache(now);
             this.serverTickTime = now;
-            this.clientWorld = this.mc.world;
+            this.clientWorld = this.mc.level;
             this.checkOpStatus = true;
             this.lastOpCheck = now;
         }
@@ -271,7 +271,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
 
     public long getCacheRefresh()
     {
-        long result = (long) (MathHelper.clamp(Configs.Generic.ENTITY_DATA_SYNC_CACHE_REFRESH.getFloatValue(), 0.05f, 1.0f) * 1000L);
+        long result = (long) (Mth.clamp(Configs.Generic.ENTITY_DATA_SYNC_CACHE_REFRESH.getFloatValue(), 0.05f, 1.0f) * 1000L);
         long clamp = (this.getCacheTimeout() / 2);
 
         return Math.min(result, clamp);
@@ -281,7 +281,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
     {
         // Increase cache timeout when in Backup Mode.
         int modifier = Configs.Generic.ENTITY_DATA_SYNC_BACKUP.getBooleanValue() ? 5 : 1;
-        return (long) (MathHelper.clamp((Configs.Generic.ENTITY_DATA_SYNC_CACHE_TIMEOUT.getFloatValue() * modifier), 0.25f, 15.0f) * 1000L);
+        return (long) (Mth.clamp((Configs.Generic.ENTITY_DATA_SYNC_CACHE_TIMEOUT.getFloatValue() * modifier), 0.25f, 15.0f) * 1000L);
     }
 
     private void tickCache(long nowTime)
@@ -340,7 +340,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
     }
 
 	@Override
-	public @Nullable NbtCompound getFromEntityCacheNbt(int entityId)
+	public @Nullable CompoundTag getFromEntityCacheNbt(int entityId)
 	{
 		CompoundData data = this.getFromEntityCacheData(entityId);
 
@@ -375,7 +375,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
     }
 
 	@Override
-	public @Nullable Pair<BlockEntity, NbtCompound> requestBlockEntityNbt(World world, BlockPos pos)
+	public @Nullable Pair<BlockEntity, CompoundTag> requestBlockEntityNbt(Level world, BlockPos pos)
 	{
 		Pair<BlockEntity, CompoundData> pair = this.requestBlockEntity(world, pos);
 
@@ -401,6 +401,11 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
     public boolean hasBackupStatus()
     {
         return Configs.Generic.ENTITY_DATA_SYNC_BACKUP.getBooleanValue() && this.hasOpStatus;
+    }
+
+    public boolean hasOperatorStatus()
+    {
+        return this.hasOpStatus;
     }
 
     public void setServuxVersion(String ver)
@@ -464,7 +469,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
     }
 
 	@Override
-	public @Nullable NbtCompound getFromBlockEntityCacheNbt(BlockPos pos)
+	public @Nullable CompoundTag getFromBlockEntityCacheNbt(BlockPos pos)
 	{
 		CompoundData data = this.getFromBlockEntityCacheData(pos);
 
@@ -491,14 +496,14 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
         if (!DataStorage.getInstance().hasIntegratedServer() &&
             Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue())
         {
-            NbtCompound nbt = new NbtCompound();
+            CompoundTag nbt = new CompoundTag();
             nbt.putString("version", Reference.MOD_STRING);
 
             HANDLER.encodeClientData(ServuxEntitiesPacket.MetadataRequest(nbt));
         }
     }
 
-    public boolean receiveServuxMetadata(NbtCompound data)
+    public boolean receiveServuxMetadata(CompoundTag data)
     {
         if (!DataStorage.getInstance().hasIntegratedServer())
         {
@@ -506,12 +511,12 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
 
             if (Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue())
             {
-                if (data.getInt("version", -1) != ServuxEntitiesPacket.PROTOCOL_VERSION)
+                if (data.getIntOr("version", -1) != ServuxEntitiesPacket.PROTOCOL_VERSION)
                 {
                     MiniHUD.LOGGER.warn("entityDataChannel: Mis-matched protocol version!");
                 }
 
-                this.setServuxVersion(data.getString("servux", "?"));
+                this.setServuxVersion(data.getStringOr("servux", "?"));
                 this.setIsServuxServer();
 
                 return true;
@@ -528,7 +533,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
     }
 
     @Override
-    public @Nullable Pair<BlockEntity, CompoundData> requestBlockEntity(World world, BlockPos pos)
+    public @Nullable Pair<BlockEntity, CompoundData> requestBlockEntity(Level world, BlockPos pos)
     {
         if (this.blockEntityCache.containsKey(pos))
         {
@@ -544,14 +549,14 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
                 }
             }
 
-            if (world instanceof ServerWorld)
+            if (world instanceof ServerLevel)
             {
                 return this.refreshBlockEntityFromWorld(world, pos);
             }
 
             return this.blockEntityCache.get(pos).getRight();
         }
-        else if (world.getBlockState(pos).getBlock() instanceof BlockEntityProvider)
+        else if (world.getBlockState(pos).getBlock() instanceof EntityBlock)
         {
             if (!DataStorage.getInstance().hasIntegratedServer() &&
                 (Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue() ||
@@ -567,7 +572,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
     }
 
 	@Override
-	public @Nullable Pair<Entity, NbtCompound> requestEntityNbt(World world, int entityId)
+	public @Nullable Pair<Entity, CompoundTag> requestEntityNbt(Level world, int entityId)
 	{
 		Pair<Entity, CompoundData> pair = this.requestEntity(world, entityId);
 
@@ -579,15 +584,15 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
 		return null;
 	}
 
-	private @Nullable Pair<BlockEntity, CompoundData> refreshBlockEntityFromWorld(World world, BlockPos pos)
+	private @Nullable Pair<BlockEntity, CompoundData> refreshBlockEntityFromWorld(Level world, BlockPos pos)
     {
         if (world != null && world.getBlockState(pos).hasBlockEntity())
         {
-            BlockEntity be = world.getWorldChunk(pos).getBlockEntity(pos);
+            BlockEntity be = world.getChunkAt(pos).getBlockEntity(pos);
 
             if (be != null)
             {
-	            CompoundData data = DataConverterNbt.fromVanillaCompound(be.createNbtWithIdentifyingData(world.getRegistryManager()));
+	            CompoundData data = DataConverterNbt.fromVanillaCompound(be.saveWithFullMetadata(world.registryAccess()));
                 Pair<BlockEntity, CompoundData> pair = Pair.of(be, data);
 
                 synchronized (this.blockEntityCache)
@@ -603,7 +608,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
     }
 
     @Override
-    public @Nullable Pair<Entity, CompoundData> requestEntity(World world, int entityId)
+    public @Nullable Pair<Entity, CompoundData> requestEntity(Level world, int entityId)
     {
         if (this.entityCache.containsKey(entityId))
         {
@@ -620,7 +625,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
             }
 
             // Refresh from Server World
-            if (world instanceof ServerWorld)
+            if (world instanceof ServerLevel)
             {
 //                MiniHUD.debugLog("requestEntity: entity Id [{}] refresh from local server", entityId);
                 return this.refreshEntityFromWorld(world, entityId);
@@ -641,11 +646,11 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
         return this.refreshEntityFromWorld(this.getClientWorld(), entityId);
     }
 
-    private @Nullable Pair<Entity, CompoundData> refreshEntityFromWorld(World world, int entityId)
+    private @Nullable Pair<Entity, CompoundData> refreshEntityFromWorld(Level world, int entityId)
     {
         if (world != null)
         {
-            Entity entity = world.getEntityById(entityId);
+            Entity entity = world.getEntity(entityId);
 
             if (entity != null)
             {
@@ -671,22 +676,22 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
 
     @Nullable
     @Override
-    public Inventory getBlockInventory(World world, BlockPos pos, boolean useNbt)
+    public Container getBlockInventory(Level world, BlockPos pos, boolean useNbt)
     {
         if (this.blockEntityCache.containsKey(pos))
         {
-            Inventory inv = null;
+            Container inv = null;
 
             if (useNbt)
             {
-                inv = InventoryUtils.getDataInventory(this.blockEntityCache.get(pos).getRight().getRight(), -1, world.getRegistryManager());
+                inv = InventoryUtils.getDataInventory(this.blockEntityCache.get(pos).getRight().getRight(), -1, world.registryAccess());
             }
             else
             {
                 BlockEntity be = this.blockEntityCache.get(pos).getRight().getLeft();
                 BlockState state = world.getBlockState(pos);
 
-                if (state.isIn(BlockTags.AIR) || !state.hasBlockEntity())
+                if (state.is(BlockTags.AIR) || !state.hasBlockEntity())
                 {
                     synchronized (this.blockEntityCache)
                     {
@@ -697,16 +702,16 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
                     return null;
                 }
 
-                if (be instanceof Inventory inv1)
+                if (be instanceof Container inv1)
                 {
-                    if (be instanceof ChestBlockEntity && state.contains(ChestBlock.CHEST_TYPE))
+                    if (be instanceof ChestBlockEntity && state.hasProperty(ChestBlock.TYPE))
                     {
-                        ChestType type = state.get(ChestBlock.CHEST_TYPE);
+                        ChestType type = state.getValue(ChestBlock.TYPE);
 
                         if (type != ChestType.SINGLE)
                         {
-                            BlockPos posAdj = pos.offset(ChestBlock.getFacing(state));
-                            if (!world.isChunkLoaded(posAdj)) return null;
+                            BlockPos posAdj = pos.relative(ChestBlock.getConnectedDirection(state));
+                            if (!world.hasChunkAt(posAdj)) return null;
                             BlockState stateAdj = world.getBlockState(posAdj);
 
                             var dataAdj = this.getFromBlockEntityCache(posAdj);
@@ -718,13 +723,13 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
 
                             if (stateAdj.getBlock() == state.getBlock() &&
                                 dataAdj instanceof ChestBlockEntity inv2 &&
-                                stateAdj.get(ChestBlock.CHEST_TYPE) != ChestType.SINGLE &&
-                                stateAdj.get(ChestBlock.FACING) == state.get(ChestBlock.FACING))
+                                stateAdj.getValue(ChestBlock.TYPE) != ChestType.SINGLE &&
+                                stateAdj.getValue(ChestBlock.FACING) == state.getValue(ChestBlock.FACING))
                             {
-                                Inventory invRight = type == ChestType.RIGHT ? inv1 : inv2;
-                                Inventory invLeft = type == ChestType.RIGHT ? inv2 : inv1;
+                                Container invRight = type == ChestType.RIGHT ? inv1 : inv2;
+                                Container invLeft = type == ChestType.RIGHT ? inv2 : inv1;
 
-                                inv = new DoubleInventory(invRight, invLeft);
+                                inv = new CompoundContainer(invRight, invLeft);
                             }
                         }
                         else
@@ -756,37 +761,37 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
 
     @Nullable
     @Override
-    public Inventory getEntityInventory(World world, int entityId, boolean useNbt)
+    public Container getEntityInventory(Level world, int entityId, boolean useNbt)
     {
         if (this.entityCache.containsKey(entityId) && this.getWorld() != null)
         {
-            Inventory inv = null;
+            Container inv = null;
 
             if (useNbt)
             {
-                inv = InventoryUtils.getDataInventory(this.entityCache.get(entityId).getRight().getRight(), -1, this.getWorld().getRegistryManager());
+                inv = InventoryUtils.getDataInventory(this.entityCache.get(entityId).getRight().getRight(), -1, this.getWorld().registryAccess());
             }
             else
             {
                 Entity entity = this.entityCache.get(entityId).getRight().getLeft();
 
-                if (entity instanceof Inventory)
+                if (entity instanceof Container)
                 {
-                    inv = (Inventory) entity;
+                    inv = (Container) entity;
                 }
-                else if (entity instanceof PlayerEntity player)
+                else if (entity instanceof Player player)
                 {
-                    inv = new SimpleInventory(player.getInventory().getMainStacks().toArray(new ItemStack[36]));
+                    inv = new SimpleContainer(player.getInventory().getNonEquipmentItems().toArray(new ItemStack[36]));
                 }
-                else if (entity instanceof VillagerEntity)
+                else if (entity instanceof Villager)
                 {
-                    inv = ((VillagerEntity) entity).getInventory();
+                    inv = ((Villager) entity).getInventory();
                 }
-                else if (entity instanceof AbstractHorseEntity)
+                else if (entity instanceof AbstractHorse)
                 {
                     inv = ((IMixinAbstractHorseEntity) entity).malilib_getHorseInventory();
                 }
-                else if (entity instanceof PiglinEntity)
+                else if (entity instanceof Piglin)
                 {
                     inv = ((IMixinPiglinEntity) entity).malilib_getInventory();
                 }
@@ -808,13 +813,13 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
     }
 
 	@Override
-	public BlockEntity handleBlockEntityData(BlockPos pos, NbtCompound nbt, @Nullable Identifier type)
+	public BlockEntity handleBlockEntityData(BlockPos pos, CompoundTag nbt, @Nullable Identifier type)
 	{
 		return handleBlockEntityData(pos, DataConverterNbt.fromVanillaCompound(nbt), type);
 	}
 
 	@Override
-	public Entity handleEntityData(int entityId, NbtCompound nbt)
+	public Entity handleEntityData(int entityId, CompoundTag nbt)
 	{
 		return handleEntityData(entityId, DataConverterNbt.fromVanillaCompound(nbt));
 	}
@@ -826,12 +831,12 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
             return;
         }
 
-        ClientPlayNetworkHandler handler = this.getVanillaHandler();
+        ClientPacketListener handler = this.getVanillaHandler();
 
         if (handler != null)
         {
-            handler.getDataQueryHandler().queryBlockNbt(pos, nbtCompound -> handleBlockEntityData(pos, nbtCompound, null));
-            this.transactionToBlockPosOrEntityId.put(((IMixinDataQueryHandler) handler.getDataQueryHandler()).malilib_currentTransactionId(), Either.left(pos));
+            handler.getDebugQueryHandler().queryBlockEntityTag(pos, nbtCompound -> handleBlockEntityData(pos, nbtCompound, null));
+            this.transactionToBlockPosOrEntityId.put(((IMixinDataQueryHandler) handler.getDebugQueryHandler()).malilib_currentTransactionId(), Either.left(pos));
         }
     }
 
@@ -842,12 +847,12 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
             return;
         }
 
-        ClientPlayNetworkHandler handler = this.getVanillaHandler();
+        ClientPacketListener handler = this.getVanillaHandler();
 
         if (handler != null)
         {
-            handler.getDataQueryHandler().queryEntityNbt(entityId, nbtCompound -> handleEntityData(entityId, nbtCompound));
-            this.transactionToBlockPosOrEntityId.put(((IMixinDataQueryHandler) handler.getDataQueryHandler()).malilib_currentTransactionId(), Either.right(entityId));
+            handler.getDebugQueryHandler().queryEntityTag(entityId, nbtCompound -> handleEntityData(entityId, nbtCompound));
+            this.transactionToBlockPosOrEntityId.put(((IMixinDataQueryHandler) handler.getDebugQueryHandler()).malilib_currentTransactionId(), Either.right(entityId));
         }
     }
 
@@ -876,11 +881,11 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
 
         BlockEntity blockEntity = this.getClientWorld().getBlockEntity(pos);
 
-        if (blockEntity != null && (type == null || type.equals(BlockEntityType.getId(blockEntity.getType()))))
+        if (blockEntity != null && (type == null || type.equals(BlockEntityType.getKey(blockEntity.getType()))))
         {
             if (!data.contains(NbtKeys.ID, Constants.NBT.TAG_STRING))
             {
-                Identifier id = BlockEntityType.getId(blockEntity.getType());
+                Identifier id = BlockEntityType.getKey(blockEntity.getType());
 
                 if (id != null)
                 {
@@ -892,27 +897,27 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
                 this.blockEntityCache.put(pos, Pair.of(System.currentTimeMillis(), Pair.of(blockEntity, data)));
             }
 
-            NbtView view = NbtView.getReader(data, this.getClientWorld().getRegistryManager());
+            NbtView view = NbtView.getReader(data, this.getClientWorld().registryAccess());
 
-            blockEntity.read(view.getReader());
+            blockEntity.loadWithComponents(view.getReader());
             return blockEntity;
         }
 
-        Optional<RegistryEntry.Reference<BlockEntityType<?>>> opt = Registries.BLOCK_ENTITY_TYPE.getEntry(type);
+        Optional<Holder.Reference<BlockEntityType<?>>> opt = BuiltInRegistries.BLOCK_ENTITY_TYPE.get(type);
 
         if (opt.isPresent())
         {
             BlockEntityType<?> beType = opt.get().value();
 
-            if (beType.supports(this.getClientWorld().getBlockState(pos)))
+            if (beType.isValid(this.getClientWorld().getBlockState(pos)))
             {
-                BlockEntity blockEntity2 = beType.instantiate(pos, this.getClientWorld().getBlockState(pos));
+                BlockEntity blockEntity2 = beType.create(pos, this.getClientWorld().getBlockState(pos));
 
                 if (blockEntity2 != null)
                 {
                     if (!data.contains(NbtKeys.ID, Constants.NBT.TAG_STRING))
                     {
-                        Identifier id = BlockEntityType.getId(beType);
+                        Identifier id = BlockEntityType.getKey(beType);
 
                         if (id != null)
                         {
@@ -944,13 +949,13 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
     {
         this.pendingEntitiesQueue.remove(entityId);
         if (data == null || this.getClientWorld() == null) return null;
-        Entity entity = this.getClientWorld().getEntityById(entityId);
+        Entity entity = this.getClientWorld().getEntity(entityId);
 
         if (entity != null)
         {
             if (!data.contains(NbtKeys.ID, Constants.NBT.TAG_STRING))
             {
-                Identifier id = EntityType.getId(entity.getType());
+                Identifier id = EntityType.getKey(entity.getType());
 
                 if (id != null)
                 {
@@ -985,13 +990,13 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
 	}
 
 	@Override
-    public void handleBulkEntityData(int transactionId, NbtCompound nbt)
+    public void handleBulkEntityData(int transactionId, CompoundTag nbt)
     {
         // todo
     }
 
     @Override
-    public void handleVanillaQueryNbt(int transactionId, NbtCompound nbt)
+    public void handleVanillaQueryNbt(int transactionId, CompoundTag nbt)
     {
         if (this.checkOpStatus)
         {

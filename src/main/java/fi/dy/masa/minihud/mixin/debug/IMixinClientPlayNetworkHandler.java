@@ -1,13 +1,13 @@
 package fi.dy.masa.minihud.mixin.debug;
 
-import net.minecraft.client.network.ClientDebugSubscriptionManager;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
+import net.minecraft.client.multiplayer.ClientDebugSubscriber;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-@Mixin(ClientPlayNetworkHandler.class)
+@Mixin(ClientPacketListener.class)
 public interface IMixinClientPlayNetworkHandler
 {
-	@Accessor("debugSubscriptionManager")
-	ClientDebugSubscriptionManager minihud_getDebugManager();
+	@Accessor("debugSubscriber")
+	ClientDebugSubscriber minihud_getDebugManager();
 }

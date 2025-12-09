@@ -35,7 +35,7 @@ public class InfoLineFPS extends InfoLine
             return null;
         }
 
-        list.add(this.translate(FPS_KEY, this.mc().getCurrentFps()));
+        list.add(this.translate(FPS_KEY, this.mc().getFps()));
 
         return list;
     }
