@@ -1,4 +1,4 @@
-package fi.dy.masa.minihud.mixin;
+package fi.dy.masa.minihud.mixin.client;
 
 import net.minecraft.client.Options;
 import org.spongepowered.asm.mixin.Mixin;

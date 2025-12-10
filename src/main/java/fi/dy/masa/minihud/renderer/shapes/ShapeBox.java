@@ -309,11 +309,11 @@ public class ShapeBox extends ShapeBase
         matrices.pushPose();
         PoseStack.Pose e = matrices.last();
 
-        this.renderBoxEnabledEdgeLines(this.renderBox, this.colorLines, this.enabledSidesMask, builder, e);
+        this.renderBoxEnabledEdgeLines(this.renderBox, this.colorLines, this.enabledSidesMask, builder, e, this.glLineWidth);
 
         if (this.gridEnabled)
         {
-            this.renderGridLines(this.renderBox, this.colorLines, builder, e);
+            this.renderGridLines(this.renderBox, this.colorLines, builder, e, this.glLineWidth);
         }
 
         try
@@ -336,40 +336,40 @@ public class ShapeBox extends ShapeBase
         profiler.pop();
     }
 
-    protected void renderGridLines(AABB box, Color4f color, BufferBuilder builder, PoseStack.Pose e)
+    protected void renderGridLines(AABB box, Color4f color, BufferBuilder builder, PoseStack.Pose e, float lineWidth)
     {
         if (isSideEnabled(Direction.DOWN, this.enabledSidesMask))
         {
-            this.renderGridLinesY(box, box.minY, color, builder, e);
+            this.renderGridLinesY(box, box.minY, color, builder, e, lineWidth);
         }
 
         if (isSideEnabled(Direction.UP, this.enabledSidesMask))
         {
-            this.renderGridLinesY(box, box.maxY, color, builder, e);
+            this.renderGridLinesY(box, box.maxY, color, builder, e, lineWidth);
         }
 
         if (isSideEnabled(Direction.NORTH, this.enabledSidesMask))
         {
-            this.renderGridLinesZ(box, box.minZ, color, builder, e);
+            this.renderGridLinesZ(box, box.minZ, color, builder, e, lineWidth);
         }
 
         if (isSideEnabled(Direction.SOUTH, this.enabledSidesMask))
         {
-            this.renderGridLinesZ(box, box.maxZ, color, builder, e);
+            this.renderGridLinesZ(box, box.maxZ, color, builder, e, lineWidth);
         }
 
         if (isSideEnabled(Direction.WEST, this.enabledSidesMask))
         {
-            this.renderGridLinesX(box, box.minX, color, builder, e);
+            this.renderGridLinesX(box, box.minX, color, builder, e, lineWidth);
         }
 
         if (isSideEnabled(Direction.EAST, this.enabledSidesMask))
         {
-            this.renderGridLinesX(box, box.maxX, color, builder, e);
+            this.renderGridLinesX(box, box.maxX, color, builder, e, lineWidth);
         }
     }
 
-    protected void renderGridLinesX(AABB box, double x, Color4f color, BufferBuilder buffer, PoseStack.Pose e)
+    protected void renderGridLinesX(AABB box, double x, Color4f color, BufferBuilder buffer, PoseStack.Pose e, float lineWidth)
     {
         double end = box.maxY - this.gridEndOffset.y;
         double min = box.minZ + this.gridStartOffset.z;
@@ -377,8 +377,9 @@ public class ShapeBox extends ShapeBase
 
         for (double y = box.minY + this.gridStartOffset.y; y <= end; y += this.gridSize.y)
         {
-            buffer.addVertex(e, (float) x, (float) y, (float) min).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
-            buffer.addVertex(e, (float) x, (float) y, (float) max).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
+            //.setNormal(e, 0.0f, 0.0f, 0.0f)
+            buffer.addVertex(e, (float) x, (float) y, (float) min).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
+            buffer.addVertex(e, (float) x, (float) y, (float) max).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
         }
 
         end = box.maxZ - this.gridEndOffset.z;
@@ -387,12 +388,12 @@ public class ShapeBox extends ShapeBase
 
         for (double z = box.minZ + this.gridStartOffset.z; z <= end; z += this.gridSize.z)
         {
-            buffer.addVertex(e, (float) x, (float) min, (float) z).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
-            buffer.addVertex(e, (float) x, (float) max, (float) z).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, (float) x, (float) min, (float) z).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
+            buffer.addVertex(e, (float) x, (float) max, (float) z).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
         }
     }
 
-    protected void renderGridLinesY(AABB box, double y, Color4f color, BufferBuilder buffer, PoseStack.Pose e)
+    protected void renderGridLinesY(AABB box, double y, Color4f color, BufferBuilder buffer, PoseStack.Pose e, float lineWidth)
     {
         double end = box.maxX - this.gridEndOffset.x;
         double min = box.minZ + this.gridStartOffset.z;
@@ -400,8 +401,8 @@ public class ShapeBox extends ShapeBase
 
         for (double x = box.minX + this.gridStartOffset.x; x <= end; x += this.gridSize.x)
         {
-            buffer.addVertex(e, (float) x, (float) y, (float) min).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
-            buffer.addVertex(e, (float) x, (float) y, (float) max).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, (float) x, (float) y, (float) min).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
+            buffer.addVertex(e, (float) x, (float) y, (float) max).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
         }
 
         end = box.maxZ - this.gridEndOffset.z;
@@ -410,12 +411,12 @@ public class ShapeBox extends ShapeBase
 
         for (double z = box.minZ + this.gridStartOffset.z; z <= end; z += this.gridSize.z)
         {
-            buffer.addVertex(e, (float) min, (float) y, (float) z).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
-            buffer.addVertex(e, (float) max, (float) y, (float) z).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, (float) min, (float) y, (float) z).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
+            buffer.addVertex(e, (float) max, (float) y, (float) z).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
         }
     }
 
-    protected void renderGridLinesZ(AABB box, double z, Color4f color, BufferBuilder buffer, PoseStack.Pose e)
+    protected void renderGridLinesZ(AABB box, double z, Color4f color, BufferBuilder buffer, PoseStack.Pose e, float lineWidth)
     {
         double end = box.maxX - this.gridEndOffset.x;
         double min = box.minY + this.gridStartOffset.y;
@@ -423,8 +424,8 @@ public class ShapeBox extends ShapeBase
 
         for (double x = box.minX + this.gridStartOffset.x; x <= end; x += this.gridSize.x)
         {
-            buffer.addVertex(e, (float) x, (float) min, (float) z).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
-            buffer.addVertex(e, (float) x, (float) max, (float) z).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, (float) x, (float) min, (float) z).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
+            buffer.addVertex(e, (float) x, (float) max, (float) z).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
         }
 
         end = box.maxY - this.gridEndOffset.y;
@@ -433,8 +434,8 @@ public class ShapeBox extends ShapeBase
 
         for (double y = box.minY + this.gridStartOffset.y; y <= end; y += this.gridSize.y)
         {
-            buffer.addVertex(e, (float) min, (float) y, (float) z).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
-            buffer.addVertex(e, (float) max, (float) y, (float) z).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, (float) min, (float) y, (float) z).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
+            buffer.addVertex(e, (float) max, (float) y, (float) z).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
         }
     }
 
@@ -503,7 +504,7 @@ public class ShapeBox extends ShapeBase
         }
     }
 
-    protected void renderBoxEnabledEdgeLines(AABB box, Color4f color, int enabledSidesMask, BufferBuilder buffer, PoseStack.Pose e)
+    protected void renderBoxEnabledEdgeLines(AABB box, Color4f color, int enabledSidesMask, BufferBuilder buffer, PoseStack.Pose e, float lineWidth)
     {
         boolean down  = isSideEnabled(Direction.DOWN,   enabledSidesMask);
         boolean up    = isSideEnabled(Direction.UP,     enabledSidesMask);
@@ -522,76 +523,76 @@ public class ShapeBox extends ShapeBase
         // Lines along the x-axis
         if (down || north)
         {
-            buffer.addVertex(e, minX, minY, minZ).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
-            buffer.addVertex(e, maxX, minY, minZ).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, minX, minY, minZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
+            buffer.addVertex(e, maxX, minY, minZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
         }
 
         if (up || north)
         {
-            buffer.addVertex(e, minX, maxY, minZ).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
-            buffer.addVertex(e, maxX, maxY, minZ).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, minX, maxY, minZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
+            buffer.addVertex(e, maxX, maxY, minZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
         }
 
         if (down || south)
         {
-            buffer.addVertex(e, minX, minY, maxZ).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
-            buffer.addVertex(e, maxX, minY, maxZ).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, minX, minY, maxZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
+            buffer.addVertex(e, maxX, minY, maxZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
         }
 
         if (up || south)
         {
-            buffer.addVertex(e, minX, maxY, maxZ).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
-            buffer.addVertex(e, maxX, maxY, maxZ).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, minX, maxY, maxZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
+            buffer.addVertex(e, maxX, maxY, maxZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
         }
 
         // Lines along the z-axis
         if (down || west)
         {
-            buffer.addVertex(e, minX, minY, minZ).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
-            buffer.addVertex(e, minX, minY, maxZ).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, minX, minY, minZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
+            buffer.addVertex(e, minX, minY, maxZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
         }
 
         if (up || west)
         {
-            buffer.addVertex(e, minX, maxY, minZ).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
-            buffer.addVertex(e, minX, maxY, maxZ).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, minX, maxY, minZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
+            buffer.addVertex(e, minX, maxY, maxZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
         }
 
         if (down || east)
         {
-            buffer.addVertex(e, maxX, minY, minZ).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
-            buffer.addVertex(e, maxX, minY, maxZ).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, maxX, minY, minZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
+            buffer.addVertex(e, maxX, minY, maxZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
         }
 
         if (up || east)
         {
-            buffer.addVertex(e, maxX, maxY, minZ).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
-            buffer.addVertex(e, maxX, maxY, maxZ).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, maxX, maxY, minZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
+            buffer.addVertex(e, maxX, maxY, maxZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
         }
 
         // Lines along the y-axis
         if (north || west)
         {
-            buffer.addVertex(e, minX, minY, minZ).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
-            buffer.addVertex(e, minX, maxY, minZ).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, minX, minY, minZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
+            buffer.addVertex(e, minX, maxY, minZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
         }
 
         if (south || west)
         {
-            buffer.addVertex(e, minX, minY, maxZ).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
-            buffer.addVertex(e, minX, maxY, maxZ).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, minX, minY, maxZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
+            buffer.addVertex(e, minX, maxY, maxZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
         }
 
         if (north || east)
         {
-            buffer.addVertex(e, maxX, minY, minZ).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
-            buffer.addVertex(e, maxX, maxY, minZ).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, maxX, minY, minZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
+            buffer.addVertex(e, maxX, maxY, minZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
         }
 
         if (south || east)
         {
-            buffer.addVertex(e, maxX, minY, maxZ).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
-            buffer.addVertex(e, maxX, maxY, maxZ).setColor(color.r, color.g, color.b, color.a).setNormal(e, 0.0f, 0.0f, 0.0f);
+            buffer.addVertex(e, maxX, minY, maxZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
+            buffer.addVertex(e, maxX, maxY, maxZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
         }
     }
 

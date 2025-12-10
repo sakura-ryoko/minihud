@@ -4,7 +4,7 @@
     "compatibilityLevel": "JAVA_21",
     "minVersion": "0.8",
     "mixins": [
-        "MixinLanguage",
+        "client.MixinLanguage",
         "block.IMixinAbstractFurnaceBlockEntity",
         "block.IMixinBeaconBlockEntity",
         "block.MixinBeaconBlockEntity",
@@ -32,8 +32,8 @@
         "world.MixinServerWorld"
     ],
     "client": [
-        "IMixinOptions",
-        "MixinMinecraftClient",
+        "client.IMixinOptions",
+        "client.MixinMinecraftClient",
         "debug.IMixinClientPlayNetworkHandler",
         "debug.MixinDebugHudProfile",
         "hud.MixinChatScreen",
