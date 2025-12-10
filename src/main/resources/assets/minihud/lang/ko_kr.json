@@ -351,7 +351,7 @@
     "minihud.config.info_toggle.comment.infoRotationPitch": "플레이어의 회전 피치 값을 표시합니다.",
     "minihud.config.info_toggle.comment.infoRotationYaw": "플레이어의 회전 요 값을 표시합니다.",
     "minihud.config.info_toggle.comment.infoServerTPS": "서버의 TPS와 ms/tick (MSPT) 값을 표시합니다.\n참고: 이 설정은 Carpet 서버를 실행 중이고\nTPS 표시 Carpet 규칙이 활성화된 경우에만 정확합니다.\n그렇지 않은 경우 클라이언트 측에서 추정하고,\n월드 시간 업데이트 패킷을 기반으로 하며, 이\n방식으로 20보다 낮은 TPS 값만 감지할 수 있습니다.",
-    "minihud.config.info_toggle.comment.infoServux": "Servux 버전 및 엔티티 데이터 동기화 프로토콜 버전을 표시합니다.",
+    "minihud.config.info_toggle.comment.infoServux": "Show the Servux version, the protocol statistics, or connection status.\n§bHUD Data Sync:§r\n§7sP: world spawn point\n§7wS: world seed\n§bEntity Data Sync:§r\n§7cB: cached block entity\n§7pB: pending block entity\n§7cE: cached entity\n§7pE: pending entity\n§bStructure Data:§r\n§7sC: structure count\n§7sP: world spawn point\n§7wS: world seed\n§7sC: structure count\n§7sD: structure max chunk distance\n§7sR: server render chunk distance",
     "minihud.config.info_toggle.comment.infoSlimeChunk": "플레이어가 현재 슬라임 청크에 있는지 표시합니다.\n참고: 이 기능은 사용자 개입 없이 싱글 플레이어에서만 작동합니다!\n서버에서 플레이어는 다음 중 하나를 수행해야 합니다.\n 1) 관리자가 되어 서버에 참여하거나 차원을 변경할 때마다 /seed 명령을 실행하거나\n 2) 채팅을 통해 다음과 같은 \"명령\"을 보내 시드를 입력합니다. minihud-seed 12345",
     "minihud.config.info_toggle.comment.infoSpeed": "플레이어의 현재 이동 속도를 표시합니다.",
     "minihud.config.info_toggle.comment.infoSpeedAxis": "축 별로 플레이어의 현재 이동 속도를 표시합니다.",
