@@ -853,7 +853,7 @@
     "minihud.info_line.biome": "生物群系：%s",
     "minihud.info_line.biome_reg_name": "生物群系注册名：%s",
     "minihud.info_line.block_break_speed": "方块破坏速度：%.2f",
-    "minihud.info_line.block_in_chunk": "内部方块：%d, %d, %d (位于子区块 %d, %d, %d)",
+    "minihud.info_line.block_in_chunk": "内部方块：%d, %d, %d (位于子区块：%d, %d, %d)",
     "minihud.info_line.block_pos.exception": "“方块坐标格式（blockPosFormat）”格式字符串错误",
     "minihud.info_line.chunk_pos": "§r子区块：%d, %d, %d",
     "minihud.info_line.chunk_sections": "区块分段：%d",
