@@ -62,6 +62,7 @@ public class Configs implements IConfigHandler
         public static final ConfigOptionList    DURATION_FORMAT_TYPE                = new ConfigOptionList("durationFormatType", DurationFormat.PRETTY).apply(GENERIC_KEY);
         public static final ConfigString        DURATION_FORMAT_STRING              = new ConfigString("durationFormatString", "HH:mm:ss.SSS").apply(GENERIC_KEY);
         public static final ConfigBoolean       DEBUG_MESSAGES                      = new ConfigBoolean("debugMessages", false).apply(GENERIC_KEY);
+//        public static final ConfigFloat         DEFAULT_GL_LINE_WIDTH               = new ConfigFloat("defaultGlLineWidth", 1.6f, 0.5f, 5.0f).apply(GENERIC_KEY);
         //public static final ConfigBoolean       DEBUG_RENDERER_PATH_MAX_DIST        = new ConfigBoolean("debugRendererPathFindingEnablePointWidth", true).apply(GENERIC_KEY);
         public static final ConfigBoolean       DONT_RESET_SEED_ON_DIMENSION_CHANGE = new ConfigBoolean("dontClearStoredSeedOnDimensionChange", true).apply(GENERIC_KEY);
         public static final ConfigBooleanHotkeyed ENTITY_DATA_SYNC                  = new ConfigBooleanHotkeyed("entityDataSync", false, "").apply(GENERIC_KEY);
@@ -225,6 +226,7 @@ public class Configs implements IConfigHandler
                 BLOCK_GRID_OVERLAY_RADIUS,
                 COORDINATE_FORMAT_STRING,
 				COPPER_AGING_MODE,
+//                DEFAULT_GL_LINE_WIDTH,
                 DATE_FORMAT_TYPE,
                 DATE_FORMAT_STRING,
                 DATE_FORMAT_MINECRAFT,

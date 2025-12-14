@@ -55,7 +55,6 @@ public class RenderObjectVbo
 	private final HashMap<Integer, SimpleTexture> textures;
 	@Nullable private MeshData.SortState sortState;
 	private float[] offset;
-	//    private float lineWidth;
     private int color;
     private boolean started;
     private boolean uploaded;
@@ -78,7 +77,6 @@ public class RenderObjectVbo
 	    this.textures = new HashMap<>();
 	    this.offset = new float[]{0f, 0f, 0f};
 	    this.color = -1;
-//        this.lineWidth = 1.0f;
         this.started = true;
         this.uploaded = false;
     }
@@ -100,7 +98,6 @@ public class RenderObjectVbo
         this.indexCount = -1;
 	    this.offset = new float[]{0f, 0f, 0f};
 	    this.color = -1;
-//        this.lineWidth = 1.0f;
         this.started = true;
         this.uploaded = false;
         return this.builder;
@@ -163,12 +160,6 @@ public class RenderObjectVbo
         this.builder = builder;
         return this;
     }
-
-//    protected RenderObjectVbo lineWidth(float width)
-//    {
-//        this.lineWidth = Math.clamp(width, 0.0f, 25.0f);
-//        return this;
-//    }
 
     protected RenderObjectVbo offset(float[] value)
     {
@@ -611,9 +602,7 @@ public class RenderObjectVbo
             {
                 float[] rgba = new float[]{ARGB.redFloat(this.color), ARGB.greenFloat(this.color), ARGB.blueFloat(this.color), ARGB.alphaFloat(this.color)};
 
-//                RenderSystem.setShaderColor(rgba[0], rgba[1], rgba[2], rgba[3]);
                 this.drawInternal(otherFb, rgba, setColor, useOffset);
-//                RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             }
         }
     }
@@ -673,14 +662,8 @@ public class RenderObjectVbo
                 colorMod.set(rgba);
             }
 
-//            if (setLineWidth)
-//            {
-//                line = this.lineWidth > 0.0f ? this.lineWidth : RenderSystem.getShaderLineWidth();
-//            }
-
             if (useOffset)
             {
-//                RenderSystem.setModelOffset(this.offset[0], this.offset[1], this.offset[2]);
                 modelOffset.set(this.offset);
             }
 
@@ -709,10 +692,6 @@ public class RenderObjectVbo
 
             //MiniHUD.LOGGER.warn("RenderContext#drawInternal() [{}] --> new renderPass", this.name.get());
             GpuBuffer indexBuffer = this.shapeIndex.getBuffer(this.indexCount);
-
-            //MiniHUD.LOGGER.warn("RenderContext#drawInternal() [{}] renderPass --> setUniform() // lineWidth [{}]", this.name.get(), width);
-//                pass.setUniform("LineWidth", width);
-
             GpuBufferSlice gpuSlice = RenderSystem.getDynamicUniforms()
                                                   .writeTransform(
                                                           RenderSystem.getModelViewMatrix(),
@@ -771,11 +750,6 @@ public class RenderObjectVbo
             }
 
             //MiniHUD.LOGGER.warn("RenderContext#drawInternal() [{}] --> END", this.name.get());
-
-//            if (useOffset)
-//            {
-//                RenderSystem.resetModelOffset();
-//            }
         }
     }
 
@@ -895,7 +869,6 @@ public class RenderObjectVbo
         this.indexType = null;
 	    this.offset = new float[]{0f, 0f, 0f};
 	    this.color = -1;
-//        this.lineWidth = 1.0f;
         this.started = false;
         this.uploaded = false;
     }

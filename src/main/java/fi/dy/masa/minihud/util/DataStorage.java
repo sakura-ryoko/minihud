@@ -437,7 +437,10 @@ public class DataStorage
     {
         String[] parts = message.split(" ");
 
-        if (parts.length > 0 && (parts[0].equals("minihud-seed") || parts[0].equals("/minihud-seed")))
+        if (parts.length > 0 &&
+                (parts[0].equals("minihud-seed") ||
+                 parts[0].equals("#minihud-seed") ||
+                 parts[0].equals("/minihud-seed")))
         {
             if (parts.length == 2)
             {
@@ -465,7 +468,11 @@ public class DataStorage
 
             return true;
         }
-        else if (parts.length > 0 && (parts[0].equals("minihud-spawnchunkradius") || parts[0].equals("/minihud-spawnchunkradius")))
+        else if (parts.length > 0 &&
+                (parts[0].equals("minihud-spawnchunkradius") ||
+                 parts[0].equals("/minihud-spawnchunkradius") ||
+                 parts[0].equals("#minihud-spawnchunkradius"))
+        )
         {
             if (parts.length == 2)
             {
@@ -473,7 +480,7 @@ public class DataStorage
                 {
                     int radius = Integer.parseInt(parts[1]);
 
-                    if (radius > 0 && radius <= 32)
+                    if (radius >= -1 && radius <= 32)
                     {
                         HudDataManager.getInstance().setSpawnChunkRadius(radius, true);
                     }

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import org.apache.commons.lang3.tuple.Pair;
+import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -32,6 +33,9 @@ import net.minecraft.world.entity.animal.fox.Fox;
 import net.minecraft.world.entity.animal.frog.Frog;
 import net.minecraft.world.entity.animal.frog.FrogVariant;
 import net.minecraft.world.entity.animal.frog.FrogVariants;
+import net.minecraft.world.entity.animal.nautilus.ZombieNautilus;
+import net.minecraft.world.entity.animal.nautilus.ZombieNautilusVariant;
+import net.minecraft.world.entity.animal.nautilus.ZombieNautilusVariants;
 import net.minecraft.world.entity.animal.parrot.Parrot;
 import net.minecraft.world.entity.animal.pig.Pig;
 import net.minecraft.world.entity.animal.pig.PigVariant;
@@ -249,6 +253,15 @@ public class InfoLineEntityVariant extends InfoLine
                 list.add(this.translate(VARIANT_KEY+".tropical_fish", variant.pattern().getSerializedName(), variant.baseColor().getSerializedName(), variant.patternColor().getSerializedName()));
             }
         }
+        else if (entityType.equals(EntityType.ZOMBIE_NAUTILUS))
+        {
+            ResourceKey<@NotNull ZombieNautilusVariant> variant = DataEntityUtils.getZombieNautilusVariantFromNbt(data, world.registryAccess());
+
+            if (variant != null)
+            {
+                list.add(this.translate(VARIANT_KEY+".nautilus", variant.identifier().getPath()));
+            }
+        }
         else if (entityType.equals(EntityType.WOLF))
         {
             Pair<ResourceKey<WolfVariant>, DyeColor> wolfPair = DataEntityUtils.getWolfVariant(data, world.registryAccess());
@@ -319,6 +332,7 @@ public class InfoLineEntityVariant extends InfoLine
             case Salmon salmon -> list.add(this.translate(VARIANT_KEY + ".salmon", salmon.getVariant().getSerializedName()));
             case Sheep sheep -> list.add(this.translate(VARIANT_KEY + ".sheep", sheep.getColor().getName()));
             case TropicalFish fish -> list.add(this.translate(VARIANT_KEY + ".tropical_fish", fish.getPattern().getSerializedName()));
+            case ZombieNautilus nautilus -> list.add(this.translate(VARIANT_KEY + ".nautilus", nautilus.getVariant().unwrapKey().orElse(ZombieNautilusVariants.DEFAULT).identifier().getPath()));
             case Wolf wolf ->
             {
                 Pair<ResourceKey<WolfVariant>, DyeColor> wolfPair = EntityUtils.getWolfVariantFromComponents(wolf);

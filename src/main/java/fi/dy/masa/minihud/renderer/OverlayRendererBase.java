@@ -10,6 +10,7 @@ import net.minecraft.world.phys.Vec3;
 import com.google.gson.JsonObject;
 import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.WorldUtils;
+import fi.dy.masa.minihud.config.Configs;
 
 public abstract class OverlayRendererBase implements IOverlayRenderer
 {
@@ -23,6 +24,7 @@ public abstract class OverlayRendererBase implements IOverlayRenderer
 
     public OverlayRendererBase()
     {
+//        this.glLineWidth = Configs.Generic.DEFAULT_GL_LINE_WIDTH.getFloatValue();
         this.glLineWidth = 1.0f;
         this.lastUpdatePos = BlockPos.ZERO;
         this.updateCameraPos = Vec3.ZERO;
@@ -125,7 +127,7 @@ public abstract class OverlayRendererBase implements IOverlayRenderer
     public void reset()
     {
         this.resetBuffers();
-        this.glLineWidth = 1f;
+        this.glLineWidth = 1.0f;
         this.lastUpdatePos = BlockPos.ZERO;
         this.updateCameraPos = Vec3.ZERO;
     }

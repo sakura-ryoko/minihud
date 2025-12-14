@@ -20,6 +20,7 @@ import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.nautilus.AbstractNautilus;
 import net.minecraft.world.entity.monster.piglin.Piglin;
 import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.entity.player.Player;
@@ -39,6 +40,7 @@ import fi.dy.masa.malilib.config.options.ConfigBoolean;
 import fi.dy.masa.malilib.interfaces.IClientTickHandler;
 import fi.dy.masa.malilib.interfaces.IDataSyncer;
 import fi.dy.masa.malilib.mixin.entity.IMixinAbstractHorseEntity;
+import fi.dy.masa.malilib.mixin.entity.IMixinAbstractNautilus;
 import fi.dy.masa.malilib.mixin.entity.IMixinPiglinEntity;
 import fi.dy.masa.malilib.mixin.network.IMixinDataQueryHandler;
 import fi.dy.masa.malilib.network.ClientPlayHandler;
@@ -790,6 +792,10 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
                 else if (entity instanceof AbstractHorse)
                 {
                     inv = ((IMixinAbstractHorseEntity) entity).malilib_getHorseInventory();
+                }
+                else if (entity instanceof AbstractNautilus)
+                {
+                    inv = ((IMixinAbstractNautilus) entity).malilib_getNautilusInventory();
                 }
                 else if (entity instanceof Piglin)
                 {
