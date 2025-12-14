@@ -889,6 +889,7 @@
     "minihud.info_line.entity_variant.horse": "말 유형: §b%s§r / §d%s§r",
     "minihud.info_line.entity_variant.llama": "라마 유형: §b%s§r, 힘: §e§l%s§r",
     "minihud.info_line.entity_variant.mooshroom": "버섯 유형: §b%s§r",
+    "minihud.info_line.entity_variant.nautilus": "Nautilus Variant: §b%s§r",
     "minihud.info_line.entity_variant.painting.author_only": "그림 유형: by §e§l%s§r",
     "minihud.info_line.entity_variant.painting.both": "그림 유형: §b§l%s§r by §e§l%s§r",
     "minihud.info_line.entity_variant.painting.title_only": "그림 유형: §b§l%s§r",

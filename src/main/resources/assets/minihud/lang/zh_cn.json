@@ -889,6 +889,7 @@
     "minihud.info_line.entity_variant.horse": "马匹变种：§b%s§r / §d%s§r",
     "minihud.info_line.entity_variant.llama": "羊驼变种：§b%s§r，强度：§d§l%d§r",
     "minihud.info_line.entity_variant.mooshroom": "哞菇变种: §b%s§r",
+    "minihud.info_line.entity_variant.nautilus": "Nautilus Variant: §b%s§r",
     "minihud.info_line.entity_variant.painting.author_only": "画作变体：作者 §e§l%s§r",
     "minihud.info_line.entity_variant.painting.both": "画作变体：§b§l%s§r 作者 §e§l%s§r",
     "minihud.info_line.entity_variant.painting.title_only": "画作变体：§b§l%s§r",

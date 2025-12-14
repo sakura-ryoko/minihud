@@ -889,6 +889,7 @@
     "minihud.info_line.entity_variant.horse": "Horse Variant: §b%s§r / §d%s§r",
     "minihud.info_line.entity_variant.llama": "Llama Variant: §b%s§r, Strength: §d§l%d§r",
     "minihud.info_line.entity_variant.mooshroom": "Mooshroom Variant: §b%s§r",
+    "minihud.info_line.entity_variant.nautilus": "Nautilus Variant: §b%s§r",
     "minihud.info_line.entity_variant.painting.author_only": "Painting Variant: by §e§l%s§r",
     "minihud.info_line.entity_variant.painting.both": "Painting Variant: §b§l%s§r by §e§l%s§r",
     "minihud.info_line.entity_variant.painting.title_only": "Painting Variant: §b§l%s§r",
