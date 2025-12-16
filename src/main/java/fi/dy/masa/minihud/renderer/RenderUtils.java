@@ -175,7 +175,6 @@ public class RenderUtils
     }
 
     public static void drawBoxNoOutlines(IntBoundingBox bb, Vec3d cameraPos, Color4f color,
-//                                         BufferBuilder bufferQuads, MatrixStack.Entry e)
                                          BufferBuilder bufferQuads)
     {
         float minX = (float) (bb.minX - cameraPos.x);

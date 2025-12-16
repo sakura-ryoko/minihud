@@ -105,10 +105,6 @@ public class OverlayRendererBlockGrid extends OverlayRendererBase
 
         RenderObjectVbo ctx = this.renderObjects.getFirst();
         BufferBuilder builder = ctx.start(() -> "minihud:block_grid/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH);
-//        MatrixStack matrices = new MatrixStack();
-
-//        matrices.push();
-//        MatrixStack.Entry e = matrices.peek();
 
         switch (mode)
         {
@@ -138,7 +134,6 @@ public class OverlayRendererBlockGrid extends OverlayRendererBase
             MiniHUD.LOGGER.error("OverlayRendererBlockGrid#renderOutlines(): Exception; {}", err.getMessage());
         }
 
-//        matrices.pop();
         profiler.pop();
     }
 
@@ -167,9 +162,6 @@ public class OverlayRendererBlockGrid extends OverlayRendererBase
             {
                 buffer.vertex((float) x, (float) y, (float) startZ).color(color.r, color.g, color.b, color.a);
                 buffer.vertex((float) x, (float) y, (float) endZ).color(color.r, color.g, color.b, color.a);
-
-//                buffer.vertex(e, (float) x, (float) y, (float) startZ).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
-//                buffer.vertex(e, (float) x, (float) y, (float) endZ).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
             }
         }
 
@@ -179,9 +171,6 @@ public class OverlayRendererBlockGrid extends OverlayRendererBase
             {
                 buffer.vertex((float) x, (float) startY, (float) z).color(color.r, color.g, color.b, color.a);
                 buffer.vertex((float) x, (float) endY, (float) z).color(color.r, color.g, color.b, color.a);
-
-//                buffer.vertex(e, (float) x, (float) startY, (float) z).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
-//                buffer.vertex(e, (float) x, (float) endY, (float) z).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
             }
         }
 
@@ -191,15 +180,11 @@ public class OverlayRendererBlockGrid extends OverlayRendererBase
             {
                 buffer.vertex((float) startX, (float) y, (float) z).color(color.r, color.g, color.b, color.a);
                 buffer.vertex((float) endX, (float) y, (float) z).color(color.r, color.g, color.b, color.a);
-
-//                buffer.vertex(e, (float) startX, (float) y, (float) z).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
-//                buffer.vertex(e, (float) endX, (float) y, (float) z).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
             }
         }
     }
 
     protected void renderLinesNonAir(Vec3d cameraPos, World world, BlockPos center, int radius, Color4f color,
-//                                     BufferBuilder buffer, MatrixStack.Entry e)
                                      BufferBuilder buffer)
     {
         final int startX = center.getX() - radius;
@@ -246,7 +231,6 @@ public class OverlayRendererBlockGrid extends OverlayRendererBase
     }
 
     protected void renderLinesAdjacentToNonAir(Vec3d cameraPos, World world, BlockPos center, int radius, Color4f color,
-//                                               BufferBuilder buffer, MatrixStack.Entry e)
                                                BufferBuilder buffer)
     {
         final int startX = center.getX() - radius;

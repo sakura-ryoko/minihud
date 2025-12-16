@@ -13,6 +13,7 @@ import fi.dy.masa.malilib.util.nbt.NbtEntityUtils;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.info.InfoLine;
+import fi.dy.masa.minihud.info.InfoLineContext;
 import fi.dy.masa.minihud.util.MiscUtils;
 
 public class InfoLineDolphinTreasure extends InfoLine
@@ -33,7 +34,7 @@ public class InfoLineDolphinTreasure extends InfoLine
     public boolean succeededType() { return false; }
 
     @Override
-    public List<Entry> parse(@NotNull InfoLine.Context ctx)
+    public List<Entry> parse(@NotNull InfoLineContext ctx)
     {
         if (ctx.world() == null) return null;
 

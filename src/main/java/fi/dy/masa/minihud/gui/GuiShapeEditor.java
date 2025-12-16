@@ -163,6 +163,26 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
                 this.createRenderTypeButton(renderTypeX, renderTypeY, this.shape::getRenderType, this.shape::setRenderType, "minihud.gui.label.shape.render_type_colon");
 //                this.createLayerEditControls(146, 162, this.getLayerRange());
                 break;
+
+            case ELLIPSOID_SPAWN:
+            {
+                ShapeEllipsoidSpawn shape = (ShapeEllipsoidSpawn) this.shape;
+                this.createShapeEditorElementsSphereBase(x, y, true);
+                this.createShapeEditorElementDoubleField(x + 150, y + 36, shape::getRadiusY, shape::setRadiusY, "minihud.gui.label.radius_y_colon", true);
+                this.createShapeEditorElementDoubleField(x + 220, y + 36, shape::getRadiusZ, shape::setRadiusZ, "minihud.gui.label.radius_z_colon", true);
+                this.createRenderTypeButton(renderTypeX, renderTypeY, this.shape::getRenderType, this.shape::setRenderType, "minihud.gui.label.shape.render_type_colon");
+                break;
+            }
+
+            case CLIPPED_SPAWN_SPHERE_Y:
+            {
+                ShapeSpawnSphereClippedY shape = (ShapeSpawnSphereClippedY) this.shape;
+                this.createShapeEditorElementsSphereBase(x, y, true);
+                this.createShapeEditorElementDoubleField(x + 150, y + 36, shape::getTopTrim, shape::setTopTrim, "minihud.gui.label.clip_top_colon", true);
+                this.createShapeEditorElementDoubleField(x + 220, y + 36, shape::getBottomTrim, shape::setBottomTrim, "minihud.gui.label.clip_bottom_colon", true);
+                this.createRenderTypeButton(renderTypeX, renderTypeY, this.shape::getRenderType, this.shape::setRenderType, "minihud.gui.label.shape.render_type_colon");
+                break;
+            }
         }
     }
 
@@ -448,9 +468,10 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
 
         String hover = StringUtils.translate("malilib.gui.button.hover.plus_minus_tip");
         ButtonGeneric button = new ButtonGeneric(x, y, MaLiLibIcons.BTN_PLUSMINUS_16, hover);
-        this.addButton(button, new ButtonListenerDoubleModifier(coordinateSource, (v) -> {
-            coordinateConsumer.accept(v);
-            textField.setTextWrapper("" + coordinateSource.getAsDouble());
+        this.addButton(button, new ButtonListenerDoubleModifier(coordinateSource, (v) ->
+        {
+	        coordinateConsumer.accept(v);
+	        textField.setTextWrapper("" + coordinateSource.getAsDouble());
         }));
     }
 
@@ -477,7 +498,7 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         {
             String hover = StringUtils.translate("malilib.gui.button.hover.plus_minus_tip");
             ButtonGeneric button = new ButtonGeneric(x + 54, y - 1, MaLiLibIcons.BTN_PLUSMINUS_16, hover);
-            this.addButton(button, new ButtonListenerDoubleModifier(supplier, new ChainedDoubleConsumer(consumer, (val) -> txtField.setTextWrapper(String.valueOf(supplier.getAsDouble())) )));
+            this.addButton(button, new ButtonListenerDoubleModifier(supplier, new ChainedDoubleConsumer(consumer, (val) -> txtField.setTextWrapper(String.valueOf(supplier.getAsDouble())))));
         }
     }
 

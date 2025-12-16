@@ -236,7 +236,12 @@ public class HudDataManager
 
     public void setSpawnChunkRadius(int radius, boolean message)
     {
-        if (radius > 0 && radius <= 32)
+        if (radius == 0)
+        {
+            radius = -1;
+        }
+
+        if (radius >= -1 && radius <= 32)
         {
             if (this.spawnChunkRadius != radius)
             {
@@ -250,7 +255,7 @@ public class HudDataManager
                 MiniHUD.debugLog("HudDataStorage#setSpawnChunkRadius(): set spawn chunk radius [{}] -> [{}]", this.spawnChunkRadius, radius);
             }
             this.spawnChunkRadius = radius;
-            this.spawnChunkRadiusValid = true;
+	        this.spawnChunkRadiusValid = radius > 0;
         }
         else
         {

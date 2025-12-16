@@ -5,11 +5,11 @@ public enum InfoLineFlag
     GENERIC,
     WORLD,
     BEST_WORLD,     // Returns the World as the "BestWorld" value
-    POS,
+	BLOCK_POS,
+	BLOCK_STATE,
     CHUNK_POS,      // Returns BlockPos as the FlooredPos
-    BLOCK,
-    STATE,
     PLAYER,
+	CAMERA,
     VEHICLE,
     ENTITY,
     TILE_ENTITY

@@ -15,6 +15,7 @@ import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.info.InfoLine;
+import fi.dy.masa.minihud.info.InfoLineContext;
 import fi.dy.masa.minihud.mixin.entity.IMixinCopperGolemEntity;
 import fi.dy.masa.minihud.util.CopperAgingMode;
 import fi.dy.masa.minihud.util.MiscUtils;
@@ -37,7 +38,7 @@ public class InfoLineCopperAging extends InfoLine
     public boolean succeededType() { return false; }
 
     @Override
-    public List<Entry> parse(@NotNull InfoLine.Context ctx)
+    public List<Entry> parse(@NotNull InfoLineContext ctx)
     {
         if (ctx.world() == null) return null;
 
@@ -56,40 +57,44 @@ public class InfoLineCopperAging extends InfoLine
     public List<Entry> parseNbt(@NotNull World world, @NotNull EntityType<?> entityType, @NotNull NbtCompound nbt)
     {
         List<Entry> list = new ArrayList<>();
-        Pair<Oxidizable.OxidationLevel, Long> pair = NbtEntityUtils.getWeatheringDataFromNbt(nbt);
-		Oxidizable.OxidationLevel level = pair.getLeft();
-		final long age = pair.getRight();
 
-		// Waxed (-2L)
-		if (age == -2L)
+		if (entityType.equals(EntityType.COPPER_GOLEM))
 		{
-			list.add(this.translate(COPPER_KEY+".waxed",
-									level.asString()
-			));
-		}
-		else if (age == -1)
-		{
-			list.add(this.translate(COPPER_KEY+".not_aging",
-									level.asString()
-			));
-		}
-		else
-		{
-			final long diff = (world.getTimeOfDay() - age) * -1;
-			final String formatted = this.formatCountdown(diff);
+			Pair<Oxidizable.OxidationLevel, Long> pair = NbtEntityUtils.getWeatheringDataFromNbt(nbt);
+			Oxidizable.OxidationLevel level = pair.getLeft();
+			final long age = pair.getRight();
 
-			if (formatted.isEmpty())
+			// Waxed (-2L)
+			if (age == -2L)
 			{
-				list.add(this.translate(COPPER_KEY+".not_aging",
-										level.asString()
+				list.add(this.translate(COPPER_KEY + ".waxed",
+				                        level.asString()
+				));
+			}
+			else if (age == -1)
+			{
+				list.add(this.translate(COPPER_KEY + ".not_aging",
+				                        level.asString()
 				));
 			}
 			else
 			{
-				list.add(this.translate(COPPER_KEY + ".aging",
-										level.asString(),
-										formatted
-				));
+				final long diff = (world.getTimeOfDay() - age) * -1;
+				final String formatted = this.formatCountdown(diff);
+
+				if (formatted.isEmpty())
+				{
+					list.add(this.translate(COPPER_KEY + ".not_aging",
+					                        level.asString()
+					));
+				}
+				else
+				{
+					list.add(this.translate(COPPER_KEY + ".aging",
+					                        level.asString(),
+					                        formatted
+					));
+				}
 			}
 		}
 

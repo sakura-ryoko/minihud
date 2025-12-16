@@ -69,8 +69,6 @@ public class WidgetShapeEntry extends WidgetListEntryBase<ShapeBase>
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, boolean selected)
     {
-//        RenderUtils.color(1f, 1f, 1f, 1f);
-
         boolean shapeSelected = ShapeManager.INSTANCE.getSelectedShape() == this.entry;
 
         // Draw a lighter background for the hovered and the selected entry
@@ -96,8 +94,6 @@ public class WidgetShapeEntry extends WidgetListEntryBase<ShapeBase>
         String name = this.shape.getDisplayName();
         this.drawString(context, this.x + 4, this.y + 7, 0xFFFFFFFF, name);
 
-//        RenderUtils.color(1f, 1f, 1f, 1f);
-
         super.render(context, mouseX, mouseY, selected);
     }
 
@@ -112,17 +108,8 @@ public class WidgetShapeEntry extends WidgetListEntryBase<ShapeBase>
         }
     }
 
-    private static class ButtonListener implements IButtonActionListener
+    private record ButtonListener(Type type, WidgetShapeEntry widget) implements IButtonActionListener
     {
-        private final Type type;
-        private final WidgetShapeEntry widget;
-
-        public ButtonListener(Type type, WidgetShapeEntry widget)
-        {
-            this.type = type;
-            this.widget = widget;
-        }
-
         @Override
         public void actionPerformedWithButton(ButtonBase button, int mouseButton)
         {
@@ -146,9 +133,9 @@ public class WidgetShapeEntry extends WidgetListEntryBase<ShapeBase>
 
         public enum Type
         {
-            CONFIGURE   ("minihud.gui.button.configure"),
-            ENABLED     ("minihud.gui.button.shape_entry.enabled"),
-            REMOVE      ("minihud.gui.button.remove");
+            CONFIGURE("minihud.gui.button.configure"),
+            ENABLED("minihud.gui.button.shape_entry.enabled"),
+            REMOVE("minihud.gui.button.remove");
 
             private final String translationKey;
 
@@ -161,7 +148,7 @@ public class WidgetShapeEntry extends WidgetListEntryBase<ShapeBase>
             {
                 return this.translationKey;
             }
-            
+
             public String getDisplayName(Object... args)
             {
                 return StringUtils.translate(this.translationKey, args);

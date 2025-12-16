@@ -3,6 +3,7 @@ package fi.dy.masa.minihud.info;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
@@ -12,7 +13,9 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
+
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.malilib.util.WorldUtils;
 import fi.dy.masa.minihud.Reference;
@@ -57,7 +60,7 @@ public abstract class InfoLine
         return this.mc().world;
     }
 
-    public List<Entry> parse(@Nonnull Context ctx)
+    public List<Entry> parse(@Nonnull InfoLineContext ctx)
     {
         return null;
     }
@@ -92,7 +95,12 @@ public abstract class InfoLine
         return null;
     }
 
-    public List<Entry> parseWorld(@Nonnull World world)
+	public List<Entry> parseChunkPos(@Nonnull World world, @Nonnull ChunkPos pos)
+	{
+		return null;
+	}
+
+	public List<Entry> parseWorld(@Nonnull World world)
     {
         return null;
     }
@@ -120,49 +128,6 @@ public abstract class InfoLine
     }
 
     public abstract boolean succeededType();
-
-    public record Context(@Nullable World world, @Nullable Entity ent, @Nullable BlockEntity be, @Nullable BlockPos pos, @Nullable BlockState state, NbtCompound nbt)
-    {
-        public boolean hasEntity()
-        {
-            return this.ent != null && this.ent instanceof Entity;
-        }
-
-        public boolean hasLiving()
-        {
-            return this.ent != null && this.ent instanceof LivingEntity;
-        }
-
-        public @Nullable LivingEntity living()
-        {
-            if (this.hasLiving())
-            {
-                return (LivingEntity) this.ent;
-            }
-
-            return null;
-        }
-
-        public boolean hasBlockEntity()
-        {
-            return this.be != null && this.be instanceof BlockEntity;
-        }
-
-        public boolean hasBlockPos()
-        {
-            return this.pos != null;
-        }
-
-        public boolean hasBlockState()
-        {
-            return this.state != null && this.state instanceof BlockState;
-        }
-
-        public boolean hasNbt()
-        {
-            return this.nbt != null && !this.nbt.isEmpty();
-        }
-    }
 
     public record Entry(@Nonnull String format, @Nullable Object... args)
     {

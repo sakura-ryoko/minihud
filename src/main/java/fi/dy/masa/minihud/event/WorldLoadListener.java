@@ -19,11 +19,19 @@ import fi.dy.masa.minihud.util.DataStorage;
 import javax.annotation.Nullable;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
+import net.minecraft.registry.DynamicRegistryManager;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class WorldLoadListener implements IWorldLoadListener
 {
+    @Override
+    public void onWorldLoadImmutable(DynamicRegistryManager.Immutable immutable)
+    {
+        DataStorage.getInstance().setWorldRegistryManager(immutable);
+    }
+
     @Override
     public void onWorldLoadPre(@Nullable ClientWorld worldBefore, @Nullable ClientWorld worldAfter, MinecraftClient mc)
     {
@@ -70,7 +78,7 @@ public class WorldLoadListener implements IWorldLoadListener
             this.readStoredDataPerDimension();
             OverlayRenderer.resetRenderTimeout();
             DataStorage.getInstance().onWorldJoin();
-            DataStorage.getInstance().setWorldRegistryManager(worldAfter.getRegistryManager());
+//            DataStorage.getInstance().setWorldRegistryManager(worldAfter.getRegistryManager());
             HudDataManager.getInstance().onWorldJoin();
             EntitiesDataManager.getInstance().onWorldJoin();
             DebugDataManager.getInstance().onWorldJoin();

@@ -244,6 +244,11 @@ public class InventoryOverlayHandler implements IInventoryOverlayHandler
         {
             Entity entity = ((EntityHitResult) trace).getEntity();
 
+            if (cameraEntity.getUuid().equals(entity.getUuid()))
+            {
+                return null;
+            }
+
             if (world instanceof ServerWorld)
             {
                 entity = world.getEntityById(entity.getId());
