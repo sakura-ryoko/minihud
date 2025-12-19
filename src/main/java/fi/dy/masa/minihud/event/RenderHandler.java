@@ -704,7 +704,7 @@ public class RenderHandler implements IRenderer
 
 	        if (parser != null)
 	        {
-		        InfoLine.Context ctx = new InfoLine.Context(null, mc.player, null, null, null, null, null);
+		        InfoLine.Context ctx = new InfoLine.Context(world, mc.player, null, null, null, null, null);
 		        this.processEntries(parser.parse(ctx));
 	        }
 	        else
