@@ -481,7 +481,7 @@ public class RenderHandler implements IRenderer
 
             if (parser != null)
             {
-                InfoLine.Context ctx = new InfoLine.Context(null, null, null, null, null, null, null);
+                InfoLine.Context ctx = new InfoLine.Context(world, null, null, null, null, null, null);
                 this.processEntries(parser.parse(ctx));
             }
             else
@@ -496,7 +496,7 @@ public class RenderHandler implements IRenderer
 
 			if (parser != null)
 			{
-				InfoLine.Context ctx = new InfoLine.Context(null, null, null, null, null, null, null);
+				InfoLine.Context ctx = new InfoLine.Context(world, null, null, null, null, null, null);
 				this.processEntries(parser.parse(ctx));
 			}
 			else
@@ -511,7 +511,7 @@ public class RenderHandler implements IRenderer
 
             if (parser != null)
             {
-                InfoLine.Context ctx = new InfoLine.Context(null, null, null, null, null, null, null);
+                InfoLine.Context ctx = new InfoLine.Context(world, null, null, null, null, null, null);
                 this.processEntries(parser.parse(ctx));
             }
             else
@@ -526,7 +526,7 @@ public class RenderHandler implements IRenderer
 
             if (parser != null)
             {
-                InfoLine.Context ctx = new InfoLine.Context(null, null, null, null, null, null, null);
+                InfoLine.Context ctx = new InfoLine.Context(world, null, null, null, null, null, null);
                 this.processEntries(parser.parse(ctx));
             }
             else
@@ -704,7 +704,7 @@ public class RenderHandler implements IRenderer
 
 	        if (parser != null)
 	        {
-		        InfoLine.Context ctx = new InfoLine.Context(null, mc.player, null, null, null, null, null);
+		        InfoLine.Context ctx = new InfoLine.Context(world, mc.player, null, null, null, null, null);
 		        this.processEntries(parser.parse(ctx));
 	        }
 	        else
@@ -724,84 +724,22 @@ public class RenderHandler implements IRenderer
                 return;
             }
 
-            String pre = "";
-            StringBuilder str = new StringBuilder(128);
-            String fmtStr = Configs.Generic.COORDINATE_FORMAT_STRING.getStringValue();
-            double x = entity.getX();
-            double z = entity.getZ();
+            InfoLine parser = type.initParser();
 
-            if (InfoToggle.COORDINATES.getBooleanValue())
+            if (parser != null)
             {
-                if (Configs.Generic.USE_CUSTOMIZED_COORDINATES.getBooleanValue())
-                {
-                    try
-                    {
-                        str.append(String.format(fmtStr, x, y, z));
-                    }
-                    // Uh oh, someone done goofed their format string... :P
-                    catch (Exception e)
-                    {
-                        str.append(StringUtils.translate("minihud.info_line.coordinates.exception"));
-                    }
-                }
-                else
-                {
-                    str.append(StringUtils.translate("minihud.info_line.coordinates.format", x, y, z));
-                }
+                InfoLine.Context ctx = new InfoLine.Context(world, entity, null, null, null, null, null);
+                this.processEntries(parser.parse(ctx));
 
-                pre = " / ";
+                if (parser.succeededType())
+                {
+                    this.addedTypes.add(type);
+                }
             }
-
-            if (InfoToggle.COORDINATES_SCALED.getBooleanValue() &&
-                (world.dimension() == Level.NETHER || world.dimension() == Level.OVERWORLD))
+            else
             {
-                boolean isNether = world.dimension() == Level.NETHER;
-                double scale = isNether ? 8.0 : 1.0 / 8.0;
-                x *= scale;
-                z *= scale;
-
-                str.append(pre);
-
-                if (isNether)
-                {
-                    str.append(StringUtils.translate("minihud.info_line.coordinates_scaled.overworld"));
-                }
-                else
-                {
-                    str.append(StringUtils.translate("minihud.info_line.coordinates_scaled.nether"));
-                }
-
-                if (Configs.Generic.USE_CUSTOMIZED_COORDINATES.getBooleanValue())
-                {
-                    try
-                    {
-                        str.append(String.format(fmtStr, x, y, z));
-                    }
-                    // Uh oh, someone done goofed their format string... :P
-                    catch (Exception e)
-                    {
-                        str.append(StringUtils.translate("minihud.info_line.coordinates.exception"));
-                    }
-                }
-                else
-                {
-                    str.append(StringUtils.translate("minihud.info_line.coordinates.format", x, y, z));
-                }
-
-                pre = " / ";
+                return;
             }
-
-            if (InfoToggle.DIMENSION.getBooleanValue())
-            {
-                String dimName = world.dimension().identifier().toString();
-                str.append(pre).append(StringUtils.translate("minihud.info_line.dimension")).append(dimName);
-            }
-
-            this.addLine(str.toString());
-
-            this.addedTypes.add(InfoToggle.COORDINATES);
-            this.addedTypes.add(InfoToggle.COORDINATES_SCALED);
-            this.addedTypes.add(InfoToggle.DIMENSION);
         }
         else if (type == InfoToggle.BLOCK_POS ||
                  type == InfoToggle.CHUNK_POS ||
@@ -839,7 +777,7 @@ public class RenderHandler implements IRenderer
 	        if (parser != null)
 	        {
 //		        BlockPos lookPos = ((BlockHitResult) mc.crosshairTarget).getBlockPos();
-		        InfoLine.Context ctx = new InfoLine.Context(null, null, null, pos, null, chunkPos, null);
+		        InfoLine.Context ctx = new InfoLine.Context(world, null, null, pos, null, chunkPos, null);
 		        this.processEntries(parser.parse(ctx));
 	        }
 	        else
@@ -853,7 +791,7 @@ public class RenderHandler implements IRenderer
 
 	        if (parser != null)
 	        {
-		        InfoLine.Context ctx = new InfoLine.Context(null, null, null, null, null, null, null);
+		        InfoLine.Context ctx = new InfoLine.Context(world, null, null, null, null, null, null);
 		        this.processEntries(parser.parse(ctx));
 	        }
 	        else
@@ -867,7 +805,7 @@ public class RenderHandler implements IRenderer
 
 	        if (parser != null)
 	        {
-		        InfoLine.Context ctx = new InfoLine.Context(null, null, null, null, null, null, null);
+		        InfoLine.Context ctx = new InfoLine.Context(world, null, null, null, null, null, null);
 		        this.processEntries(parser.parse(ctx));
 	        }
 	        else
@@ -1147,7 +1085,7 @@ public class RenderHandler implements IRenderer
 
             if (parser != null)
             {
-                InfoLine.Context ctx = new InfoLine.Context(null, null, null, null, null, null, null);
+                InfoLine.Context ctx = new InfoLine.Context(world, null, null, null, null, null, null);
                 this.processEntries(parser.parse(ctx));
             }
             else
@@ -1162,7 +1100,7 @@ public class RenderHandler implements IRenderer
 
             if (parser != null)
             {
-                InfoLine.Context ctx = new InfoLine.Context(null, null, null, null, null, null, null);
+                InfoLine.Context ctx = new InfoLine.Context(world, null, null, null, null, null, null);
                 this.processEntries(parser.parse(ctx));
             }
             else
@@ -1177,7 +1115,7 @@ public class RenderHandler implements IRenderer
 
             if (parser != null)
             {
-                InfoLine.Context ctx = new InfoLine.Context(null, null, null, null, null, null, null);
+                InfoLine.Context ctx = new InfoLine.Context(world, null, null, null, null, null, null);
                 this.processEntries(parser.parse(ctx));
             }
             else
@@ -1247,7 +1185,7 @@ public class RenderHandler implements IRenderer
 
             if (parser != null)
             {
-                InfoLine.Context ctx = new InfoLine.Context(null, null, null, null, null, null, null);
+                InfoLine.Context ctx = new InfoLine.Context(world, null, null, null, null, null, null);
                 this.processEntries(parser.parse(ctx));
             }
             else
@@ -1298,29 +1236,27 @@ public class RenderHandler implements IRenderer
 		        return;
 	        }
         }
-        else if (type == InfoToggle.ENTITIES)
+        else if (type == InfoToggle.ENTITIES ||
+                 type == InfoToggle.TILE_ENTITIES)
         {
-	        InfoLine parser = type.initParser();
+            if (this.addedTypes.contains(InfoToggle.ENTITIES) ||
+                this.addedTypes.contains(InfoToggle.TILE_ENTITIES))
+            {
+                return;
+            }
+
+            InfoLine parser = type.initParser();
 
 	        if (parser != null)
 	        {
 		        InfoLine.Context ctx = new InfoLine.Context(world, null, null, null, null, null, null);
 		        this.processEntries(parser.parse(ctx));
-	        }
-	        else
-	        {
-		        return;
-	        }
-        }
-        else if (type == InfoToggle.TILE_ENTITIES)
-        {
-	        InfoLine parser = type.initParser();
 
-	        if (parser != null)
-	        {
-		        InfoLine.Context ctx = new InfoLine.Context(world, null, null, null, null, null, null);
-		        this.processEntries(parser.parse(ctx));
-	        }
+                if (parser.succeededType())
+                {
+                    this.addedTypes.add(type);
+                }
+            }
 	        else
 	        {
 		        return;
@@ -1586,7 +1522,7 @@ public class RenderHandler implements IRenderer
 
 	        if (parser != null && mc.player != null)
 	        {
-		        InfoLine.Context ctx = new InfoLine.Context(null, mc.player, null, null, null, null, null);
+		        InfoLine.Context ctx = new InfoLine.Context(world, mc.player, null, null, null, null, null);
 		        this.processEntries(parser.parse(ctx));
 	        }
 	        else

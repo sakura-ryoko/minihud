@@ -68,6 +68,9 @@ public class InfoLineTypes
 	public static final InfoLineType<InfoLineSpeed>                 SPEED                   = InfoLineType.build(InfoLineSpeed::new,                InfoToggle.SPEED, List.of(InfoLineFlag.WORLD, InfoLineFlag.CAMERA));
 	public static final InfoLineType<InfoLineSpeedHV>               SPEED_HV                = InfoLineType.build(InfoLineSpeedHV::new,              InfoToggle.SPEED_HV, List.of(InfoLineFlag.WORLD, InfoLineFlag.CAMERA));
 	public static final InfoLineType<InfoLineSpeedAxis>             SPEED_AXIS              = InfoLineType.build(InfoLineSpeedAxis::new,            InfoToggle.SPEED_AXIS, List.of(InfoLineFlag.WORLD, InfoLineFlag.CAMERA));
+	public static final InfoLineType<InfoLineCoordinates>           COORDINATES             = InfoLineType.build(InfoLineCoordinates::new,          InfoToggle.COORDINATES, List.of(InfoLineFlag.WORLD, InfoLineFlag.CAMERA));
+	public static final InfoLineType<InfoLineCoordinatesScaled>     COORDINATES_SCALED      = InfoLineType.build(InfoLineCoordinatesScaled::new,    InfoToggle.COORDINATES_SCALED, List.of(InfoLineFlag.WORLD, InfoLineFlag.CAMERA));
+	public static final InfoLineType<InfoLineDimension>             DIMENSION               = InfoLineType.build(InfoLineDimension::new,            InfoToggle.DIMENSION, List.of(InfoLineFlag.WORLD, InfoLineFlag.CAMERA));
 
 	// Player
 	public static final InfoLineType<InfoLinePlayerExp>             PLAYER_EXP              = InfoLineType.build(InfoLinePlayerExp::new,            InfoToggle.PLAYER_EXPERIENCE, List.of(InfoLineFlag.WORLD, InfoLineFlag.PLAYER));
