@@ -35,12 +35,12 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     TIME_WORLD_FORMATTED    ("infoWorldTimeFormatted",      InfoLineTypes.TIME_WORLD_FORMATTED, false, ""),
 
     // Player (Camera)
-    COORDINATES             ("infoCoordinates",             null, true,  ""),
-    COORDINATES_SCALED      ("infoCoordinatesScaled",       null, false, ""),
+    COORDINATES             ("infoCoordinates",             InfoLineTypes.COORDINATES, true,  ""),
+    COORDINATES_SCALED      ("infoCoordinatesScaled",       InfoLineTypes.COORDINATES_SCALED, false, ""),
     BLOCK_POS               ("infoBlockPosition",           InfoLineTypes.BLOCK_POS, false, ""),
     CHUNK_POS               ("infoChunkPosition",           InfoLineTypes.CHUNK_POS, false, ""),
     BLOCK_IN_CHUNK          ("infoBlockInChunk",            InfoLineTypes.BLOCK_IN_CHUNK, false, ""),
-    DIMENSION               ("infoDimensionId",             null, false, ""),
+    DIMENSION               ("infoDimensionId",             InfoLineTypes.DIMENSION, false, ""),
     FACING                  ("infoFacing",                  InfoLineTypes.FACING, true,  ""),
     ROTATION_YAW            ("infoRotationYaw",             InfoLineTypes.ROTATION_YAW, false, ""),
     ROTATION_PITCH          ("infoRotationPitch",           InfoLineTypes.ROTATION_PITCH, false, ""),
