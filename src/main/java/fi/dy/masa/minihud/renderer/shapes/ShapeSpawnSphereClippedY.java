@@ -77,7 +77,9 @@ public class ShapeSpawnSphereClippedY extends ShapeSpawnSphere
     public List<String> getWidgetHoverLines()
     {
         List<String> lines = super.getWidgetHoverLines();
-        lines.add(StringUtils.translate("minihud.gui.hover.shape.clip_top_bottom_value", d2(this.topTrim), d2(this.bottomTrim)));
+        // Insert after Radius (index 3)
+        lines.add(4, StringUtils.translate("minihud.gui.hover.shape.clip_top_value", d2(this.topTrim)));
+        lines.add(5, StringUtils.translate("minihud.gui.hover.shape.clip_bottom_value", d2(this.bottomTrim)));
         return lines;
     }
 

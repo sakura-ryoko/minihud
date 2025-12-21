@@ -76,7 +76,9 @@ public class ShapeEllipsoidSpawn extends ShapeSpawnSphere
     public List<String> getWidgetHoverLines()
     {
         List<String> lines = super.getWidgetHoverLines();
-        lines.add(StringUtils.translate("minihud.gui.hover.shape.ellipsoid_radii", d2(this.getRadius()), d2(this.radiusY), d2(this.radiusZ)));
+        // Insert after Radius (index 3)
+        lines.add(4, StringUtils.translate("minihud.gui.hover.shape.radius_y_value", d2(this.radiusY)));
+        lines.add(5, StringUtils.translate("minihud.gui.hover.shape.radius_z_value", d2(this.radiusZ)));
         return lines;
     }
 
