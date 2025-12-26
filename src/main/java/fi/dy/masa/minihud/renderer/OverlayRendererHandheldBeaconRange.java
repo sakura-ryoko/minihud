@@ -156,9 +156,7 @@ public class OverlayRendererHandheldBeaconRange extends OverlayRendererBase
 
         RenderObjectVbo ctx = this.renderObjects.get(1);
         BufferBuilder builder = ctx.start(() -> "minihud:held_beacon/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH);
-//        MatrixStack matrices = new MatrixStack();
 
-//        matrices.push();
         RenderUtils.drawBoxAllEdgesBatchedLines(this.box, Color4f.fromColor(color.intValue, 1f), builder);
 
         try
@@ -176,7 +174,6 @@ public class OverlayRendererHandheldBeaconRange extends OverlayRendererBase
             MiniHUD.LOGGER.error("OverlayRendererHandheldBeaconRange#renderOutlines(): Exception; {}", err.getMessage());
         }
 
-//        matrices.pop();
         profiler.pop();
     }
 

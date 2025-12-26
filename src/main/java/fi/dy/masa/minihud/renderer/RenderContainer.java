@@ -98,14 +98,6 @@ public class RenderContainer
 
         if (this.countActive > 0)
         {
-//            RenderUtils.culling(false);
-//            RenderUtils.depthTest(true);
-//            RenderUtils.depthMask(false);
-//            RenderUtils.polygonOffset(-3f, -3f);
-//            RenderUtils.polygonOffset(true);
-//            RenderUtils.blend(true);
-//            RenderUtils.color(1f, 1f, 1f, 1f);
-
             Matrix4fStack matrix4fstack = RenderSystem.getModelViewStack();
 
             for (IOverlayRenderer renderer : this.renderers)
@@ -129,14 +121,6 @@ public class RenderContainer
 
                 profiler.pop();
             }
-
-//            RenderUtils.polygonOffset(0f, 0f);
-//            RenderUtils.polygonOffset(false);
-//            RenderUtils.color(1f, 1f, 1f, 1f);
-//            RenderUtils.blend(false);
-//            RenderUtils.depthTest(true);
-//            RenderUtils.culling(true);
-//            RenderUtils.depthMask(true);
         }
     }
 

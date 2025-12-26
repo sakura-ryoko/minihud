@@ -375,6 +375,11 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
         return Configs.Generic.ENTITY_DATA_SYNC_BACKUP.getBooleanValue() && this.hasOpStatus;
     }
 
+    public boolean hasOperatorStatus()
+    {
+        return this.hasOpStatus;
+    }
+
     public void setServuxVersion(String ver)
     {
         if (ver != null && !ver.isEmpty())

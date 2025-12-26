@@ -55,7 +55,8 @@ import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.RendererToggle;
 import fi.dy.masa.minihud.data.HudDataManager;
 import fi.dy.masa.minihud.data.MobCapDataHandler;
-import fi.dy.masa.minihud.mixin.IMixinMinecraftServer;
+import fi.dy.masa.minihud.mixin.client.IMixinOptions;
+import fi.dy.masa.minihud.mixin.server.IMixinMinecraftServer;
 import fi.dy.masa.minihud.network.ServuxStructuresHandler;
 import fi.dy.masa.minihud.network.ServuxStructuresPacket;
 import fi.dy.masa.minihud.renderer.*;
@@ -438,7 +439,10 @@ public class DataStorage
     {
         String[] parts = message.split(" ");
 
-        if (parts.length > 0 && (parts[0].equals("minihud-seed") || parts[0].equals("/minihud-seed")))
+        if (parts.length > 0 &&
+            (parts[0].equals("minihud-seed") ||
+             parts[0].equals("#minihud-seed") ||
+             parts[0].equals("/minihud-seed")))
         {
             if (parts.length == 2)
             {
@@ -466,7 +470,10 @@ public class DataStorage
 
             return true;
         }
-        else if (parts.length > 0 && (parts[0].equals("minihud-spawnchunkradius") || parts[0].equals("/minihud-spawnchunkradius")))
+        else if (parts.length > 0 &&
+                (parts[0].equals("minihud-spawnchunkradius") ||
+                 parts[0].equals("#minihud-spawnchunkradius") ||
+                 parts[0].equals("/minihud-spawnchunkradius")))
         {
             if (parts.length == 2)
             {
@@ -714,6 +721,23 @@ public class DataStorage
         return copy;
     }
 
+    public int getStructureDataMaxRange()
+    {
+        return this.mc.options.getClampedViewDistance() + 2;
+    }
+
+    public int getServerRenderDistance()
+    {
+        final int range = ((IMixinOptions) this.mc.options).minihud_getServerRenderDistance();
+
+        if (range > 0)
+        {
+            return range;
+        }
+
+        return this.mc.options.getClampedViewDistance();
+    }
+
     public void updateStructureData()
     {
         if (this.mc != null && this.mc.world != null && this.mc.player != null)
@@ -727,7 +751,7 @@ public class DataStorage
                     if (RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue())
                     {
                         BlockPos playerPos = PositionUtils.getEntityBlockPos(this.mc.player);
-                        final int maxRange = this.mc.options.getClampedViewDistance() + 2;
+                        final int maxRange = this.getStructureDataMaxRange();
                         final int hysteresis = 16;
 
                         if (this.structuresNeedUpdating(playerPos, hysteresis))

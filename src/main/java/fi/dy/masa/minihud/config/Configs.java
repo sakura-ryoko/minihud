@@ -21,11 +21,7 @@ import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.renderer.OverlayRendererLightLevel;
 import fi.dy.masa.minihud.renderer.OverlayRendererStructures;
-import fi.dy.masa.minihud.util.BlockGridMode;
-import fi.dy.masa.minihud.util.LightLevelMarkerMode;
-import fi.dy.masa.minihud.util.LightLevelNumberMode;
-import fi.dy.masa.minihud.util.LightLevelRenderCondition;
-import fi.dy.masa.minihud.util.SpeedUnits;
+import fi.dy.masa.minihud.util.*;
 
 public class Configs implements IConfigHandler
 {
@@ -58,6 +54,7 @@ public class Configs implements IConfigHandler
         public static final ConfigBoolean       CONDUIT_RANGE_OVERLAY_RENDER_OUTLINES= new ConfigBoolean("conduitRangeOverlayOutlines", false).apply(GENERIC_KEY);
         public static final ConfigBoolean       CONDUIT_RANGE_OVERLAY_RENDER_THROUGH = new ConfigBoolean("conduitRangeOverlayThrough", false).apply(GENERIC_KEY);
         public static final ConfigString        COORDINATE_FORMAT_STRING            = new ConfigString("coordinateFormat", "x: %.1f y: %.1f z: %.1f").apply(GENERIC_KEY);
+//		public static final ConfigOptionList    COPPER_AGING_MODE                   = new ConfigOptionList("copperAgingMode", CopperAgingMode.MC_TIME).apply(GENERIC_KEY);
         public static final ConfigOptionList    DATE_FORMAT_TYPE                    = new ConfigOptionList("dateFormatType", TimeFormat.REGULAR).apply(GENERIC_KEY);
         public static final ConfigString        DATE_FORMAT_STRING                  = new ConfigString("dateFormatString", "yyyy-MM-dd HH:mm:ss").apply(GENERIC_KEY);
         public static final ConfigString        DATE_FORMAT_MINECRAFT               = new ConfigString("dateFormatMinecraft", "MC time: (day {DAY}) {HOUR}:{MIN}:xx").apply(GENERIC_KEY);
@@ -70,7 +67,7 @@ public class Configs implements IConfigHandler
         public static final ConfigBoolean       ENTITY_DATA_SYNC_BACKUP             = new ConfigBoolean("entityDataSyncBackup", false).apply(GENERIC_KEY);
         public static final ConfigBoolean       ENTITY_DATA_SYNC_BACKUP_OPEN_TO_LAN = new ConfigBoolean("entityDataSyncBackupOpenToLan", false).apply(GENERIC_KEY);
         public static final ConfigFloat         ENTITY_DATA_SYNC_CACHE_REFRESH      = new ConfigFloat("entityDataSyncCacheRefresh", 0.25f, 0.05f, 1.0f).apply(GENERIC_KEY);
-        public static final ConfigFloat         ENTITY_DATA_SYNC_CACHE_TIMEOUT      = new ConfigFloat("entityDataSyncCacheTimeout", 0.75f, 0.25f, 5.0f).apply(GENERIC_KEY);
+        public static final ConfigFloat         ENTITY_DATA_SYNC_CACHE_TIMEOUT      = new ConfigFloat("entityDataSyncCacheTimeout", 2.75f, 1.0f, 25.0f).apply(GENERIC_KEY);
 //        public static final ConfigBoolean       ENTITY_DATA_LOAD_NBT                = new ConfigBoolean("entityDataSyncLoadNbt", false).apply(GENERIC_KEY);
         //public static final ConfigBoolean       FIX_VANILLA_DEBUG_RENDERERS         = new ConfigBoolean("enableVanillaDebugRendererFix", true).apply(GENERIC_KEY);
         public static final ConfigDouble        FONT_SCALE                          = new ConfigDouble("fontScale", 0.5, 0.01, 100.0).apply(GENERIC_KEY);
@@ -224,6 +221,7 @@ public class Configs implements IConfigHandler
                 BLOCK_POS_FORMAT_STRING,
                 BLOCK_GRID_OVERLAY_RADIUS,
                 COORDINATE_FORMAT_STRING,
+//				COPPER_AGING_MODE,
                 DATE_FORMAT_TYPE,
                 DATE_FORMAT_STRING,
                 DATE_FORMAT_MINECRAFT,

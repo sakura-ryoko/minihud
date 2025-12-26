@@ -119,10 +119,6 @@ public class OverlayRendererRegion extends OverlayRendererBase
         Color4f color = Configs.Colors.REGION_OVERLAY_COLOR.getColor();
         RenderObjectVbo ctx = this.renderObjects.getFirst();
         BufferBuilder builder = ctx.start(() -> "minihud:region/quads", MaLiLibPipelines.POSITION_COLOR_MASA_LEQUAL_DEPTH_OFFSET_1);
-//        MatrixStack matrices = new MatrixStack();
-
-//        matrices.push();
-//        MatrixStack.Entry e = matrices.peek();
 
         for (Box box : this.boxes)
         {
@@ -150,7 +146,6 @@ public class OverlayRendererRegion extends OverlayRendererBase
             MiniHUD.LOGGER.error("OverlayRendererRegion#renderQuads(): Exception; {}", err.getMessage());
         }
 
-//        matrices.pop();
         profiler.pop();
     }
 
@@ -165,10 +160,6 @@ public class OverlayRendererRegion extends OverlayRendererBase
         Color4f color = Configs.Colors.REGION_OVERLAY_COLOR.getColor();
         RenderObjectVbo ctx = this.renderObjects.get(1);
         BufferBuilder builder = ctx.start(() -> "minihud:region/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH);
-//        MatrixStack matrices = new MatrixStack();
-
-//        matrices.push();
-//        MatrixStack.Entry e = matrices.peek();
 
         for (Box box : this.boxes)
         {
@@ -190,7 +181,6 @@ public class OverlayRendererRegion extends OverlayRendererBase
             MiniHUD.LOGGER.error("OverlayRendererRegion#renderOutlines(): Exception; {}", err.getMessage());
         }
 
-//        matrices.pop();
         profiler.pop();
     }
 

@@ -23,9 +23,16 @@ import fi.dy.masa.minihud.renderer.OverlayRendererVillagerInfo;
 import fi.dy.masa.minihud.renderer.RenderContainer;
 import fi.dy.masa.minihud.renderer.shapes.ShapeManager;
 import fi.dy.masa.minihud.util.DataStorage;
+import net.minecraft.registry.DynamicRegistryManager;
 
 public class WorldLoadListener implements IWorldLoadListener
 {
+    @Override
+    public void onWorldLoadImmutable(DynamicRegistryManager.Immutable immutable)
+    {
+        DataStorage.getInstance().setWorldRegistryManager(immutable);
+    }
+
     @Override
     public void onWorldLoadPre(@Nullable ClientWorld worldBefore, @Nullable ClientWorld worldAfter, MinecraftClient mc)
     {
@@ -72,7 +79,7 @@ public class WorldLoadListener implements IWorldLoadListener
             this.readStoredDataPerDimension();
             OverlayRenderer.resetRenderTimeout();
             DataStorage.getInstance().onWorldJoin();
-            DataStorage.getInstance().setWorldRegistryManager(worldAfter.getRegistryManager());
+//            DataStorage.getInstance().setWorldRegistryManager(worldAfter.getRegistryManager());
             HudDataManager.getInstance().onWorldJoin();
             EntitiesDataManager.getInstance().onWorldJoin();
             DebugDataManager.getInstance().onWorldJoin();

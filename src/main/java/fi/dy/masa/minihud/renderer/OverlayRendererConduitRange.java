@@ -30,6 +30,7 @@ import fi.dy.masa.minihud.util.ConduitExtra;
 import fi.dy.masa.minihud.util.ShapeRenderType;
 import fi.dy.masa.minihud.util.shape.SphereUtils;
 
+// fixme -- This Renderer works, but has an update-performance issue while locating the Conduits in the world.
 public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBlockEntity>
 {
     public static final OverlayRendererConduitRange INSTANCE = new OverlayRendererConduitRange();
@@ -166,9 +167,6 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
         profiler.push("conduit_quads");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
         BufferBuilder builder = ctx.start(() -> "minihud:conduit/quads", this.renderThrough ? MaLiLibPipelines.MINIHUD_SHAPE_NO_DEPTH_OFFSET : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL);
-//        MatrixStack matrices = new MatrixStack();
-//
-//        matrices.push();
 
         this.conduits.forEach(
                 (entry) ->
@@ -210,9 +208,7 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
             MiniHUD.LOGGER.error("OverlayRendererConduitRange#renderQuads(): Exception; {}", err.getMessage());
         }
 
-//        matrices.pop();
         profiler.pop();
-
     }
 
     private void renderOutlines(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
@@ -225,9 +221,6 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
         profiler.push("conduit_outlines");
         RenderObjectVbo ctx = this.renderObjects.get(1);
         BufferBuilder builder = ctx.start(() -> "minihud:conduit/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH);
-//        MatrixStack matrices = new MatrixStack();
-
-//        matrices.push();
 
         this.conduits.forEach(
                 (entry) ->
@@ -263,9 +256,7 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
             MiniHUD.LOGGER.error("OverlayRendererConduitRange#renderBlockRange(): Exception; {}", err.getMessage());
         }
 
-//        matrices.pop();
         profiler.pop();
-
     }
 
     @Override

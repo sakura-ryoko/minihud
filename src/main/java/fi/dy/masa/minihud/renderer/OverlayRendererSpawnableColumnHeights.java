@@ -143,9 +143,6 @@ public class OverlayRendererSpawnableColumnHeights extends OverlayRendererBase
         profiler.push("column_quads");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
         BufferBuilder builder = ctx.start(() -> "minihud:spawnable_column/quads", MaLiLibPipelines.POSITION_COLOR_MASA_LEQUAL_DEPTH);
-//        MatrixStack matrices = new MatrixStack();
-
-//        matrices.push();
 
         for (Box bb : this.boxes)
         {
@@ -174,7 +171,6 @@ public class OverlayRendererSpawnableColumnHeights extends OverlayRendererBase
             MiniHUD.LOGGER.error("OverlayRendererSpawnableColumnHeights#renderQuads(): Exception; {}", err.getMessage());
         }
 
-//        matrices.pop();
         profiler.pop();
     }
 
@@ -189,10 +185,6 @@ public class OverlayRendererSpawnableColumnHeights extends OverlayRendererBase
         profiler.push("column_outlines");
         RenderObjectVbo ctx = this.renderObjects.get(1);
         BufferBuilder builder = ctx.start(() -> "minihud:spawnable_column/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH);
-//        MatrixStack matrices = new MatrixStack();
-
-//        matrices.push();
-//        MatrixStack.Entry e = matrices.peek();
 
         for (Box bb : this.boxes)
         {
@@ -214,7 +206,6 @@ public class OverlayRendererSpawnableColumnHeights extends OverlayRendererBase
             MiniHUD.LOGGER.error("OverlayRendererSpawnableColumnHeights#renderOutlines(): Exception; {}", err.getMessage());
         }
 
-//        matrices.pop();
         profiler.pop();
     }
 

@@ -14,6 +14,7 @@ import fi.dy.masa.malilib.util.nbt.NbtBlockUtils;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.info.InfoLine;
+import fi.dy.masa.minihud.info.InfoLineContext;
 
 public class InfoLineComparator extends InfoLine
 {
@@ -33,7 +34,7 @@ public class InfoLineComparator extends InfoLine
     public boolean succeededType() { return false; }
 
     @Override
-    public List<Entry> parse(@Nonnull Context ctx)
+    public List<Entry> parse(@Nonnull InfoLineContext ctx)
     {
         if (ctx.world() == null) return null;
 

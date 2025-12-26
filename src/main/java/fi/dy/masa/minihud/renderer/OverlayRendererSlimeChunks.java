@@ -218,10 +218,6 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
         profiler.push("slime_chunk_outlines");
         RenderObjectVbo ctx = this.renderObjects.get(1);
         BufferBuilder builder = ctx.start(() -> "minihud:slime_chunk/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH);
-//        MatrixStack matrices = new MatrixStack();
-
-//        matrices.push();
-//        MatrixStack.Entry e = matrices.peek();
 
         for (Box bb : this.slimeChunks)
         {
@@ -250,7 +246,6 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
             MiniHUD.LOGGER.error("OverlayRendererSlimeChunks#renderOutlines(): Exception; {}", err.getMessage());
         }
 
-//        matrices.pop();
         profiler.pop();
     }
 

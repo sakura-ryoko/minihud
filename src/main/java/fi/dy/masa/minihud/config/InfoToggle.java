@@ -27,34 +27,35 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
 {
     // Basic Info
     FPS                     ("infoFPS",                     InfoLineTypes.FPS, false, ""),
+//    GPU                     ("infoGPU",                     InfoLineTypes.GPU, false, ""),
     MEMORY_USAGE            ("infoMemoryUsage",             InfoLineTypes.MEMORY, false, ""),
     TIME_REAL               ("infoTimeIRL",                 InfoLineTypes.TIME_IRL, true,  ""),
     TIME_WORLD              ("infoTimeWorld",               InfoLineTypes.TIME_WORLD, false, ""),
     TIME_WORLD_FORMATTED    ("infoWorldTimeFormatted",      InfoLineTypes.TIME_WORLD_FORMATTED, false, ""),
 
     // Player (Camera)
-    COORDINATES             ("infoCoordinates",             null, true,  ""),
-    COORDINATES_SCALED      ("infoCoordinatesScaled",       null, false, ""),
-    BLOCK_POS               ("infoBlockPosition",           null, false, ""),
-    CHUNK_POS               ("infoChunkPosition",           null, false, ""),
-    BLOCK_IN_CHUNK          ("infoBlockInChunk",            null, false, ""),
-    DIMENSION               ("infoDimensionId",             null, false, ""),
-    FACING                  ("infoFacing",                  null, true,  ""),
-    ROTATION_YAW            ("infoRotationYaw",             null, false, ""),
-    ROTATION_PITCH          ("infoRotationPitch",           null, false, ""),
+    COORDINATES             ("infoCoordinates",             InfoLineTypes.COORDINATES, true,  ""),
+    COORDINATES_SCALED      ("infoCoordinatesScaled",       InfoLineTypes.COORDINATES_SCALED, false, ""),
+    BLOCK_POS               ("infoBlockPosition",           InfoLineTypes.BLOCK_POS, false, ""),
+    CHUNK_POS               ("infoChunkPosition",           InfoLineTypes.CHUNK_POS, false, ""),
+    BLOCK_IN_CHUNK          ("infoBlockInChunk",            InfoLineTypes.BLOCK_IN_CHUNK, false, ""),
+    DIMENSION               ("infoDimensionId",             InfoLineTypes.DIMENSION, false, ""),
+    FACING                  ("infoFacing",                  InfoLineTypes.FACING, true,  ""),
+    ROTATION_YAW            ("infoRotationYaw",             InfoLineTypes.ROTATION_YAW, false, ""),
+    ROTATION_PITCH          ("infoRotationPitch",           InfoLineTypes.ROTATION_PITCH, false, ""),
 
     // Player
-    BLOCK_BREAK_SPEED       ("infoBlockBreakSpeed",         null, false, ""),
-    PLAYER_EXPERIENCE       ("infoPlayerExperience",        null, false, ""),
-    SPEED                   ("infoSpeed",                   null, false, ""),
-    SPEED_AXIS              ("infoSpeedAxis",               null, false, ""),
-    SPEED_HV                ("infoSpeedHV",                 null, false, ""),
-    SPRINTING               ("infoSprinting",               null, false, ""),
+    BLOCK_BREAK_SPEED       ("infoBlockBreakSpeed",         InfoLineTypes.BLOCK_BREAK_SPEED, false, ""),
+    PLAYER_EXPERIENCE       ("infoPlayerExperience",        InfoLineTypes.PLAYER_EXP, false, ""),
+    SPEED                   ("infoSpeed",                   InfoLineTypes.SPEED, false, ""),
+    SPEED_AXIS              ("infoSpeedAxis",               InfoLineTypes.SPEED_AXIS, false, ""),
+    SPEED_HV                ("infoSpeedHV",                 InfoLineTypes.SPEED_HV, false, ""),
+    SPRINTING               ("infoSprinting",               InfoLineTypes.SPRINTING, false, ""),
 
     // Server
     SERVER_TPS              ("infoServerTPS",               InfoLineTypes.SERVER_TPS, false, ""),
     SERVUX                  ("infoServux",                  InfoLineTypes.SERVUX, false, true, ""),
-    PING                    ("infoPing",                    null, false, ""),
+    PING                    ("infoPing",                    InfoLineTypes.PING, false, ""),
 
     // World
     WEATHER                 ("infoWeather",                 InfoLineTypes.WEATHER, false, true, ""),
@@ -63,22 +64,22 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     MOB_CAPS                ("infoMobCaps",                 InfoLineTypes.MOB_CAPS, false, true,""),
     PARTICLE_COUNT          ("infoParticleCount",           InfoLineTypes.PARTICLE_COUNT, false, ""),
     DIFFICULTY              ("infoDifficulty",              InfoLineTypes.DIFFICULTY, false, ""),
-    ENTITIES                ("infoEntities",                null, false, ""),
-    ENTITIES_CLIENT_WORLD   ("infoEntitiesClientWorld",     null, false, ""),
-    TILE_ENTITIES           ("infoTileEntities",            null, false, ""),
+    ENTITIES                ("infoEntities",                InfoLineTypes.ENTITIES, false, ""),
+    ENTITIES_CLIENT_WORLD   ("infoEntitiesClientWorld",     InfoLineTypes.ENTITIES_CLIENT_WORLD, false, ""),
+    TILE_ENTITIES           ("infoTileEntities",            InfoLineTypes.TILE_ENTITIES, false, ""),
 
     // World (Current position)
-    LIGHT_LEVEL             ("infoLightLevel",              null, false, ""),
-    BIOME                   ("infoBiome",                   null, false, ""),
-    BIOME_REG_NAME          ("infoBiomeRegistryName",       null, false, ""),
-    DISTANCE                ("infoDistance",                null, false, ""),
+    LIGHT_LEVEL             ("infoLightLevel",              InfoLineTypes.LIGHT_LEVEL, false, ""),
+    BIOME                   ("infoBiome",                   InfoLineTypes.BIOME, false, ""),
+    BIOME_REG_NAME          ("infoBiomeRegistryName",       InfoLineTypes.BIOME_REG_NAME, false, ""),
+    DISTANCE                ("infoDistance",                InfoLineTypes.DISTANCE, false, ""),
 
     // Chunk
     LOADED_CHUNKS_COUNT     ("infoLoadedChunksCount",       InfoLineTypes.LOADED_CHUNKS, false, ""),
     CHUNK_SECTIONS          ("infoChunkSections",           InfoLineTypes.CHUNK_SECTIONS, false, ""),
     CHUNK_SECTIONS_FULL     ("infoChunkSectionsLine",       InfoLineTypes.CHUNK_SECTIONS_FULL, false, ""),
     CHUNK_UPDATES           ("infoChunkUpdates",            InfoLineTypes.CHUNK_UPDATES, false, ""),
-    REGION_FILE             ("infoRegionFile",              null, false, ""),
+    REGION_FILE             ("infoRegionFile",              InfoLineTypes.REGION_FILE, false, ""),
     SLIME_CHUNK             ("infoSlimeChunk",              InfoLineTypes.SLIME_CHUNK, false, ""),
 
     // Block
@@ -98,10 +99,12 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     ZOMBIE_CONVERSION       ("infoZombieConversion",        InfoLineTypes.ZOMBIE_CONVERSION, false, ""),
     HORSE_SPEED             ("infoHorseSpeed",              InfoLineTypes.HORSE_SPEED, false, ""),
     HORSE_JUMP              ("infoHorseJump",               InfoLineTypes.HORSE_JUMP, false, ""),
+    HORSE_MAX_HEALTH        ("infoHorseMaxHealth",          InfoLineTypes.HORSE_MAX_HEALTH, false, ""),
     PANDA_GENE              ("infoPandaGene",               InfoLineTypes.PANDA_GENE, false, ""),
     DOLPHIN_TREASURE        ("infoDolphinTreasure",         InfoLineTypes.DOLPHIN_TREASURE, false, ""),
     ENTITY_VARIANT          ("infoEntityVariant",           InfoLineTypes.ENTITY_VARIANT, false, ""),
     ENTITY_HOME_POS         ("infoEntityHomePos",           InfoLineTypes.HOME_POS, false, ""),
+//    ENTITY_COPPER_AGING		("infoEntityCopperAging",       InfoLineTypes.COPPER_AGING, false, ""),
     ;
 
     public static final ImmutableList<InfoToggle> VALUES = ImmutableList.copyOf(values());

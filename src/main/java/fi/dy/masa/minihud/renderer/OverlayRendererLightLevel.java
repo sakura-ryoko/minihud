@@ -323,7 +323,6 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
                                int safeThreshold,
                                int dimThreshold,
                                BufferBuilder buffer)
-//                               MatrixStack.Entry e)
     {
         Color4f colorBlockLit = Configs.Colors.LIGHT_LEVEL_MARKER_BLOCK_LIT.getColor();
         Color4f colorDim = Configs.Colors.LIGHT_LEVEL_MARKER_DIM.getColor();
