@@ -1090,7 +1090,7 @@
     "minihud.label.shapes.can_spawn_sphere": "可生成球体(>24)",
     "minihud.label.shapes.centered_box": "中心立方体",
     "minihud.label.shapes.circle": "圆形/圆柱体",
-    "minihud.label.shapes.clipped_spawn_sphere_y": "可生成球体 (Y 省略一部分的)",
+    "minihud.label.shapes.clipped_spawn_sphere_y": "可生成球体 (Y 断绝)",
     "minihud.label.shapes.despawn_sphere": "立即消失球体(>128)",
     "minihud.label.shapes.ellipsoid_spawn": "椭球体可生成球体",
     "minihud.label.shapes.sphere_blocky": "球体(方块化)",
