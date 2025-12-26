@@ -15,6 +15,7 @@ import fi.dy.masa.malilib.util.data.tag.CompoundData;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.info.InfoLine;
+import fi.dy.masa.minihud.info.InfoLineContext;
 
 public class InfoLineHorseMaxHealth extends InfoLine
 {
@@ -34,7 +35,7 @@ public class InfoLineHorseMaxHealth extends InfoLine
     public boolean succeededType() { return this.succeeded; }
 
     @Override
-    public List<Entry> parse(@NotNull InfoLine.Context ctx)
+    public List<Entry> parse(@NotNull InfoLineContext ctx)
     {
         if (ctx.world() == null) return null;
 

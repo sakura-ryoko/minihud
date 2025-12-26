@@ -10,6 +10,7 @@ import net.minecraft.world.level.Level;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.info.InfoLine;
+import fi.dy.masa.minihud.info.InfoLineContext;
 import fi.dy.masa.minihud.info.InfoLineRenderStats;
 
 public class InfoLineRenderEntitiesBase extends InfoLine
@@ -26,7 +27,7 @@ public class InfoLineRenderEntitiesBase extends InfoLine
     public boolean succeededType() { return this.succeeded; }
 
     @Override
-    public List<Entry> parse(@Nonnull Context ctx)
+    public List<Entry> parse(@Nonnull InfoLineContext ctx)
     {
         if (this.getClientWorld() == null)
         {

@@ -8,6 +8,7 @@ import net.minecraft.world.level.Level;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.info.InfoLine;
+import fi.dy.masa.minihud.info.InfoLineContext;
 import fi.dy.masa.minihud.util.IServerChunkLoading;
 
 public class InfoLineLoadedChunks extends InfoLine
@@ -28,7 +29,7 @@ public class InfoLineLoadedChunks extends InfoLine
     public boolean succeededType() { return false; }
 
     @Override
-    public List<Entry> parse(@Nonnull Context ctx)
+    public List<Entry> parse(@Nonnull InfoLineContext ctx)
     {
         if (this.getClientWorld() == null)
         {

@@ -62,6 +62,7 @@ import fi.dy.masa.minihud.data.EntitiesDataManager;
 import fi.dy.masa.minihud.data.HudDataManager;
 import fi.dy.masa.minihud.info.InfoLine;
 import fi.dy.masa.minihud.info.InfoLineChunkCache;
+import fi.dy.masa.minihud.info.InfoLineContext;
 import fi.dy.masa.minihud.renderer.InventoryOverlayHandler;
 import fi.dy.masa.minihud.renderer.OverlayRenderer;
 import fi.dy.masa.minihud.util.DataStorage;
@@ -481,7 +482,7 @@ public class RenderHandler implements IRenderer
 
             if (parser != null)
             {
-                InfoLine.Context ctx = new InfoLine.Context(world, null, null, null, null, null, null);
+                InfoLineContext ctx = new InfoLineContext(world, null, null, null, null, null, null);
                 this.processEntries(parser.parse(ctx));
             }
             else
@@ -496,7 +497,7 @@ public class RenderHandler implements IRenderer
 
 			if (parser != null)
 			{
-				InfoLine.Context ctx = new InfoLine.Context(world, null, null, null, null, null, null);
+				InfoLineContext ctx = new InfoLineContext(world, null, null, null, null, null, null);
 				this.processEntries(parser.parse(ctx));
 			}
 			else
@@ -511,7 +512,7 @@ public class RenderHandler implements IRenderer
 
             if (parser != null)
             {
-                InfoLine.Context ctx = new InfoLine.Context(world, null, null, null, null, null, null);
+                InfoLineContext ctx = new InfoLineContext(world, null, null, null, null, null, null);
                 this.processEntries(parser.parse(ctx));
             }
             else
@@ -526,7 +527,7 @@ public class RenderHandler implements IRenderer
 
             if (parser != null)
             {
-                InfoLine.Context ctx = new InfoLine.Context(world, null, null, null, null, null, null);
+                InfoLineContext ctx = new InfoLineContext(world, null, null, null, null, null, null);
                 this.processEntries(parser.parse(ctx));
             }
             else
@@ -541,7 +542,7 @@ public class RenderHandler implements IRenderer
 
             if (parser != null)
             {
-                InfoLine.Context ctx = new InfoLine.Context(world, null, null, null, null, null, null);
+                InfoLineContext ctx = new InfoLineContext(world, null, null, null, null, null, null);
                 this.processEntries(parser.parse(ctx));
             }
             else
@@ -556,7 +557,7 @@ public class RenderHandler implements IRenderer
 
             if (parser != null)
             {
-                InfoLine.Context ctx = new InfoLine.Context(world, null, null, null, null, null, null);
+                InfoLineContext ctx = new InfoLineContext(world, null, null, null, null, null, null);
                 this.processEntries(parser.parse(ctx));
             }
             else
@@ -571,7 +572,7 @@ public class RenderHandler implements IRenderer
 
             if (parser != null)
             {
-                InfoLine.Context ctx = new InfoLine.Context(world, null, null, null, null, null, null);
+                InfoLineContext ctx = new InfoLineContext(world, null, null, null, null, null, null);
                 this.processEntries(parser.parse(ctx));
             }
             else
@@ -586,7 +587,7 @@ public class RenderHandler implements IRenderer
 
             if (parser != null)
             {
-                InfoLine.Context ctx = new InfoLine.Context(world, null, null, null, null, null, null);
+                InfoLineContext ctx = new InfoLineContext(world, null, null, null, null, null, null);
                 this.processEntries(parser.parse(ctx));
             }
             else
@@ -607,7 +608,7 @@ public class RenderHandler implements IRenderer
 
             if (parser != null)
             {
-                InfoLine.Context ctx = new InfoLine.Context(bestWorld, null, null, null, null, null, null);
+                InfoLineContext ctx = new InfoLineContext(bestWorld, null, null, null, null, null, null);
                 this.processEntries(parser.parse(ctx));
 
                 if (parser.succeededType())
@@ -633,7 +634,7 @@ public class RenderHandler implements IRenderer
 
             if (parser != null)
             {
-                InfoLine.Context ctx = new InfoLine.Context(bestWorld, null, null, null, null, null, null);
+                InfoLineContext ctx = new InfoLineContext(bestWorld, null, null, null, null, null, null);
                 this.processEntries(parser.parse(ctx));
 
                 if (parser.succeededType())
@@ -659,7 +660,7 @@ public class RenderHandler implements IRenderer
 
             if (parser != null)
             {
-                InfoLine.Context ctx = new InfoLine.Context(bestWorld, null, null, null, null, null, null);
+                InfoLineContext ctx = new InfoLineContext(bestWorld, null, null, null, null, null, null);
                 this.processEntries(parser.parse(ctx));
 
                 if (parser.succeededType())
@@ -685,7 +686,7 @@ public class RenderHandler implements IRenderer
 
             if (parser != null)
             {
-                InfoLine.Context ctx = new InfoLine.Context(bestWorld, null, null, null, null, null, null);
+                InfoLineContext ctx = new InfoLineContext(bestWorld, null, null, null, null, null, null);
                 this.processEntries(parser.parse(ctx));
 
                 if (parser.succeededType())
@@ -704,7 +705,7 @@ public class RenderHandler implements IRenderer
 
 	        if (parser != null)
 	        {
-		        InfoLine.Context ctx = new InfoLine.Context(world, mc.player, null, null, null, null, null);
+		        InfoLineContext ctx = new InfoLineContext(world, mc.player, null, null, null, null, null);
 		        this.processEntries(parser.parse(ctx));
 	        }
 	        else
@@ -728,7 +729,7 @@ public class RenderHandler implements IRenderer
 
             if (parser != null)
             {
-                InfoLine.Context ctx = new InfoLine.Context(world, entity, null, null, null, null, null);
+                InfoLineContext ctx = new InfoLineContext(world, entity, null, null, null, null, null);
                 this.processEntries(parser.parse(ctx));
 
                 if (parser.succeededType())
@@ -757,7 +758,7 @@ public class RenderHandler implements IRenderer
 
 	        if (parser != null)
 	        {
-		        InfoLine.Context ctx = new InfoLine.Context(world, null, null, pos, null, chunkPos, null);
+		        InfoLineContext ctx = new InfoLineContext(world, null, null, pos, null, chunkPos, null);
 		        this.processEntries(parser.parse(ctx));
 
 				if (parser.succeededType())
@@ -777,7 +778,7 @@ public class RenderHandler implements IRenderer
 	        if (parser != null)
 	        {
 //		        BlockPos lookPos = ((BlockHitResult) mc.crosshairTarget).getBlockPos();
-		        InfoLine.Context ctx = new InfoLine.Context(world, null, null, pos, null, chunkPos, null);
+		        InfoLineContext ctx = new InfoLineContext(world, null, null, pos, null, chunkPos, null);
 		        this.processEntries(parser.parse(ctx));
 	        }
 	        else
@@ -791,7 +792,7 @@ public class RenderHandler implements IRenderer
 
 	        if (parser != null)
 	        {
-		        InfoLine.Context ctx = new InfoLine.Context(world, null, null, null, null, null, null);
+		        InfoLineContext ctx = new InfoLineContext(world, null, null, null, null, null, null);
 		        this.processEntries(parser.parse(ctx));
 	        }
 	        else
@@ -805,7 +806,7 @@ public class RenderHandler implements IRenderer
 
 	        if (parser != null)
 	        {
-		        InfoLine.Context ctx = new InfoLine.Context(world, null, null, null, null, null, null);
+		        InfoLineContext ctx = new InfoLineContext(world, null, null, null, null, null, null);
 		        this.processEntries(parser.parse(ctx));
 	        }
 	        else
@@ -819,7 +820,7 @@ public class RenderHandler implements IRenderer
 
 	        if (parser != null)
 	        {
-		        InfoLine.Context ctx = new InfoLine.Context(world, entity, null, null, null, null, null);
+		        InfoLineContext ctx = new InfoLineContext(world, entity, null, null, null, null, null);
 		        this.processEntries(parser.parse(ctx));
 	        }
 	        else
@@ -833,7 +834,7 @@ public class RenderHandler implements IRenderer
 
 	        if (parser != null)
 	        {
-		        InfoLine.Context ctx = new InfoLine.Context(world, entity, null, null, null, null, null);
+		        InfoLineContext ctx = new InfoLineContext(world, entity, null, null, null, null, null);
 		        this.processEntries(parser.parse(ctx));
 	        }
 	        else
@@ -847,7 +848,7 @@ public class RenderHandler implements IRenderer
 
 	        if (parser != null)
 	        {
-		        InfoLine.Context ctx = new InfoLine.Context(world, null, null, pos, null, chunkPos, null);
+		        InfoLineContext ctx = new InfoLineContext(world, null, null, pos, null, chunkPos, null);
 		        this.processEntries(parser.parse(ctx));
 	        }
 	        else
@@ -867,7 +868,7 @@ public class RenderHandler implements IRenderer
 
                 if (pair != null)
                 {
-                    InfoLine.Context ctx = new InfoLine.Context(bestWorld, null, pair.getLeft(), null, null, null, pair.getRight());
+                    InfoLineContext ctx = new InfoLineContext(bestWorld, null, pair.getLeft(), null, null, null, pair.getRight());
                     this.processEntries(parser.parse(ctx));
 
                     if (parser.succeededType())
@@ -897,7 +898,7 @@ public class RenderHandler implements IRenderer
 
                 if (pair != null)
                 {
-                    InfoLine.Context ctx = new InfoLine.Context(bestWorld, null, pair.getLeft(), null, null, null, pair.getRight());
+                    InfoLineContext ctx = new InfoLineContext(bestWorld, null, pair.getLeft(), null, null, null, pair.getRight());
                     this.processEntries(parser.parse(ctx));
 
                     if (parser.succeededType())
@@ -930,7 +931,7 @@ public class RenderHandler implements IRenderer
 
                 if (state != null)
                 {
-                    InfoLine.Context ctx = new InfoLine.Context(world, null, null, null, state, null, null);
+                    InfoLineContext ctx = new InfoLineContext(world, null, null, null, state, null, null);
                     this.processEntries(parser.parse(ctx));
 
                     if (parser.succeededType())
@@ -960,7 +961,7 @@ public class RenderHandler implements IRenderer
 
                 if (pair != null)
                 {
-                    InfoLine.Context ctx = new InfoLine.Context(bestWorld, null, pair.getLeft(), null, null, null, pair.getRight());
+                    InfoLineContext ctx = new InfoLineContext(bestWorld, null, pair.getLeft(), null, null, null, pair.getRight());
                     this.processEntries(parser.parse(ctx));
 
                     if (parser.succeededType())
@@ -994,15 +995,15 @@ public class RenderHandler implements IRenderer
             if (parser != null)
             {
                 Pair<Entity, CompoundData> pair = this.getTargetEntity(bestWorld, mc);
-                InfoLine.Context ctx;
+                InfoLineContext ctx;
 
                 if (mc.player.isPassenger() && pair == null)
                 {
-                    ctx = new InfoLine.Context(bestWorld, mc.player.getVehicle(), null, null, null, null, null);
+                    ctx = new InfoLineContext(bestWorld, mc.player.getVehicle(), null, null, null, null, null);
                 }
                 else if (pair != null)
                 {
-                    ctx = new InfoLine.Context(bestWorld, pair.getLeft(), null, null, null, null, pair.getRight());
+                    ctx = new InfoLineContext(bestWorld, pair.getLeft(), null, null, null, null, pair.getRight());
                 }
                 else
                 {
@@ -1037,7 +1038,7 @@ public class RenderHandler implements IRenderer
 
 	        if (parser != null)
 	        {
-		        InfoLine.Context ctx = new InfoLine.Context(world, entity, null, null, null, null, null);
+		        InfoLineContext ctx = new InfoLineContext(world, entity, null, null, null, null, null);
 		        this.processEntries(parser.parse(ctx));
 
 		        if (parser.succeededType())
@@ -1056,7 +1057,7 @@ public class RenderHandler implements IRenderer
 
 	        if (parser != null)
 	        {
-		        InfoLine.Context ctx = new InfoLine.Context(world, entity, null, null, null, null, null);
+		        InfoLineContext ctx = new InfoLineContext(world, entity, null, null, null, null, null);
 		        this.processEntries(parser.parse(ctx));
 	        }
 	        else
@@ -1070,7 +1071,7 @@ public class RenderHandler implements IRenderer
 
 	        if (parser != null)
 	        {
-		        InfoLine.Context ctx = new InfoLine.Context(world, entity, null, null, null, null, null);
+		        InfoLineContext ctx = new InfoLineContext(world, entity, null, null, null, null, null);
 		        this.processEntries(parser.parse(ctx));
 	        }
 	        else
@@ -1085,7 +1086,7 @@ public class RenderHandler implements IRenderer
 
             if (parser != null)
             {
-                InfoLine.Context ctx = new InfoLine.Context(world, null, null, null, null, null, null);
+                InfoLineContext ctx = new InfoLineContext(world, null, null, null, null, null, null);
                 this.processEntries(parser.parse(ctx));
             }
             else
@@ -1100,7 +1101,7 @@ public class RenderHandler implements IRenderer
 
             if (parser != null)
             {
-                InfoLine.Context ctx = new InfoLine.Context(world, null, null, null, null, null, null);
+                InfoLineContext ctx = new InfoLineContext(world, null, null, null, null, null, null);
                 this.processEntries(parser.parse(ctx));
             }
             else
@@ -1115,7 +1116,7 @@ public class RenderHandler implements IRenderer
 
             if (parser != null)
             {
-                InfoLine.Context ctx = new InfoLine.Context(world, null, null, null, null, null, null);
+                InfoLineContext ctx = new InfoLineContext(world, null, null, null, null, null, null);
                 this.processEntries(parser.parse(ctx));
             }
             else
@@ -1136,7 +1137,7 @@ public class RenderHandler implements IRenderer
 
             if (parser != null)
             {
-                InfoLine.Context ctx = new InfoLine.Context(bestWorld, null, null, null, null, null, null);
+                InfoLineContext ctx = new InfoLineContext(bestWorld, null, null, null, null, null, null);
                 this.processEntries(parser.parse(ctx));
 
                 if (parser.succeededType())
@@ -1160,7 +1161,7 @@ public class RenderHandler implements IRenderer
 
                 if (pair != null)
                 {
-                    InfoLine.Context ctx = new InfoLine.Context(world, pair.getLeft(), null, null, null, null, pair.getRight());
+                    InfoLineContext ctx = new InfoLineContext(world, pair.getLeft(), null, null, null, null, pair.getRight());
                     this.processEntries(parser.parse(ctx));
 
                     if (parser.succeededType())
@@ -1185,7 +1186,7 @@ public class RenderHandler implements IRenderer
 
             if (parser != null)
             {
-                InfoLine.Context ctx = new InfoLine.Context(world, null, null, null, null, null, null);
+                InfoLineContext ctx = new InfoLineContext(world, null, null, null, null, null, null);
                 this.processEntries(parser.parse(ctx));
             }
             else
@@ -1200,7 +1201,7 @@ public class RenderHandler implements IRenderer
 
             if (parser != null)
             {
-                InfoLine.Context ctx = new InfoLine.Context(world, null, null, pos, null, null, null);
+                InfoLineContext ctx = new InfoLineContext(world, null, null, pos, null, null, null);
                 this.processEntries(parser.parse(ctx));
             }
             else
@@ -1214,7 +1215,7 @@ public class RenderHandler implements IRenderer
 
 	        if (parser != null)
 	        {
-		        InfoLine.Context ctx = new InfoLine.Context(world, null, null, pos, null, chunkPos, null);
+		        InfoLineContext ctx = new InfoLineContext(world, null, null, pos, null, chunkPos, null);
 		        this.processEntries(parser.parse(ctx));
 	        }
 	        else
@@ -1228,7 +1229,7 @@ public class RenderHandler implements IRenderer
 
 	        if (parser != null)
 	        {
-		        InfoLine.Context ctx = new InfoLine.Context(world, null, null, pos, null, chunkPos, null);
+		        InfoLineContext ctx = new InfoLineContext(world, null, null, pos, null, chunkPos, null);
 		        this.processEntries(parser.parse(ctx));
 	        }
 	        else
@@ -1249,7 +1250,7 @@ public class RenderHandler implements IRenderer
 
 	        if (parser != null)
 	        {
-		        InfoLine.Context ctx = new InfoLine.Context(world, null, null, null, null, null, null);
+		        InfoLineContext ctx = new InfoLineContext(world, null, null, null, null, null, null);
 		        this.processEntries(parser.parse(ctx));
 
                 if (parser.succeededType())
@@ -1268,7 +1269,7 @@ public class RenderHandler implements IRenderer
 
 	        if (parser != null)
 	        {
-		        InfoLine.Context ctx = new InfoLine.Context(WorldUtils.getBestWorld(mc), null, null, null, null, null, null);
+		        InfoLineContext ctx = new InfoLineContext(WorldUtils.getBestWorld(mc), null, null, null, null, null, null);
 		        this.processEntries(parser.parse(ctx));
 	        }
 	        else
@@ -1283,7 +1284,7 @@ public class RenderHandler implements IRenderer
 
             if (parser != null)
             {
-                InfoLine.Context ctx = new InfoLine.Context(world, null, null, pos, null, null, null);
+                InfoLineContext ctx = new InfoLineContext(world, null, null, pos, null, null, null);
                 this.processEntries(parser.parse(ctx));
             }
             else
@@ -1302,7 +1303,7 @@ public class RenderHandler implements IRenderer
 
                 if (pair != null)
                 {
-                    InfoLine.Context ctx = new InfoLine.Context(world, pair.getLeft(), null, null, null, null, pair.getRight());
+                    InfoLineContext ctx = new InfoLineContext(world, pair.getLeft(), null, null, null, null, pair.getRight());
                     this.processEntries(parser.parse(ctx));
 
                     if (parser.succeededType())
@@ -1330,7 +1331,7 @@ public class RenderHandler implements IRenderer
 
                 if (pair != null)
                 {
-                    InfoLine.Context ctx = new InfoLine.Context(world, pair.getLeft(), null, null, null, null, pair.getRight());
+                    InfoLineContext ctx = new InfoLineContext(world, pair.getLeft(), null, null, null, null, pair.getRight());
                     this.processEntries(parser.parse(ctx));
 
                     if (parser.succeededType())
@@ -1358,7 +1359,7 @@ public class RenderHandler implements IRenderer
 
                 if (pair != null)
                 {
-                    InfoLine.Context ctx = new InfoLine.Context(world, pair.getLeft(), null, null, null, null, pair.getRight());
+                    InfoLineContext ctx = new InfoLineContext(world, pair.getLeft(), null, null, null, null, pair.getRight());
                     this.processEntries(parser.parse(ctx));
 
                     if (parser.succeededType())
@@ -1386,7 +1387,7 @@ public class RenderHandler implements IRenderer
 
 				if (pair != null)
 				{
-					InfoLine.Context ctx = new InfoLine.Context(world, pair.getLeft(), null, null, null, null, pair.getRight());
+					InfoLineContext ctx = new InfoLineContext(world, pair.getLeft(), null, null, null, null, pair.getRight());
 					this.processEntries(parser.parse(ctx));
 
 					if (parser.succeededType())
@@ -1414,7 +1415,7 @@ public class RenderHandler implements IRenderer
 
                 if (pair != null)
                 {
-                    InfoLine.Context ctx = new InfoLine.Context(world, pair.getLeft(), null, null, null, null, pair.getRight());
+                    InfoLineContext ctx = new InfoLineContext(world, pair.getLeft(), null, null, null, null, pair.getRight());
                     this.processEntries(parser.parse(ctx));
 
                     if (parser.succeededType())
@@ -1442,7 +1443,7 @@ public class RenderHandler implements IRenderer
 
                 if (pair != null)
                 {
-                    InfoLine.Context ctx = new InfoLine.Context(world, pair.getLeft(), null, null, null, null, pair.getRight());
+                    InfoLineContext ctx = new InfoLineContext(world, pair.getLeft(), null, null, null, null, pair.getRight());
                     this.processEntries(parser.parse(ctx));
 
                     if (parser.succeededType())
@@ -1470,7 +1471,7 @@ public class RenderHandler implements IRenderer
 
                 if (pair != null)
                 {
-                    InfoLine.Context ctx = new InfoLine.Context(world, pair.getLeft(), null, null, null, null, pair.getRight());
+                    InfoLineContext ctx = new InfoLineContext(world, pair.getLeft(), null, null, null, null, pair.getRight());
                     this.processEntries(parser.parse(ctx));
 
                     if (parser.succeededType())
@@ -1498,7 +1499,7 @@ public class RenderHandler implements IRenderer
 
                 if (pair != null)
                 {
-                    InfoLine.Context ctx = new InfoLine.Context(world, pair.getLeft(), null, null, null, null, pair.getRight());
+                    InfoLineContext ctx = new InfoLineContext(world, pair.getLeft(), null, null, null, null, pair.getRight());
                     this.processEntries(parser.parse(ctx));
 
                     if (parser.succeededType())
@@ -1522,7 +1523,7 @@ public class RenderHandler implements IRenderer
 
 	        if (parser != null && mc.player != null)
 	        {
-		        InfoLine.Context ctx = new InfoLine.Context(world, mc.player, null, null, null, null, null);
+		        InfoLineContext ctx = new InfoLineContext(world, mc.player, null, null, null, null, null);
 		        this.processEntries(parser.parse(ctx));
 	        }
 	        else
@@ -1540,7 +1541,7 @@ public class RenderHandler implements IRenderer
 
                 if (pair != null)
                 {
-                    InfoLine.Context ctx = new InfoLine.Context(world, pair.getLeft(), null, null, null, null, pair.getRight());
+                    InfoLineContext ctx = new InfoLineContext(world, pair.getLeft(), null, null, null, null, pair.getRight());
                     this.processEntries(parser.parse(ctx));
 
                     if (parser.succeededType())
@@ -1577,7 +1578,7 @@ public class RenderHandler implements IRenderer
                 if (state != null)
                 {
                     BlockPos lookPos = ((BlockHitResult) mc.hitResult).getBlockPos();
-                    InfoLine.Context ctx = new InfoLine.Context(bestWorld, null, null, lookPos, state, null, null);
+                    InfoLineContext ctx = new InfoLineContext(bestWorld, null, null, lookPos, state, null, null);
                     this.processEntries(parser.parse(ctx));
 
                     if (parser.succeededType())
@@ -1613,7 +1614,7 @@ public class RenderHandler implements IRenderer
                 if (state != null)
                 {
                     BlockPos lookPos = ((BlockHitResult) mc.hitResult).getBlockPos();
-                    InfoLine.Context ctx = new InfoLine.Context(bestWorld, null, null, lookPos, state, null, null);
+                    InfoLineContext ctx = new InfoLineContext(bestWorld, null, null, lookPos, state, null, null);
                     this.processEntries(parser.parse(ctx));
 
                     if (parser.succeededType())

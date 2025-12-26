@@ -10,6 +10,7 @@ import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.info.InfoLine;
+import fi.dy.masa.minihud.info.InfoLineContext;
 import fi.dy.masa.minihud.util.SpeedUnits;
 
 public abstract class InfoLineRotationYawPitchSpeedBase extends InfoLine
@@ -27,7 +28,7 @@ public abstract class InfoLineRotationYawPitchSpeedBase extends InfoLine
     public boolean succeededType() { return this.succeeded; }
 
     @Override
-    public List<Entry> parse(@Nonnull Context ctx)
+    public List<Entry> parse(@Nonnull InfoLineContext ctx)
     {
         if (ctx.world() == null || ctx.ent() == null) return null;
 
