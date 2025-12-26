@@ -208,11 +208,7 @@ public class InventoryOverlayHandler implements IInventoryOverlayHandler
                     if (pair != null)
                     {
                         nbt = pair.getRight();
-
-//                        if (Configs.Generic.ENTITY_DATA_LOAD_NBT.getBooleanValue())
-//                        {
                         be = pair.getLeft();
-//                        }
                     }
                 }
 

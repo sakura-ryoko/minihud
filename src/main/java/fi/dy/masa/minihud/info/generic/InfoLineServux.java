@@ -69,7 +69,7 @@ public class InfoLineServux extends InfoLine
                 list.add(this.translate(SERVUX_KEY+".hud_sync",
 //                                    this.getHudData().getSpawnChunkRadius(),
                                         this.getHudData().getWorldSpawnAsString(),
-                                        this.getHudData().isWorldSpawnKnown()
+                                        this.getHudData().hasStoredWorldSeed()
                                         ? this.qt(YES_KEY)
                                         : this.qt(NO_KEY)
                 ));
@@ -131,7 +131,7 @@ public class InfoLineServux extends InfoLine
             list.add(this.translate(SERVUX_KEY + ".hud_sync.integrated",
 //                                    this.getHudData().getSpawnChunkRadius(),
                                     this.getHudData().getWorldSpawnAsString(),
-                                    this.getHudData().isWorldSpawnKnown()
+                                    this.getHudData().hasStoredWorldSeed()
                                     ? this.qt(YES_KEY)
                                     : this.qt(NO_KEY)
             ));

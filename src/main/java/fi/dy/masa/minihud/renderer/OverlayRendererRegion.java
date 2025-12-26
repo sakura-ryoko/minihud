@@ -29,7 +29,7 @@ public class OverlayRendererRegion extends OverlayRendererBase
     {
         this.boxes = new ArrayList<>();
         this.hasData = false;
-        this.useCulling = true;
+        this.useCulling = false;
         this.renderThrough = false;
     }
 
@@ -116,7 +116,7 @@ public class OverlayRendererRegion extends OverlayRendererBase
         profiler.push("region_quads");
         Color4f color = Configs.Colors.REGION_OVERLAY_COLOR.getColor();
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "minihud:region/quads", MaLiLibPipelines.POSITION_COLOR_MASA_LEQUAL_DEPTH_OFFSET_1);
+        BufferBuilder builder = ctx.start(() -> "minihud:region/quads", MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL);
 
         for (Box box : this.boxes)
         {

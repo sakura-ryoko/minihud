@@ -41,7 +41,7 @@ public class ShapeLineBlock extends ShapeBlocky
 
         this.setBlockSnap(BlockSnap.CENTER);
         this.hasData = false;
-        this.useCulling = true;
+        this.useCulling = false;
     }
 
 	@Override
