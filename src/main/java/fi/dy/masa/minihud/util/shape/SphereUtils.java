@@ -5,21 +5,23 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import javax.annotation.Nullable;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
-import fi.dy.masa.malilib.util.LayerRange;
-import fi.dy.masa.malilib.util.PositionUtils;
-import fi.dy.masa.minihud.renderer.shapes.SideQuad;
-import fi.dy.masa.minihud.util.ShapeRenderType;
 import it.unimi.dsi.fastutil.longs.Long2ByteOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3d;
+
+import fi.dy.masa.malilib.util.LayerRange;
+import fi.dy.masa.malilib.util.PositionUtils;
+import fi.dy.masa.minihud.renderer.shapes.SideQuad;
+import fi.dy.masa.minihud.util.ShapeRenderType;
+
 public class SphereUtils
 {
     public static void collectSpherePositions(Consumer<BlockPos.Mutable> positionConsumer,
-                                              SphereUtils.RingPositionTest test,
+                                              RingPositionTest test,
                                               BlockPos centerPos, int radius)
     {
         BlockPos.Mutable mutablePos = new BlockPos.Mutable();
@@ -191,12 +193,7 @@ public class SphereUtils
         double dist = center.squaredDistanceTo(x, y, z);
         double diff = squareRadius - dist;
 
-        if (diff >= 0)
-        {
-            return true;
-        }
-        
-        return false;
+	    return diff >= 0;
     }
 
     /**
@@ -258,7 +255,7 @@ public class SphereUtils
 
     public static List<SideQuad> buildSphereShellToQuads(LongOpenHashSet positions,
                                                          Direction.Axis mainAxis,
-                                                         SphereUtils.RingPositionTest test,
+                                                         RingPositionTest test,
                                                          ShapeRenderType renderType,
                                                          LayerRange layerRange)
     {
@@ -269,7 +266,7 @@ public class SphereUtils
 
     public static Long2ObjectOpenHashMap<SideQuad> buildSphereShellToStrips(LongOpenHashSet positions,
                                                                             Direction.Axis mainAxis,
-                                                                            SphereUtils.RingPositionTest test,
+                                                                            RingPositionTest test,
                                                                             ShapeRenderType renderType,
                                                                             LayerRange layerRange)
     {
@@ -371,7 +368,7 @@ public class SphereUtils
     protected static int getStripLengthOnSide(long pos,
                                               Direction side,
                                               Direction moveDirection,
-                                              SphereUtils.RingPositionTest test,
+                                              RingPositionTest test,
                                               ShapeRenderType renderType,
                                               LongOpenHashSet positions,
                                               Long2ByteOpenHashMap handledPositions)
@@ -414,7 +411,7 @@ public class SphereUtils
 
     protected static boolean shouldRenderSide(long pos,
                                               Direction side,
-                                              SphereUtils.RingPositionTest test,
+                                              RingPositionTest test,
                                               ShapeRenderType renderType,
                                               LongOpenHashSet positions)
     {

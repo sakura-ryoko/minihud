@@ -22,6 +22,7 @@ import java.util.function.Predicate;
 public class EntityUtils
 {
     // entity.readNbt(nbt);
+    @Deprecated(forRemoval = true)
     public static void loadNbtIntoEntity(Entity entity, NbtCompound nbt)
     {
         entity.fallDistance = nbt.getFloat("FallDistance");
@@ -34,11 +35,13 @@ public class EntityUtils
         entity.setOnGround(nbt.getBoolean("OnGround"));
         entity.setInvulnerable(nbt.getBoolean("Invulnerable"));
         entity.setPortalCooldown(nbt.getInt("PortalCooldown"));
-        if (nbt.containsUuid("UUID")) {
+        if (nbt.containsUuid("UUID"))
+        {
             entity.setUuid(nbt.getUuid("UUID"));
         }
 
-        if (nbt.contains("CustomName", NbtElement.STRING_TYPE)) {
+        if (nbt.contains("CustomName", NbtElement.STRING_TYPE))
+        {
             String string = nbt.getString("CustomName");
             entity.setCustomName(Text.Serialization.fromJson(string, entity.getRegistryManager()));
         }
@@ -54,7 +57,7 @@ public class EntityUtils
             NbtList nbtList4 = nbt.getList("Tags", NbtElement.STRING_TYPE);
             int max = Math.min(nbtList4.size(), 1024);
 
-            for(int i = 0; i < max; ++i)
+            for (int i = 0; i < max; ++i)
             {
                 entity.getCommandTags().add(nbtList4.getString(i));
             }
@@ -70,6 +73,7 @@ public class EntityUtils
         }
     }
 
+    @Deprecated(forRemoval = true)
     private static void readLeashableEntityCustomData(Entity entity, NbtCompound nbt)
     {
         MinecraftClient mc = MinecraftClient.getInstance();
@@ -80,10 +84,10 @@ public class EntityUtils
         {
             leashable.getLeashData().unresolvedLeashData
                     .ifLeft(uuid ->
-                            // We MUST use client-side world here.
-                            leashable.attachLeash(((IMixinWorld) mc.world).minihud_getEntityLookup().get(uuid), false))
+                                    // We MUST use client-side world here.
+                                    leashable.attachLeash(((IMixinWorld) mc.world).minihud_getEntityLookup().get(uuid), false))
                     .ifRight(pos ->
-                            leashable.attachLeash(LeashKnotEntity.getOrCreate(mc.world, pos), false));
+                                     leashable.attachLeash(LeashKnotEntity.getOrCreate(mc.world, pos), false));
         }
     }
 
@@ -95,7 +99,7 @@ public class EntityUtils
             return Collections.emptyList();
         }
 
-        List<Integer> entityIds = mc.world.getEntitiesByClass(entityClass, box, predicate).stream().map(it -> it.getId()).toList();
+        List<Integer> entityIds = mc.world.getEntitiesByClass(entityClass, box, predicate).stream().map(Entity::getId).toList();
         World world = WorldUtils.getBestWorld(mc);
         return entityIds.stream().map(it -> (T) world.getEntityById(it))
                 .filter(Objects::nonNull)

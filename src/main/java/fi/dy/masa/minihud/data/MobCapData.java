@@ -1,21 +1,58 @@
 package fi.dy.masa.minihud.data;
 
 import java.util.Arrays;
+import java.util.List;
 import javax.annotation.Nullable;
 
+import com.google.common.collect.ImmutableList;
+
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.PrimitiveCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.entity.SpawnGroup;
+import net.minecraft.util.StringIdentifiable;
+
+import fi.dy.masa.minihud.MiniHUD;
 
 public class MobCapData
 {
     protected static final int CAP_COUNT = MobCapDataHandler.ENTITY_CATEGORIES.length;
     protected static final int MAX_DATA_AGE_TICKS = 100; // TODO: move to a config option?
 
-    protected final Cap[] data = createCapArray();
-    protected final Cap[] stagingData = createCapArray();
-    protected final boolean[] dataValid = new boolean[CAP_COUNT];
-    protected final long[] worldTicks = new long[CAP_COUNT];
+    public static final Codec<MobCapData> CODEC = RecordCodecBuilder.create(
+            (inst) -> inst.group(
+                    PrimitiveCodec.INT.fieldOf("cap_count").forGetter(get -> CAP_COUNT),
+                    Codec.list(Cap.CODEC).fieldOf("cap_data").forGetter(get -> get.toList(get.data))
+            ).apply(inst, MobCapData::new)
+    );
+
+    protected final Cap[] data;
+    protected final Cap[] stagingData;
+    protected final boolean[] dataValid;
+    protected final long[] worldTicks;
     protected boolean hasValidData;
     protected long completionWorldTick;
+
+    public MobCapData()
+    {
+        this.data = createCapArray();
+        this.stagingData = createCapArray();
+        this.dataValid = new boolean[CAP_COUNT];
+        this.worldTicks = new long[CAP_COUNT];
+    }
+
+    private MobCapData(int capCount, List<Cap> capData)
+    {
+        this.data = this.createCapArrayFromList(capCount, capData);
+        this.stagingData = this.createCapArray(capCount);
+        this.dataValid = new boolean[capCount];
+        this.worldTicks = new long[capCount];
+
+        for (int i = 0; i < this.data.length; i++)
+        {
+            this.data[i] = capData.get(i);
+        }
+    }
 
     public static Cap[] createCapArray()
     {
@@ -27,6 +64,35 @@ public class MobCapData
         }
 
         return data;
+    }
+
+    private Cap[] createCapArrayFromList(final int size, List<Cap> list)
+    {
+        Cap[] data = new Cap[size];
+
+        for (int i = 0; i < data.length; ++i)
+        {
+            data[i] = list.get(i);
+        }
+
+        return data;
+    }
+
+    private Cap[] createCapArray(final int size)
+    {
+        Cap[] data = new Cap[size];
+
+        for (int i = 0; i < data.length; ++i)
+        {
+            data[i] = new Cap();
+        }
+
+        return data;
+    }
+
+    private List<Cap> toList(Cap[] caps)
+    {
+        return Arrays.stream(caps).toList();
     }
 
     public boolean getHasValidData()
@@ -65,6 +131,29 @@ public class MobCapData
         Cap cap = this.stagingData[index];
         cap.setCap(capValue);
         this.checkCapComplete(index, cap, worldTick);
+    }
+
+    public void setFromServuxMobCapData(MobCapData otherData, long worldTick)
+    {
+        final int size = otherData.data.length;
+
+        if (size != this.data.length)
+        {
+            // Mismatched sizes!
+            MiniHUD.LOGGER.error("setFromServuxMobCapData: Mismatching Entity Categories!");
+            return;
+        }
+
+        for (int i = 0; i < size; i++)
+        {
+//            EntityCategory type = EntityCategory.values()[i];
+//            MiniHUD.LOGGER.warn("setFromServuxMobCapData: [{}] type: [{}], data: [{} / {}]", i, type.getName(), otherData.data[i].getCurrent(), otherData.data[i].getCap());
+            this.stagingData[i] = otherData.data[i];
+            this.dataValid[i] = true;
+            this.worldTicks[i] = worldTick;
+        }
+
+        this.checkStagingComplete(worldTick);
     }
 
     public void setCurrentAndCapValues(EntityCategory type, int currentValue, int capValue, long worldTick)
@@ -179,8 +268,22 @@ public class MobCapData
 
     public static class Cap
     {
+        public static Codec<Cap> CODEC = RecordCodecBuilder.create(
+                (inst) -> inst.group(
+                        PrimitiveCodec.INT.fieldOf("current").forGetter(Cap::getCurrent),
+                        PrimitiveCodec.INT.fieldOf("cap").forGetter(Cap::getCap)
+                ).apply(inst, Cap::new));
+
         protected int current;
         protected int cap;
+
+        public Cap() {}
+
+        private Cap(int current, int cap)
+        {
+            this.current = current;
+            this.cap = cap;
+        }
 
         public int getCurrent()
         {
@@ -220,7 +323,7 @@ public class MobCapData
         }
     }
 
-    public enum EntityCategory
+    public enum EntityCategory implements StringIdentifiable
     {
         MONSTER                     ("monster",                     SpawnGroup.MONSTER),
         CREATURE                    ("creature",                    SpawnGroup.CREATURE),
@@ -230,6 +333,9 @@ public class MobCapData
         WATER_CREATURE              ("water_creature",              SpawnGroup.WATER_CREATURE),
         WATER_AMBIENT               ("water_ambient",               SpawnGroup.WATER_AMBIENT),
         MISC                        ("misc",                        SpawnGroup.MISC);
+
+        public static final EnumCodec<EntityCategory> CODEC = StringIdentifiable.createCodec(EntityCategory::values);
+        public static final ImmutableList<EntityCategory> VALUES = ImmutableList.copyOf(values());
 
         private final SpawnGroup vanillaCategory;
         private final String name;
@@ -241,6 +347,12 @@ public class MobCapData
         }
 
         public String getName()
+        {
+            return this.name;
+        }
+
+        @Override
+        public String asString()
         {
             return this.name;
         }

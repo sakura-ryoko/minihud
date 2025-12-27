@@ -1,9 +1,11 @@
 package fi.dy.masa.minihud.renderer;
 
 import org.joml.Matrix4f;
+
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.profiler.Profiler;
 
 public interface IOverlayRenderer
 {
@@ -41,20 +43,26 @@ public interface IOverlayRenderer
      * and the camera position during the draw() call.
      * @param entity The current camera entity
      */
-    void update(Vec3d cameraPos, Entity entity, MinecraftClient mc);
+    void update(Vec3d cameraPos, Entity entity, MinecraftClient mc, Profiler profiler);
 
     /**
-     * Draw the buffer contents to screen
+     * Returns true if the Renderer is ready to render data
+     * @return (True|False)
      */
-    void draw(Matrix4f matrix4f, Matrix4f projMatrix);
+    boolean hasData();
 
     /**
-     * Allocates the OpenGL resources according to the current Video settings
+     * Render contents to Buffers
      */
-    void allocateGlResources();
+    void render(Vec3d cameraPos, MinecraftClient mc, Profiler profiler);
 
     /**
-     * Removes the OpenGL buffer allocations etc.
+     * Draw Render buffers to Screen
      */
-    void deleteGlResources();
+    void draw(Vec3d cameraPos, Matrix4f posMatrix, Matrix4f projMatrix);
+
+    /**
+     * Reset renderer's internal data
+     */
+    void reset();
 }
