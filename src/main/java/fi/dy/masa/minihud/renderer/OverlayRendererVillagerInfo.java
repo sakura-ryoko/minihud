@@ -20,6 +20,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.EnchantmentTags;
 import net.minecraft.util.math.*;
+import net.minecraft.util.profiler.Profiler;
 import net.minecraft.village.TradeOffer;
 import net.minecraft.village.TradeOfferList;
 import net.minecraft.village.VillagerProfession;
@@ -41,14 +42,13 @@ import fi.dy.masa.minihud.util.EntityUtils;
 
 public class OverlayRendererVillagerInfo extends OverlayRendererBase implements IClientTickHandler
 {
-    private static final OverlayRendererVillagerInfo INSTANCE = new OverlayRendererVillagerInfo();
-    public static OverlayRendererVillagerInfo getInstance() { return INSTANCE; }
+    public static final OverlayRendererVillagerInfo INSTANCE = new OverlayRendererVillagerInfo();
 
     // Mini Secondary Cache so villagers' data doesn't ... `Flash`
     private final ConcurrentHashMap<Integer, Pair<Long, Pair<Entity, NbtCompound>>> recentEntityData;
     private long lastTick;
 
-    public OverlayRendererVillagerInfo()
+    protected OverlayRendererVillagerInfo()
     {
         this.recentEntityData = new ConcurrentHashMap<>();
         this.lastTick = System.currentTimeMillis();
@@ -61,7 +61,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
         {
             MiniHUD.debugLog("OverlayRendererVillagerInfo#reset() - dimension change or log-in");
             long now = System.currentTimeMillis();
-            this.lastTick =  - (this.getCacheTimeout() + 5000L);
+            this.lastTick = now - (this.getCacheTimeout() + 5000L);
             this.tickCache(now);
             this.lastTick = now;
         }
@@ -82,7 +82,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
     {
         long now = System.currentTimeMillis();
 
-        if (now - this.lastTick > 50)
+        if ((now - this.lastTick) > 50)
         {
             this.lastTick = now;
 
@@ -115,7 +115,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
             {
                 if ((now - longPair.getLeft()) > timeout || longPair.getLeft() > now)
                 {
-                    //MiniHUD.debugLog("villagerOverlayCache: entity Id [{}] has timed out by [{}] ms", integer, timeout);
+//                    MiniHUD.debugLog("villagerOverlayCache: entity Id [{}] has timed out by [{}] ms", integer, timeout);
                     this.recentEntityData.remove(integer);
                 }
             }));
@@ -142,9 +142,11 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
             !pair.getRight().isEmpty() &&
             this.isNbtValid(pair.getRight()))
         {
+            long now = System.currentTimeMillis();
+
             synchronized (this.recentEntityData)
             {
-                this.recentEntityData.put(entityId, Pair.of(System.currentTimeMillis(), pair));
+                this.recentEntityData.put(entityId, Pair.of(now, pair));
             }
 
             return pair;
@@ -197,7 +199,11 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
             if (pair.getRight() != null && !pair.getRight().isEmpty())
             {
                 Pair<Integer, UUID> zombiePair = NbtEntityUtils.getZombieConversionTimerFromNbt(pair.getRight());
-                conversionTime = zombiePair != null ? zombiePair.getLeft() : -1;
+
+                if (zombiePair != null && zombiePair.getLeft() > -1)
+                {
+                    conversionTime = zombiePair.getLeft();
+                }
             }
             else if (pair.getLeft() != null && pair.getLeft() instanceof ZombieVillagerEntity zombert)
             {
@@ -227,7 +233,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
     }
 
     @Override
-    public void update(Vec3d cameraPos, Entity entity, MinecraftClient mc)
+    public void update(Vec3d cameraPos, Entity entity, MinecraftClient mc, Profiler profiler)
     {
         Box box = entity.getBoundingBox().expand(30, 10, 30);
         World world = WorldUtils.getBestWorld(mc);
@@ -236,7 +242,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
 
         if (Configs.Generic.VILLAGER_OFFER_ENCHANTMENT_BOOKS.getBooleanValue())
         {
-            List<VillagerEntity> librarians = EntityUtils.getEntitiesByClass(mc, VillagerEntity.class, box, villager -> villager.getVillagerData().getProfession() == VillagerProfession.LIBRARIAN);
+            List<VillagerEntity> librarians = EntityUtils.getEntitiesByClass(mc, VillagerEntity.class, box, villager -> villager.getVillagerData().getProfession().equals(VillagerProfession.LIBRARIAN));
             Map<Object2IntMap.Entry<RegistryEntry<Enchantment>>, Integer> lowestPrices = new HashMap<>();
 
             // Prepare
@@ -379,6 +385,24 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
         }
     }
 
+    @Override
+    public boolean hasData()
+    {
+        return false;
+    }
+
+    @Override
+    public void render(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
+    {
+        // NO-OP
+    }
+
+    @Override
+    public void reset()
+    {
+        super.reset();
+    }
+
     private void renderAtEntity(List<String> texts, Entity entity, Entity targetEntity)
     {
         float delta = MinecraftClient.getInstance().getRenderTickCounter().getTickDelta(true);
@@ -407,7 +431,8 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
 
         for (String line : texts)
         {
-            RenderUtils.drawTextPlate(List.of(line), x, y, z, 0.02f);
+//            RenderUtils.drawTextPlate(List.of(line), x, y, z, 0.02f);
+            RenderUtils.drawTextPlate(List.of(line), x, y, z, entity.getYaw(), entity.getPitch(), 0.02f, 0xFFFFFFFF, 0x40000000, false);
             y -= 0.2;
         }
     }

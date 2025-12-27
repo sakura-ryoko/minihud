@@ -1,8 +1,8 @@
 package fi.dy.masa.minihud.event;
 
-import fi.dy.masa.malilib.interfaces.IClientTickHandler;
 import net.minecraft.client.MinecraftClient;
 
+import fi.dy.masa.malilib.interfaces.IClientTickHandler;
 import fi.dy.masa.minihud.data.HudDataManager;
 
 public class ClientTickHandler implements IClientTickHandler

@@ -4,32 +4,27 @@ import java.util.List;
 import java.util.function.Consumer;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import com.mojang.blaze3d.systems.RenderSystem;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import org.joml.Matrix4f;
-import org.lwjgl.opengl.GL11;
+
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.VertexFormat;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
-import fi.dy.masa.malilib.util.BlockSnap;
-import fi.dy.masa.malilib.util.Color4f;
-import fi.dy.masa.malilib.util.EntityUtils;
-import fi.dy.masa.malilib.util.IntBoundingBox;
-import fi.dy.masa.malilib.util.JsonUtils;
-import fi.dy.masa.malilib.util.StringUtils;
+
+import fi.dy.masa.malilib.util.*;
 
 public abstract class ShapeBlocky extends ShapeBase
 {
-    private BlockSnap snap = BlockSnap.CENTER;
-    protected Box renderPerimeter = ShapeBox.DEFAULT_BOX;
+    private BlockSnap snap;
+    protected Box renderPerimeter;
     private boolean combineQuads;
 
     public ShapeBlocky(ShapeType type, Color4f color)
     {
         super(type, color);
+        this.snap = BlockSnap.CENTER;
+        this.renderPerimeter = ShapeBox.DEFAULT_BOX;
     }
 
     public BlockSnap getBlockSnap()
@@ -81,29 +76,6 @@ public abstract class ShapeBlocky extends ShapeBase
     {
         Entity entity = EntityUtils.getCameraEntity();
         return super.shouldRender(mc) && entity != null && this.renderPerimeter.contains(entity.getPos());
-    }
-
-    @Override
-    public void allocateGlResources()
-    {
-        this.allocateBuffer(VertexFormat.DrawMode.QUADS);
-    }
-
-    @Override
-    public void draw(Matrix4f matrix4f, Matrix4f projMatrix)
-    {
-        this.preRender();
-
-        this.renderObjects.get(0).draw(matrix4f, projMatrix);
-
-        // Render the lines as quads with glPolygonMode(GL_LINE)
-        RenderSystem.polygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
-        RenderSystem.disableBlend();
-        this.renderObjects.get(0).draw(matrix4f, projMatrix);
-        RenderSystem.polygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
-        RenderSystem.enableBlend();
-
-        this.postRender();
     }
 
     @Override

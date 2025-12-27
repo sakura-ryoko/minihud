@@ -37,6 +37,7 @@ public class InitHandler implements IInitializationHandler
         RenderEventHandler.getInstance().registerGameOverlayRenderer(renderer);
         RenderEventHandler.getInstance().registerTooltipLastRenderer(renderer);
         RenderEventHandler.getInstance().registerWorldPreWeatherRenderer(renderer);
+//        RenderEventHandler.getInstance().registerWorldLastRenderer(renderer);
 
         WorldLoadListener listener = new WorldLoadListener();
         WorldLoadHandler.getInstance().registerWorldLoadPreHandler(listener);
@@ -47,7 +48,7 @@ public class InitHandler implements IInitializationHandler
 
         TickHandler.getInstance().registerClientTickHandler(new ClientTickHandler());
         TickHandler.getInstance().registerClientTickHandler(EntitiesDataManager.getInstance());
-        TickHandler.getInstance().registerClientTickHandler(OverlayRendererVillagerInfo.getInstance());
+        TickHandler.getInstance().registerClientTickHandler(OverlayRendererVillagerInfo.INSTANCE);
 
         KeyCallbacks.init();
     }

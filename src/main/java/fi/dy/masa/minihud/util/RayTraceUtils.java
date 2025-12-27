@@ -16,6 +16,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
 
+@Deprecated(forRemoval = true)
 public class RayTraceUtils
 {
     @Nonnull
