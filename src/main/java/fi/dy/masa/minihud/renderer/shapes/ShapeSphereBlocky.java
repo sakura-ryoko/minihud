@@ -25,16 +25,6 @@ import fi.dy.masa.minihud.util.shape.SphereUtils;
 
 public class ShapeSphereBlocky extends ShapeCircleBase
 {
-    // By IMS
-//    private static final RenderPipeline REPLICATE_PIPELINE =
-//            RenderPipeline.builder(MaLiLibPipelines.POSITION_COLOR_MASA_STAGE)
-//                          .withLocation(Identifier.of("epic", "gaming"))
-//                          .withDepthBias(-3.0f, -3.0f)
-//                          .withCull(false)
-//                          .withDepthWrite(false)
-//                          .withColorWrite(true)
-//                          .withDepthTestFunction(DepthTestFunction.LEQUAL_DEPTH_TEST)
-//                          .build();
     private boolean hasData;
 
     public ShapeSphereBlocky()
@@ -46,7 +36,7 @@ public class ShapeSphereBlocky extends ShapeCircleBase
     {
         super(type, color, radius);
         this.hasData = false;
-        this.useCulling = true;
+        this.useCulling = false;
     }
 
     @Override
@@ -85,10 +75,8 @@ public class ShapeSphereBlocky extends ShapeCircleBase
         profiler.push("sphere_blocky_quads");
 
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "Sphere Blocky Quads", this.renderThroughShape ? MaLiLibPipelines.MINIHUD_SHAPE_NO_DEPTH_OFFSET : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET, BufferUsage.STATIC_WRITE);
-//        MatrixStack matrices = new MatrixStack();
+        BufferBuilder builder = ctx.start(() -> "minihud:sphere_blocky/quads", this.renderThroughShape ? MaLiLibPipelines.MINIHUD_SHAPE_NO_DEPTH_OFFSET : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL, BufferUsage.STATIC_WRITE);
 
-//        matrices.push();
         this.renderSphereShapeQuads(cameraPos, builder);
 
         try
@@ -126,7 +114,7 @@ public class ShapeSphereBlocky extends ShapeCircleBase
         profiler.push("sphere_blocky_outlines");
 
         RenderObjectVbo ctx = this.renderObjects.get(1);
-        BufferBuilder builder = ctx.start(() -> "Sphere Blocky Outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, BufferUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.start(() -> "minihud:sphere_blocky/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, BufferUsage.STATIC_WRITE);
 //        MatrixStack matrices = new MatrixStack();
 
 //        matrices.push();

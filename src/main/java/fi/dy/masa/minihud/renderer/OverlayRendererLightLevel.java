@@ -162,8 +162,9 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
 
         // this.renderThrough ? MaLiLibPipelines.POSITION_TEX_COLOR_SIMPLE : MaLiLibPipelines.POSITION_TEX_COLOR_LESSER_DEPTH
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "Light Level Quads", this.renderThrough ? MaLiLibPipelines.POSITION_TEX_COLOR_MASA_NO_DEPTH_NO_CULL : MaLiLibPipelines.POSITION_TEX_COLOR_MASA_LEQUAL_DEPTH, BufferUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.start(() -> "minihud:light_level/tex_quads", this.renderThrough ? MaLiLibPipelines.POSITION_TEX_COLOR_MASA_NO_DEPTH_NO_CULL : MaLiLibPipelines.POSITION_TEX_COLOR_MASA_LEQUAL_DEPTH, BufferUsage.STATIC_WRITE);
         MatrixStack matrices = new MatrixStack();
+        // todo - POSITION_TEX_COLOR_MASA_LEQUAL_DEPTH_NO_CULL
 
         try
         {
@@ -176,8 +177,6 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
         }
 
         matrices.push();
-//        fi.dy.masa.malilib.render.RenderUtils.bindTexture(TEXTURE_NUMBERS);
-
         MatrixStack.Entry e = matrices.peek();
 
         if (numberMode == LightLevelNumberMode.BLOCK || numberMode == LightLevelNumberMode.BOTH)
@@ -234,11 +233,7 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
         LightLevelMarkerMode markerMode = (LightLevelMarkerMode) Configs.Generic.LIGHT_LEVEL_MARKER_MODE.getOptionListValue();
 
         RenderObjectVbo ctx = this.renderObjects.get(1);
-        BufferBuilder builder = ctx.start(() -> "Light Level Lines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, BufferUsage.STATIC_WRITE);
-//        MatrixStack matrices = new MatrixStack();
-
-//        matrices.push();
-//        MatrixStack.Entry e = matrices.peek();
+        BufferBuilder builder = ctx.start(() -> "minihud:light_level/outlines", this.renderThrough ? MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_NO_DEPTH_NO_CULL : MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, BufferUsage.STATIC_WRITE);
 
         if (markerMode == LightLevelMarkerMode.SQUARE)
         {
@@ -264,7 +259,6 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
             MiniHUD.LOGGER.error("OverlayRendererLightLevel#renderOutlines(): Exception; {}", err.getMessage());
         }
 
-//        matrices.pop();
         profiler.pop();
     }
 
@@ -330,7 +324,6 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
                                int safeThreshold,
                                int dimThreshold,
                                BufferBuilder buffer)
-//                               MatrixStack.Entry e)
     {
         Color4f colorBlockLit = Configs.Colors.LIGHT_LEVEL_MARKER_BLOCK_LIT.getColor();
         Color4f colorDim = Configs.Colors.LIGHT_LEVEL_MARKER_DIM.getColor();
@@ -463,12 +456,6 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
     {
         y += 0.005F;
 
-//        buffer.vertex(e, x + offset1, y, z + offset1).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
-//        buffer.vertex(e, x + offset2, y, z + offset2).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
-//
-//        buffer.vertex(e, x + offset1, y, z + offset2).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
-//        buffer.vertex(e, x + offset2, y, z + offset1).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
-
         buffer.vertex(x + offset1, y, z + offset1).color(color.r, color.g, color.b, color.a);
         buffer.vertex(x + offset2, y, z + offset2).color(color.r, color.g, color.b, color.a);
 
@@ -479,18 +466,6 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
     private void renderLightLevelSquare(float x, float y, float z, Color4f color, float offset1, float offset2, BufferBuilder buffer)
     {
         y += 0.005F;
-
-//        buffer.vertex(e, x + offset1, y, z + offset1).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
-//        buffer.vertex(e, x + offset1, y, z + offset2).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
-//
-//        buffer.vertex(e, x + offset1, y, z + offset2).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
-//        buffer.vertex(e, x + offset2, y, z + offset2).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
-//
-//        buffer.vertex(e, x + offset2, y, z + offset2).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
-//        buffer.vertex(e, x + offset2, y, z + offset1).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
-//
-//        buffer.vertex(e, x + offset2, y, z + offset1).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
-//        buffer.vertex(e, x + offset1, y, z + offset1).color(color.r, color.g, color.b, color.a).normal(e, 0.0f, 0.0f, 0.0f);
 
         buffer.vertex(x + offset1, y, z + offset1).color(color.r, color.g, color.b, color.a);
         buffer.vertex(x + offset1, y, z + offset2).color(color.r, color.g, color.b, color.a);

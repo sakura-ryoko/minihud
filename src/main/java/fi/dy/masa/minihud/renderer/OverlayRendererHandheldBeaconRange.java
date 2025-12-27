@@ -5,7 +5,6 @@ import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.BuiltBuffer;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
@@ -34,7 +33,7 @@ public class OverlayRendererHandheldBeaconRange extends OverlayRendererBase
     protected OverlayRendererHandheldBeaconRange()
     {
         this.level = -1;
-        this.useCulling = true;
+        this.useCulling = false;
         this.renderThrough = false;
         this.box = null;
         this.hasData = false;
@@ -113,10 +112,7 @@ public class OverlayRendererHandheldBeaconRange extends OverlayRendererBase
         Color4f color = OverlayRendererBeaconRange.getColorForLevel(this.level);
 
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "Held Beacon Quads", MaLiLibPipelines.POSITION_COLOR_MASA_LEQUAL_DEPTH_OFFSET_1, BufferUsage.STATIC_WRITE);
-        MatrixStack matrices = new MatrixStack();
-
-        matrices.push();
+        BufferBuilder builder = ctx.start(() -> "minihud:held_beacon/quads", MaLiLibPipelines.POSITION_COLOR_MASA_LEQUAL_DEPTH_OFFSET_1, BufferUsage.STATIC_WRITE);
 
         RenderUtils.drawBoxAllSidesBatchedQuads(this.box, Color4f.fromColor(color.intValue, 0.3f), builder);
 
@@ -141,7 +137,6 @@ public class OverlayRendererHandheldBeaconRange extends OverlayRendererBase
             MiniHUD.LOGGER.error("OverlayRendererHandheldBeaconRange#renderQuads(): Exception; {}", err.getMessage());
         }
 
-        matrices.pop();
         profiler.pop();
     }
 
@@ -156,10 +151,8 @@ public class OverlayRendererHandheldBeaconRange extends OverlayRendererBase
         Color4f color = OverlayRendererBeaconRange.getColorForLevel(this.level);
 
         RenderObjectVbo ctx = this.renderObjects.get(1);
-        BufferBuilder builder = ctx.start(() -> "Held Beacon Lines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, BufferUsage.STATIC_WRITE);
-//        MatrixStack matrices = new MatrixStack();
+        BufferBuilder builder = ctx.start(() -> "minihud:held_beacon/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, BufferUsage.STATIC_WRITE);
 
-//        matrices.push();
         RenderUtils.drawBoxAllEdgesBatchedLines(this.box, Color4f.fromColor(color.intValue, 1f), builder);
 
         try
@@ -177,7 +170,6 @@ public class OverlayRendererHandheldBeaconRange extends OverlayRendererBase
             MiniHUD.LOGGER.error("OverlayRendererHandheldBeaconRange#renderOutlines(): Exception; {}", err.getMessage());
         }
 
-//        matrices.pop();
         profiler.pop();
     }
 
@@ -210,24 +202,5 @@ public class OverlayRendererHandheldBeaconRange extends OverlayRendererBase
 
         this.box = new Box(minX, minY, minZ, maxX, maxY, maxZ);
         this.hasData = true;
-
-        /*
-        RenderSystem.disableCull();
-        RenderSystem.enableDepthTest();
-        RenderSystem.depthMask(false);
-        RenderSystem.polygonOffset(-3f, -3f);
-        RenderSystem.enablePolygonOffset();
-         */
-
-//        fi.dy.masa.malilib.render.RenderUtils.blend(true);
-//        fi.dy.masa.malilib.render.RenderUtils.color(1f, 1f, 1f, 1f);
-
-        /*
-        RenderSystem.polygonOffset(0f, 0f);
-        RenderSystem.disablePolygonOffset();
-        RenderSystem.enableCull();
-        RenderSystem.disableBlend();
-         */
-//        RenderUtils.blend(false);
     }
 }

@@ -1,24 +1,12 @@
 package fi.dy.masa.minihud.data;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import javax.annotation.Nullable;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+
 import com.mojang.datafixers.util.Pair;
-import fi.dy.masa.malilib.config.options.ConfigBoolean;
-import fi.dy.masa.malilib.gui.GuiBase;
-import fi.dy.masa.malilib.network.ClientPlayHandler;
-import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
-import fi.dy.masa.malilib.util.InfoUtils;
-import fi.dy.masa.malilib.util.JsonUtils;
-import fi.dy.masa.malilib.util.StringUtils;
-import fi.dy.masa.minihud.MiniHUD;
-import fi.dy.masa.minihud.Reference;
-import fi.dy.masa.minihud.config.Configs;
-import fi.dy.masa.minihud.config.RendererToggle;
-import fi.dy.masa.minihud.mixin.world.IMixinServerRecipeManager;
-import fi.dy.masa.minihud.network.ServuxHudHandler;
-import fi.dy.masa.minihud.network.ServuxHudPacket;
-import fi.dy.masa.minihud.renderer.OverlayRendererSpawnChunks;
-import fi.dy.masa.minihud.util.DataStorage;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
@@ -30,14 +18,30 @@ import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.recipe.RecipeManager;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 
-import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collection;
+import fi.dy.masa.malilib.config.options.ConfigBoolean;
+import fi.dy.masa.malilib.gui.GuiBase;
+import fi.dy.masa.malilib.network.ClientPlayHandler;
+import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
+import fi.dy.masa.malilib.util.InfoUtils;
+import fi.dy.masa.malilib.util.JsonUtils;
+import fi.dy.masa.malilib.util.StringUtils;
+import fi.dy.masa.minihud.MiniHUD;
+import fi.dy.masa.minihud.Reference;
+import fi.dy.masa.minihud.config.Configs;
+import fi.dy.masa.minihud.config.InfoToggle;
+import fi.dy.masa.minihud.config.RendererToggle;
+import fi.dy.masa.minihud.mixin.world.IMixinServerRecipeManager;
+import fi.dy.masa.minihud.network.ServuxHudHandler;
+import fi.dy.masa.minihud.network.ServuxHudPacket;
+import fi.dy.masa.minihud.renderer.OverlayRendererSpawnChunks;
+import fi.dy.masa.minihud.util.DataStorage;
 
 public class HudDataManager
 {
@@ -50,6 +54,7 @@ public class HudDataManager
     private boolean servuxServer;
     private boolean hasInValidServux;
     private String servuxVersion;
+    private int servuxProtocolVersion;
 
     private long worldSeed;
     private int spawnChunkRadius;
@@ -118,18 +123,27 @@ public class HudDataManager
             this.preparedRecipes = PreparedRecipes.EMPTY;
             this.recipeCount = 0;
         }
+        else
+        {
+            MiniHUD.debugLog("HudDataStorage#reset() - dimension change or log-in");
+        }
 
-        this.isRaining = false;
-        this.isThundering = false;
-        this.clearWeatherTimer = -1;
-        this.rainWeatherTimer = -1;
-        this.thunderWeatherTimer = -1;
+        this.resetWeatherData();
 
         if (isLogout || !Configs.Generic.DONT_RESET_SEED_ON_DIMENSION_CHANGE.getBooleanValue())
         {
             this.worldSeedValid = false;
             this.worldSeed = 0;
         }
+    }
+
+    public void resetWeatherData()
+    {
+        this.isRaining = false;
+        this.isThundering = false;
+        this.clearWeatherTimer = -1;
+        this.rainWeatherTimer = -1;
+        this.thunderWeatherTimer = -1;
     }
 
     public void onWorldPre()
@@ -155,6 +169,10 @@ public class HudDataManager
                 this.unregisterChannel();
             }
         }
+        else if (!this.isWorldSpawnKnown())
+        {
+            MiniHUD.LOGGER.error("onWorldJoin: WS Not known.");
+        }
     }
 
     public void onPacketFailure()
@@ -173,15 +191,18 @@ public class HudDataManager
         }
     }
 
-    public void setServuxVersion(String ver)
+    public void setServuxVersion(String ver, int protocol)
     {
         if (ver != null && !ver.isEmpty())
         {
             this.servuxVersion = ver;
+            this.servuxProtocolVersion = protocol;
+            MiniHUD.LOGGER.info("hudDataChannel: joining Servux version {}", ver);
         }
         else
         {
             this.servuxVersion = "unknown";
+            this.servuxProtocolVersion = -1;
         }
     }
 
@@ -338,6 +359,16 @@ public class HudDataManager
         return this.worldSpawn;
     }
 
+    public String getWorldSpawnAsString()
+    {
+        return this.getWorldSpawnAsString(this.getWorldSpawn());
+    }
+
+    public String getWorldSpawnAsString(BlockPos pos)
+    {
+        return String.format("[%d, %d, %d]", pos.getX(), pos.getY(), pos.getZ());
+    }
+
     public boolean isSpawnChunkRadiusKnown()
     {
         return this.spawnChunkRadiusValid;
@@ -351,6 +382,18 @@ public class HudDataManager
         }
 
         return 2;
+    }
+
+    public boolean hasValidWeatherCycle()
+    {
+        if (DataStorage.getInstance().hasIntegratedServer())
+        {
+            IntegratedServer server = DataStorage.getInstance().getIntegratedServer();
+
+            return (server.getOverworld().getGameRules().getBoolean(GameRules.DO_WEATHER_CYCLE));
+        }
+
+        return this.getClearTime() >= 0 || this.getRainTime() >= 0 || this.getThunderTime() >= 0;
     }
 
     public boolean isWeatherClear()
@@ -462,7 +505,6 @@ public class HudDataManager
         this.thunderWeatherTimer = thunderTime;
         this.isRaining = isRaining;
         this.isThundering = isThunder;
-        //System.out.printf("onServerWeatherTick - c: %d, r: %d, t: %d, iR: %s, iT: %s\n", clearTime, rainTime, thunderTime, isRaining, isThunder);
     }
 
     public void onHudDataSyncToggled(ConfigBoolean config)
@@ -513,19 +555,31 @@ public class HudDataManager
         }
     }
 
+    public RegistryKey<World> getWorldType(String in)
+    {
+        return switch (in)
+        {
+            case "minecraft:the_nether" -> World.NETHER;
+            case "minecraft:the_end" -> World.END;
+            default -> World.OVERWORLD;
+        };
+    }
+
     public boolean receiveMetadata(NbtCompound data)
     {
         if (!this.servuxServer && !DataStorage.getInstance().hasIntegratedServer() &&
             this.shouldRegister)
         {
+            final int ver = data.getInt("version", -1);
             MiniHUD.debugLog("HudDataStorage#receiveMetadata(): received METADATA from Servux");
 
-            if (data.getInt("version", -1) != ServuxHudPacket.PROTOCOL_VERSION)
+            if (ver != ServuxHudPacket.PROTOCOL_VERSION)
             {
                 MiniHUD.LOGGER.warn("hudDataChannel: Mis-matched protocol version!");
             }
 
-            this.setServuxVersion(data.getString("servux", "?"));
+            this.setServuxVersion(data.getString("servux", "?"), ver);
+            // data.getString("spawnDimension");
             this.setWorldSpawn(new BlockPos(data.getInt("spawnPosX", 0), data.getInt("spawnPosY", 0), data.getInt("spawnPosZ", 0)));
             this.setSpawnChunkRadius(data.getInt("spawnChunkRadius", 2), true);
 
@@ -540,6 +594,7 @@ public class HudDataManager
             {
                 //this.registerChannel();
                 this.requestRecipeManager();
+                this.refreshDataLoggers();
                 return true;
             }
             else
@@ -584,9 +639,11 @@ public class HudDataManager
     {
         if (!DataStorage.getInstance().hasIntegratedServer())
         {
+            final int ver = data.getInt("version", -1);
             MiniHUD.debugLog("HudDataStorage#receiveSpawnMetadata(): from Servux");
 
-            this.setServuxVersion(data.getString("servux", "?"));
+            this.setServuxVersion(data.getString("servux", "?"), ver);
+            // data.getString("spawnDimension")
             this.setWorldSpawn(new BlockPos(data.getInt("spawnPosX", 0), data.getInt("spawnPosY", 0), data.getInt("spawnPosZ", 0)));
             this.setSpawnChunkRadius(data.getInt("spawnChunkRadius", 2), true);
 
@@ -606,6 +663,115 @@ public class HudDataManager
             {
                 this.unregisterChannel();
                 this.shouldRegister = false;
+            }
+        }
+    }
+
+    public void refreshDataLoggers()
+    {
+        if (!DataStorage.getInstance().hasIntegratedServer() && this.hasServuxServer())
+        {
+            if (this.servuxProtocolVersion >= ServuxHudPacket.PROTOCOL_VERSION)
+            {
+                NbtCompound nbt = new NbtCompound();
+
+                MiniHUD.debugLog("refreshDataLoggers: TPS: [{}] / MobCaps: [{}]", InfoToggle.SERVER_TPS.getBooleanValue(), InfoToggle.MOB_CAPS.getBooleanValue());
+                nbt.putBoolean(ServuxDataLogger.TPS.name(), InfoToggle.SERVER_TPS.getBooleanValue());
+                nbt.putBoolean(ServuxDataLogger.MOB_CAPS.name(), InfoToggle.MOB_CAPS.getBooleanValue());
+
+                HANDLER.encodeClientData(ServuxHudPacket.DataLoggerRequest(nbt));
+            }
+            else
+            {
+                MiniHUD.LOGGER.warn("refreshDataLoggers: Incompatible Servux version detected!");
+            }
+        }
+    }
+
+    public void receiveDataLogger(NbtCompound nbt)
+    {
+        if (this.hasServuxServer() && nbt != null && !nbt.isEmpty())
+        {
+            MinecraftClient mc = MinecraftClient.getInstance();
+            if (mc.world == null) return;
+
+            for (String key : nbt.getKeys())
+            {
+                ServuxDataLogger type = ServuxDataLogger.fromStringStatic(key);
+
+                if (type != null)
+                {
+                    NbtCompound entry = (NbtCompound) nbt.get(key, type.codec()).orElse(null);
+
+                    if (entry != null)
+                    {
+                        switch (type)
+                        {
+                            case TPS ->
+                            {
+                                try
+                                {
+                                    ServuxTickData data = ServuxTickData.CODEC.decode(mc.world.getRegistryManager().getOps(NbtOps.INSTANCE), entry).getOrThrow().getFirst();
+
+//                                    MiniHUD.LOGGER.warn("Servux TPS: [{}], MSPT: [{}]",
+//                                                        String.format(Locale.ROOT, "%.1f", data.tps()),
+//                                                        String.format(Locale.ROOT, "%.1f", data.mspt())
+//                                                       );
+
+                                    if (data != null)
+                                    {
+//                                        if (!TickUtils.getInstance().isUsingDirectServerData())
+//                                        {
+//                                            TickUtils.getInstance().toggleUseDirectServerData(true);
+//                                        }
+//
+//                                        TickUtils.getInstance().updateNanoTickFromServux(data.tps(),
+//                                                                                         data.mspt(),
+//                                                                                         data.sprintTicks(),
+//                                                                                         data.frozen(),
+//                                                                                         data.sprinting(),
+//                                                                                         data.stepping()
+//                                        );
+
+                                        // 1.21.5--
+                                        DataStorage.getInstance().handleServuxTickData(data);
+                                    }
+                                }
+                                catch (Exception err)
+                                {
+                                    MiniHUD.LOGGER.error("receiveDataLogger: TPS / Exception; {}", err.getLocalizedMessage());
+                                }
+                            }
+                            case MOB_CAPS ->
+                            {
+                                String dimKey = mc.world.getRegistryKey().getValue().toString();
+
+                                if (entry.contains(dimKey))
+                                {
+                                    // We are receiving MobCap Data for every dimension that is loaded;
+                                    // but we only care about the one that we are in.
+                                    NbtCompound nbtEntry = entry.getCompoundOrEmpty(dimKey);
+
+                                    try
+                                    {
+                                        long worldTick = nbtEntry.getLong("WorldTick", mc.world.getTime());
+                                        nbtEntry.remove("WorldTick");       // Not to confuse the Deserializer
+                                        MobCapData serverData = MobCapData.CODEC.decode(mc.world.getRegistryManager().getOps(NbtOps.INSTANCE), nbtEntry).getOrThrow().getFirst();
+
+                                        if (serverData != null)
+                                        {
+                                            DataStorage.getInstance().getMobCapData().setFromServuxData(serverData, worldTick);
+                                        }
+                                    }
+                                    catch (Exception err)
+                                    {
+                                        MiniHUD.LOGGER.error("receiveDataLogger: MobCaps / Exception; {}", err.getLocalizedMessage());
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }

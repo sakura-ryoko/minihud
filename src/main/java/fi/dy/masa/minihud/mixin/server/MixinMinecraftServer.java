@@ -1,4 +1,4 @@
-package fi.dy.masa.minihud.mixin;
+package fi.dy.masa.minihud.mixin.server;
 
 import java.util.function.BooleanSupplier;
 import com.llamalad7.mixinextras.sugar.Local;

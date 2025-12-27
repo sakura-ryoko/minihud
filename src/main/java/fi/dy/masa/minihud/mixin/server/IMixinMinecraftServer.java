@@ -1,4 +1,4 @@
-package fi.dy.masa.minihud.mixin;
+package fi.dy.masa.minihud.mixin.server;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerTask;

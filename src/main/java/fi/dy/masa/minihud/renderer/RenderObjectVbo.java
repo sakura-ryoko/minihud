@@ -510,64 +510,6 @@ public class RenderObjectVbo
         return true;
     }
 
-//    private @Nullable NativeImageBackedTexture loadFile(Identifier texture)
-//    {
-//        try
-//        {
-//            InputStream inputStream = RenderUtils.mc().getResourceManager().open(texture);
-//
-//            try (NativeImage image = NativeImage.read(inputStream))
-//            {
-//                return new NativeImageBackedTexture(texture::toString, image.getWidth(), image.getHeight(), false);
-//            }
-//            catch (Exception err)
-//            {
-//                MiniHUD.LOGGER.error("Failed to read texture: '{}'; Exception: {}", texture.toString(), err.getMessage());
-//            }
-//        }
-//        catch (Exception err)
-//        {
-//            MiniHUD.LOGGER.error("Error opening input stream for texture: '{}'; Exception: {}", texture.toString(), err.getMessage());
-//        }
-//
-//        return null;
-//    }
-
-//    private void dumpTexture(Identifier id)
-//    {
-//        Path dir = FileUtils.getConfigDirectoryAsPath().resolve(Reference.MOD_ID).resolve("textures");
-//
-//        try (TextureContents content = this.texture.loadContents(RenderUtils.mc().getResourceManager()))
-//        {
-//            if (!Files.isDirectory(dir))
-//            {
-//                Files.createDirectory(dir);
-//            }
-//
-//            content.image().writeTo(dir.resolve(FileNameUtils.generateSimpleSafeFileName(id.toString())));
-//        }
-//        catch (Exception err)
-//        {
-//            MiniHUD.LOGGER.error("bindTexture: Error saving debug texture for [{}]", id.toString());
-//        }
-//    }
-
-//    private void dumpTextureManager()
-//    {
-//        Path dir = FileUtils.getConfigDirectoryAsPath().resolve(Reference.MOD_ID).resolve("textures/manager_dump");
-//
-//        try
-//        {
-//            if (!Files.isDirectory(dir))
-//            {
-//                Files.createDirectory(dir);
-//            }
-//
-//            RenderUtils.tex().dumpDynamicTextures(dir);
-//        }
-//        catch (Exception ignored) {}
-//    }
-
     protected void unbindTexture(@Nullable Identifier id)
     {
         if (id != null)

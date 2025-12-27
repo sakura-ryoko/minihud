@@ -15,12 +15,11 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.world.World;
 
-import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.malilib.util.nbt.NbtEntityUtils;
 import fi.dy.masa.minihud.Reference;
-import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.info.InfoLine;
+import fi.dy.masa.minihud.info.InfoLineContext;
 import fi.dy.masa.minihud.util.MiscUtils;
 
 public class InfoLineLookingAtEffects extends InfoLine
@@ -38,10 +37,14 @@ public class InfoLineLookingAtEffects extends InfoLine
     }
 
     @Override
-    public List<Entry> parse(@Nonnull InfoLine.Context ctx)
+    public boolean succeededType() { return false; }
+
+    @Override
+    public List<Entry> parse(@Nonnull InfoLineContext ctx)
     {
-        if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue() &&
-            ctx.hasLiving() && ctx.hasNbt())
+        if (ctx.world() == null) return null;
+
+        if (ctx.hasLiving() && ctx.hasNbt())
         {
             EntityType<?> entityType = NbtEntityUtils.getEntityTypeFromNbt(ctx.nbt());
             if (entityType == null) return null;
@@ -71,10 +74,10 @@ public class InfoLineLookingAtEffects extends InfoLine
             {
                 list.add(this.translate(EFFECTS_KEY,
                                         effectType.value().getName().getString(),
-                                        effect.getAmplifier() > 0 ? StringUtils.translate(EFFECTS_KEY+".amplifier", effect.getAmplifier() + 1) : "",
-                                        effect.isInfinite() ? StringUtils.translate(EFFECTS_KEY+".infinite") :
+                                        effect.getAmplifier() > 0 ? this.qt(EFFECTS_KEY+".amplifier", effect.getAmplifier() + 1) : "",
+                                        effect.isInfinite() ? this.qt(EFFECTS_KEY+".infinite") :
                                         MiscUtils.formatDuration((effect.getDuration() / 20) * 1000L),
-                                        StringUtils.translate(REMAINING_KEY)
+                                        this.qt(REMAINING_KEY)
                 ));
             }
         }
@@ -97,10 +100,10 @@ public class InfoLineLookingAtEffects extends InfoLine
                 {
                     list.add(this.translate(EFFECTS_KEY,
                                             effect.getEffectType().value().getName().getString(),
-                                            effect.getAmplifier() > 0 ? StringUtils.translate(EFFECTS_KEY + ".amplifier", effect.getAmplifier() + 1) : "",
-                                            effect.isInfinite() ? StringUtils.translate(EFFECTS_KEY + ".infinite") :
+                                            effect.getAmplifier() > 0 ? this.qt(EFFECTS_KEY + ".amplifier", effect.getAmplifier() + 1) : "",
+                                            effect.isInfinite() ? this.qt(EFFECTS_KEY + ".infinite") :
                                             MiscUtils.formatDuration((effect.getDuration() / 20) * 1000L),
-                                            StringUtils.translate(REMAINING_KEY)
+                                            this.qt(REMAINING_KEY)
                     ));
                 }
             }

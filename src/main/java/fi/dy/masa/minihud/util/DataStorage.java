@@ -54,7 +54,9 @@ import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.RendererToggle;
 import fi.dy.masa.minihud.data.HudDataManager;
 import fi.dy.masa.minihud.data.MobCapDataHandler;
-import fi.dy.masa.minihud.mixin.IMixinMinecraftServer;
+import fi.dy.masa.minihud.data.ServuxTickData;
+import fi.dy.masa.minihud.mixin.client.IMixinOptions;
+import fi.dy.masa.minihud.mixin.server.IMixinMinecraftServer;
 import fi.dy.masa.minihud.network.ServuxStructuresHandler;
 import fi.dy.masa.minihud.network.ServuxStructuresPacket;
 import fi.dy.masa.minihud.renderer.*;
@@ -72,6 +74,7 @@ public class DataStorage
     private final static ServuxStructuresHandler<ServuxStructuresPacket.Payload> HANDLER = ServuxStructuresHandler.getInstance();
     private boolean carpetServer = false;
     private boolean servuxServer = false;
+    private boolean hasServuxTickData = false;
     private boolean hasInValidServux = false;
     private boolean hasIntegratedServer = false;
     private int simulationDistance = -1;
@@ -98,6 +101,7 @@ public class DataStorage
     private final PriorityBlockingQueue<ChunkTask> taskQueue = Queues.newPriorityBlockingQueue();
     private final Thread workerThread;
     private final ThreadWorker worker;
+    private ServuxTickData servuxTickData;
 
     private DataStorage()
     {
@@ -152,6 +156,7 @@ public class DataStorage
             this.structureDataTimeout = 30 * 20;
             this.registryManager = DynamicRegistryManager.EMPTY;
             this.carpetServer = false;
+            this.hasServuxTickData = false;
             this.setHasIntegratedServer(false, null);
         }
         else
@@ -162,6 +167,7 @@ public class DataStorage
         this.mobCapData.clear();
         this.serverTPSValid = false;
         this.hasSyncedTime = false;
+        this.servuxTickData = null;
         this.structuresNeedUpdating = true;
         this.hasStructureDataFromServer = false;
         this.structureRendererNeedsUpdate = true;
@@ -437,7 +443,10 @@ public class DataStorage
     {
         String[] parts = message.split(" ");
 
-        if (parts.length > 0 && (parts[0].equals("minihud-seed") || parts[0].equals("/minihud-seed")))
+        if (parts.length > 0 &&
+            (parts[0].equals("minihud-seed") ||
+             parts[0].equals("#minihud-seed") ||
+             parts[0].equals("/minihud-seed")))
         {
             if (parts.length == 2)
             {
@@ -465,7 +474,10 @@ public class DataStorage
 
             return true;
         }
-        else if (parts.length > 0 && (parts[0].equals("minihud-spawnchunkradius") || parts[0].equals("/minihud-spawnchunkradius")))
+        else if (parts.length > 0 &&
+                (parts[0].equals("minihud-spawnchunkradius") ||
+                 parts[0].equals("#minihud-spawnchunkradius") ||
+                 parts[0].equals("/minihud-spawnchunkradius")))
         {
             if (parts.length == 2)
             {
@@ -609,7 +621,9 @@ public class DataStorage
     {
         // Carpet server sends the TPS and MSPT values via the player list footer data,
         // and for single player the data is grabbed directly from the integrated server.
-        if (this.carpetServer == false && this.mc.isInSingleplayer() == false)
+        if (this.carpetServer == false &&
+            this.hasServuxTickData == false &&
+            this.mc.isInSingleplayer() == false)
         {
             long currentTime = System.nanoTime();
 
@@ -713,6 +727,23 @@ public class DataStorage
         return copy;
     }
 
+    public int getStructureDataMaxRange()
+    {
+        return this.mc.options.getClampedViewDistance() + 2;
+    }
+
+    public int getServerRenderDistance()
+    {
+        final int range = ((IMixinOptions) this.mc.options).minihud_getServerRenderDistance();
+
+        if (range > 0)
+        {
+            return range;
+        }
+
+        return this.mc.options.getClampedViewDistance();
+    }
+
     public void updateStructureData()
     {
         if (this.mc != null && this.mc.world != null && this.mc.player != null)
@@ -726,7 +757,7 @@ public class DataStorage
                     if (RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue())
                     {
                         BlockPos playerPos = PositionUtils.getEntityBlockPos(this.mc.player);
-                        final int maxRange = this.mc.options.getClampedViewDistance() + 2;
+                        final int maxRange = this.getStructureDataMaxRange();
                         final int hysteresis = 16;
 
                         if (this.structuresNeedUpdating(playerPos, hysteresis))
@@ -998,6 +1029,13 @@ public class DataStorage
 
     public void handleCarpetServerTPSData(Text textComponent)
     {
+        // Don't update from Carpet if we are using Servux
+        if (this.hasServuxTickData())
+        {
+            this.carpetServer = false;
+            return;
+        }
+
         if (textComponent.getString().isEmpty() == false)
         {
             String text = Formatting.strip(textComponent.getString());
@@ -1021,6 +1059,34 @@ public class DataStorage
                 }
             }
         }
+    }
+
+    /**
+     * This is a hack just to be able to manage Forwards compat
+     * with the Servux Data Logger system; minus using TickUtils.
+     * @param data
+     */
+    public void handleServuxTickData(ServuxTickData data)
+    {
+        if (HudDataManager.getInstance().hasServuxServer())
+        {
+            this.servuxTickData = data;
+            this.serverTPS = data.tps();
+            this.serverMSPT = data.mspt();
+            this.serverTPSValid = true;
+            this.hasServuxTickData = true;
+        }
+    }
+
+    public boolean hasServuxTickData()
+    {
+        return this.hasServuxTickData;
+    }
+
+    @Nullable
+    public ServuxTickData getServuxTickData()
+    {
+        return this.servuxTickData;
     }
 
     public JsonObject toJson()

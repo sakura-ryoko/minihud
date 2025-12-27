@@ -43,9 +43,6 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
     private Color4f colorLines;
 
     private final List<Entry> conduits;
-//    private final LongOpenHashSet positions;
-//    private SphereUtils.RingPositionTest test;
-//    private List<SideQuad> quads;
 
     public OverlayRendererConduitRange()
     {
@@ -54,9 +51,7 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
         this.renderType = ShapeRenderType.OUTER_EDGE;
         this.layerRange = new LayerRange(null);
         this.conduits = new ArrayList<>();
-//        this.positions = new LongOpenHashSet();
-//        this.test = null;
-//        this.quads = new ArrayList<>();
+        this.useCulling = false;
     }
 
     @Override
@@ -64,13 +59,6 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
     {
         return "ConduitRange";
     }
-
-//    @Override
-//    protected void allocateBuffers()
-//    {
-//        this.clearBuffers();
-//        this.renderObjects.add(new RenderObjectVbo(() -> this.getName()+" Quads", MaLiLibPipelines.POSITION_COLOR_SIMPLE, GlUsage.STATIC_WRITE));
-//    }
 
     @Override
     protected void updateBlockRange(World world, BlockPos pos, ConduitBlockEntity be, Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
@@ -85,15 +73,38 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
         this.renderThrough = Configs.Generic.CONDUIT_RANGE_OVERLAY_RENDER_THROUGH.getBooleanValue();
 
 //        LOGGER.debug("updateBlockRange(): pos [{}], count [{}]", pos.toShortString(), this.conduits.size());
-        this.addOrReplaceEntry(this.calculateEach(pos,((ConduitExtra) be).minihud$getStoredActivatingBlockCount() / 7 * 16));
+
+        final int range = ((ConduitExtra) be).minihud$getStoredActivatingBlockCount() / 7 * 16;
+
+        if (this.checkIfNeedsUpdate(pos, range))
+        {
+            this.addOrReplaceEntry(this.calculateEach(pos, range));
+        }
     }
 
+    private boolean checkIfNeedsUpdate(BlockPos pos, int range)
+    {
+        AtomicBoolean matched = new AtomicBoolean(false);
+
+        this.conduits.forEach(entry ->
+                              {
+                                  if (entry.pos.equals(pos) && entry.range == range)
+                                  {
+                                      matched.set(true);
+                                  }
+                              });
+
+	    return !matched.get();
+    }
+
+    // This is an expensive task, so we need to limit how
+    // often it gets called; say hello 'checkIfNeedsUpdate()'.
     private Entry calculateEach(BlockPos pos, int range)
     {
         Entry entry = new Entry(pos, range);
 
         Consumer<BlockPos.Mutable> positionCollector = (p) -> entry.addPosition(p.asLong());
-        entry.setTest(this.getPositionTest(pos, entry.range));
+        entry.setTest(getPositionTest(pos, entry.range));
         SphereUtils.collectSpherePositions(positionCollector, entry.getTest(), pos, entry.range);
 
         if (this.combineQuads)
@@ -146,10 +157,21 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
     }
 
     @Override
+    protected void expireBlockRange(BlockPos pos)
+    {
+        for (Entry entry : this.conduits)
+        {
+            if (entry.pos.equals(pos))
+            {
+                entry.clear();
+                this.conduits.remove(entry);
+            }
+        }
+    }
+
+    @Override
     protected void resetBlockRange()
     {
-//        this.positions.clear();
-//        this.quads.clear();
         this.conduits.forEach(Entry::clear);
         this.conduits.clear();
     }
@@ -166,10 +188,7 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
         // MaLiLibPipelines.POSITION_COLOR_MASA_LESSER_DEPTH
         profiler.push("conduit_quads");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "Conduit Quads", this.renderThrough ? MaLiLibPipelines.MINIHUD_SHAPE_NO_DEPTH_OFFSET : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET, BufferUsage.STATIC_WRITE);
-//        MatrixStack matrices = new MatrixStack();
-//
-//        matrices.push();
+        BufferBuilder builder = ctx.start(() -> "minihud:conduit/quads", this.renderThrough ? MaLiLibPipelines.MINIHUD_SHAPE_NO_DEPTH_OFFSET : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL, BufferUsage.STATIC_WRITE);
 
         this.conduits.forEach(
                 (entry) ->
@@ -211,9 +230,7 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
             MiniHUD.LOGGER.error("OverlayRendererConduitRange#renderQuads(): Exception; {}", err.getMessage());
         }
 
-//        matrices.pop();
         profiler.pop();
-
     }
 
     private void renderOutlines(Vec3d cameraPos, MinecraftClient mc, Profiler profiler)
@@ -225,10 +242,7 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
 
         profiler.push("conduit_outlines");
         RenderObjectVbo ctx = this.renderObjects.get(1);
-        BufferBuilder builder = ctx.start(() -> "Conduit Outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, BufferUsage.STATIC_WRITE);
-//        MatrixStack matrices = new MatrixStack();
-
-//        matrices.push();
+        BufferBuilder builder = ctx.start(() -> "minihud:conduit/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, BufferUsage.STATIC_WRITE);
 
         this.conduits.forEach(
                 (entry) ->
@@ -264,25 +278,17 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
             MiniHUD.LOGGER.error("OverlayRendererConduitRange#renderBlockRange(): Exception; {}", err.getMessage());
         }
 
-//        matrices.pop();
         profiler.pop();
-
     }
 
     @Override
     public void reset()
     {
         super.reset();
-        this.conduits.forEach(Entry::clear);
-        this.conduits.clear();
-
-//        this.positions.clear();
-//        this.positions = new LongOpenHashSet();
-//        this.quads.clear();
-//        this.test = null;
+        this.resetBlockRange();
     }
 
-    protected SphereUtils.RingPositionTest getPositionTest(BlockPos centerPos, int range)
+    protected static SphereUtils.RingPositionTest getPositionTest(BlockPos centerPos, int range)
     {
         Vec3d center = new Vec3d(centerPos.getX() + 0.5, centerPos.getY() + 0.5, centerPos.getZ() + 0.5);
         double squareRange = range * range;
@@ -293,11 +299,12 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
 
     public static class Entry
     {
-        BlockPos pos;
-        int range;
+        public BlockPos pos;
+        public int range;
 
         private final LongOpenHashSet positions;
-        @Nullable private SphereUtils.RingPositionTest test;
+        @Nullable
+        private SphereUtils.RingPositionTest test;
         private final List<SideQuad> quads;
 
         Entry(BlockPos pos, int range)

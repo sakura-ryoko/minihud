@@ -34,7 +34,7 @@ public class OverlayRendererSpawnableColumnHeights extends OverlayRendererBase
     {
         this.boxes = new ArrayList<>();
         this.renderThrough = false;
-        this.useCulling = true;
+        this.useCulling = false;
     }
 
     @Override
@@ -143,10 +143,7 @@ public class OverlayRendererSpawnableColumnHeights extends OverlayRendererBase
 
         profiler.push("column_quads");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "Spawnable Column Quads", MaLiLibPipelines.POSITION_COLOR_MASA_LEQUAL_DEPTH, BufferUsage.STATIC_WRITE);
-//        MatrixStack matrices = new MatrixStack();
-
-//        matrices.push();
+        BufferBuilder builder = ctx.start(() -> "minihud:spawnable_column/quads", MaLiLibPipelines.POSITION_COLOR_MASA_LEQUAL_DEPTH, BufferUsage.STATIC_WRITE);
 
         for (Box bb : this.boxes)
         {
@@ -175,7 +172,6 @@ public class OverlayRendererSpawnableColumnHeights extends OverlayRendererBase
             MiniHUD.LOGGER.error("OverlayRendererSpawnableColumnHeights#renderQuads(): Exception; {}", err.getMessage());
         }
 
-//        matrices.pop();
         profiler.pop();
     }
 
@@ -189,11 +185,7 @@ public class OverlayRendererSpawnableColumnHeights extends OverlayRendererBase
         final Color4f color = Configs.Colors.SPAWNABLE_COLUMNS_OVERLAY_COLOR.getColor();
         profiler.push("column_outlines");
         RenderObjectVbo ctx = this.renderObjects.get(1);
-        BufferBuilder builder = ctx.start(() -> "Spawnable Column Outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, BufferUsage.STATIC_WRITE);
-//        MatrixStack matrices = new MatrixStack();
-
-//        matrices.push();
-//        MatrixStack.Entry e = matrices.peek();
+        BufferBuilder builder = ctx.start(() -> "minihud:spawnable_column/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, BufferUsage.STATIC_WRITE);
 
         for (Box bb : this.boxes)
         {
@@ -215,7 +207,6 @@ public class OverlayRendererSpawnableColumnHeights extends OverlayRendererBase
             MiniHUD.LOGGER.error("OverlayRendererSpawnableColumnHeights#renderOutlines(): Exception; {}", err.getMessage());
         }
 
-//        matrices.pop();
         profiler.pop();
     }
 

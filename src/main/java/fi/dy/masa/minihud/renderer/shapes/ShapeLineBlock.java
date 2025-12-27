@@ -44,7 +44,7 @@ public class ShapeLineBlock extends ShapeBlocky
 
         this.setBlockSnap(BlockSnap.CENTER);
         this.hasData = false;
-        this.useCulling = true;
+        this.useCulling = false;
     }
 
 	@Override
@@ -140,10 +140,8 @@ public class ShapeLineBlock extends ShapeBlocky
 
         profiler.push("line_block_quads");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "Line Block Quads", this.renderThroughShape ? MaLiLibPipelines.MINIHUD_SHAPE_NO_DEPTH_OFFSET : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET, BufferUsage.STATIC_WRITE);
-//        MatrixStack matrices = new MatrixStack();
+        BufferBuilder builder = ctx.start(() -> "minihud:line_block/quads", this.renderThroughShape ? MaLiLibPipelines.MINIHUD_SHAPE_NO_DEPTH_OFFSET : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL, BufferUsage.STATIC_WRITE);
 
-//        matrices.push();
         this.renderLineShapeQuads(cameraPos, builder);
 
         try
@@ -167,7 +165,6 @@ public class ShapeLineBlock extends ShapeBlocky
             MiniHUD.LOGGER.error("ShapeLineBlock#renderQuads(): Exception; {}", err.getMessage());
         }
 
-//        matrices.pop();
         profiler.pop();
     }
 
@@ -180,10 +177,8 @@ public class ShapeLineBlock extends ShapeBlocky
 
         profiler.push("line_block_outlines");
         RenderObjectVbo ctx = this.renderObjects.get(1);
-        BufferBuilder builder = ctx.start(() -> "Line Block Outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, BufferUsage.STATIC_WRITE);
-//        MatrixStack matrices = new MatrixStack();
+        BufferBuilder builder = ctx.start(() -> "minihud:line_block/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, BufferUsage.STATIC_WRITE);
 
-//        matrices.push();
         this.renderLineShapeLines(cameraPos, builder);
 
         try
@@ -201,7 +196,6 @@ public class ShapeLineBlock extends ShapeBlocky
             MiniHUD.LOGGER.error("ShapeLineBlock#renderOutlines(): Exception; {}", err.getMessage());
         }
 
-//        matrices.pop();
         profiler.pop();
     }
 

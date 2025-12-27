@@ -77,36 +77,6 @@ public abstract class OverlayRendererBase implements IOverlayRenderer
         this.updateCameraPos = cameraPosition;
     }
 
-//    protected void preRender()
-//    {
-//        RenderSystem.lineWidth(this.glLineWidth);
-//
-//        if (this.renderThrough)
-//        {
-//            RenderUtils.depthTest(false);
-//            RenderUtils.depthMask(false);
-//        }
-//
-//        if (this.useCulling)
-//        {
-//            RenderUtils.culling(true);
-//        }
-//    }
-
-//    protected void postRender()
-//    {
-//        if (this.renderThrough)
-//        {
-//            RenderUtils.depthTest(true);
-//            RenderUtils.depthMask(true);
-//        }
-//
-//        if (this.useCulling)
-//        {
-//            RenderUtils.culling(false);
-//        }
-//    }
-
     protected int getTopYOverTerrain(World world, BlockPos pos, int range)
     {
         final int minX = pos.getX() - range;
@@ -140,8 +110,6 @@ public abstract class OverlayRendererBase implements IOverlayRenderer
     @Override
     public void draw(Vec3d cameraPos)
     {
-//        this.preRender();
-
         for (RenderObjectVbo obj : this.renderObjects)
         {
             if (!obj.isStarted()) continue;
@@ -162,8 +130,6 @@ public abstract class OverlayRendererBase implements IOverlayRenderer
                 obj.drawPost(null, false, false);
             }
         }
-
-//        this.postRender();
     }
 
     @Override

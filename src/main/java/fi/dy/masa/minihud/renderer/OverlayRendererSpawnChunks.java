@@ -54,6 +54,7 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
         this.boxesYellow = new ArrayList<>();
         this.boxesGreen = new ArrayList<>();
         this.center = BlockPos.ORIGIN;
+        this.useCulling = false;
         this.hasData = false;
     }
 
@@ -246,14 +247,9 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
                 Configs.Colors.SPAWN_REAL_OUTER_OVERLAY_COLOR.getColor();
 
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-//        BufferBuilder builder = ctx.start(() -> "Spawn Chunk Quads", MaLiLibPipelines.POSITION_COLOR_MASA_NO_DEPTH_NO_CULL, BufferUsage.STATIC_WRITE);
-        BufferBuilder builder = ctx.start(() -> "Spawn Chunk Quads", MaLiLibPipelines.MINIHUD_SHAPE_OFFSET, BufferUsage.STATIC_WRITE);
-//        MatrixStack matrices = new MatrixStack();
+        BufferBuilder builder = ctx.start(() -> "minihud:spawn_chunk/quads", MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL, BufferUsage.STATIC_WRITE);
 
-//        matrices.push();
         fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxSidesBatchedQuads(this.center, cameraPos, colorEntity, 0.001, builder);
-
-//        MatrixStack.Entry e = matrices.peek();
 
         for (Box entry : this.boxesBrown)
         {
@@ -319,11 +315,7 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
                 Configs.Colors.SPAWN_REAL_OUTER_OVERLAY_COLOR.getColor();
 
         RenderObjectVbo ctx = this.renderObjects.get(1);
-        BufferBuilder builder = ctx.start(() -> "Spawn Chunk Lines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, BufferUsage.STATIC_WRITE);
-//        MatrixStack matrices = new MatrixStack();
-
-//        matrices.push();
-//        MatrixStack.Entry e = matrices.peek();
+        BufferBuilder builder = ctx.start(() -> "minihud:spawn_chunk/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, BufferUsage.STATIC_WRITE);
 
         // The SpawnPos box looks better with white outlines.  You can't really see the `colorEntity` value
         fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(this.center, cameraPos, Color4f.WHITE, 0.001, builder);
@@ -360,7 +352,6 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
             MiniHUD.LOGGER.error("OverlayRendererSpawnChunks#renderOutlines(): Exception; {}", err.getMessage());
         }
 
-//        matrices.pop();
         profiler.pop();
     }
 
@@ -450,99 +441,4 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
 
         return 10;
     }
-
-    /**
-     * Assumes a BufferBuilder in GL_QUADS mode has been initialized
-     */
-//    public static void drawBlockBoundingBoxSidesBatchedQuads(BlockPos pos, Vec3d cameraPos, Color4f color, double expand, BufferBuilder buffer)
-//    {
-//        float minX = (float) (pos.getX() - cameraPos.x - expand);
-//        float minY = (float) (pos.getY() - cameraPos.y - expand);
-//        float minZ = (float) (pos.getZ() - cameraPos.z - expand);
-//        float maxX = (float) (pos.getX() - cameraPos.x + expand + 1);
-//        float maxY = (float) (pos.getY() - cameraPos.y + expand + 1);
-//        float maxZ = (float) (pos.getZ() - cameraPos.z + expand + 1);
-//
-//        fi.dy.masa.malilib.render.RenderUtils.drawBoxAllSidesBatchedQuads(minX, minY, minZ, maxX, maxY, maxZ, color, buffer);
-//    }
-
-//    public List<Box> calculateBoxes(
-//            BlockPos posStart,
-//            BlockPos posEnd)
-//    {
-//        Entity entity = EntityUtils.getCameraEntity();
-//        if (entity == null) return List.of();
-////        World world = entity.getEntityWorld();
-//        final int boxMinX = Math.min(posStart.getX(), posEnd.getX());
-//        final int boxMinZ = Math.min(posStart.getZ(), posEnd.getZ());
-//        final int boxMaxX = Math.max(posStart.getX(), posEnd.getX());
-//        final int boxMaxZ = Math.max(posStart.getZ(), posEnd.getZ());
-//
-//        final int centerX = (int) Math.floor(entity.getX());
-//        final int centerZ = (int) Math.floor(entity.getZ());
-//        final int maxDist = MinecraftClient.getInstance().options.getViewDistance().getValue() * 32; // double the view distance in blocks
-//        final int rangeMinX = centerX - maxDist;
-//        final int rangeMinZ = centerZ - maxDist;
-//        final int rangeMaxX = centerX + maxDist;
-//        final int rangeMaxZ = centerZ + maxDist;
-//        final double minY = Math.min(posStart.getY(), posEnd.getY());
-//        final double maxY = Math.max(posStart.getY(), posEnd.getY()) + 1;
-//        double minX, minZ, maxX, maxZ;
-//
-//        List<Box> boxes = new ArrayList<>();
-//
-//        // The sides of the box along the x-axis can be at least partially inside the range
-//        if (rangeMinX <= boxMaxX && rangeMaxX >= boxMinX)
-//        {
-//            minX = Math.max(boxMinX, rangeMinX);
-//            maxX = Math.min(boxMaxX, rangeMaxX) + 1;
-//
-//            if (rangeMinZ <= boxMinZ && rangeMaxZ >= boxMinZ)
-//            {
-//                minZ = maxZ = boxMinZ;
-//                boxes.add(new Box(minX, minY, minZ, maxX, maxY, maxZ));
-//            }
-//
-//            if (rangeMinZ <= boxMaxZ && rangeMaxZ >= boxMaxZ)
-//            {
-//                minZ = maxZ = boxMaxZ + 1;
-//                boxes.add(new Box(minX, minY, minZ, maxX, maxY, maxZ));
-//            }
-//        }
-//
-//        // The sides of the box along the z-axis can be at least partially inside the range
-//        if (rangeMinZ <= boxMaxZ && rangeMaxZ >= boxMinZ)
-//        {
-//            minZ = Math.max(boxMinZ, rangeMinZ);
-//            maxZ = Math.min(boxMaxZ, rangeMaxZ) + 1;
-//
-//            if (rangeMinX <= boxMinX && rangeMaxX >= boxMinX)
-//            {
-//                minX = maxX = boxMinX;
-//                boxes.add(new Box(minX, minY, minZ, maxX, maxY, maxZ));
-//            }
-//
-//            if (rangeMinX <= boxMaxX && rangeMaxX >= boxMaxX)
-//            {
-//                minX = maxX = boxMaxX + 1;
-//                boxes.add(new Box(minX, minY, minZ, maxX, maxY, maxZ));
-//            }
-//        }
-//
-//        return boxes;
-//    }
-
-//    private static void dumpBoxes(List<Box> boxes)
-//    {
-//        System.out.print("DUMP BOXES -->\n");
-//        int i = 0;
-//
-//        for (Box bb : boxes)
-//        {
-//            System.out.printf("  Box[%d]: [%s]\n", i, bb.toString());
-//            i++;
-//        }
-//
-//        System.out.printf("END DUMP (total: %d)\n", i);
-//    }
 }

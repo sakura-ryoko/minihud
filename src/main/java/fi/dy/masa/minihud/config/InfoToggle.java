@@ -1,5 +1,6 @@
 package fi.dy.masa.minihud.config;
 
+import java.util.List;
 import javax.annotation.Nullable;
 import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonElement;
@@ -16,88 +17,94 @@ import fi.dy.masa.malilib.hotkeys.KeybindSettings;
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.Reference;
+import fi.dy.masa.minihud.data.HudDataManager;
 import fi.dy.masa.minihud.info.InfoLine;
+import fi.dy.masa.minihud.info.InfoLineFlag;
 import fi.dy.masa.minihud.info.InfoLineType;
 import fi.dy.masa.minihud.info.InfoLineTypes;
 
 public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
 {
     // Basic Info
-    FPS                     ("infoFPS",                     null, false, ""),
-    MEMORY_USAGE            ("infoMemoryUsage",             null, false, ""),
-    TIME_REAL               ("infoTimeIRL",                 null, true,  ""),
-    TIME_WORLD              ("infoTimeWorld",               null, false, ""),
-    TIME_WORLD_FORMATTED    ("infoWorldTimeFormatted",      null, false, ""),
+    FPS                     ("infoFPS",                     InfoLineTypes.FPS, false, ""),
+//    GPU                     ("infoGPU",                     InfoLineTypes.GPU, false, ""),
+    MEMORY_USAGE            ("infoMemoryUsage",             InfoLineTypes.MEMORY, false, ""),
+    TIME_REAL               ("infoTimeIRL",                 InfoLineTypes.TIME_IRL, true,  ""),
+    TIME_WORLD              ("infoTimeWorld",               InfoLineTypes.TIME_WORLD, false, ""),
+    TIME_WORLD_FORMATTED    ("infoWorldTimeFormatted",      InfoLineTypes.TIME_WORLD_FORMATTED, false, ""),
 
     // Player (Camera)
-    COORDINATES             ("infoCoordinates",             null, true,  ""),
-    COORDINATES_SCALED      ("infoCoordinatesScaled",       null, false, ""),
-    BLOCK_POS               ("infoBlockPosition",           null, false, ""),
-    CHUNK_POS               ("infoChunkPosition",           null, false, ""),
-    BLOCK_IN_CHUNK          ("infoBlockInChunk",            null, false, ""),
-    DIMENSION               ("infoDimensionId",             null, false, ""),
-    FACING                  ("infoFacing",                  null, true,  ""),
-    ROTATION_YAW            ("infoRotationYaw",             null, false, ""),
-    ROTATION_PITCH          ("infoRotationPitch",           null, false, ""),
+    COORDINATES             ("infoCoordinates",             InfoLineTypes.COORDINATES, true,  ""),
+    COORDINATES_SCALED      ("infoCoordinatesScaled",       InfoLineTypes.COORDINATES_SCALED, false, ""),
+    BLOCK_POS               ("infoBlockPosition",           InfoLineTypes.BLOCK_POS, false, ""),
+    CHUNK_POS               ("infoChunkPosition",           InfoLineTypes.CHUNK_POS, false, ""),
+    BLOCK_IN_CHUNK          ("infoBlockInChunk",            InfoLineTypes.BLOCK_IN_CHUNK, false, ""),
+    DIMENSION               ("infoDimensionId",             InfoLineTypes.DIMENSION, false, ""),
+    FACING                  ("infoFacing",                  InfoLineTypes.FACING, true,  ""),
+    ROTATION_YAW            ("infoRotationYaw",             InfoLineTypes.ROTATION_YAW, false, ""),
+    ROTATION_PITCH          ("infoRotationPitch",           InfoLineTypes.ROTATION_PITCH, false, ""),
 
     // Player
-    BLOCK_BREAK_SPEED       ("infoBlockBreakSpeed",         null, false, ""),
-    PLAYER_EXPERIENCE       ("infoPlayerExperience",        null, false, ""),
-    SPEED                   ("infoSpeed",                   null, false, ""),
-    SPEED_AXIS              ("infoSpeedAxis",               null, false, ""),
-    SPEED_HV                ("infoSpeedHV",                 null, false, ""),
-    SPRINTING               ("infoSprinting",               null, false, ""),
+    BLOCK_BREAK_SPEED       ("infoBlockBreakSpeed",         InfoLineTypes.BLOCK_BREAK_SPEED, false, ""),
+    PLAYER_EXPERIENCE       ("infoPlayerExperience",        InfoLineTypes.PLAYER_EXP, false, ""),
+    SPEED                   ("infoSpeed",                   InfoLineTypes.SPEED, false, ""),
+    SPEED_AXIS              ("infoSpeedAxis",               InfoLineTypes.SPEED_AXIS, false, ""),
+    SPEED_HV                ("infoSpeedHV",                 InfoLineTypes.SPEED_HV, false, ""),
+    SPRINTING               ("infoSprinting",               InfoLineTypes.SPRINTING, false, ""),
 
     // Server
-    SERVER_TPS              ("infoServerTPS",               null, false, ""),
-    SERVUX                  ("infoServux",                  null, false, true, ""),
-    PING                    ("infoPing",                    null, false, ""),
+    SERVER_TPS              ("infoServerTPS",               InfoLineTypes.SERVER_TPS, false, ""),
+    SERVUX                  ("infoServux",                  InfoLineTypes.SERVUX, false, true, ""),
+    PING                    ("infoPing",                    InfoLineTypes.PING, false, ""),
 
     // World
-    WEATHER                 ("infoWeather",                 null, false, true, ""),
-    TIME_TOTAL_MODULO       ("infoTimeTotalModulo",         null, false, ""),
-    TIME_DAY_MODULO         ("infoTimeDayModulo",           null, false, ""),
-    MOB_CAPS                ("infoMobCaps",                 null, false, true,""),
-    PARTICLE_COUNT          ("infoParticleCount",           null, false, ""),
-    DIFFICULTY              ("infoDifficulty",              null, false, ""),
-    ENTITIES                ("infoEntities",                null, false, ""),
-    ENTITIES_CLIENT_WORLD   ("infoEntitiesClientWorld",     null, false, ""),
-    TILE_ENTITIES           ("infoTileEntities",            null, false, ""),
+    WEATHER                 ("infoWeather",                 InfoLineTypes.WEATHER, false, true, ""),
+    TIME_TOTAL_MODULO       ("infoTimeTotalModulo",         InfoLineTypes.TIME_TOTAL_MODULO, false, ""),
+    TIME_DAY_MODULO         ("infoTimeDayModulo",           InfoLineTypes.TIME_DAY_MODULO, false, ""),
+    MOB_CAPS                ("infoMobCaps",                 InfoLineTypes.MOB_CAPS, false, true,""),
+    PARTICLE_COUNT          ("infoParticleCount",           InfoLineTypes.PARTICLE_COUNT, false, ""),
+    DIFFICULTY              ("infoDifficulty",              InfoLineTypes.DIFFICULTY, false, ""),
+    ENTITIES                ("infoEntities",                InfoLineTypes.ENTITIES, false, ""),
+    ENTITIES_CLIENT_WORLD   ("infoEntitiesClientWorld",     InfoLineTypes.ENTITIES_CLIENT_WORLD, false, ""),
+    TILE_ENTITIES           ("infoTileEntities",            InfoLineTypes.TILE_ENTITIES, false, ""),
 
     // World (Current position)
-    LIGHT_LEVEL             ("infoLightLevel",              null, false, ""),
-    BIOME                   ("infoBiome",                   null, false, ""),
-    BIOME_REG_NAME          ("infoBiomeRegistryName",       null, false, ""),
-    DISTANCE                ("infoDistance",                null, false, ""),
+    LIGHT_LEVEL             ("infoLightLevel",              InfoLineTypes.LIGHT_LEVEL, false, ""),
+    BIOME                   ("infoBiome",                   InfoLineTypes.BIOME, false, ""),
+    BIOME_REG_NAME          ("infoBiomeRegistryName",       InfoLineTypes.BIOME_REG_NAME, false, ""),
+    DISTANCE                ("infoDistance",                InfoLineTypes.DISTANCE, false, ""),
 
     // Chunk
-    LOADED_CHUNKS_COUNT     ("infoLoadedChunksCount",       null, false, ""),
-    CHUNK_SECTIONS          ("infoChunkSections",           null, false, ""),
-    CHUNK_SECTIONS_FULL     ("infoChunkSectionsLine",       null, false, ""),
-    CHUNK_UPDATES           ("infoChunkUpdates",            null, false, ""),
-    REGION_FILE             ("infoRegionFile",              null, false, ""),
-    SLIME_CHUNK             ("infoSlimeChunk",              null, false, ""),
+    LOADED_CHUNKS_COUNT     ("infoLoadedChunksCount",       InfoLineTypes.LOADED_CHUNKS, false, ""),
+    CHUNK_SECTIONS          ("infoChunkSections",           InfoLineTypes.CHUNK_SECTIONS, false, ""),
+    CHUNK_SECTIONS_FULL     ("infoChunkSectionsLine",       InfoLineTypes.CHUNK_SECTIONS_FULL, false, ""),
+    CHUNK_UPDATES           ("infoChunkUpdates",            InfoLineTypes.CHUNK_UPDATES, false, ""),
+    REGION_FILE             ("infoRegionFile",              InfoLineTypes.REGION_FILE, false, ""),
+    SLIME_CHUNK             ("infoSlimeChunk",              InfoLineTypes.SLIME_CHUNK, false, ""),
 
     // Block
-    LOOKING_AT_BLOCK        ("infoLookingAtBlock",          null, false, ""),
-    LOOKING_AT_BLOCK_CHUNK  ("infoLookingAtBlockInChunk",   null, false, ""),
-    BLOCK_PROPS             ("infoBlockProperties",         null, false, ""),
+    LOOKING_AT_BLOCK        ("infoLookingAtBlock",          InfoLineTypes.LOOKING_AT_BLOCK, false, ""),
+    LOOKING_AT_BLOCK_CHUNK  ("infoLookingAtBlockInChunk",   InfoLineTypes.LOOKING_AT_CHUNK, false, ""),
+    BLOCK_PROPS             ("infoBlockProperties",         InfoLineTypes.BLOCK_PROPS, false, ""),
     BEE_COUNT               ("infoBeeCount",                InfoLineTypes.BEE_COUNT, false, true, ""),
     COMPARATOR_OUTPUT       ("infoComparatorOutput",        InfoLineTypes.COMPARATOR, false, true, ""),
     HONEY_LEVEL             ("infoHoneyLevel",              InfoLineTypes.HONEY_LEVEL, false, ""),
     FURNACE_XP              ("infoFurnaceXp",               InfoLineTypes.FURNACE_EXP, false, true, ""),
 
     // Entity
-    ENTITY_REG_NAME         ("infoEntityRegistryName",      null, false, ""),
+    ENTITY_REG_NAME         ("infoEntityRegistryName",      InfoLineTypes.ENTITY_REG, false, ""),
     LOOKING_AT_ENTITY       ("infoLookingAtEntity",         InfoLineTypes.LOOKING_AT_ENTITY, false, ""),
     LOOKING_AT_EFFECTS      ("infoLookingAtEffects",        InfoLineTypes.LOOKING_AT_EFFECTS, false, ""),
     LOOKING_AT_PLAYER_EXP   ("infoLookingAtPlayerExp",      InfoLineTypes.LOOKING_AT_PLAYER_EXP, false, ""),
     ZOMBIE_CONVERSION       ("infoZombieConversion",        InfoLineTypes.ZOMBIE_CONVERSION, false, ""),
-    HORSE_SPEED             ("infoHorseSpeed",              null, false, ""),
-    HORSE_JUMP              ("infoHorseJump",               null, false, ""),
+    HORSE_SPEED             ("infoHorseSpeed",              InfoLineTypes.HORSE_SPEED, false, ""),
+    HORSE_JUMP              ("infoHorseJump",               InfoLineTypes.HORSE_JUMP, false, ""),
+    HORSE_MAX_HEALTH        ("infoHorseMaxHealth",          InfoLineTypes.HORSE_MAX_HEALTH, false, ""),
     PANDA_GENE              ("infoPandaGene",               InfoLineTypes.PANDA_GENE, false, ""),
     DOLPHIN_TREASURE        ("infoDolphinTreasure",         InfoLineTypes.DOLPHIN_TREASURE, false, ""),
     ENTITY_VARIANT          ("infoEntityVariant",           InfoLineTypes.ENTITY_VARIANT, false, ""),
+//    ENTITY_HOME_POS         ("infoEntityHomePos",           InfoLineTypes.HOME_POS, false, ""),
+//    ENTITY_COPPER_AGING		("infoEntityCopperAging",       InfoLineTypes.COPPER_AGING, false, ""),
     ;
 
     public static final ImmutableList<InfoToggle> VALUES = ImmutableList.copyOf(values());
@@ -263,6 +270,21 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     {
         return this.type;
     }
+
+    public @Nullable List<InfoLineFlag> getInfoFlags()
+    {
+        if (this.type != null)
+        {
+            return this.type.getFlags();
+        }
+
+        return null;
+    }
+
+    public boolean hasFlag(InfoLineFlag flag)
+    {
+        return this.type != null && this.type.getFlags().contains(flag);
+    }
     
     public @Nullable InfoLine initParser()
     {
@@ -381,6 +403,17 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     public void setBooleanValue(boolean value)
     {
         this.valueBoolean = value;
+    }
+
+    @Override
+    public void toggleBooleanValue()
+    {
+        IHotkeyTogglable.super.toggleBooleanValue();
+
+        if (this == InfoToggle.SERVER_TPS || this == InfoToggle.MOB_CAPS)
+        {
+            HudDataManager.getInstance().refreshDataLoggers();
+        }
     }
 
     @Override

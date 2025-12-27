@@ -58,7 +58,7 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
     {
         this.renderQuads = new ArrayList<>();
         this.hasData = false;
-        this.useCulling = true;
+        this.useCulling = false;
         this.renderThrough = false;
     }
 
@@ -160,10 +160,7 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
 
         profiler.push("biome_quads");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "Biome Quads", MaLiLibPipelines.POSITION_COLOR_MASA_LEQUAL_DEPTH_OFFSET_1, BufferUsage.STATIC_WRITE);
-//        MatrixStack matrices = new MatrixStack();
-//
-//        matrices.push();
+        BufferBuilder builder = ctx.start(() -> "minihud:biome/quads", MaLiLibPipelines.POSITION_COLOR_MASA_LEQUAL_DEPTH_OFFSET_1, BufferUsage.STATIC_WRITE);
 
         for (ColoredQuad quad : this.renderQuads)
         {
@@ -192,7 +189,6 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
             MiniHUD.LOGGER.error("OverlayRendererBiomeBorders#renderQuads(): Exception; {}", err.getMessage());
         }
 
-//        matrices.pop();
         profiler.pop();
     }
 
@@ -202,11 +198,7 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
 
         profiler.push("biome_outlines");
         RenderObjectVbo ctx = this.renderObjects.get(1);
-        BufferBuilder builder = ctx.start(() -> "Biome Lines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, BufferUsage.STATIC_WRITE);
-//        MatrixStack matrices = new MatrixStack();
-
-//        matrices.push();
-//        MatrixStack.Entry e = matrices.peek();
+        BufferBuilder builder = ctx.start(() -> "minihud:biome/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, BufferUsage.STATIC_WRITE);
 
         for (ColoredQuad quad : this.renderQuads)
         {
@@ -229,7 +221,6 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
             MiniHUD.LOGGER.error("OverlayRendererBiomeBorders#renderOutlines(): Exception; {}", err.getMessage());
         }
 
-//        matrices.pop();
         profiler.pop();
     }
 

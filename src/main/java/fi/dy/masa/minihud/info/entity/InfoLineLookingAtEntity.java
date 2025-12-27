@@ -12,12 +12,11 @@ import net.minecraft.entity.Tameable;
 import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.util.Util;
 
-import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.malilib.util.nbt.NbtEntityUtils;
 import fi.dy.masa.minihud.Reference;
-import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.info.InfoLine;
+import fi.dy.masa.minihud.info.InfoLineContext;
 import fi.dy.masa.minihud.mixin.entity.IMixinPassiveEntity;
 import fi.dy.masa.minihud.util.MiscUtils;
 
@@ -36,12 +35,15 @@ public class InfoLineLookingAtEntity extends InfoLine
     }
 
     @Override
-    public List<Entry> parse(@Nonnull Context ctx)
+    public boolean succeededType() { return false; }
+
+    @Override
+    public List<Entry> parse(@Nonnull InfoLineContext ctx)
     {
+        if (ctx.world() == null) return null;
         List<Entry> list = new ArrayList<>();
 
-        if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue() &&
-            ctx.ent() instanceof LivingEntity living && ctx.hasNbt())
+        if (ctx.ent() instanceof LivingEntity living && ctx.hasNbt())
         {
             Pair<Double, Double> healthPair = NbtEntityUtils.getHealthFromNbt(ctx.nbt());
             Pair<UUID, Boolean> ownerPair = NbtEntityUtils.getTamableOwner(ctx.nbt());
@@ -56,7 +58,7 @@ public class InfoLineLookingAtEntity extends InfoLine
                 health = living.getHealth();
             }
 
-            String entityLine = StringUtils.translate(LOOKING_KEY+".livingentity", living.getName().getString(), health, maxHealth);
+            String entityLine = this.qt(LOOKING_KEY+".livingentity", living.getName().getString(), health, maxHealth);
 
             if (ownerPair.getLeft() != Util.NIL_UUID)
             {
@@ -64,20 +66,20 @@ public class InfoLineLookingAtEntity extends InfoLine
 
                 if (owner != null)
                 {
-                    entityLine = entityLine + " - " + StringUtils.translate(LOOKING_KEY+".owner") + ": " + owner.getName().getLiteralString();
+                    entityLine = entityLine + " - " + this.qt(LOOKING_KEY+".owner") + ": " + owner.getName().getLiteralString();
                 }
             }
             if (agePair.getLeft() < 0)
             {
                 int untilGrown = agePair.getLeft() * (-1);
-                entityLine = entityLine+ " [" + MiscUtils.formatDuration(untilGrown * 50L) + " " + StringUtils.translate(REMAINING_KEY) + "]";
+                entityLine = entityLine+ " [" + MiscUtils.formatDuration(untilGrown * 50L) + " " + this.qt(REMAINING_KEY) + "]";
             }
 
             list.add(this.format(entityLine));
         }
         else if (ctx.ent() instanceof LivingEntity living)
         {
-            String entityLine = StringUtils.translate(LOOKING_KEY+".livingentity", living.getName().getString(), living.getHealth(), living.getMaxHealth());
+            String entityLine = this.qt(LOOKING_KEY+".livingentity", living.getName().getString(), living.getHealth(), living.getMaxHealth());
 
             if (living instanceof Tameable tamable)
             {
@@ -85,7 +87,7 @@ public class InfoLineLookingAtEntity extends InfoLine
 
                 if (owner != null)
                 {
-                    entityLine = entityLine + " - " + StringUtils.translate(LOOKING_KEY+".owner") + ": " + owner.getName().getLiteralString();
+                    entityLine = entityLine + " - " + this.qt(LOOKING_KEY+".owner") + ": " + owner.getName().getLiteralString();
                 }
             }
             if (living instanceof PassiveEntity passive)
@@ -93,7 +95,7 @@ public class InfoLineLookingAtEntity extends InfoLine
                 if (passive.getBreedingAge() < 0)
                 {
                     int untilGrown = ((IMixinPassiveEntity) passive).minihud_getRealBreedingAge() * (-1);
-                    entityLine = entityLine+ " [" + MiscUtils.formatDuration(untilGrown * 50L) + " " + StringUtils.translate(REMAINING_KEY) + "]";
+                    entityLine = entityLine+ " [" + MiscUtils.formatDuration(untilGrown * 50L) + " " + this.qt(REMAINING_KEY) + "]";
                 }
             }
 

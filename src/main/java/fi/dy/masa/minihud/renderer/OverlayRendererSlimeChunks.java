@@ -9,7 +9,6 @@ import com.mojang.blaze3d.buffers.BufferUsage;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.BuiltBuffer;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
@@ -47,7 +46,7 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
         this.wasSeedKnown = false;
         this.seed = -1L;
         this.topY = 40;
-        this.useCulling = true;
+        this.useCulling = false;
         this.hasData = false;
     }
 
@@ -137,7 +136,6 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
         }
 
 //        System.out.printf("SlimeChunk count - %d\n", this.slimeChunks.size());
-
         this.needsUpdate = false;
     }
 
@@ -165,11 +163,8 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
         final Color4f colorSides = Configs.Colors.SLIME_CHUNKS_OVERLAY_COLOR.getColor();
         profiler.push("slime_chunk_quads");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "SlimeChunks Quads", this.renderThrough ? MaLiLibPipelines.POSITION_COLOR_MASA_NO_DEPTH_NO_CULL : MaLiLibPipelines.POSITION_COLOR_MASA_LEQUAL_DEPTH_OFFSET_1, BufferUsage.STATIC_WRITE);
+        BufferBuilder builder = ctx.start(() -> "minihud:slime_chunk/quads", this.renderThrough ? MaLiLibPipelines.POSITION_COLOR_MASA_NO_DEPTH_NO_CULL : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL, BufferUsage.STATIC_WRITE);
         // MaLiLibPipelines.POSITION_COLOR_LESSER_DEPTH
-        MatrixStack matrices = new MatrixStack();
-
-        matrices.push();
 
         for (Box bb : this.slimeChunks)
         {
@@ -204,7 +199,6 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
             MiniHUD.LOGGER.error("OverlayRendererSlimeChunks#renderQuads(): Exception; {}", err.getMessage());
         }
 
-        matrices.pop();
         profiler.pop();
     }
 
@@ -218,11 +212,7 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
         final Color4f colorLines = Color4f.fromColor(Configs.Colors.SLIME_CHUNKS_OVERLAY_COLOR.getColor().getIntValue(), 1.0F);
         profiler.push("slime_chunk_outlines");
         RenderObjectVbo ctx = this.renderObjects.get(1);
-        BufferBuilder builder = ctx.start(() -> "SlimeChunks Outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, BufferUsage.STATIC_WRITE);
-//        MatrixStack matrices = new MatrixStack();
-
-//        matrices.push();
-//        MatrixStack.Entry e = matrices.peek();
+        BufferBuilder builder = ctx.start(() -> "minihud:slime_chunk/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, BufferUsage.STATIC_WRITE);
 
         for (Box bb : this.slimeChunks)
         {
@@ -251,7 +241,6 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
             MiniHUD.LOGGER.error("OverlayRendererSlimeChunks#renderOutlines(): Exception; {}", err.getMessage());
         }
 
-//        matrices.pop();
         profiler.pop();
     }
 

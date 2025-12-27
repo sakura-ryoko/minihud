@@ -215,11 +215,7 @@ public class InventoryOverlayHandler implements IInventoryOverlayHandler
                     if (pair != null)
                     {
                         nbt = pair.getRight();
-
-                        if (Configs.Generic.ENTITY_DATA_LOAD_NBT.getBooleanValue())
-                        {
-                            be = pair.getLeft();
-                        }
+                        be = pair.getLeft();
                     }
                 }
 
@@ -251,6 +247,11 @@ public class InventoryOverlayHandler implements IInventoryOverlayHandler
         {
             Entity entity = ((EntityHitResult) trace).getEntity();
 
+            if (cameraEntity.getUuid().equals(entity.getUuid()))
+            {
+                return null;
+            }
+
             if (world instanceof ServerWorld)
             {
                 entity = world.getEntityById(entity.getId());
@@ -271,11 +272,7 @@ public class InventoryOverlayHandler implements IInventoryOverlayHandler
                 if (pair != null)
                 {
                     nbt = pair.getRight();
-
-                    if (Configs.Generic.ENTITY_DATA_LOAD_NBT.getBooleanValue())
-                    {
-                        entity = pair.getLeft();
-                    }
+                    entity = pair.getLeft();
                 }
             }
 
@@ -362,11 +359,7 @@ public class InventoryOverlayHandler implements IInventoryOverlayHandler
                 if (pair != null)
                 {
                     nbt = pair.getRight();
-
-                    if (Configs.Generic.ENTITY_DATA_LOAD_NBT.getBooleanValue())
-                    {
-                        be = pair.getLeft();
-                    }
+                    be = pair.getLeft();
                 }
             }
 

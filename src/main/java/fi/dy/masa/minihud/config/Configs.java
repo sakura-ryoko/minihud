@@ -21,11 +21,7 @@ import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.renderer.OverlayRendererLightLevel;
 import fi.dy.masa.minihud.renderer.OverlayRendererStructures;
-import fi.dy.masa.minihud.util.BlockGridMode;
-import fi.dy.masa.minihud.util.LightLevelMarkerMode;
-import fi.dy.masa.minihud.util.LightLevelNumberMode;
-import fi.dy.masa.minihud.util.LightLevelRenderCondition;
-import fi.dy.masa.minihud.util.SpeedUnits;
+import fi.dy.masa.minihud.util.*;
 
 public class Configs implements IConfigHandler
 {
@@ -58,6 +54,7 @@ public class Configs implements IConfigHandler
         public static final ConfigBoolean       CONDUIT_RANGE_OVERLAY_RENDER_OUTLINES= new ConfigBoolean("conduitRangeOverlayOutlines", false).apply(GENERIC_KEY);
         public static final ConfigBoolean       CONDUIT_RANGE_OVERLAY_RENDER_THROUGH = new ConfigBoolean("conduitRangeOverlayThrough", false).apply(GENERIC_KEY);
         public static final ConfigString        COORDINATE_FORMAT_STRING            = new ConfigString("coordinateFormat", "x: %.1f y: %.1f z: %.1f").apply(GENERIC_KEY);
+//		public static final ConfigOptionList    COPPER_AGING_MODE                   = new ConfigOptionList("copperAgingMode", CopperAgingMode.MC_TIME).apply(GENERIC_KEY);
         public static final ConfigOptionList    DATE_FORMAT_TYPE                    = new ConfigOptionList("dateFormatType", TimeFormat.REGULAR).apply(GENERIC_KEY);
         public static final ConfigString        DATE_FORMAT_STRING                  = new ConfigString("dateFormatString", "yyyy-MM-dd HH:mm:ss").apply(GENERIC_KEY);
         public static final ConfigString        DATE_FORMAT_MINECRAFT               = new ConfigString("dateFormatMinecraft", "MC time: (day {DAY}) {HOUR}:{MIN}:xx").apply(GENERIC_KEY);
@@ -68,15 +65,16 @@ public class Configs implements IConfigHandler
         public static final ConfigBoolean       DONT_RESET_SEED_ON_DIMENSION_CHANGE = new ConfigBoolean("dontClearStoredSeedOnDimensionChange", true).apply(GENERIC_KEY);
         public static final ConfigBooleanHotkeyed ENTITY_DATA_SYNC                  = new ConfigBooleanHotkeyed("entityDataSync", false, "").apply(GENERIC_KEY);
         public static final ConfigBoolean       ENTITY_DATA_SYNC_BACKUP             = new ConfigBoolean("entityDataSyncBackup", false).apply(GENERIC_KEY);
+        public static final ConfigBoolean       ENTITY_DATA_SYNC_BACKUP_OPEN_TO_LAN = new ConfigBoolean("entityDataSyncBackupOpenToLan", false).apply(GENERIC_KEY);
         public static final ConfigFloat         ENTITY_DATA_SYNC_CACHE_REFRESH      = new ConfigFloat("entityDataSyncCacheRefresh", 0.25f, 0.05f, 1.0f).apply(GENERIC_KEY);
-        public static final ConfigFloat         ENTITY_DATA_SYNC_CACHE_TIMEOUT      = new ConfigFloat("entityDataSyncCacheTimeout", 0.75f, 0.25f, 5.0f).apply(GENERIC_KEY);
-        public static final ConfigBoolean       ENTITY_DATA_LOAD_NBT                = new ConfigBoolean("entityDataSyncLoadNbt", false).apply(GENERIC_KEY);
+        public static final ConfigFloat         ENTITY_DATA_SYNC_CACHE_TIMEOUT      = new ConfigFloat("entityDataSyncCacheTimeout", 2.75f, 1.0f, 25.0f).apply(GENERIC_KEY);
+//        public static final ConfigBoolean       ENTITY_DATA_LOAD_NBT                = new ConfigBoolean("entityDataSyncLoadNbt", false).apply(GENERIC_KEY);
         //public static final ConfigBoolean       FIX_VANILLA_DEBUG_RENDERERS         = new ConfigBoolean("enableVanillaDebugRendererFix", true).apply(GENERIC_KEY);
         public static final ConfigDouble        FONT_SCALE                          = new ConfigDouble("fontScale", 0.5, 0.01, 100.0).apply(GENERIC_KEY);
         public static final ConfigOptionList    HUD_ALIGNMENT                       = new ConfigOptionList("hudAlignment", HudAlignment.TOP_LEFT).apply(GENERIC_KEY);
         public static final ConfigBooleanHotkeyed HUD_DATA_SYNC                     = new ConfigBooleanHotkeyed("hudDataSync", false, "").apply(GENERIC_KEY);
         public static final ConfigBooleanHotkeyed HUD_STATUS_EFFECTS_SHIFT          = new ConfigBooleanHotkeyed("hudStatusEffectsShift",true, "").apply(GENERIC_KEY);
-        public static final ConfigBoolean       INFO_LINES_USES_NBT                 = new ConfigBoolean("infoLinesUsesNbt", true).apply(GENERIC_KEY);
+//        public static final ConfigBoolean       INFO_LINES_USES_NBT                 = new ConfigBoolean("infoLinesUsesNbt", true).apply(GENERIC_KEY);
         public static final ConfigHotkey        INVENTORY_PREVIEW                   = new ConfigHotkey("inventoryPreview", "LEFT_ALT", KeybindSettings.PRESS_ALLOWEXTRA).apply(GENERIC_KEY);
         public static final ConfigBoolean       INVENTORY_PREVIEW_ENABLED           = new ConfigBoolean("inventoryPreviewEnabled", false).apply(GENERIC_KEY);
         public static final ConfigHotkey        INVENTORY_PREVIEW_TOGGLE_SCREEN     = new ConfigHotkey("inventoryPreviewToggleScreen", "BUTTON_3", KeybindSettings.create(KeybindSettings.Context.ANY, KeyAction.PRESS, true, true, false, true)).apply(GENERIC_KEY);
@@ -129,6 +127,7 @@ public class Configs implements IConfigHandler
         public static final ConfigInteger       SPAWNABLE_COLUMNS_OVERLAY_RADIUS    = new ConfigInteger("spawnableColumnHeightsOverlayRadius", 40, 0, 128).apply(GENERIC_KEY);
         public static final ConfigOptionList    SPEED_UNITS                         = new ConfigOptionList("speedUnits", SpeedUnits.MPS).apply(GENERIC_KEY);
         public static final ConfigBoolean       STRUCTURES_RENDER_THROUGH           = new ConfigBoolean("structuresRenderThrough", false).apply(GENERIC_KEY);
+	    public static final ConfigBoolean       STRUCTURES_RENDER_OUTLINES          = new ConfigBoolean("structuresRenderOutlines", false).apply(GENERIC_KEY);
         public static final ConfigInteger       TEXT_POS_X                          = new ConfigInteger("textPosX", 4, 0, 8192).apply(GENERIC_KEY);
         public static final ConfigInteger       TEXT_POS_Y                          = new ConfigInteger("textPosY", 4, 0, 8192).apply(GENERIC_KEY);
         public static final ConfigInteger       TIME_DAY_DIVISOR                    = new ConfigInteger("timeDayDivisor", 24000, 1, Integer.MAX_VALUE).apply(GENERIC_KEY);
@@ -168,10 +167,11 @@ public class Configs implements IConfigHandler
                 HUD_DATA_SYNC,
                 ENTITY_DATA_SYNC,
                 ENTITY_DATA_SYNC_BACKUP,
+                ENTITY_DATA_SYNC_BACKUP_OPEN_TO_LAN,
                 ENTITY_DATA_SYNC_CACHE_REFRESH,
                 ENTITY_DATA_SYNC_CACHE_TIMEOUT,
-                ENTITY_DATA_LOAD_NBT,
-                INFO_LINES_USES_NBT,
+//                ENTITY_DATA_LOAD_NBT,
+//                INFO_LINES_USES_NBT,
                 //FIX_VANILLA_DEBUG_RENDERERS,
                 LIGHT_LEVEL_AUTO_HEIGHT,
                 LIGHT_LEVEL_COLLISION_CHECK,
@@ -198,6 +198,7 @@ public class Configs implements IConfigHandler
                 SPAWN_REAL_REDSTONE_OVERLAY_ENABLED,
                 SPEED_UNITS,
                 STRUCTURES_RENDER_THROUGH,
+                STRUCTURES_RENDER_OUTLINES,
                 USE_CUSTOMIZED_COORDINATES,
                 USE_FONT_SHADOW,
                 USE_TEXT_BACKGROUND,
@@ -222,6 +223,7 @@ public class Configs implements IConfigHandler
                 BLOCK_POS_FORMAT_STRING,
                 BLOCK_GRID_OVERLAY_RADIUS,
                 COORDINATE_FORMAT_STRING,
+//				COPPER_AGING_MODE,
                 DATE_FORMAT_TYPE,
                 DATE_FORMAT_STRING,
                 DATE_FORMAT_MINECRAFT,

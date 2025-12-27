@@ -40,7 +40,7 @@ public class ShapeCircle extends ShapeCircleBase
     {
         super(ShapeType.CIRCLE, Configs.Colors.SHAPE_CIRCLE.getColor(), 16);
         this.hasData = false;
-        this.useCulling = true;
+        this.useCulling = false;
     }
 
     @Override
@@ -78,10 +78,8 @@ public class ShapeCircle extends ShapeCircleBase
 
         profiler.push("circle_quads");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "Circle Quads", this.renderThroughShape ? MaLiLibPipelines.MINIHUD_SHAPE_NO_DEPTH_OFFSET : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET, BufferUsage.STATIC_WRITE);
-//        MatrixStack matrices = new MatrixStack();
+        BufferBuilder builder = ctx.start(() -> "minihud:circle/quads", this.renderThroughShape ? MaLiLibPipelines.MINIHUD_SHAPE_NO_DEPTH_OFFSET : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL, BufferUsage.STATIC_WRITE);
 
-//        matrices.push();
         this.renderCircleShapeQuads(cameraPos, builder);
 
         try
@@ -105,7 +103,6 @@ public class ShapeCircle extends ShapeCircleBase
             MiniHUD.LOGGER.error("ShapeCircle#renderQuads(): Exception; {}", err.getMessage());
         }
 
-//        matrices.pop();
         profiler.pop();
     }
 
@@ -118,10 +115,8 @@ public class ShapeCircle extends ShapeCircleBase
 
         profiler.push("circle_outlines");
         RenderObjectVbo ctx = this.renderObjects.get(1);
-        BufferBuilder builder = ctx.start(() -> "Circle Outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, BufferUsage.STATIC_WRITE);
-//        MatrixStack matrices = new MatrixStack();
+        BufferBuilder builder = ctx.start(() -> "minihud:circle/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, BufferUsage.STATIC_WRITE);
 
-//        matrices.push();
         this.renderCircleShapeOutlines(cameraPos, builder);
 
         try
@@ -139,7 +134,6 @@ public class ShapeCircle extends ShapeCircleBase
             MiniHUD.LOGGER.error("ShapeCircle#renderOutlines(): Exception; {}", err.getMessage());
         }
 
-//        matrices.pop();
         profiler.pop();
     }
 

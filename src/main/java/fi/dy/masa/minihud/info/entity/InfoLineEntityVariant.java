@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nonnull;
-
-import net.minecraft.text.Text;
 import org.apache.commons.lang3.tuple.Pair;
 
 import net.minecraft.entity.Entity;
@@ -15,6 +13,7 @@ import net.minecraft.entity.decoration.painting.PaintingVariant;
 import net.minecraft.entity.passive.*;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.text.Text;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
@@ -22,9 +21,9 @@ import net.minecraft.world.World;
 import fi.dy.masa.malilib.util.EntityUtils;
 import fi.dy.masa.malilib.util.nbt.NbtEntityUtils;
 import fi.dy.masa.minihud.Reference;
-import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.info.InfoLine;
+import fi.dy.masa.minihud.info.InfoLineContext;
 
 public class InfoLineEntityVariant extends InfoLine
 {
@@ -41,10 +40,14 @@ public class InfoLineEntityVariant extends InfoLine
     }
 
     @Override
-    public List<Entry> parse(@Nonnull Context ctx)
+    public boolean succeededType() { return false; }
+
+    @Override
+    public List<Entry> parse(@Nonnull InfoLineContext ctx)
     {
-        if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue() &&
-            ctx.hasLiving() && ctx.hasNbt())
+        if (ctx.world() == null) return null;
+
+        if (ctx.hasLiving() && ctx.hasNbt())
         {
             EntityType<?> entityType = NbtEntityUtils.getEntityTypeFromNbt(ctx.nbt());
             if (entityType == null) return null;

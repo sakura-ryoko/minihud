@@ -165,6 +165,26 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
                 this.createRenderTypeButton(renderTypeX, renderTypeY, this.shape::getRenderType, this.shape::setRenderType, "minihud.gui.label.shape.render_type_colon");
 //                this.createLayerEditControls(146, 162, this.getLayerRange());
                 break;
+
+            case ELLIPSOID_SPAWN:
+            {
+                ShapeEllipsoidSpawn shape = (ShapeEllipsoidSpawn) this.shape;
+                this.createShapeEditorElementsSphereBase(x, y, true);
+                this.createShapeEditorElementDoubleField(x + 150, y + 36, shape::getRadiusY, shape::setRadiusY, "minihud.gui.label.radius_y_colon", true);
+                this.createShapeEditorElementDoubleField(x + 220, y + 36, shape::getRadiusZ, shape::setRadiusZ, "minihud.gui.label.radius_z_colon", true);
+                this.createRenderTypeButton(renderTypeX, renderTypeY, this.shape::getRenderType, this.shape::setRenderType, "minihud.gui.label.shape.render_type_colon");
+                break;
+            }
+
+            case CLIPPED_SPAWN_SPHERE_Y:
+            {
+                ShapeSpawnSphereClippedY shape = (ShapeSpawnSphereClippedY) this.shape;
+                this.createShapeEditorElementsSphereBase(x, y, true);
+                this.createShapeEditorElementDoubleField(x + 150, y + 36, shape::getTopTrim, shape::setTopTrim, "minihud.gui.label.clip_top_colon", true);
+                this.createShapeEditorElementDoubleField(x + 220, y + 36, shape::getBottomTrim, shape::setBottomTrim, "minihud.gui.label.clip_bottom_colon", true);
+                this.createRenderTypeButton(renderTypeX, renderTypeY, this.shape::getRenderType, this.shape::setRenderType, "minihud.gui.label.shape.render_type_colon");
+                break;
+            }
         }
     }
 
@@ -209,18 +229,18 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
 
     public void createCenteredBoxInputs(int x1, int y1, int x2, int y2,int x3,int y3,int x4,int y4, int textFieldWidth, ShapeCenteredBox shape)
     {
-        this.createShapeEditorElementIntField(x1, y1, shape::getHeight, shape::setHeight, "minihud.gui.label.height_colon", true);
-        this.createShapeEditorElementIntField(x2, y2, shape::getWidth, shape::setWidth, "minihud.gui.label.width_colon", true);
-        this.createShapeEditorElementIntField(x3, y3, shape::getDepth, shape::setDepth, "minihud.gui.label.depth_colon", true);
+        this.createShapeEditorElementDoubleField(x1, y1, shape::getHeight, shape::setHeight, "minihud.gui.label.height_colon", true);
+        this.createShapeEditorElementDoubleField(x2, y2, shape::getWidth, shape::setWidth, "minihud.gui.label.width_colon", true);
+        this.createShapeEditorElementDoubleField(x3, y3, shape::getDepth, shape::setDepth, "minihud.gui.label.depth_colon", true);
         //TODO: Maybe Change that +12 to 0 and reset to 0 also createShapeEditorElementIntField or add some type of offset
         this.addLabel(x4 + 12, y4, -1, 12, 0xFFFFFFFF, StringUtils.translate("minihud.gui.label.center_colon"));
         y4 += 12;
-        GuiUtils.createVec3dInputsVertical(x4, y4, textFieldWidth, shape.getCorner2(), new Vec3dEditor(shape::getCenter, shape::setCenter, this), true, this);
+        GuiUtils.createVec3dInputsVertical(x4, y4, textFieldWidth, shape.getCenter(), new Vec3dEditor(shape::getCenter, shape::setCenter, this), true, this);
 
         int x = x1 + 12;
         ButtonGeneric btn = new ButtonGeneric(x, y4 + 50, -1, 14, StringUtils.translate("malilib.gui.button.render_layers_gui.set_to_player"));
         btn.setRenderDefaultBackground(false);
-        this.addButton(btn, (b, mb) -> this.setPositionFromCamera(shape::setCenter));    
+        this.addButton(btn, (b, mb) -> this.setPositionFromCamera(shape::setCenter));
     }
 
     private void createShapeEditorElementsBoxWithDimension(int xIn, int yIn)
@@ -450,9 +470,10 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
 
         String hover = StringUtils.translate("malilib.gui.button.hover.plus_minus_tip");
         ButtonGeneric button = new ButtonGeneric(x, y, MaLiLibIcons.BTN_PLUSMINUS_16, hover);
-        this.addButton(button, new ButtonListenerDoubleModifier(coordinateSource, (v) -> {
-            coordinateConsumer.accept(v);
-            textField.setTextWrapper("" + coordinateSource.getAsDouble());
+        this.addButton(button, new ButtonListenerDoubleModifier(coordinateSource, (v) ->
+        {
+	        coordinateConsumer.accept(v);
+	        textField.setTextWrapper("" + coordinateSource.getAsDouble());
         }));
     }
 
@@ -479,7 +500,7 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         {
             String hover = StringUtils.translate("malilib.gui.button.hover.plus_minus_tip");
             ButtonGeneric button = new ButtonGeneric(x + 54, y - 1, MaLiLibIcons.BTN_PLUSMINUS_16, hover);
-            this.addButton(button, new ButtonListenerDoubleModifier(supplier, new ChainedDoubleConsumer(consumer, (val) -> txtField.setTextWrapper(String.valueOf(supplier.getAsDouble())) )));
+            this.addButton(button, new ButtonListenerDoubleModifier(supplier, new ChainedDoubleConsumer(consumer, (val) -> txtField.setTextWrapper(String.valueOf(supplier.getAsDouble())))));
         }
     }
 

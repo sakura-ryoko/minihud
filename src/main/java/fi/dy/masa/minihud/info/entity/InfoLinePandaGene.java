@@ -11,12 +11,11 @@ import net.minecraft.entity.passive.PandaEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.world.World;
 
-import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.malilib.util.nbt.NbtEntityUtils;
 import fi.dy.masa.minihud.Reference;
-import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.info.InfoLine;
+import fi.dy.masa.minihud.info.InfoLineContext;
 
 public class InfoLinePandaGene extends InfoLine
 {
@@ -33,10 +32,14 @@ public class InfoLinePandaGene extends InfoLine
     }
 
     @Override
-    public List<Entry> parse(@NotNull InfoLine.Context ctx)
+    public boolean succeededType() { return false; }
+
+    @Override
+    public List<Entry> parse(@NotNull InfoLineContext ctx)
     {
-        if (Configs.Generic.INFO_LINES_USES_NBT.getBooleanValue() &&
-            ctx.hasLiving() && ctx.hasNbt())
+        if (ctx.world() == null) return null;
+
+        if (ctx.hasLiving() && ctx.hasNbt())
         {
             EntityType<?> entityType = NbtEntityUtils.getEntityTypeFromNbt(ctx.nbt());
             if (entityType == null) return null;
@@ -59,12 +62,12 @@ public class InfoLinePandaGene extends InfoLine
             if (genes.getLeft() != null && genes.getRight() != null)
             {
                 list.add(this.translate(PANDA_KEY+".main_gene",
-                                        StringUtils.translate(PANDA_KEY+".gene." + genes.getLeft().asString()),
-                                        genes.getLeft().isRecessive() ? StringUtils.translate(PANDA_KEY+".recessive_gene") : StringUtils.translate(PANDA_KEY+".dominant_gene")
+                                        this.qt(PANDA_KEY+".gene." + genes.getLeft().asString()),
+                                        genes.getLeft().isRecessive() ? this.qt(PANDA_KEY+".recessive_gene") : this.qt(PANDA_KEY+".dominant_gene")
                 ));
                 list.add(this.translate(PANDA_KEY+".hidden_gene",
-                                        StringUtils.translate(PANDA_KEY+".gene." + genes.getRight().asString()),
-                                        genes.getRight().isRecessive() ? StringUtils.translate(PANDA_KEY+".recessive_gene") : StringUtils.translate(PANDA_KEY+".dominant_gene")
+                                        this.qt(PANDA_KEY+".gene." + genes.getRight().asString()),
+                                        genes.getRight().isRecessive() ? this.qt(PANDA_KEY+".recessive_gene") : this.qt(PANDA_KEY+".dominant_gene")
                 ));
             }
         }
@@ -80,12 +83,12 @@ public class InfoLinePandaGene extends InfoLine
         if (ent instanceof PandaEntity panda)
         {
             list.add(this.translate(PANDA_KEY+".main_gene",
-                                    StringUtils.translate(PANDA_KEY+".gene." + panda.getMainGene().asString()),
-                                    panda.getMainGene().isRecessive() ? StringUtils.translate(PANDA_KEY+".recessive_gene") : StringUtils.translate(PANDA_KEY+".dominant_gene")
+                                    this.qt(PANDA_KEY+".gene." + panda.getMainGene().asString()),
+                                    panda.getMainGene().isRecessive() ? this.qt(PANDA_KEY+".recessive_gene") : this.qt(PANDA_KEY+".dominant_gene")
             ));
             list.add(this.translate(PANDA_KEY+".hidden_gene",
-                                    StringUtils.translate(PANDA_KEY+".gene." + panda.getHiddenGene().asString()),
-                                    panda.getHiddenGene().isRecessive() ? StringUtils.translate(PANDA_KEY+".recessive_gene") : StringUtils.translate(PANDA_KEY+".dominant_gene")
+                                    this.qt(PANDA_KEY+".gene." + panda.getHiddenGene().asString()),
+                                    panda.getHiddenGene().isRecessive() ? this.qt(PANDA_KEY+".recessive_gene") : this.qt(PANDA_KEY+".dominant_gene")
             ));
         }
 

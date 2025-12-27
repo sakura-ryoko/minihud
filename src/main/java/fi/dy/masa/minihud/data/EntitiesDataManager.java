@@ -53,7 +53,6 @@ import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.network.ServuxEntitiesHandler;
 import fi.dy.masa.minihud.network.ServuxEntitiesPacket;
 import fi.dy.masa.minihud.util.DataStorage;
-import fi.dy.masa.minihud.util.EntityUtils;
 
 @SuppressWarnings("deprecation")
 public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
@@ -62,7 +61,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
     public static EntitiesDataManager getInstance() { return INSTANCE; }
 
     private final static ServuxEntitiesHandler<ServuxEntitiesPacket.Payload> HANDLER = ServuxEntitiesHandler.getInstance();
-    private final static MinecraftClient mc = MinecraftClient.getInstance();
+    private final MinecraftClient mc;
     private boolean servuxServer = false;
     private boolean hasInValidServux = false;
     private String servuxVersion;
@@ -85,7 +84,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
     @Override
     public World getWorld()
     {
-        return WorldUtils.getBestWorld(mc);
+        return WorldUtils.getBestWorld(this.mc);
     }
 
     @Override
@@ -93,13 +92,16 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
     {
         if (this.clientWorld == null)
         {
-            clientWorld = mc.world;
+            this.clientWorld = this.mc.world;
         }
 
         return clientWorld;
     }
 
-    private EntitiesDataManager() { }
+    private EntitiesDataManager()
+    {
+        this.mc = MinecraftClient.getInstance();
+    }
 
     @Override
     public void onClientTick(MinecraftClient mc)
@@ -121,6 +123,18 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
 
                 if (!Configs.Generic.ENTITY_DATA_SYNC_BACKUP.getBooleanValue())
                 {
+                    // Expire cached NBT and clear pending Queue if both are disabled
+                    if (!this.pendingBlockEntitiesQueue.isEmpty())
+                    {
+                        this.pendingBlockEntitiesQueue.clear();
+                    }
+
+                    if (!this.pendingEntitiesQueue.isEmpty())
+                    {
+                        this.pendingEntitiesQueue.clear();
+                    }
+
+//                    this.tickCache(now);
                     return;
                 }
             }
@@ -183,11 +197,11 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
         return ServuxEntitiesHandler.CHANNEL_ID;
     }
 
-    private static ClientPlayNetworkHandler getVanillaHandler()
+    private ClientPlayNetworkHandler getVanillaHandler()
     {
-        if (mc.player != null)
+        if (this.mc.player != null)
         {
-            return mc.player.networkHandler;
+            return this.mc.player.networkHandler;
         }
 
         return null;
@@ -219,7 +233,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
             this.serverTickTime = now - (this.getCacheTimeout() + 5000L);
             this.tickCache(now);
             this.serverTickTime = now;
-            this.clientWorld = mc.world;
+            this.clientWorld = this.mc.world;
             this.checkOpStatus = true;
             this.lastOpCheck = now;
         }
@@ -261,7 +275,9 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
 
     public long getCacheTimeout()
     {
-        return (long) (MathHelper.clamp(Configs.Generic.ENTITY_DATA_SYNC_CACHE_TIMEOUT.getFloatValue(), 0.25f, 15.0f) * 1000L);
+        // Increase cache timeout when in Backup Mode.
+        int modifier = Configs.Generic.ENTITY_DATA_SYNC_BACKUP.getBooleanValue() ? 5 : 1;
+        return (long) (MathHelper.clamp((Configs.Generic.ENTITY_DATA_SYNC_CACHE_TIMEOUT.getFloatValue() * modifier), 1.0f, 50.0f) * 1000L);
     }
 
     private void tickCache(long nowTime)
@@ -290,7 +306,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
 
                 if ((nowTime - pair.getLeft()) > timeout || pair.getLeft() > nowTime)
                 {
-                    //MiniHUD.debugLog("entityCache: entity Id [{}] has timed out by [{}] ms", entityId, timeout);
+//                    MiniHUD.debugLog("entityCache: entity Id [{}] has timed out by [{}] ms", entityId, timeout);
                     this.entityCache.remove(entityId);
                 }
             }
@@ -352,12 +368,22 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
         return this.servuxServer;
     }
 
+    public boolean hasBackupStatus()
+    {
+        return Configs.Generic.ENTITY_DATA_SYNC_BACKUP.getBooleanValue() && this.hasOpStatus;
+    }
+
+    public boolean hasOperatorStatus()
+    {
+        return this.hasOpStatus;
+    }
+
     public void setServuxVersion(String ver)
     {
         if (ver != null && !ver.isEmpty())
         {
             this.servuxVersion = ver;
-            MiniHUD.debugLog("entityDataChannel: joining Servux version {}", ver);
+            MiniHUD.LOGGER.info("entityDataChannel: joining Servux version {}", ver);
         }
         else
         {
@@ -496,7 +522,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
                 this.pendingBlockEntitiesQueue.add(pos);
             }
 
-            return this.refreshBlockEntityFromWorld(world, pos);
+            return this.refreshBlockEntityFromWorld(this.getClientWorld(), pos);
         }
 
         return null;
@@ -537,7 +563,6 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
             {
                 if (System.currentTimeMillis() - this.entityCache.get(entityId).getLeft() > this.getCacheRefresh())
                 {
-                    //MiniHUD.debugLog("requestEntity: entity Id [{}] requeue at [{}] ms", entityId, this.getCacheRefresh());
                     this.pendingEntitiesQueue.add(entityId);
                 }
             }
@@ -558,7 +583,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
             this.pendingEntitiesQueue.add(entityId);
         }
 
-        return this.refreshEntityFromWorld(world, entityId);
+        return this.refreshEntityFromWorld(this.getClientWorld(), entityId);
     }
 
     private @Nullable Pair<Entity, NbtCompound> refreshEntityFromWorld(World world, int entityId)
@@ -729,7 +754,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
             return;
         }
 
-        ClientPlayNetworkHandler handler = getVanillaHandler();
+        ClientPlayNetworkHandler handler = this.getVanillaHandler();
 
         if (handler != null)
         {
@@ -745,7 +770,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
             return;
         }
 
-        ClientPlayNetworkHandler handler = getVanillaHandler();
+        ClientPlayNetworkHandler handler = this.getVanillaHandler();
 
         if (handler != null)
         {
@@ -825,11 +850,11 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
                         this.blockEntityCache.put(pos, Pair.of(System.currentTimeMillis(), Pair.of(blockEntity2, nbt)));
                     }
 
-                    if (Configs.Generic.ENTITY_DATA_LOAD_NBT.getBooleanValue())
-                    {
-                        blockEntity2.read(nbt, this.getClientWorld().getRegistryManager());
-                        this.getClientWorld().addBlockEntity(blockEntity2);
-                    }
+//                    if (Configs.Generic.ENTITY_DATA_LOAD_NBT.getBooleanValue())
+//                    {
+//                        blockEntity2.read(nbt, this.getClientWorld().getRegistryManager());
+//                        this.getClientWorld().addBlockEntity(blockEntity2);
+//                    }
 
                     return blockEntity2;
                 }
@@ -864,10 +889,10 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
                 this.entityCache.put(entityId, Pair.of(System.currentTimeMillis(), Pair.of(entity, nbt)));
             }
 
-            if (Configs.Generic.ENTITY_DATA_LOAD_NBT.getBooleanValue())
-            {
-                EntityUtils.loadNbtIntoEntity(entity, nbt);
-            }
+//            if (Configs.Generic.ENTITY_DATA_LOAD_NBT.getBooleanValue())
+//            {
+//                EntityUtils.loadNbtIntoEntity(entity, nbt);
+//            }
         }
         return entity;
     }

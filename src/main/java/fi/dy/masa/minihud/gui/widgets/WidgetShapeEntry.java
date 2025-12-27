@@ -115,17 +115,8 @@ public class WidgetShapeEntry extends WidgetListEntryBase<ShapeBase>
         }
     }
 
-    private static class ButtonListener implements IButtonActionListener
+    private record ButtonListener(Type type, WidgetShapeEntry widget) implements IButtonActionListener
     {
-        private final Type type;
-        private final WidgetShapeEntry widget;
-
-        public ButtonListener(Type type, WidgetShapeEntry widget)
-        {
-            this.type = type;
-            this.widget = widget;
-        }
-
         @Override
         public void actionPerformedWithButton(ButtonBase button, int mouseButton)
         {
@@ -149,9 +140,9 @@ public class WidgetShapeEntry extends WidgetListEntryBase<ShapeBase>
 
         public enum Type
         {
-            CONFIGURE   ("minihud.gui.button.configure"),
-            ENABLED     ("minihud.gui.button.shape_entry.enabled"),
-            REMOVE      ("minihud.gui.button.remove");
+            CONFIGURE("minihud.gui.button.configure"),
+            ENABLED("minihud.gui.button.shape_entry.enabled"),
+            REMOVE("minihud.gui.button.remove");
 
             private final String translationKey;
 
@@ -164,7 +155,7 @@ public class WidgetShapeEntry extends WidgetListEntryBase<ShapeBase>
             {
                 return this.translationKey;
             }
-            
+
             public String getDisplayName(Object... args)
             {
                 return StringUtils.translate(this.translationKey, args);
