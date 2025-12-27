@@ -77,29 +77,6 @@ public abstract class ShapeBlocky extends ShapeBase
         return super.shouldRender(mc) && entity != null && this.renderPerimeter.contains(entity.position());
     }
 
-//    @Override
-//    public void draw(Matrix4f matrix4f, Matrix4f projMatrix)
-//    {
-//        this.preRender();
-//
-//        this.renderObjects.get(0).draw(matrix4f, projMatrix);
-//
-//        // Render the lines as quads with glPolygonMode(GL_LINE)
-//        /*
-//        RenderSystem.polygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
-//        RenderSystem.disableBlend();
-//         */
-//        RenderUtils.blend(false);
-//        this.renderObjects.get(0).draw(matrix4f, projMatrix);
-//        /*
-//        RenderSystem.polygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
-//        RenderSystem.enableBlend();
-//         */
-//        RenderUtils.blend(true);
-//
-//        this.postRender();
-//    }
-
     @Override
     public List<String> getWidgetHoverLines()
     {

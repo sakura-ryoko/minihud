@@ -173,7 +173,7 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
                               Configs.Colors.RANDOM_TICKS_FIXED_OVERLAY_COLOR.getColor();
 
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "minihud:random_tick/quads", MaLiLibPipelines.POSITION_COLOR_MASA_LEQUAL_DEPTH_OFFSET_1);
+        BufferBuilder builder = ctx.start(() -> "minihud:random_tick/quads", MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL);
 
         this.chunkMap.forEach(
                 (pos, boxes) ->

@@ -104,7 +104,7 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
 
         profiler.push("beacon_quads");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "minihud:beacon/quads", this.renderThrough ? MaLiLibPipelines.POSITION_COLOR_MASA_NO_DEPTH_NO_CULL : MaLiLibPipelines.POSITION_COLOR_MASA_LEQUAL_DEPTH_OFFSET_1);
+        BufferBuilder builder = ctx.start(() -> "minihud:beacon/quads", this.renderThrough ? MaLiLibPipelines.POSITION_COLOR_MASA_NO_DEPTH_NO_CULL : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL);
 //        MatrixStack matrices = new MatrixStack();
 
 //        matrices.push();
