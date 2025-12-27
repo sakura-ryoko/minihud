@@ -19,22 +19,24 @@ import fi.dy.masa.minihud.config.Configs;
 
 public class StructureData
 {
+    private static final int expandBoxAmount = 12;
 	private final StructureType type;
-    private final IntBoundingBox mainBox;
     private final ImmutableList<@NotNull IntBoundingBox> componentBoxes;
+    private IntBoundingBox mainBox;
     private long refreshTime;
 	@Nullable
 	private final StructureStart vanilla;
+    private final boolean expandBox;
 
 	private StructureData(StructureType type, ImmutableList<@NotNull IntBoundingBox> componentBoxes,
 	                      long refreshTime, boolean shouldExpandBox)
 	{
 		this.type = type;
 		this.vanilla = null;
-//		this.mainBox = encompass(componentBoxes, this.shouldExpandBox(structure));
         this.mainBox = encompass(componentBoxes, shouldExpandBox);
 		this.componentBoxes = componentBoxes;
 		this.refreshTime = refreshTime;
+        this.expandBox = shouldExpandBox;
 	}
 
     private StructureData(StructureType type, ImmutableList<@NotNull IntBoundingBox> componentBoxes,
@@ -44,6 +46,8 @@ public class StructureData
 	    this.vanilla = structureStart;
 	    this.mainBox = IntBoundingBox.fromVanillaBox(structureStart.getBoundingBox());
 	    this.componentBoxes = componentBoxes;
+        this.expandBox = this.shouldExpandBox(structureStart.getStructure());
+        this.fixMainBox(componentBoxes, this.mainBox, this.expandBox);
     }
 
     public StructureType getStructureType()
@@ -58,6 +62,59 @@ public class StructureData
 	{
 		return structure.terrainAdaptation() != TerrainAdjustment.NONE;
 	}
+
+    /**
+     * This is needed when your generating structures for the
+     * first time, and Vanilla reports it at the wrong Y level.
+     * This only is in effect when getting data from the Integrated Server.
+     */
+    public void fixMainBox(ImmutableList<@NotNull IntBoundingBox> componentBoxes, IntBoundingBox mainBox, boolean shouldExpand)
+    {
+        final IntBoundingBox box = encompass(componentBoxes, shouldExpand);
+
+        // Fix when the Vanilla Box is the right size, but in the wrong place,
+        // such as floating 30 blocks higher than it should.
+        // This happens because most structures pre-gen at Y = 90
+        // before the terrain is generated.
+        // Then the structure is adapted to
+        // the Terrain / Heightmap afterward.
+        if (!mainBox.intersects(box))
+        {
+            int xDistA = mainBox.maxX() - mainBox.minX();
+            int yDistA = mainBox.maxY() - mainBox.minY();
+            int zDistA = mainBox.maxZ() - mainBox.minZ();
+            int xDistB = box.maxX() - box.minX();
+            int yDistB = box.maxY() - box.minY();
+            int zDistB = box.maxZ() - box.minZ();
+
+            // We use Math.min() here because chances are,
+            // `mainBox` is well above the encompassBox.
+            IntBoundingBox fixed = new IntBoundingBox(
+                    Math.min(box.minX(), mainBox.minX()),
+                    Math.min(box.minY(), mainBox.minY()),
+                    Math.min(box.minZ(), mainBox.minZ()),
+                    Math.min(box.maxX(), mainBox.maxX()),
+                    Math.min(box.maxY(), mainBox.maxY()),
+                    Math.min(box.maxZ(), mainBox.maxZ())
+            );
+
+            if (xDistA != xDistB || yDistA != yDistB || zDistA != zDistB)
+            {
+                // Mainly used for minor corrections; such as a (y - 4).
+                fixed = fixed.expand(xDistA - xDistB,
+                                     yDistA - yDistB,
+                                     zDistA - zDistB
+                );
+            }
+
+            if (shouldExpand)
+            {
+                fixed = fixed.expand(expandBoxAmount);
+            }
+
+            this.mainBox = fixed;
+        }
+    }
 
     public IntBoundingBox getBoundingBox()
     {
@@ -214,8 +271,7 @@ public class StructureData
 			// Vanilla says to expand it if != StructureTerrainAdaptation.NONE
 			if (expandBox)
 			{
-//                MiniHUD.debugLog("expanding structure bb");
-				bb = bb.expand(12);
+				bb.expand(expandBoxAmount);
 			}
 
 			return bb;
