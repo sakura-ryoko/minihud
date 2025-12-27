@@ -65,7 +65,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
         {
             MiniHUD.debugLog("OverlayRendererVillagerInfo#reset() - dimension change or log-in");
             long now = System.currentTimeMillis();
-            this.lastTick =  - (this.getCacheTimeout() + 5000L);
+            this.lastTick = now - (this.getCacheTimeout() + 5000L);
             this.tickCache(now);
             this.lastTick = now;
         }

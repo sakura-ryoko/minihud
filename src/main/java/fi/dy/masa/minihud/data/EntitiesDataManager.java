@@ -283,7 +283,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
     {
         // Increase cache timeout when in Backup Mode.
         int modifier = Configs.Generic.ENTITY_DATA_SYNC_BACKUP.getBooleanValue() ? 5 : 1;
-        return (long) (Mth.clamp((Configs.Generic.ENTITY_DATA_SYNC_CACHE_TIMEOUT.getFloatValue() * modifier), 0.25f, 15.0f) * 1000L);
+        return (long) (Mth.clamp((Configs.Generic.ENTITY_DATA_SYNC_CACHE_TIMEOUT.getFloatValue() * modifier), 1.0f, 50.0f) * 1000L);
     }
 
     private void tickCache(long nowTime)
