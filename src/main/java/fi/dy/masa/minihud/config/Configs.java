@@ -20,11 +20,7 @@ import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.renderer.OverlayRendererLightLevel;
 import fi.dy.masa.minihud.renderer.OverlayRendererStructures;
-import fi.dy.masa.minihud.util.BlockGridMode;
-import fi.dy.masa.minihud.util.LightLevelMarkerMode;
-import fi.dy.masa.minihud.util.LightLevelNumberMode;
-import fi.dy.masa.minihud.util.LightLevelRenderCondition;
-import fi.dy.masa.minihud.util.SpeedUnits;
+import fi.dy.masa.minihud.util.*;
 
 public class Configs implements IConfigHandler
 {
@@ -52,7 +48,11 @@ public class Configs implements IConfigHandler
         public static final ConfigBoolean       BUNDLE_DISPLAY_BACKGROUND_COLOR     = new ConfigBoolean("bundleDisplayBgColor", true).apply(GENERIC_KEY);
         public static final ConfigBoolean       BUNDLE_DISPLAY_REQUIRE_SHIFT        = new ConfigBoolean("bundleDisplayRequireShift", true).apply(GENERIC_KEY);
         public static final ConfigInteger       BUNDLE_DISPLAY_ROW_WIDTH            = new ConfigInteger("bundleDisplayRowWidth", 9, 6, 9).apply(GENERIC_KEY);
+        public static final ConfigBoolean       CONDUIT_RANGE_OVERLAY_COMBINE_QUADS  = new ConfigBoolean("conduitRangeOverlayCombineQuads", true).apply(GENERIC_KEY);
+        public static final ConfigBoolean       CONDUIT_RANGE_OVERLAY_RENDER_OUTLINES= new ConfigBoolean("conduitRangeOverlayOutlines", false).apply(GENERIC_KEY);
+        public static final ConfigBoolean       CONDUIT_RANGE_OVERLAY_RENDER_THROUGH = new ConfigBoolean("conduitRangeOverlayThrough", false).apply(GENERIC_KEY);
         public static final ConfigString        COORDINATE_FORMAT_STRING            = new ConfigString("coordinateFormat", "x: %.1f y: %.1f z: %.1f").apply(GENERIC_KEY);
+//		public static final ConfigOptionList    COPPER_AGING_MODE                   = new ConfigOptionList("copperAgingMode", CopperAgingMode.MC_TIME).apply(GENERIC_KEY);
         public static final ConfigOptionList    DATE_FORMAT_TYPE                    = new ConfigOptionList("dateFormatType", TimeFormat.REGULAR).apply(GENERIC_KEY);
         public static final ConfigString        DATE_FORMAT_STRING                  = new ConfigString("dateFormatString", "yyyy-MM-dd HH:mm:ss").apply(GENERIC_KEY);
         public static final ConfigString        DATE_FORMAT_MINECRAFT               = new ConfigString("dateFormatMinecraft", "MC time: (day {DAY}) {HOUR}:{MIN}:xx").apply(GENERIC_KEY);
@@ -64,15 +64,16 @@ public class Configs implements IConfigHandler
         public static final ConfigBoolean       DONT_RESET_SEED_ON_DIMENSION_CHANGE = new ConfigBoolean("dontClearStoredSeedOnDimensionChange", true).apply(GENERIC_KEY);
         public static final ConfigBooleanHotkeyed ENTITY_DATA_SYNC                  = new ConfigBooleanHotkeyed("entityDataSync", false, "").apply(GENERIC_KEY);
         public static final ConfigBoolean       ENTITY_DATA_SYNC_BACKUP             = new ConfigBoolean("entityDataSyncBackup", false).apply(GENERIC_KEY);
+        public static final ConfigBoolean       ENTITY_DATA_SYNC_BACKUP_OPEN_TO_LAN = new ConfigBoolean("entityDataSyncBackupOpenToLan", false).apply(GENERIC_KEY);
         public static final ConfigFloat         ENTITY_DATA_SYNC_CACHE_REFRESH      = new ConfigFloat("entityDataSyncCacheRefresh", 0.25f, 0.05f, 1.0f).apply(GENERIC_KEY);
-        public static final ConfigFloat         ENTITY_DATA_SYNC_CACHE_TIMEOUT      = new ConfigFloat("entityDataSyncCacheTimeout", 0.75f, 0.25f, 5.0f).apply(GENERIC_KEY);
-        public static final ConfigBoolean       ENTITY_DATA_LOAD_NBT                = new ConfigBoolean("entityDataSyncLoadNbt", false).apply(GENERIC_KEY);
+        public static final ConfigFloat         ENTITY_DATA_SYNC_CACHE_TIMEOUT      = new ConfigFloat("entityDataSyncCacheTimeout", 2.75f, 1.0f, 25.0f).apply(GENERIC_KEY);
+//        public static final ConfigBoolean       ENTITY_DATA_LOAD_NBT                = new ConfigBoolean("entityDataSyncLoadNbt", false).apply(GENERIC_KEY);
         //public static final ConfigBoolean       FIX_VANILLA_DEBUG_RENDERERS         = new ConfigBoolean("enableVanillaDebugRendererFix", true).apply(GENERIC_KEY);
         public static final ConfigDouble        FONT_SCALE                          = new ConfigDouble("fontScale", 0.5, 0.01, 100.0).apply(GENERIC_KEY);
         public static final ConfigOptionList    HUD_ALIGNMENT                       = new ConfigOptionList("hudAlignment", HudAlignment.TOP_LEFT).apply(GENERIC_KEY);
         public static final ConfigBooleanHotkeyed HUD_DATA_SYNC                     = new ConfigBooleanHotkeyed("hudDataSync", false, "").apply(GENERIC_KEY);
         public static final ConfigBooleanHotkeyed HUD_STATUS_EFFECTS_SHIFT          = new ConfigBooleanHotkeyed("hudStatusEffectsShift",true, "").apply(GENERIC_KEY);
-        public static final ConfigBoolean       INFO_LINES_USES_NBT                 = new ConfigBoolean("infoLinesUsesNbt", true).apply(GENERIC_KEY);
+//        public static final ConfigBoolean       INFO_LINES_USES_NBT                 = new ConfigBoolean("infoLinesUsesNbt", true).apply(GENERIC_KEY);
         public static final ConfigHotkey        INVENTORY_PREVIEW                   = new ConfigHotkey("inventoryPreview", "LEFT_ALT", KeybindSettings.PRESS_ALLOWEXTRA).apply(GENERIC_KEY);
         public static final ConfigBoolean       INVENTORY_PREVIEW_ENABLED           = new ConfigBoolean("inventoryPreviewEnabled", false).apply(GENERIC_KEY);
         public static final ConfigHotkey        INVENTORY_PREVIEW_TOGGLE_SCREEN     = new ConfigHotkey("inventoryPreviewToggleScreen", "BUTTON_3", KeybindSettings.create(KeybindSettings.Context.ANY, KeyAction.PRESS, true, true, false, true)).apply(GENERIC_KEY);
@@ -115,6 +116,7 @@ public class Configs implements IConfigHandler
         public static final ConfigBoolean       SHULKER_DISPLAY_REQUIRE_SHIFT       = new ConfigBoolean("shulkerDisplayRequireShift", true).apply(GENERIC_KEY);
         public static final ConfigBoolean       SLIME_CHUNK_TOP_TO_PLAYER           = new ConfigBoolean("slimeChunkTopToPlayer", true).apply(GENERIC_KEY);
         public static final ConfigInteger       SLIME_CHUNK_OVERLAY_RADIUS          = new ConfigInteger("slimeChunkOverlayRadius", -1, -1, 40).apply(GENERIC_KEY);
+        public static final ConfigBoolean       SLIME_CHUNK_RENDER_THROUGH          = new ConfigBoolean("slimeChunkRenderThrough", false).apply(GENERIC_KEY);
         public static final ConfigBoolean       SORT_LINES_BY_LENGTH                = new ConfigBoolean("sortLinesByLength", false).apply(GENERIC_KEY);
         public static final ConfigBoolean       SORT_LINES_REVERSED                 = new ConfigBoolean("sortLinesReversed", false).apply(GENERIC_KEY);
         public static final ConfigBoolean       SPAWN_PLAYER_OUTER_OVERLAY_ENABLED  = new ConfigBoolean("spawnPlayerOuterOverlayEnabled", false).apply(GENERIC_KEY);
@@ -124,6 +126,7 @@ public class Configs implements IConfigHandler
         public static final ConfigInteger       SPAWNABLE_COLUMNS_OVERLAY_RADIUS    = new ConfigInteger("spawnableColumnHeightsOverlayRadius", 40, 0, 128).apply(GENERIC_KEY);
         public static final ConfigOptionList    SPEED_UNITS                         = new ConfigOptionList("speedUnits", SpeedUnits.MPS).apply(GENERIC_KEY);
         public static final ConfigBoolean       STRUCTURES_RENDER_THROUGH           = new ConfigBoolean("structuresRenderThrough", false).apply(GENERIC_KEY);
+	    public static final ConfigBoolean       STRUCTURES_RENDER_OUTLINES          = new ConfigBoolean("structuresRenderOutlines", false).apply(GENERIC_KEY);
         public static final ConfigInteger       TEXT_POS_X                          = new ConfigInteger("textPosX", 4, 0, 8192).apply(GENERIC_KEY);
         public static final ConfigInteger       TEXT_POS_Y                          = new ConfigInteger("textPosY", 4, 0, 8192).apply(GENERIC_KEY);
         public static final ConfigInteger       TIME_DAY_DIVISOR                    = new ConfigInteger("timeDayDivisor", 24000, 1, Integer.MAX_VALUE).apply(GENERIC_KEY);
@@ -156,13 +159,17 @@ public class Configs implements IConfigHandler
                 //DEBUG_DEVELOPMENT_MODE,
                 //DEBUG_RENDERER_PATH_MAX_DIST,
                 DONT_RESET_SEED_ON_DIMENSION_CHANGE,
+                CONDUIT_RANGE_OVERLAY_COMBINE_QUADS,
+                CONDUIT_RANGE_OVERLAY_RENDER_OUTLINES,
+                CONDUIT_RANGE_OVERLAY_RENDER_THROUGH,
                 HUD_DATA_SYNC,
                 ENTITY_DATA_SYNC,
                 ENTITY_DATA_SYNC_BACKUP,
+                ENTITY_DATA_SYNC_BACKUP_OPEN_TO_LAN,
                 ENTITY_DATA_SYNC_CACHE_REFRESH,
                 ENTITY_DATA_SYNC_CACHE_TIMEOUT,
-                ENTITY_DATA_LOAD_NBT,
-                INFO_LINES_USES_NBT,
+//                ENTITY_DATA_LOAD_NBT,
+//                INFO_LINES_USES_NBT,
                 //FIX_VANILLA_DEBUG_RENDERERS,
                 LIGHT_LEVEL_AUTO_HEIGHT,
                 LIGHT_LEVEL_COLLISION_CHECK,
@@ -179,6 +186,7 @@ public class Configs implements IConfigHandler
                 SHULKER_DISPLAY_BACKGROUND_COLOR,
                 SHULKER_DISPLAY_ENDER_CHEST,
                 SHULKER_DISPLAY_REQUIRE_SHIFT,
+                SLIME_CHUNK_RENDER_THROUGH,
                 SLIME_CHUNK_TOP_TO_PLAYER,
                 SORT_LINES_BY_LENGTH,
                 SORT_LINES_REVERSED,
@@ -188,6 +196,7 @@ public class Configs implements IConfigHandler
                 SPAWN_REAL_REDSTONE_OVERLAY_ENABLED,
                 SPEED_UNITS,
                 STRUCTURES_RENDER_THROUGH,
+                STRUCTURES_RENDER_OUTLINES,
                 USE_CUSTOMIZED_COORDINATES,
                 USE_FONT_SHADOW,
                 USE_TEXT_BACKGROUND,
@@ -212,6 +221,7 @@ public class Configs implements IConfigHandler
                 BLOCK_POS_FORMAT_STRING,
                 BLOCK_GRID_OVERLAY_RADIUS,
                 COORDINATE_FORMAT_STRING,
+//				COPPER_AGING_MODE,
                 DATE_FORMAT_TYPE,
                 DATE_FORMAT_STRING,
                 DATE_FORMAT_MINECRAFT,
@@ -271,6 +281,7 @@ public class Configs implements IConfigHandler
         public static final ConfigColor BEACON_RANGE_LVL4_OVERLAY_COLOR         = new ConfigColor("beaconRangeLvl4",                    "#2060FF40").apply(COLORS_KEY);
         public static final ConfigColor BLOCK_GRID_OVERLAY_COLOR                = new ConfigColor("blockGridOverlayColor",              "#80FFFFFF").apply(COLORS_KEY);
         public static final ConfigColor CONDUIT_RANGE_OVERLAY_COLOR             = new ConfigColor("conduitRange",                       "#2030FFFF").apply(COLORS_KEY);
+        public static final ConfigColor CONDUIT_RANGE_OUTLINES                  = new ConfigColor("conduitRangeOutlines",               "#80FFFFFF").apply(COLORS_KEY);
         public static final ConfigColor LIGHT_LEVEL_MARKER_BLOCK_LIT            = new ConfigColor("lightLevelMarkerBlockLit",           "#FF209040").apply(COLORS_KEY);
         public static final ConfigColor LIGHT_LEVEL_MARKER_DARK                 = new ConfigColor("lightLevelMarkerDark",               "#FFFF4848").apply(COLORS_KEY);
         public static final ConfigColor LIGHT_LEVEL_MARKER_DIM                  = new ConfigColor("lightLevelMarkerDim",                "#FFC0C040").apply(COLORS_KEY);
@@ -312,6 +323,7 @@ public class Configs implements IConfigHandler
                 BEACON_RANGE_LVL4_OVERLAY_COLOR,
                 BLOCK_GRID_OVERLAY_COLOR,
                 CONDUIT_RANGE_OVERLAY_COLOR,
+                CONDUIT_RANGE_OUTLINES,
                 LIGHT_LEVEL_MARKER_BLOCK_LIT,
                 LIGHT_LEVEL_MARKER_DARK,
                 LIGHT_LEVEL_MARKER_DIM,

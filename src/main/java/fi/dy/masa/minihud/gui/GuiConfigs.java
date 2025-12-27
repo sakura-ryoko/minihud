@@ -169,17 +169,8 @@ public class GuiConfigs extends GuiConfigsBase
         return new BooleanHotkeyGuiWrapper(config.getToggleOption().getName(), config.getToggleOption(), config.getHotkey().getKeybind());
     }
 
-    private static class ButtonListenerConfigTabs implements IButtonActionListener
+    private record ButtonListenerConfigTabs(ConfigGuiTab tab, GuiConfigs parent) implements IButtonActionListener
     {
-        private final GuiConfigs parent;
-        private final ConfigGuiTab tab;
-
-        public ButtonListenerConfigTabs(ConfigGuiTab tab, GuiConfigs parent)
-        {
-            this.tab = tab;
-            this.parent = parent;
-        }
-
         @Override
         public void actionPerformedWithButton(ButtonBase button, int mouseButton)
         {

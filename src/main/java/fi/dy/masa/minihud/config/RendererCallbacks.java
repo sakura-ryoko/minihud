@@ -28,6 +28,7 @@ public class RendererCallbacks
     {
         if (config.getBooleanValue())
         {
+            OverlayRendererBeaconRange.INSTANCE.reset();
             OverlayRendererBeaconRange.INSTANCE.setNeedsUpdate();
         }
     }
@@ -36,6 +37,7 @@ public class RendererCallbacks
     {
         if (config.getBooleanValue())
         {
+            OverlayRendererBiomeBorders.INSTANCE.reset();
             OverlayRendererBiomeBorders.INSTANCE.setNeedsUpdate();
         }
     }
@@ -44,6 +46,7 @@ public class RendererCallbacks
     {
         if (config.getBooleanValue())
         {
+            OverlayRendererConduitRange.INSTANCE.reset();
             OverlayRendererConduitRange.INSTANCE.setNeedsUpdate();
         }
     }
@@ -52,7 +55,8 @@ public class RendererCallbacks
     {
         if (config.getBooleanValue())
         {
-            OverlayRendererLightLevel.setNeedsUpdate();
+            OverlayRendererLightLevel.INSTANCE.reset();
+            OverlayRendererLightLevel.INSTANCE.setNeedsUpdate();
         }
     }
 
@@ -63,7 +67,7 @@ public class RendererCallbacks
         if (config.getBooleanValue() && entity != null)
         {
             Vec3d pos = entity.getPos();
-            OverlayRendererRandomTickableChunks.newPos = pos;
+            OverlayRendererRandomTickableChunks.INSTANCE_FIXED.newPos = pos;
             String green = GuiBase.TXT_GREEN;
             String rst = GuiBase.TXT_RST;
             String strStatus = green + StringUtils.translate("malilib.message.value.on") + rst;
@@ -78,7 +82,7 @@ public class RendererCallbacks
     {
         if (config.getBooleanValue())
         {
-            OverlayRendererRandomTickableChunks.setNeedsUpdate();
+            OverlayRendererRandomTickableChunks.INSTANCE_PLAYER.setNeedsUpdate();
         }
     }
 
@@ -86,7 +90,7 @@ public class RendererCallbacks
     {
         if (config.getBooleanValue())
         {
-            OverlayRendererRegion.setNeedsUpdate();
+            OverlayRendererRegion.INSTANCE.setNeedsUpdate();
         }
     }
 
@@ -94,8 +98,8 @@ public class RendererCallbacks
     {
         if (config.getBooleanValue())
         {
-            OverlayRendererSlimeChunks.setNeedsUpdate();
-            OverlayRendererSlimeChunks.onEnabled();
+            OverlayRendererSlimeChunks.INSTANCE.setNeedsUpdate();
+            OverlayRendererSlimeChunks.INSTANCE.onEnabled();
         }
     }
 
@@ -112,7 +116,7 @@ public class RendererCallbacks
             message = StringUtils.translate("minihud.message.toggled_using_player_spawn", config.getPrettyName(), strStatus, strDist);
 
             InfoUtils.printActionbarMessage(message);
-            OverlayRendererSpawnChunks.setNeedsUpdate();
+            OverlayRendererSpawnChunks.INSTANCE_PLAYER.setNeedsUpdate();
         }
     }
 
@@ -148,12 +152,12 @@ public class RendererCallbacks
                     }
                     else
                     {
-                        OverlayRendererSpawnChunks.setNeedsUpdate();
+                        OverlayRendererSpawnChunks.INSTANCE_REAL.setNeedsUpdate();
                     }
                 }
                 else
                 {
-                    OverlayRendererSpawnChunks.setNeedsUpdate();
+                    OverlayRendererSpawnChunks.INSTANCE_REAL.setNeedsUpdate();
 
                     String strStatus = red + StringUtils.translate("malilib.message.value.off") + rst;
                     String strPos = red + String.format("x: %d, y: %d, z: %d [R: 0]", spawn.getX(), spawn.getY(), spawn.getZ());

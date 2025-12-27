@@ -129,6 +129,14 @@ public class MobCapDataHandler
         }
     }
 
+    protected void setFromServuxData(MobCapData serverData, long worldTick)
+    {
+        if (this.subscribedServerData.getHasRecentValidData(worldTick) == false)
+        {
+            this.parsedServerData.setFromServuxMobCapData(serverData, worldTick);
+        }
+    }
+
     public void updateIntegratedServerMobCaps()
     {
         if (this.mc.isIntegratedServerRunning() && this.mc.world != null)
@@ -163,16 +171,6 @@ public class MobCapDataHandler
                             int cap = entry.getKey().getCapacity() * spawnableChunks / divisor;
                             data[category.ordinal()].setCurrentAndCap(current, cap);
                         }
-                        /*
-                        for (EntityCategory category : ENTITY_CATEGORIES)
-                        {
-                            SpawnGroup type = category.getVanillaCategory();
-                            int current = world.getEnticountEntities(type.getCreatureClass());
-
-                            int cap = type.getCapacity() * spawnableChunks / divisor;
-                            data[category.ordinal()].setCurrentAndCap(current, cap);
-                        }
-                         */
 
                         this.mc.execute(() ->
                         {

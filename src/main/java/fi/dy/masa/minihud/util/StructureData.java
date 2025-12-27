@@ -3,12 +3,15 @@ package fi.dy.masa.minihud.util;
 import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
-import com.google.common.collect.ImmutableList;
-
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.structure.StructurePiece;
 import net.minecraft.structure.StructureStart;
+import net.minecraft.world.gen.StructureTerrainAdaptation;
+import net.minecraft.world.gen.structure.Structure;
+
+import com.google.common.collect.ImmutableList;
+import org.jetbrains.annotations.NotNull;
 
 import fi.dy.masa.malilib.util.IntBoundingBox;
 import fi.dy.masa.malilib.util.data.Constants;
@@ -17,23 +20,35 @@ import fi.dy.masa.minihud.config.Configs;
 
 public class StructureData
 {
-    private final StructureType type;
-    private final IntBoundingBox mainBox;
-    private final ImmutableList<IntBoundingBox> componentBoxes;
+    private static final int expandBoxAmount = 12;
+	private final StructureType type;
+    private final ImmutableList<@NotNull IntBoundingBox> componentBoxes;
+    private IntBoundingBox mainBox;
     private long refreshTime;
+	@Nullable
+	private final StructureStart vanilla;
+    private final boolean expandBox;
 
-    private StructureData(StructureType type, ImmutableList<IntBoundingBox> componentBoxes, long refreshTime)
+	private StructureData(StructureType type, ImmutableList<@NotNull IntBoundingBox> componentBoxes,
+	                      long refreshTime, boolean shouldExpandBox)
+	{
+		this.type = type;
+		this.vanilla = null;
+        this.mainBox = encompass(componentBoxes, shouldExpandBox);
+		this.componentBoxes = componentBoxes;
+		this.refreshTime = refreshTime;
+        this.expandBox = shouldExpandBox;
+	}
+
+    private StructureData(StructureType type, ImmutableList<@NotNull IntBoundingBox> componentBoxes,
+                          StructureStart structureStart)
     {
-        this(type, componentBoxes);
-
-        this.refreshTime = refreshTime;
-    }
-
-    private StructureData(StructureType type, ImmutableList<IntBoundingBox> componentBoxes)
-    {
-        this.type = type;
-        this.mainBox = encompass(componentBoxes);
-        this.componentBoxes = componentBoxes;
+	    this.type = type;
+	    this.vanilla = structureStart;
+	    this.mainBox = IntBoundingBox.fromVanillaBox(structureStart.getBoundingBox());
+	    this.componentBoxes = componentBoxes;
+        this.expandBox = this.shouldExpandBox(structureStart.getStructure());
+        this.fixMainBox(componentBoxes, this.mainBox, this.expandBox);
     }
 
     public StructureType getStructureType()
@@ -41,12 +56,73 @@ public class StructureData
         return this.type;
     }
 
+	@Nullable
+	public StructureStart toVanilla() { return this.vanilla; }
+
+	public boolean shouldExpandBox(Structure structure)
+	{
+		return structure.getTerrainAdaptation() != StructureTerrainAdaptation.NONE;
+	}
+
+    /**
+     * This is needed when your generating structures for the
+     * first time, and Vanilla reports it at the wrong Y level.
+     * This only is in effect when getting data from the Integrated Server.
+     */
+    public void fixMainBox(ImmutableList<@NotNull IntBoundingBox> componentBoxes, IntBoundingBox mainBox, boolean shouldExpand)
+    {
+        final IntBoundingBox box = encompass(componentBoxes, shouldExpand);
+
+        // Fix when the Vanilla Box is the right size, but in the wrong place,
+        // such as floating 30 blocks higher than it should.
+        // This happens because most structures pre-gen at Y = 90
+        // before the terrain is generated.
+        // Then the structure is adapted to
+        // the Terrain / Heightmap afterward.
+        if (!mainBox.intersects(box))
+        {
+            int xDistA = mainBox.maxX - mainBox.minX;
+            int yDistA = mainBox.maxY - mainBox.minY;
+            int zDistA = mainBox.maxZ - mainBox.minZ;
+            int xDistB = box.maxX - box.minX;
+            int yDistB = box.maxY - box.minY;
+            int zDistB = box.maxZ - box.minZ;
+
+            // We use Math.min() here because chances are,
+            // `mainBox` is well above the encompassBox.
+            IntBoundingBox fixed = new IntBoundingBox(
+                    Math.min(box.minX, mainBox.minX),
+                    Math.min(box.minY, mainBox.minY),
+                    Math.min(box.minZ, mainBox.minZ),
+                    Math.min(box.maxX, mainBox.maxX),
+                    Math.min(box.maxY, mainBox.maxY),
+                    Math.min(box.maxZ, mainBox.maxZ)
+            );
+
+            if (xDistA != xDistB || yDistA != yDistB || zDistA != zDistB)
+            {
+                // Mainly used for minor corrections; such as a (y - 4).
+                fixed.expand(xDistA - xDistB,
+                             yDistA - yDistB,
+                             zDistA - zDistB
+                );
+            }
+
+            if (shouldExpand)
+            {
+                fixed.expand(expandBoxAmount);
+            }
+
+            this.mainBox = fixed;
+        }
+    }
+
     public IntBoundingBox getBoundingBox()
     {
         return this.mainBox;
     }
 
-    public ImmutableList<IntBoundingBox> getComponents()
+    public ImmutableList<@NotNull IntBoundingBox> getComponents()
     {
         return this.componentBoxes;
     }
@@ -58,7 +134,7 @@ public class StructureData
 
     public static StructureData fromStructureStart(StructureType type, StructureStart structure)
     {
-        ImmutableList.Builder<IntBoundingBox> builder = ImmutableList.builder();
+        ImmutableList.Builder<@NotNull IntBoundingBox> builder = ImmutableList.builder();
         List<StructurePiece> components = structure.getChildren();
 
         for (StructurePiece component : components)
@@ -66,7 +142,7 @@ public class StructureData
             builder.add(IntBoundingBox.fromVanillaBox(component.getBoundingBox()));
         }
 
-        return new StructureData(type, builder.build());
+        return new StructureData(type, builder.build(), structure);
     }
 
     @Nullable
@@ -75,24 +151,36 @@ public class StructureData
         if (tag.contains("id", Constants.NBT.TAG_STRING) &&
             tag.contains("Children", Constants.NBT.TAG_LIST))
         {
-            StructureType type = StructureType.fromStructureId(tag.getString("id"));
+			String id = tag.getString("id");
+            StructureType type = StructureType.fromStructureId(id);
 
             if (type == StructureType.UNKNOWN && Configs.Generic.DEBUG_MESSAGES.getBooleanValue())
             {
-                MiniHUD.LOGGER.warn("StructureData.fromStructureStartTag(): Unknown structure type '{}'", tag.getString("id"));
+                MiniHUD.LOGGER.warn("StructureData.fromStructureStartTag(): Unknown structure type '{}'", id);
             }
 
-            ImmutableList.Builder<IntBoundingBox> builder = ImmutableList.builder();
-            NbtList pieces = tag.getList("Children", Constants.NBT.TAG_COMPOUND);
-            final int count = pieces.size();
-
-            for (int i = 0; i < count; ++i)
+            try
             {
-                NbtCompound pieceTag = pieces.getCompound(i);
-                builder.add(IntBoundingBox.fromArray(pieceTag.getIntArray("BB")));
-            }
+//                Structure structure = DataStorage.getInstance().getWorldRegistryManager().getOrThrow(RegistryKeys.STRUCTURE).get(Identifier.tryParse(id));
+//                final int ref = tag.getInt("references", 0);
+//                ChunkPos pos = new ChunkPos(tag.getInt("ChunkX", 0), tag.getInt("ChunkZ", 0));
+                ImmutableList.Builder<@NotNull IntBoundingBox> builder = ImmutableList.builder();
+                NbtList pieces = tag.getList("Children", Constants.NBT.TAG_COMPOUND);
+                boolean shouldExpandBox = tag.contains("ExpandBox") && tag.getBoolean("ExpandBox");
+                final int count = pieces.size();
 
-            return new StructureData(type, builder.build(), currentTime);
+                for (int i = 0; i < count; ++i)
+                {
+                    NbtCompound pieceTag = pieces.getCompound(i);
+                    builder.add(IntBoundingBox.fromArray(pieceTag.getIntArray("BB")));
+                }
+
+                return new StructureData(type, builder.build(), currentTime, shouldExpandBox);
+            }
+            catch (Exception e)
+            {
+                MiniHUD.LOGGER.warn("StructureData.fromStructureStartTag(): Failed to parse structure [{}] data; {}", id, e.getLocalizedMessage());
+            }
         }
 
         return null;
@@ -151,7 +239,7 @@ public class StructureData
         return this.type == other.type;
     }
 
-    public static IntBoundingBox encompass(Iterable<IntBoundingBox> boxes)
+    public static IntBoundingBox encompass(Iterable<IntBoundingBox> boxes, boolean expandBox)
     {
         Iterator<IntBoundingBox> iterator = boxes.iterator();
 
@@ -176,7 +264,15 @@ public class StructureData
                 maxZ = Math.max(maxZ, box.maxZ);
             }
 
-            return new IntBoundingBox(minX, minY, minZ, maxX, maxY, maxZ);
+            IntBoundingBox bb = new IntBoundingBox(minX, minY, minZ, maxX, maxY, maxZ);
+
+			// Vanilla says to expand it if != StructureTerrainAdaptation.NONE
+			if (expandBox)
+			{
+				bb.expand(expandBoxAmount);
+			}
+
+			return bb;
         }
 
         return new IntBoundingBox(0, 0, 0, 0, 0, 0);

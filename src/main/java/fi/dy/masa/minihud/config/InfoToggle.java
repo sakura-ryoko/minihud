@@ -1,8 +1,11 @@
 package fi.dy.masa.minihud.config;
 
+import java.util.List;
+import javax.annotation.Nullable;
 import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
+
 import fi.dy.masa.malilib.config.ConfigType;
 import fi.dy.masa.malilib.config.IConfigInteger;
 import fi.dy.masa.malilib.config.IHotkeyTogglable;
@@ -14,91 +17,101 @@ import fi.dy.masa.malilib.hotkeys.KeybindSettings;
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.Reference;
+import fi.dy.masa.minihud.data.HudDataManager;
+import fi.dy.masa.minihud.info.InfoLine;
+import fi.dy.masa.minihud.info.InfoLineFlag;
+import fi.dy.masa.minihud.info.InfoLineType;
+import fi.dy.masa.minihud.info.InfoLineTypes;
 
 public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
 {
     // Basic Info
-    FPS                     ("infoFPS",                     false, ""),
-    MEMORY_USAGE            ("infoMemoryUsage",             false, ""),
-    TIME_REAL               ("infoTimeIRL",                 true,  ""),
-    TIME_WORLD              ("infoTimeWorld",               false, ""),
-    TIME_WORLD_FORMATTED    ("infoWorldTimeFormatted",      false, ""),
+    FPS                     ("infoFPS",                     InfoLineTypes.FPS, false, ""),
+//    GPU                     ("infoGPU",                     InfoLineTypes.GPU, false, ""),
+    MEMORY_USAGE            ("infoMemoryUsage",             InfoLineTypes.MEMORY, false, ""),
+    TIME_REAL               ("infoTimeIRL",                 InfoLineTypes.TIME_IRL, true,  ""),
+    TIME_WORLD              ("infoTimeWorld",               InfoLineTypes.TIME_WORLD, false, ""),
+    TIME_WORLD_FORMATTED    ("infoWorldTimeFormatted",      InfoLineTypes.TIME_WORLD_FORMATTED, false, ""),
 
     // Player (Camera)
-    COORDINATES             ("infoCoordinates",             true,  ""),
-    COORDINATES_SCALED      ("infoCoordinatesScaled",       false, ""),
-    BLOCK_POS               ("infoBlockPosition",           false, ""),
-    CHUNK_POS               ("infoChunkPosition",           false, ""),
-    BLOCK_IN_CHUNK          ("infoBlockInChunk",            false, ""),
-    DIMENSION               ("infoDimensionId",             false, ""),
-    FACING                  ("infoFacing",                  true,  ""),
-    ROTATION_YAW            ("infoRotationYaw",             false, ""),
-    ROTATION_PITCH          ("infoRotationPitch",           false, ""),
+    COORDINATES             ("infoCoordinates",             InfoLineTypes.COORDINATES, true,  ""),
+    COORDINATES_SCALED      ("infoCoordinatesScaled",       InfoLineTypes.COORDINATES_SCALED, false, ""),
+    BLOCK_POS               ("infoBlockPosition",           InfoLineTypes.BLOCK_POS, false, ""),
+    CHUNK_POS               ("infoChunkPosition",           InfoLineTypes.CHUNK_POS, false, ""),
+    BLOCK_IN_CHUNK          ("infoBlockInChunk",            InfoLineTypes.BLOCK_IN_CHUNK, false, ""),
+    DIMENSION               ("infoDimensionId",             InfoLineTypes.DIMENSION, false, ""),
+    FACING                  ("infoFacing",                  InfoLineTypes.FACING, true,  ""),
+    ROTATION_YAW            ("infoRotationYaw",             InfoLineTypes.ROTATION_YAW, false, ""),
+    ROTATION_PITCH          ("infoRotationPitch",           InfoLineTypes.ROTATION_PITCH, false, ""),
 
     // Player
-    BLOCK_BREAK_SPEED       ("infoBlockBreakSpeed",         false, ""),
-    PLAYER_EXPERIENCE       ("infoPlayerExperience",        false, ""),
-    SPEED                   ("infoSpeed",                   false, ""),
-    SPEED_AXIS              ("infoSpeedAxis",               false, ""),
-    SPEED_HV                ("infoSpeedHV",                 false, ""),
-    SPRINTING               ("infoSprinting",               false, ""),
+    BLOCK_BREAK_SPEED       ("infoBlockBreakSpeed",         InfoLineTypes.BLOCK_BREAK_SPEED, false, ""),
+    PLAYER_EXPERIENCE       ("infoPlayerExperience",        InfoLineTypes.PLAYER_EXP, false, ""),
+    SPEED                   ("infoSpeed",                   InfoLineTypes.SPEED, false, ""),
+    SPEED_AXIS              ("infoSpeedAxis",               InfoLineTypes.SPEED_AXIS, false, ""),
+    SPEED_HV                ("infoSpeedHV",                 InfoLineTypes.SPEED_HV, false, ""),
+    SPRINTING               ("infoSprinting",               InfoLineTypes.SPRINTING, false, ""),
 
     // Server
-    SERVER_TPS              ("infoServerTPS",               false, ""),
-    SERVUX                  ("infoServux",                  false, true, ""),
-    PING                    ("infoPing",                    false, ""),
+    SERVER_TPS              ("infoServerTPS",               InfoLineTypes.SERVER_TPS, false, ""),
+    SERVUX                  ("infoServux",                  InfoLineTypes.SERVUX, false, true, ""),
+    PING                    ("infoPing",                    InfoLineTypes.PING, false, ""),
 
     // World
-    WEATHER                 ("infoWeather",                 false, true, ""),
-    TIME_TOTAL_MODULO       ("infoTimeTotalModulo",         false, ""),
-    TIME_DAY_MODULO         ("infoTimeDayModulo",           false, ""),
-    MOB_CAPS                ("infoMobCaps",                 false, true,""),
-    PARTICLE_COUNT          ("infoParticleCount",           false, ""),
-    DIFFICULTY              ("infoDifficulty",              false, ""),
-    ENTITIES                ("infoEntities",                false, ""),
-    ENTITIES_CLIENT_WORLD   ("infoEntitiesClientWorld",     false, ""),
-    TILE_ENTITIES           ("infoTileEntities",            false, ""),
+    WEATHER                 ("infoWeather",                 InfoLineTypes.WEATHER, false, true, ""),
+    TIME_TOTAL_MODULO       ("infoTimeTotalModulo",         InfoLineTypes.TIME_TOTAL_MODULO, false, ""),
+    TIME_DAY_MODULO         ("infoTimeDayModulo",           InfoLineTypes.TIME_DAY_MODULO, false, ""),
+    MOB_CAPS                ("infoMobCaps",                 InfoLineTypes.MOB_CAPS, false, true,""),
+    PARTICLE_COUNT          ("infoParticleCount",           InfoLineTypes.PARTICLE_COUNT, false, ""),
+    DIFFICULTY              ("infoDifficulty",              InfoLineTypes.DIFFICULTY, false, ""),
+    ENTITIES                ("infoEntities",                InfoLineTypes.ENTITIES, false, ""),
+    ENTITIES_CLIENT_WORLD   ("infoEntitiesClientWorld",     InfoLineTypes.ENTITIES_CLIENT_WORLD, false, ""),
+    TILE_ENTITIES           ("infoTileEntities",            InfoLineTypes.TILE_ENTITIES, false, ""),
 
     // World (Current position)
-    LIGHT_LEVEL             ("infoLightLevel",              false, ""),
-    BIOME                   ("infoBiome",                   false, ""),
-    BIOME_REG_NAME          ("infoBiomeRegistryName",       false, ""),
-    DISTANCE                ("infoDistance",                false, ""),
+    LIGHT_LEVEL             ("infoLightLevel",              InfoLineTypes.LIGHT_LEVEL, false, ""),
+    BIOME                   ("infoBiome",                   InfoLineTypes.BIOME, false, ""),
+    BIOME_REG_NAME          ("infoBiomeRegistryName",       InfoLineTypes.BIOME_REG_NAME, false, ""),
+    DISTANCE                ("infoDistance",                InfoLineTypes.DISTANCE, false, ""),
 
     // Chunk
-    LOADED_CHUNKS_COUNT     ("infoLoadedChunksCount",       false, ""),
-    CHUNK_SECTIONS          ("infoChunkSections",           false, ""),
-    CHUNK_SECTIONS_FULL     ("infoChunkSectionsLine",       false, ""),
-    CHUNK_UPDATES           ("infoChunkUpdates",            false, ""),
-    REGION_FILE             ("infoRegionFile",              false, ""),
-    SLIME_CHUNK             ("infoSlimeChunk",              false, ""),
+    LOADED_CHUNKS_COUNT     ("infoLoadedChunksCount",       InfoLineTypes.LOADED_CHUNKS, false, ""),
+    CHUNK_SECTIONS          ("infoChunkSections",           InfoLineTypes.CHUNK_SECTIONS, false, ""),
+    CHUNK_SECTIONS_FULL     ("infoChunkSectionsLine",       InfoLineTypes.CHUNK_SECTIONS_FULL, false, ""),
+    CHUNK_UPDATES           ("infoChunkUpdates",            InfoLineTypes.CHUNK_UPDATES, false, ""),
+    REGION_FILE             ("infoRegionFile",              InfoLineTypes.REGION_FILE, false, ""),
+    SLIME_CHUNK             ("infoSlimeChunk",              InfoLineTypes.SLIME_CHUNK, false, ""),
 
     // Block
-    LOOKING_AT_BLOCK        ("infoLookingAtBlock",          false, ""),
-    LOOKING_AT_BLOCK_CHUNK  ("infoLookingAtBlockInChunk",   false, ""),
-    BLOCK_PROPS             ("infoBlockProperties",         false, ""),
-    BEE_COUNT               ("infoBeeCount",                false, true, ""),
-    COMPARATOR_OUTPUT       ("infoComparatorOutput",        false, true, ""),
-    HONEY_LEVEL             ("infoHoneyLevel",              false, ""),
-    FURNACE_XP              ("infoFurnaceXp",               false, true, ""),
+    LOOKING_AT_BLOCK        ("infoLookingAtBlock",          InfoLineTypes.LOOKING_AT_BLOCK, false, ""),
+    LOOKING_AT_BLOCK_CHUNK  ("infoLookingAtBlockInChunk",   InfoLineTypes.LOOKING_AT_CHUNK, false, ""),
+    BLOCK_PROPS             ("infoBlockProperties",         InfoLineTypes.BLOCK_PROPS, false, ""),
+    BEE_COUNT               ("infoBeeCount",                InfoLineTypes.BEE_COUNT, false, true, ""),
+    COMPARATOR_OUTPUT       ("infoComparatorOutput",        InfoLineTypes.COMPARATOR, false, true, ""),
+    HONEY_LEVEL             ("infoHoneyLevel",              InfoLineTypes.HONEY_LEVEL, false, ""),
+    FURNACE_XP              ("infoFurnaceXp",               InfoLineTypes.FURNACE_EXP, false, true, ""),
 
     // Entity
-    ENTITY_REG_NAME         ("infoEntityRegistryName",      false, ""),
-    LOOKING_AT_ENTITY       ("infoLookingAtEntity",         false, ""),
-    LOOKING_AT_EFFECTS      ("infoLookingAtEffects",        false, ""),
-    LOOKING_AT_PLAYER_EXP   ("infoLookingAtPlayerExp",      false, ""),
-    ZOMBIE_CONVERSION       ("infoZombieConversion",        false, ""),
-    HORSE_SPEED             ("infoHorseSpeed",              false, ""),
-    HORSE_JUMP              ("infoHorseJump",               false, ""),
-    PANDA_GENE              ("infoPandaGene",               false, ""),
-    DOLPHIN_TREASURE        ("infoDolphinTreasure",         false, ""),
-    ENTITY_VARIANT          ("infoEntityVariant",           false, ""),
+    ENTITY_REG_NAME         ("infoEntityRegistryName",      InfoLineTypes.ENTITY_REG, false, ""),
+    LOOKING_AT_ENTITY       ("infoLookingAtEntity",         InfoLineTypes.LOOKING_AT_ENTITY, false, ""),
+    LOOKING_AT_EFFECTS      ("infoLookingAtEffects",        InfoLineTypes.LOOKING_AT_EFFECTS, false, ""),
+    LOOKING_AT_PLAYER_EXP   ("infoLookingAtPlayerExp",      InfoLineTypes.LOOKING_AT_PLAYER_EXP, false, ""),
+    ZOMBIE_CONVERSION       ("infoZombieConversion",        InfoLineTypes.ZOMBIE_CONVERSION, false, ""),
+    HORSE_SPEED             ("infoHorseSpeed",              InfoLineTypes.HORSE_SPEED, false, ""),
+    HORSE_JUMP              ("infoHorseJump",               InfoLineTypes.HORSE_JUMP, false, ""),
+    HORSE_MAX_HEALTH        ("infoHorseMaxHealth",          InfoLineTypes.HORSE_MAX_HEALTH, false, ""),
+    PANDA_GENE              ("infoPandaGene",               InfoLineTypes.PANDA_GENE, false, ""),
+    DOLPHIN_TREASURE        ("infoDolphinTreasure",         InfoLineTypes.DOLPHIN_TREASURE, false, ""),
+    ENTITY_VARIANT          ("infoEntityVariant",           InfoLineTypes.ENTITY_VARIANT, false, ""),
+//    ENTITY_HOME_POS         ("infoEntityHomePos",           InfoLineTypes.HOME_POS, false, ""),
+//    ENTITY_COPPER_AGING		("infoEntityCopperAging",       InfoLineTypes.COPPER_AGING, false, ""),
     ;
 
     public static final ImmutableList<InfoToggle> VALUES = ImmutableList.copyOf(values());
     private static final String INFO_KEY = Reference.MOD_ID+".config.info_toggle";
 
     private final String name;
+    private final InfoLineType<?> type;
     private String comment;
     private String prettyName;
     private String translatedName;
@@ -115,9 +128,9 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
         return nextDefaultLinePosition++;
     }
 
-    InfoToggle(String name, boolean defaultValue, String defaultHotkey)
+    InfoToggle(String name, InfoLineType<?> type, boolean defaultValue, String defaultHotkey)
     {
-        this(name,
+        this(name, type,
              defaultValue, false,
              getNextDefaultLinePosition(),
              defaultHotkey,
@@ -127,9 +140,9 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
              buildTranslateName(name, "prettyName"));
     }
 
-    InfoToggle(String name, boolean defaultValue, boolean serverDataRequired, String defaultHotkey)
+    InfoToggle(String name, InfoLineType<?> type, boolean defaultValue, boolean serverDataRequired, String defaultHotkey)
     {
-        this(name,
+        this(name, type,
              defaultValue, serverDataRequired,
              getNextDefaultLinePosition(),
              defaultHotkey,
@@ -139,9 +152,9 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
              buildTranslateName(name, "prettyName"));
     }
 
-    InfoToggle(String name, boolean defaultValue, String defaultHotkey, KeybindSettings settings)
+    InfoToggle(String name, InfoLineType<?> type, boolean defaultValue, String defaultHotkey, KeybindSettings settings)
     {
-        this(name,
+        this(name, type,
              defaultValue, false,
              getNextDefaultLinePosition(),
              defaultHotkey,
@@ -151,9 +164,9 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
              buildTranslateName(name, "prettyName"));
     }
 
-    InfoToggle(String name, boolean defaultValue, boolean serverDataRequired, String defaultHotkey, KeybindSettings settings)
+    InfoToggle(String name, InfoLineType<?> type, boolean defaultValue, boolean serverDataRequired, String defaultHotkey, KeybindSettings settings)
     {
-        this(name,
+        this(name, type,
              defaultValue, serverDataRequired,
              getNextDefaultLinePosition(),
              defaultHotkey,
@@ -163,9 +176,9 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
              buildTranslateName(name, "prettyName"));
     }
 
-    InfoToggle(String name, boolean defaultValue, int linePosition, String defaultHotkey)
+    InfoToggle(String name, InfoLineType<?> type, boolean defaultValue, int linePosition, String defaultHotkey)
     {
-        this(name,
+        this(name, type,
              defaultValue, false,
              linePosition,
              defaultHotkey,
@@ -175,9 +188,9 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
              buildTranslateName(name, "prettyName"));
     }
 
-    InfoToggle(String name, boolean defaultValue, boolean serverDataRequired, int linePosition, String defaultHotkey)
+    InfoToggle(String name, InfoLineType<?> type, boolean defaultValue, boolean serverDataRequired, int linePosition, String defaultHotkey)
     {
-        this(name,
+        this(name, type,
              defaultValue, serverDataRequired,
              linePosition,
              defaultHotkey,
@@ -187,9 +200,9 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
              buildTranslateName(name, "prettyName"));
     }
 
-    InfoToggle(String name, boolean defaultValue, int linePosition, String defaultHotkey, KeybindSettings settings)
+    InfoToggle(String name, InfoLineType<?> type, boolean defaultValue, int linePosition, String defaultHotkey, KeybindSettings settings)
     {
-        this(name,
+        this(name, type,
              defaultValue, false,
              linePosition,
              defaultHotkey,
@@ -199,9 +212,9 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
              buildTranslateName(name, "prettyName"));
     }
 
-    InfoToggle(String name, boolean defaultValue, boolean serverDataRequired, int linePosition, String defaultHotkey, KeybindSettings settings)
+    InfoToggle(String name, InfoLineType<?> type, boolean defaultValue, boolean serverDataRequired, int linePosition, String defaultHotkey, KeybindSettings settings)
     {
-        this(name,
+        this(name, type,
              defaultValue, serverDataRequired,
              linePosition,
              defaultHotkey,
@@ -211,29 +224,30 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
              buildTranslateName(name, "prettyName"));
     }
 
-    InfoToggle(String name, boolean defaultValue, String defaultHotkey, String comment)
+    InfoToggle(String name, InfoLineType<?> type, boolean defaultValue, String defaultHotkey, String comment)
     {
-        this(name, defaultValue, false, getNextDefaultLinePosition(), defaultHotkey, comment, KeybindSettings.DEFAULT, buildTranslateName(name, "name"), name);
+        this(name, type, defaultValue, false, getNextDefaultLinePosition(), defaultHotkey, comment, KeybindSettings.DEFAULT, buildTranslateName(name, "name"), name);
     }
 
-    InfoToggle(String name, boolean defaultValue, boolean serverDataRequired, String defaultHotkey, String comment)
+    InfoToggle(String name, InfoLineType<?> type, boolean defaultValue, boolean serverDataRequired, String defaultHotkey, String comment)
     {
-        this(name, defaultValue, serverDataRequired, getNextDefaultLinePosition(), defaultHotkey, comment, KeybindSettings.DEFAULT, buildTranslateName(name, "name"), name);
+        this(name, type, defaultValue, serverDataRequired, getNextDefaultLinePosition(), defaultHotkey, comment, KeybindSettings.DEFAULT, buildTranslateName(name, "name"), name);
     }
 
-    InfoToggle(String name, boolean defaultValue, String defaultHotkey, String comment, String translatedName)
+    InfoToggle(String name, InfoLineType<?> type, boolean defaultValue, String defaultHotkey, String comment, String translatedName)
     {
-        this(name, defaultValue, false, getNextDefaultLinePosition(), defaultHotkey, comment, KeybindSettings.DEFAULT, translatedName, name);
+        this(name, type, defaultValue, false, getNextDefaultLinePosition(), defaultHotkey, comment, KeybindSettings.DEFAULT, translatedName, name);
     }
 
-    InfoToggle(String name, boolean defaultValue, boolean serverDataRequired, String defaultHotkey, String comment, String translatedName)
+    InfoToggle(String name, InfoLineType<?> type, boolean defaultValue, boolean serverDataRequired, String defaultHotkey, String comment, String translatedName)
     {
-        this(name, defaultValue, serverDataRequired, getNextDefaultLinePosition(), defaultHotkey, comment, KeybindSettings.DEFAULT, translatedName, name);
+        this(name, type, defaultValue, serverDataRequired, getNextDefaultLinePosition(), defaultHotkey, comment, KeybindSettings.DEFAULT, translatedName, name);
     }
 
-    InfoToggle(String name, boolean defaultValue, boolean serverDataRequired, int linePosition, String defaultHotkey, String comment, KeybindSettings settings, String translatedName, String prettyName)
+    InfoToggle(String name, InfoLineType<?> type, boolean defaultValue, boolean serverDataRequired, int linePosition, String defaultHotkey, String comment, KeybindSettings settings, String translatedName, String prettyName)
     {
         this.name = name;
+        this.type = type;
         this.valueBoolean = defaultValue;
         this.defaultValueBoolean = defaultValue;
         this.keybind = KeybindMulti.fromStorageString(defaultHotkey, settings);
@@ -252,6 +266,36 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
         return ConfigType.HOTKEY;
     }
 
+    public @Nullable InfoLineType<?> getInfoType()
+    {
+        return this.type;
+    }
+
+    public @Nullable List<InfoLineFlag> getInfoFlags()
+    {
+        if (this.type != null)
+        {
+            return this.type.getFlags();
+        }
+
+        return null;
+    }
+
+    public boolean hasFlag(InfoLineFlag flag)
+    {
+        return this.type != null && this.type.getFlags().contains(flag);
+    }
+    
+    public @Nullable InfoLine initParser()
+    {
+        if (this.type != null)
+        {
+            return this.type.init(this);
+        }
+        
+        return null;
+    }
+    
     @Override
     public String getName()
     {
@@ -359,6 +403,17 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     public void setBooleanValue(boolean value)
     {
         this.valueBoolean = value;
+    }
+
+    @Override
+    public void toggleBooleanValue()
+    {
+        IHotkeyTogglable.super.toggleBooleanValue();
+
+        if (this == InfoToggle.SERVER_TPS || this == InfoToggle.MOB_CAPS)
+        {
+            HudDataManager.getInstance().refreshDataLoggers();
+        }
     }
 
     @Override

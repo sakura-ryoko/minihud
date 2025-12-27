@@ -7,6 +7,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BeaconBlockEntity;
 import net.minecraft.block.entity.BlockEntity;
@@ -55,5 +56,12 @@ public abstract class MixinBeaconBlockEntity extends BlockEntity
             OverlayRendererBeaconRange.INSTANCE.onBlockStatusChange(pos);
             ((MixinBeaconBlockEntity) (Object) blockEntity).levelPre = newLevel;
         }
+    }
+
+    @Inject(method = "updateLevel", at = @At("RETURN"))
+    private static void minihud_onUpdateLevel(World world, int x, int y, int z, CallbackInfoReturnable<Integer> cir)
+    {
+        BlockPos pos = new BlockPos(x, y, z);
+        OverlayRendererBeaconRange.INSTANCE.onBlockStatusChange(pos);
     }
 }

@@ -6,6 +6,10 @@ import net.minecraft.client.gl.ShaderProgram;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.VertexFormat;
 
+/**
+ * Simply not needed
+ */
+@Deprecated(forRemoval = true)
 public abstract class RenderObjectBase
 {
     protected final VertexFormat.DrawMode glMode;

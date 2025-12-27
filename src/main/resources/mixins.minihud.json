@@ -4,24 +4,14 @@
     "compatibilityLevel": "JAVA_21",
     "minVersion": "0.8",
     "mixins": [
-        "IMixinMinecraftServer",
-        "IMixinWorldRenderer",
-        "MixinChatScreen",
-        "MixinClientPlayerInteractionManager",
-        "MixinClientPlayNetworkHandler",
-        "MixinLanguage",
-        "MixinMinecraftClient",
-        "MixinMinecraftServer",
-        "MixinSubtitlesHud",
         "block.IMixinAbstractFurnaceBlockEntity",
         "block.IMixinBeaconBlockEntity",
         "block.MixinBeaconBlockEntity",
         "block.MixinConduitBlockEntity",
-        "debug.IMixinDebugRenderer",
+        "client.MixinLanguage",
         "debug.IMixinEntityNavigation",
         "debug.IMixinMobEntity",
         "debug.MixinDebugInfoSender",
-        "debug.MixinDebugRenderer",
         "debug.MixinPath",
         "debug.MixinSharedConstants",
         "entity.IMixinEntity",
@@ -31,6 +21,10 @@
         "entity.IMixinZombieEntity",
         "entity.IMixinZombieVillagerEntity",
         "item.MixinBundleItem",
+        "network.MixinResourcePackSendS2CPacket",
+        "network.MixinServerPlayNetworkHandler",
+        "server.IMixinMinecraftServer",
+        "server.MixinMinecraftServer",
         "world.IMixinBiomeAccess",
         "world.IMixinChunkDeltaUpdateS2CPacket",
         "world.IMixinServerWorld",
@@ -39,7 +33,24 @@
         "world.MixinServerEntityManager",
         "world.MixinServerWorld"
     ],
+    "client": [
+        "client.IMixinOptions",
+        "client.MixinMinecraftClient",
+        "debug.IMixinDebugRenderer",
+        "debug.MixinDebugRenderer",
+        "hud.MixinChatScreen",
+        "hud.MixinSubtitlesHud",
+        "network.MixinClientCommonNetworkHandler",
+        "network.MixinClientPlayerInteractionManager",
+        "network.MixinClientPlayNetworkHandler",
+        "render.IGlTimer",
+        "render.IMixinBufferBuilder",
+        "render.IMixinWorldRenderer",
+        "render.MixinBlockEntityRenderDispatcher",
+        "render.MixinLevelRenderer"
+    ],
+    "server": [],
     "injectors": {
         "defaultRequire": 1
-    }
+  }
 }
