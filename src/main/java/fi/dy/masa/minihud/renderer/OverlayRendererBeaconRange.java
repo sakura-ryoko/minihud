@@ -86,6 +86,12 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
     }
 
     @Override
+    protected void expireBlockRange(BlockPos pos)
+    {
+	    this.positions.remove(pos);
+    }
+
+    @Override
     protected void resetBlockRange()
     {
         this.positions.clear();
@@ -149,7 +155,6 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
             MiniHUD.LOGGER.error("OverlayRendererBeaconRange#renderQuads(): Exception; {}", err.getMessage());
         }
 
-//        matrices.pop();
         profiler.pop();
     }
 
