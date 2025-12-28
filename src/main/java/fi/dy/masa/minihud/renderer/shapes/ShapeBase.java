@@ -45,6 +45,7 @@ public abstract class ShapeBase extends OverlayRendererBase implements IRangeCha
         this.needsUpdate = true;
         this.renderLines = false;
         this.renderThroughShape = false;
+        this.useCulling = false;
     }
 
     @Override

@@ -32,6 +32,7 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
         super(RendererToggle.OVERLAY_BEACON_RANGE, BlockEntityType.BEACON, BeaconBlockEntity.class);
         this.useCulling = false;
         this.positions = new HashMap<>();
+        this.useCulling = false;
     }
 
     @Override

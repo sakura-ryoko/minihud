@@ -37,7 +37,7 @@ public class ShapeCircle extends ShapeCircleBase
     {
         super(ShapeType.CIRCLE, Configs.Colors.SHAPE_CIRCLE.getColor(), 16);
         this.hasData = false;
-        this.useCulling = true;
+        this.useCulling = false;
     }
 
     @Override

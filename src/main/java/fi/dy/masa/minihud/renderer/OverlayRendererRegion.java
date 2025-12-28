@@ -29,7 +29,7 @@ public class OverlayRendererRegion extends OverlayRendererBase
     {
         this.boxes = new ArrayList<>();
         this.hasData = false;
-        this.useCulling = true;
+        this.useCulling = false;
         this.renderThrough = false;
     }
 

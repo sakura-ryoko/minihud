@@ -32,7 +32,7 @@ public class OverlayRendererHandheldBeaconRange extends OverlayRendererBase
     protected OverlayRendererHandheldBeaconRange()
     {
         this.level = -1;
-        this.useCulling = true;
+        this.useCulling = false;
         this.renderThrough = false;
         this.box = null;
         this.hasData = false;

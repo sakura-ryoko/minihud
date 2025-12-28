@@ -71,7 +71,7 @@ public class ShapeBox extends ShapeBase
         this.gridEndOffset = Vec3.ZERO;
         this.renderBox = null;
         this.hasData = false;
-        this.useCulling = true;
+        this.useCulling = false;
     }
 
 	@Override

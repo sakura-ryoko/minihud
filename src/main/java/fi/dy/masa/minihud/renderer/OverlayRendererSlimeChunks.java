@@ -44,7 +44,7 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
         this.wasSeedKnown = false;
         this.seed = -1L;
         this.topY = 40;
-        this.useCulling = true;
+        this.useCulling = false;
         this.hasData = false;
     }
 

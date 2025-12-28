@@ -43,7 +43,7 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
     protected OverlayRendererRandomTickableChunks(RendererToggle toggle)
     {
         this.toggle = toggle;
-        this.useCulling = true;
+        this.useCulling = false;
         this.renderThrough = false;
         this.chunkMap = new HashMap<>();
         this.cameraEntity = null;

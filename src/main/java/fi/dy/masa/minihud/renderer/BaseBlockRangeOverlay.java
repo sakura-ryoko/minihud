@@ -193,7 +193,7 @@ public abstract class BaseBlockRangeOverlay<T extends BlockEntity> extends Overl
 
             if (distSq > max)
             {
-                this.expireBlockRange(mutablePos.toImmutable());
+                this.expireBlockRange(mutablePos.immutable());
                 continue;
             }
 

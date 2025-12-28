@@ -35,6 +35,7 @@ public class OverlayRendererStructures extends OverlayRendererBase
         this.structures = new ArrayList<>();
         this.hasData = false;
 		this.renderOutlines = false;
+	    this.useCulling = false;
     }
 
     @Override
