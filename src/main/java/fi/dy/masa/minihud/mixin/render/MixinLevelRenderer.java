@@ -33,27 +33,28 @@ public abstract class MixinLevelRenderer
 		InfoLineRenderStats.INSTANCE.resetTileEntityCount();
 	}
 
-	@Inject(method = "renderBlockEntities",
-	        at = @At(value = "INVOKE",
-	                 target = "Lnet/minecraft/client/render/block/entity/BlockEntityRenderDispatcher;render(Lnet/minecraft/block/entity/BlockEntity;FLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;)V",
-	                 ordinal = 0)
-	)
-	private void minihud_countVisibleTileEntities2(MatrixStack matrices, VertexConsumerProvider.Immediate entityVertexConsumers,
-	                                               VertexConsumerProvider.Immediate effectVertexConsumers,
-	                                               Camera camera, float tickProgress, CallbackInfo ci)
-	{
-		InfoLineRenderStats.INSTANCE.incrementTileEntityCount();
-	}
-
-	@Inject(method = "renderBlockEntities",
-	        at = @At(value = "INVOKE",
-	                 target = "Lnet/minecraft/client/render/block/entity/BlockEntityRenderDispatcher;render(Lnet/minecraft/block/entity/BlockEntity;FLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;)V",
-	                 ordinal = 1)
-	)
-	private void minihud_countVisibleTileEntities3(MatrixStack matrices, VertexConsumerProvider.Immediate entityVertexConsumers,
-	                                               VertexConsumerProvider.Immediate effectVertexConsumers,
-	                                               Camera camera, float tickProgress, CallbackInfo ci)
-	{
-		InfoLineRenderStats.INSTANCE.incrementTileEntityCount();
-	}
+	// fixme, Sodium breaks this
+//	@Inject(method = "renderBlockEntities",
+//	        at = @At(value = "INVOKE",
+//	                 target = "Lnet/minecraft/client/render/block/entity/BlockEntityRenderDispatcher;render(Lnet/minecraft/block/entity/BlockEntity;FLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;)V",
+//	                 ordinal = 0)
+//	)
+//	private void minihud_countVisibleTileEntities2(MatrixStack matrices, VertexConsumerProvider.Immediate entityVertexConsumers,
+//	                                               VertexConsumerProvider.Immediate effectVertexConsumers,
+//	                                               Camera camera, float tickProgress, CallbackInfo ci)
+//	{
+//		InfoLineRenderStats.INSTANCE.incrementTileEntityCount();
+//	}
+//
+//	@Inject(method = "renderBlockEntities",
+//	        at = @At(value = "INVOKE",
+//	                 target = "Lnet/minecraft/client/render/block/entity/BlockEntityRenderDispatcher;render(Lnet/minecraft/block/entity/BlockEntity;FLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;)V",
+//	                 ordinal = 1)
+//	)
+//	private void minihud_countVisibleTileEntities3(MatrixStack matrices, VertexConsumerProvider.Immediate entityVertexConsumers,
+//	                                               VertexConsumerProvider.Immediate effectVertexConsumers,
+//	                                               Camera camera, float tickProgress, CallbackInfo ci)
+//	{
+//		InfoLineRenderStats.INSTANCE.incrementTileEntityCount();
+//	}
 }

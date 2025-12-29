@@ -47,6 +47,7 @@
         "network.MixinClientPlayNetworkHandler",
         "render.IGlTimer",
         "render.IMixinWorldRenderer",
+        "render.MixinBlockEntityRenderDispatcher",
         "render.MixinLevelRenderer"
     ],
     "server": [],
