@@ -49,6 +49,7 @@
         "render.IGlTimer",
         "render.IMixinBufferBuilder",
         "render.IMixinWorldRenderer",
+        "render.MixinBlockEntityRenderDispatcher",
         "render.MixinLevelRenderer"
     ],
     "server": [],
