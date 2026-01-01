@@ -107,7 +107,7 @@ public abstract class InfoLineCoordinatesDimensionBase extends InfoLine
 
 	    if (InfoToggle.DIMENSION.getBooleanValue())
 	    {
-		    String dimName = ctx.world().getRegistryKey().getRegistry().toString();
+		    String dimName = ctx.world().getRegistryKey().getValue().toString();
 		    str.append(pre).append(this.qt(DIM_KEY)).append(dimName);
 	    }
 
