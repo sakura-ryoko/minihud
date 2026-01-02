@@ -1080,7 +1080,7 @@
     "minihud.label.light_level_render_condition.safe": "안전",
     "minihud.label.light_level_render_condition.spawnable": "스폰가능",
     "minihud.label.lodestone_tooltip": "§7%s [%s]§r",
-    "minihud.label.shape_render_type.full_block": "풀 블록",
+    "minihud.label.shape_render_type.full_block": "완전 블록",
     "minihud.label.shape_render_type.inner_edge": "안쪽 모서리",
     "minihud.label.shape_render_type.outer_edge": "바깥쪽 모서리",
     "minihud.label.shapes.adjustable_spawn_sphere": "조정가능 스폰 구형",
