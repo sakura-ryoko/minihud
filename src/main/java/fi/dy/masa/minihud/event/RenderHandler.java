@@ -49,6 +49,7 @@ import fi.dy.masa.malilib.util.WorldUtils;
 import fi.dy.masa.malilib.util.data.Constants;
 import fi.dy.masa.malilib.util.data.DataEntityUtils;
 import fi.dy.masa.malilib.util.data.tag.CompoundData;
+import fi.dy.masa.malilib.util.data.tag.ListData;
 import fi.dy.masa.malilib.util.data.tag.converter.DataConverterNbt;
 import fi.dy.masa.malilib.util.game.BlockUtils;
 import fi.dy.masa.malilib.util.nbt.NbtInventory;
@@ -257,11 +258,11 @@ public class RenderHandler implements IRenderer
                     {
                         try (NbtInventory nbtInv = NbtInventory.fromInventory(inv))
                         {
-                            CompoundTag nbt = new CompoundTag();
-                            ListTag list = nbtInv.toNbtList(world.registryAccess());
+                            CompoundData data = new CompoundData();
+                            ListData list = nbtInv.toDataList(world.registryAccess());
 
-                            nbt.put(NbtKeys.ENDER_ITEMS, list);
-                            fi.dy.masa.malilib.render.RenderUtils.renderNbtItemsPreview(ctx, stack, nbt, x, y, false);
+                            data.put(NbtKeys.ENDER_ITEMS, list);
+                            fi.dy.masa.malilib.render.RenderUtils.renderDataItemsPreview(ctx, stack, data, x, y, false);
                         }
                         catch (Exception ignored) { }
                     }

@@ -51,11 +51,18 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
     // Mini Secondary Cache so villagers' data doesn't ... `Flash`
     private final ConcurrentHashMap<Integer, Pair<Long, Pair<Entity, CompoundData>>> recentEntityData;
     private long lastTick;
+    private final int xViewRange;
+    private final int yViewRange;
+    private final int zViewRange;
 
     protected OverlayRendererVillagerInfo()
     {
         this.recentEntityData = new ConcurrentHashMap<>();
         this.lastTick = System.currentTimeMillis();
+        this.xViewRange = 30;
+        this.yViewRange = 10;
+        this.zViewRange = 30;
+        this.renderThrough = false;
     }
 
     public void reset(boolean isLogout)
@@ -231,15 +238,15 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
     }
 
     @Override
-    public boolean needsUpdate(Entity entity, Minecraft mc)
+    public boolean needsUpdate(Entity camera, Minecraft mc)
     {
         return true;
     }
 
     @Override
-    public void update(Vec3 cameraPos, Entity entity, Minecraft mc, ProfilerFiller profiler)
+    public void update(Vec3 cameraPos, Entity camera, Minecraft mc, ProfilerFiller profiler)
     {
-        AABB box = entity.getBoundingBox().inflate(30, 10, 30);
+        AABB box = camera.getBoundingBox().inflate(this.xViewRange, this.yViewRange, this.zViewRange);
         Level world = WorldUtils.getBestWorld(mc);
 
         if (world == null) return;
@@ -369,7 +376,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
                     }
                 }
 
-                this.renderAtEntity(overlay, entity, librarian);
+                this.renderAtEntity(overlay, camera, librarian, mc);
             }
         }
 
@@ -383,7 +390,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
 
                 if (conversionTimer > 0)
                 {
-                    this.renderAtEntity(List.of(String.format("%ds", Math.round((float) conversionTimer / 20))), entity, villager);
+                    this.renderAtEntity(List.of(String.format("%ds", Math.round((float) conversionTimer / 20))), camera, villager, mc);
                 }
             }
         }
@@ -407,11 +414,12 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
         super.reset();
     }
 
-    private void renderAtEntity(List<String> texts, Entity entity, Entity targetEntity)
+    private void renderAtEntity(List<String> texts, Entity cam, Entity targetEntity, Minecraft mc)
     {
-        float delta = Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(true);
-        var cameraPos = entity.getPosition(delta);
-        var targetPos = targetEntity.getPosition(delta);
+        if (cam == null) return;
+        float delta = mc.getDeltaTracker().getGameTimeDeltaPartialTick(true);
+        Vec3 cameraPos = cam.getPosition(delta);
+        Vec3 targetPos = targetEntity.getPosition(delta);
         double hypot = Mth.length(cameraPos.x() - targetPos.x(), cameraPos.z() - targetPos.z());
         double distance = 0.8;
         double x = targetPos.x() + (cameraPos.x() - targetPos.x()) / hypot * distance;
@@ -435,8 +443,9 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
 
         for (String line : texts)
         {
-            RenderUtils.drawTextPlate(List.of(line), x, y, z, 0.02f);
-//            RenderUtils.drawTextPlate(List.of(line), x, y, z, entity.getYaw(), entity.getPitch(), 0.02f, 0xFFFFFFFF, 0x40000000, false);
+            // Get the lerp of Yaw / Pitch
+//            RenderUtils.drawTextPlate(List.of(line), x, y, z, 0.02f);
+            RenderUtils.drawTextPlate(List.of(line), x, y, z, cam.getYRot(delta), cam.getXRot(delta), 0.02f, 0xFFFFFFFF, 0x40000000, this.renderThrough);
             y -= 0.2;
         }
     }
