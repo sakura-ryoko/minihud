@@ -36,16 +36,13 @@ public class Configs implements IConfigHandler {
                 public static final ConfigBoolean BEE_TOOLTIPS = new ConfigBoolean("beeTooltips", false)
                                 .apply(GENERIC_KEY);
                 public static final ConfigBoolean DISABLE_VANILLA_BEE_TOOLTIPS = new ConfigBoolean(
-                                "disableVanillaBeeTooltips",
-                                false).apply(GENERIC_KEY);
+                                "disableVanillaBeeTooltips", false).apply(GENERIC_KEY);
                 public static final ConfigBoolean BUNDLE_TOOLTIPS = new ConfigBoolean("bundleTooltips", true)
                                 .apply(GENERIC_KEY);
                 public static final ConfigInteger BUNDLE_TOOLTIPS_FILL_LEVEL = new ConfigInteger(
-                                "bundleTooltipsFillLevel", 64,
-                                1, 64).apply(GENERIC_KEY);
+                                "bundleTooltipsFillLevel", 64, 1, 64).apply(GENERIC_KEY);
                 public static final ConfigBoolean CUSTOM_MODEL_TOOLTIPS = new ConfigBoolean("customModelTooltips",
-                                false)
-                                .apply(GENERIC_KEY);
+                                false).apply(GENERIC_KEY);
                 public static final ConfigBoolean FOOD_TOOLTIPS = new ConfigBoolean("foodTooltips", false)
                                 .apply(GENERIC_KEY);
                 public static final ConfigBoolean HONEY_TOOLTIPS = new ConfigBoolean("honeyTooltips", false)
@@ -55,30 +52,23 @@ public class Configs implements IConfigHandler {
                 public static final ConfigInteger BIOME_OVERLAY_RANGE = new ConfigInteger("biomeOverlayRange", 4, 0, 32)
                                 .apply(GENERIC_KEY);
                 public static final ConfigInteger BIOME_OVERLAY_RANGE_VERTICAL = new ConfigInteger(
-                                "biomeOverlayRangeVertical",
-                                0, 0, 32).apply(GENERIC_KEY);
+                                "biomeOverlayRangeVertical", 0, 0, 32).apply(GENERIC_KEY);
                 public static final ConfigBoolean BIOME_OVERLAY_SINGLE_COLOR = new ConfigBoolean(
-                                "biomeOverlaySingleColor",
-                                true).apply(GENERIC_KEY);
+                                "biomeOverlaySingleColor", true).apply(GENERIC_KEY);
                 public static final ConfigString BLOCK_POS_FORMAT_STRING = new ConfigString("blockPosFormat",
                                 "Block: %d, %d, %d").apply(GENERIC_KEY);
                 public static final ConfigOptionList BLOCK_GRID_OVERLAY_MODE = new ConfigOptionList(
-                                "blockGridOverlayMode",
-                                BlockGridMode.ALL).apply(GENERIC_KEY);
+                                "blockGridOverlayMode", BlockGridMode.ALL).apply(GENERIC_KEY);
                 public static final ConfigInteger BLOCK_GRID_OVERLAY_RADIUS = new ConfigInteger(
-                                "blockGridOverlayRadius", 32, 0,
-                                128).apply(GENERIC_KEY);
+                                "blockGridOverlayRadius", 32, 0, 128).apply(GENERIC_KEY);
                 public static final ConfigBoolean BUNDLE_PREVIEW = new ConfigBoolean("bundlePreview", false)
                                 .apply(GENERIC_KEY);
                 public static final ConfigBoolean BUNDLE_DISPLAY_BACKGROUND_COLOR = new ConfigBoolean(
-                                "bundleDisplayBgColor",
-                                true).apply(GENERIC_KEY);
+                                "bundleDisplayBgColor", true).apply(GENERIC_KEY);
                 public static final ConfigBoolean BUNDLE_DISPLAY_REQUIRE_SHIFT = new ConfigBoolean(
-                                "bundleDisplayRequireShift",
-                                true).apply(GENERIC_KEY);
+                                "bundleDisplayRequireShift", true).apply(GENERIC_KEY);
                 public static final ConfigInteger BUNDLE_DISPLAY_ROW_WIDTH = new ConfigInteger("bundleDisplayRowWidth",
-                                9, 6, 9)
-                                .apply(GENERIC_KEY);
+                                9, 6, 9).apply(GENERIC_KEY);
                 public static final ConfigBoolean CONDUIT_RANGE_OVERLAY_COMBINE_QUADS = new ConfigBoolean(
                                 "conduitRangeOverlayCombineQuads", true).apply(GENERIC_KEY);
                 public static final ConfigBoolean CONDUIT_RANGE_OVERLAY_RENDER_OUTLINES = new ConfigBoolean(
@@ -111,19 +101,15 @@ public class Configs implements IConfigHandler {
                 public static final ConfigBoolean DONT_RESET_SEED_ON_DIMENSION_CHANGE = new ConfigBoolean(
                                 "dontClearStoredSeedOnDimensionChange", true).apply(GENERIC_KEY);
                 public static final ConfigBooleanHotkeyed ENTITY_DATA_SYNC = new ConfigBooleanHotkeyed("entityDataSync",
-                                false,
-                                "").apply(GENERIC_KEY);
+                                false, "").apply(GENERIC_KEY);
                 public static final ConfigBoolean ENTITY_DATA_SYNC_BACKUP = new ConfigBoolean("entityDataSyncBackup",
-                                false)
-                                .apply(GENERIC_KEY);
+                                false).apply(GENERIC_KEY);
                 public static final ConfigBoolean ENTITY_DATA_SYNC_BACKUP_OPEN_TO_LAN = new ConfigBoolean(
                                 "entityDataSyncBackupOpenToLan", false).apply(GENERIC_KEY);
                 public static final ConfigFloat ENTITY_DATA_SYNC_CACHE_REFRESH = new ConfigFloat(
-                                "entityDataSyncCacheRefresh",
-                                0.25f, 0.05f, 1.0f).apply(GENERIC_KEY);
+                                "entityDataSyncCacheRefresh", 0.25f, 0.05f, 1.0f).apply(GENERIC_KEY);
                 public static final ConfigFloat ENTITY_DATA_SYNC_CACHE_TIMEOUT = new ConfigFloat(
-                                "entityDataSyncCacheTimeout",
-                                2.75f, 1.0f, 25.0f).apply(GENERIC_KEY);
+                                "entityDataSyncCacheTimeout", 2.75f, 1.0f, 25.0f).apply(GENERIC_KEY);
                 // public static final ConfigBoolean ENTITY_DATA_LOAD_NBT = new
                 // ConfigBoolean("entityDataSyncLoadNbt", false).apply(GENERIC_KEY);
                 // public static final ConfigBoolean FIX_VANILLA_DEBUG_RENDERERS = new
@@ -131,11 +117,9 @@ public class Configs implements IConfigHandler {
                 public static final ConfigDouble FONT_SCALE = new ConfigDouble("fontScale", 0.5, 0.01, 100.0)
                                 .apply(GENERIC_KEY);
                 public static final ConfigOptionList HUD_ALIGNMENT = new ConfigOptionList("hudAlignment",
-                                HudAlignment.TOP_LEFT)
-                                .apply(GENERIC_KEY);
+                                HudAlignment.TOP_LEFT).apply(GENERIC_KEY);
                 public static final ConfigBooleanHotkeyed HUD_DATA_SYNC = new ConfigBooleanHotkeyed("hudDataSync",
-                                false, "")
-                                .apply(GENERIC_KEY);
+                                false, "").apply(GENERIC_KEY);
                 public static final ConfigBooleanHotkeyed HUD_STATUS_EFFECTS_SHIFT = new ConfigBooleanHotkeyed(
                                 "hudStatusEffectsShift", true, "").apply(GENERIC_KEY);
                 // public static final ConfigBoolean INFO_LINES_USES_NBT = new
@@ -143,31 +127,25 @@ public class Configs implements IConfigHandler {
                 public static final ConfigHotkey INVENTORY_PREVIEW = new ConfigHotkey("inventoryPreview", "LEFT_ALT",
                                 KeybindSettings.PRESS_ALLOWEXTRA).apply(GENERIC_KEY);
                 public static final ConfigBoolean INVENTORY_PREVIEW_ENABLED = new ConfigBoolean(
-                                "inventoryPreviewEnabled",
-                                false).apply(GENERIC_KEY);
+                                "inventoryPreviewEnabled", false).apply(GENERIC_KEY);
                 public static final ConfigHotkey INVENTORY_PREVIEW_TOGGLE_SCREEN = new ConfigHotkey(
-                                "inventoryPreviewToggleScreen", "BUTTON_3",
-                                KeybindSettings.create(KeybindSettings.Context.ANY, KeyAction.PRESS, true, true, false,
-                                                true))
+                                "inventoryPreviewToggleScreen", "BUTTON_3", KeybindSettings.create(
+                                                KeybindSettings.Context.ANY, KeyAction.PRESS, true, true, false, true))
                                 .apply(GENERIC_KEY);
                 public static final ConfigBoolean INVENTORY_PREVIEW_VILLAGER_BG_COLOR = new ConfigBoolean(
                                 "inventoryPreviewVillagerBGColor", false).apply(GENERIC_KEY);
                 public static final ConfigBoolean LIGHT_LEVEL_AUTO_HEIGHT = new ConfigBoolean("lightLevelAutoHeight",
-                                false)
-                                .apply(GENERIC_KEY);
-                public static final ConfigBoolean LIGHT_LEVEL_COLORED_NUMBERS = new ConfigBoolean(
-                                "lightLevelColoredNumbers",
-                                true).apply(GENERIC_KEY);
-                public static final ConfigBoolean LIGHT_LEVEL_COLLISION_CHECK = new ConfigBoolean(
-                                "lightLevelCollisionCheck",
                                 false).apply(GENERIC_KEY);
+                public static final ConfigBoolean LIGHT_LEVEL_COLORED_NUMBERS = new ConfigBoolean(
+                                "lightLevelColoredNumbers", true).apply(GENERIC_KEY);
+                public static final ConfigBoolean LIGHT_LEVEL_COLLISION_CHECK = new ConfigBoolean(
+                                "lightLevelCollisionCheck", false).apply(GENERIC_KEY);
                 public static final ConfigOptionList LIGHT_LEVEL_MARKER_CONDITION = new ConfigOptionList(
                                 "lightLevelMarkerCondition", LightLevelRenderCondition.SPAWNABLE).apply(GENERIC_KEY);
                 public static final ConfigOptionList LIGHT_LEVEL_MARKER_MODE = new ConfigOptionList("lightLevelMarkers",
                                 LightLevelMarkerMode.SQUARE).apply(GENERIC_KEY);
                 public static final ConfigDouble LIGHT_LEVEL_MARKER_SIZE = new ConfigDouble("lightLevelMarkerSize",
-                                0.84, 0.0,
-                                1.0).apply(GENERIC_KEY);
+                                0.84, 0.0, 1.0).apply(GENERIC_KEY);
                 public static final ConfigOptionList LIGHT_LEVEL_NUMBER_CONDITION = new ConfigOptionList(
                                 "lightLevelNumberCondition", LightLevelRenderCondition.ALWAYS).apply(GENERIC_KEY);
                 public static final ConfigOptionList LIGHT_LEVEL_NUMBER_MODE = new ConfigOptionList("lightLevelNumbers",
@@ -181,35 +159,27 @@ public class Configs implements IConfigHandler {
                 public static final ConfigDouble LIGHT_LEVEL_NUMBER_OFFSET_SKY_Y = new ConfigDouble(
                                 "lightLevelNumberOffsetSkyY", 0.56, 0.0, 1.0).apply(GENERIC_KEY);
                 public static final ConfigBoolean LIGHT_LEVEL_NUMBER_ROTATION = new ConfigBoolean(
-                                "lightLevelNumberRotation",
-                                true).apply(GENERIC_KEY);
+                                "lightLevelNumberRotation", true).apply(GENERIC_KEY);
                 public static final ConfigInteger LIGHT_LEVEL_RANGE = new ConfigInteger("lightLevelRange", 24, 1, 64)
                                 .apply(GENERIC_KEY);
                 public static final ConfigDouble LIGHT_LEVEL_RENDER_OFFSET = new ConfigDouble("lightLevelRenderOffset",
-                                0.005,
-                                0.0, 1.0).apply(GENERIC_KEY);
+                                0.005, 0.0, 1.0).apply(GENERIC_KEY);
                 public static final ConfigBoolean LIGHT_LEVEL_RENDER_THROUGH = new ConfigBoolean(
-                                "lightLevelRenderThrough",
-                                false).apply(GENERIC_KEY);
+                                "lightLevelRenderThrough", false).apply(GENERIC_KEY);
                 public static final ConfigBoolean LIGHT_LEVEL_SKIP_BLOCK_CHECK = new ConfigBoolean(
-                                "lightLevelSkipBlockCheck",
-                                false).apply(GENERIC_KEY);
+                                "lightLevelSkipBlockCheck", false).apply(GENERIC_KEY);
                 public static final ConfigInteger LIGHT_LEVEL_THRESHOLD_DIM = new ConfigInteger(
-                                "lightLevelThresholdDim", 0, 0,
-                                15).apply(GENERIC_KEY);
+                                "lightLevelThresholdDim", 0, 0, 15).apply(GENERIC_KEY);
                 public static final ConfigInteger LIGHT_LEVEL_THRESHOLD_SAFE = new ConfigInteger(
-                                "lightLevelThresholdSafe", 1,
-                                0, 15).apply(GENERIC_KEY);
+                                "lightLevelThresholdSafe", 1, 0, 15).apply(GENERIC_KEY);
                 public static final ConfigBoolean LIGHT_LEVEL_UNDER_WATER = new ConfigBoolean("lightLevelUnderWater",
-                                false)
-                                .apply(GENERIC_KEY);
+                                false).apply(GENERIC_KEY);
                 public static final ConfigBooleanHotkeyed MAIN_RENDERING_TOGGLE = new ConfigBooleanHotkeyed(
                                 "mainRenderingToggle", true, "H", KeybindSettings.RELEASE_EXCLUSIVE).apply(GENERIC_KEY);
                 public static final ConfigBoolean MAP_PREVIEW = new ConfigBoolean("mapPreview", false)
                                 .apply(GENERIC_KEY);
                 public static final ConfigBoolean MAP_PREVIEW_REQUIRE_SHIFT = new ConfigBoolean(
-                                "mapPreviewRequireShift", true)
-                                .apply(GENERIC_KEY);
+                                "mapPreviewRequireShift", true).apply(GENERIC_KEY);
                 public static final ConfigInteger MAP_PREVIEW_SIZE = new ConfigInteger("mapPreviewSize", 160, 16, 512)
                                 .apply(GENERIC_KEY);
                 public static final ConfigHotkey MOVE_SHAPE_TO_PLAYER = new ConfigHotkey("moveShapeToPlayer", "")
@@ -225,28 +195,22 @@ public class Configs implements IConfigHandler {
                 public static final ConfigInteger SERVER_NBT_REQUEST_RATE = new ConfigInteger("serverNbtRequestRate", 2)
                                 .apply(GENERIC_KEY);
                 public static final ConfigHotkey SET_DISTANCE_REFERENCE_POINT = new ConfigHotkey(
-                                "setDistanceReferencePoint",
-                                "").apply(GENERIC_KEY);
+                                "setDistanceReferencePoint", "").apply(GENERIC_KEY);
                 public static final ConfigHotkey SHAPE_EDITOR = new ConfigHotkey("shapeEditor", "").apply(GENERIC_KEY);
                 public static final ConfigBoolean SHULKER_BOX_PREVIEW = new ConfigBoolean("shulkerBoxPreview", false)
                                 .apply(GENERIC_KEY);
                 public static final ConfigBoolean SHULKER_DISPLAY_BACKGROUND_COLOR = new ConfigBoolean(
-                                "shulkerDisplayBgColor",
-                                true).apply(GENERIC_KEY);
+                                "shulkerDisplayBgColor", true).apply(GENERIC_KEY);
                 public static final ConfigBoolean SHULKER_DISPLAY_ENDER_CHEST = new ConfigBoolean(
-                                "shulkerDisplayEnderChest",
-                                false).apply(GENERIC_KEY);
+                                "shulkerDisplayEnderChest", false).apply(GENERIC_KEY);
                 public static final ConfigBoolean SHULKER_DISPLAY_REQUIRE_SHIFT = new ConfigBoolean(
                                 "shulkerDisplayRequireShift", true).apply(GENERIC_KEY);
                 public static final ConfigBoolean SLIME_CHUNK_TOP_TO_PLAYER = new ConfigBoolean("slimeChunkTopToPlayer",
-                                true)
-                                .apply(GENERIC_KEY);
+                                true).apply(GENERIC_KEY);
                 public static final ConfigInteger SLIME_CHUNK_OVERLAY_RADIUS = new ConfigInteger(
-                                "slimeChunkOverlayRadius", -1,
-                                -1, 40).apply(GENERIC_KEY);
+                                "slimeChunkOverlayRadius", -1, -1, 40).apply(GENERIC_KEY);
                 public static final ConfigBoolean SLIME_CHUNK_RENDER_THROUGH = new ConfigBoolean(
-                                "slimeChunkRenderThrough",
-                                false).apply(GENERIC_KEY);
+                                "slimeChunkRenderThrough", false).apply(GENERIC_KEY);
                 public static final ConfigBoolean SORT_LINES_BY_LENGTH = new ConfigBoolean("sortLinesByLength", false)
                                 .apply(GENERIC_KEY);
                 public static final ConfigBoolean SORT_LINES_REVERSED = new ConfigBoolean("sortLinesReversed", false)
@@ -264,11 +228,9 @@ public class Configs implements IConfigHandler {
                 public static final ConfigOptionList SPEED_UNITS = new ConfigOptionList("speedUnits", SpeedUnits.MPS)
                                 .apply(GENERIC_KEY);
                 public static final ConfigBoolean STRUCTURES_RENDER_THROUGH = new ConfigBoolean(
-                                "structuresRenderThrough",
-                                false).apply(GENERIC_KEY);
+                                "structuresRenderThrough", false).apply(GENERIC_KEY);
                 public static final ConfigBoolean STRUCTURES_RENDER_OUTLINES = new ConfigBoolean(
-                                "structuresRenderOutlines",
-                                false).apply(GENERIC_KEY);
+                                "structuresRenderOutlines", false).apply(GENERIC_KEY);
                 public static final ConfigInteger TEXT_POS_X = new ConfigInteger("textPosX", 4, 0, 8192)
                                 .apply(GENERIC_KEY);
                 public static final ConfigInteger TEXT_POS_Y = new ConfigInteger("textPosY", 4, 0, 8192)
@@ -284,13 +246,11 @@ public class Configs implements IConfigHandler {
                 public static final ConfigBoolean USE_TEXT_BACKGROUND = new ConfigBoolean("useTextBackground", true)
                                 .apply(GENERIC_KEY);
                 public static final ConfigBoolean VILLAGER_CONVERSION_TICKS = new ConfigBoolean(
-                                "villagerConversionTicks", true)
-                                .apply(GENERIC_KEY);
+                                "villagerConversionTicks", true).apply(GENERIC_KEY);
                 public static final ConfigBoolean VILLAGER_OFFER_ENCHANTMENT_BOOKS = new ConfigBoolean(
                                 "villagerOfferEnchantmentBooks", true).apply(GENERIC_KEY);
                 public static final ConfigBoolean VILLAGER_OFFER_PRICE_RANGE = new ConfigBoolean(
-                                "villagerOfferPriceRange",
-                                true).apply(GENERIC_KEY);
+                                "villagerOfferPriceRange", true).apply(GENERIC_KEY);
                 public static final ConfigBoolean VILLAGER_OFFER_HIGHEST_LEVEL_ONLY = new ConfigBoolean(
                                 "villagerOfferHighestLevelOnly", false).apply(GENERIC_KEY);
                 public static final ConfigBoolean VILLAGER_OFFER_LOWEST_PRICE_NEARBY = new ConfigBoolean(
@@ -442,39 +402,29 @@ public class Configs implements IConfigHandler {
                 public static final ConfigColor BEACON_RANGE_LVL4_OVERLAY_COLOR = new ConfigColor("beaconRangeLvl4",
                                 "#2060FF40").apply(COLORS_KEY);
                 public static final ConfigColor BLOCK_GRID_OVERLAY_COLOR = new ConfigColor("blockGridOverlayColor",
-                                "#80FFFFFF")
-                                .apply(COLORS_KEY);
+                                "#80FFFFFF").apply(COLORS_KEY);
                 public static final ConfigColor CONDUIT_RANGE_OVERLAY_COLOR = new ConfigColor("conduitRange",
-                                "#2030FFFF")
-                                .apply(COLORS_KEY);
+                                "#2030FFFF").apply(COLORS_KEY);
                 public static final ConfigColor CONDUIT_RANGE_OUTLINES = new ConfigColor("conduitRangeOutlines",
-                                "#80FFFFFF")
-                                .apply(COLORS_KEY);
+                                "#80FFFFFF").apply(COLORS_KEY);
                 public static final ConfigColor LIGHTNING_ROD_RANGE_OVERLAY_COLOR = new ConfigColor("lightningRodRange",
                                 "#30FF9040").apply(COLORS_KEY);
                 public static final ConfigColor LIGHTNING_ROD_DAMAGE_ZONE_COLOR = new ConfigColor(
-                                "lightningRodDamageZone",
-                                "#60FF4040").apply(COLORS_KEY);
+                                "lightningRodDamageZone", "#60FF4040").apply(COLORS_KEY);
                 public static final ConfigColor LIGHT_LEVEL_MARKER_BLOCK_LIT = new ConfigColor(
-                                "lightLevelMarkerBlockLit",
-                                "#FF209040").apply(COLORS_KEY);
+                                "lightLevelMarkerBlockLit", "#FF209040").apply(COLORS_KEY);
                 public static final ConfigColor LIGHT_LEVEL_MARKER_DARK = new ConfigColor("lightLevelMarkerDark",
-                                "#FFFF4848")
-                                .apply(COLORS_KEY);
+                                "#FFFF4848").apply(COLORS_KEY);
                 public static final ConfigColor LIGHT_LEVEL_MARKER_DIM = new ConfigColor("lightLevelMarkerDim",
-                                "#FFC0C040")
-                                .apply(COLORS_KEY);
+                                "#FFC0C040").apply(COLORS_KEY);
                 public static final ConfigColor LIGHT_LEVEL_MARKER_SKY_LIT = new ConfigColor("lightLevelMarkerSkyLit",
                                 "#FFFFFF33").apply(COLORS_KEY);
                 public static final ConfigColor LIGHT_LEVEL_NUMBER_BLOCK_DARK = new ConfigColor(
-                                "lightLevelNumberBlockDark",
-                                "#FFC03030").apply(COLORS_KEY);
+                                "lightLevelNumberBlockDark", "#FFC03030").apply(COLORS_KEY);
                 public static final ConfigColor LIGHT_LEVEL_NUMBER_BLOCK_DIM = new ConfigColor(
-                                "lightLevelNumberBlockDim",
-                                "#FFC0C040").apply(COLORS_KEY);
+                                "lightLevelNumberBlockDim", "#FFC0C040").apply(COLORS_KEY);
                 public static final ConfigColor LIGHT_LEVEL_NUMBER_BLOCK_LIT = new ConfigColor(
-                                "lightLevelNumberBlockLit",
-                                "#FF20FF40").apply(COLORS_KEY);
+                                "lightLevelNumberBlockLit", "#FF20FF40").apply(COLORS_KEY);
                 public static final ConfigColor LIGHT_LEVEL_NUMBER_SKY_DARK = new ConfigColor("lightLevelNumberSkyDark",
                                 "#FFFFF030").apply(COLORS_KEY);
                 public static final ConfigColor LIGHT_LEVEL_NUMBER_SKY_DIM = new ConfigColor("lightLevelNumberSkyDim",
@@ -486,23 +436,18 @@ public class Configs implements IConfigHandler {
                 public static final ConfigColor RANDOM_TICKS_PLAYER_OVERLAY_COLOR = new ConfigColor(
                                 "randomTicksPlayerOverlayColor", "#3030FE73").apply(COLORS_KEY);
                 public static final ConfigColor REGION_OVERLAY_COLOR = new ConfigColor("regionOverlayColor",
-                                "#30FF8019")
-                                .apply(COLORS_KEY);
+                                "#30FF8019").apply(COLORS_KEY);
                 public static final ConfigColor SHAPE_ADJUSTABLE_SPAWN_SPHERE = new ConfigColor(
-                                "shapeAdjustableSpawnSphere",
-                                "#6030B0B0").apply(COLORS_KEY);
+                                "shapeAdjustableSpawnSphere", "#6030B0B0").apply(COLORS_KEY);
                 public static final ConfigColor SHAPE_BOX = new ConfigColor("shapeBox", "#6050A0A0").apply(COLORS_KEY);
                 public static final ConfigColor SHAPE_CAN_DESPAWN_SPHERE = new ConfigColor("shapeCanDespawnSphere",
-                                "#60A04050")
-                                .apply(COLORS_KEY);
+                                "#60A04050").apply(COLORS_KEY);
                 public static final ConfigColor SHAPE_CAN_SPAWN_SPHERE = new ConfigColor("shapeCanSpawnSphere",
-                                "#60A04050")
-                                .apply(COLORS_KEY);
+                                "#60A04050").apply(COLORS_KEY);
                 public static final ConfigColor SHAPE_CIRCLE = new ConfigColor("shapeCircle", "#6030B0B0")
                                 .apply(COLORS_KEY);
                 public static final ConfigColor SHAPE_DESPAWN_SPHERE = new ConfigColor("shapeDespawnSphere",
-                                "#60A04050")
-                                .apply(COLORS_KEY);
+                                "#60A04050").apply(COLORS_KEY);
                 public static final ConfigColor SHAPE_LINE_BLOCKY = new ConfigColor("shapeLineBlocky", "#6030F0B0")
                                 .apply(COLORS_KEY);
                 public static final ConfigColor SHAPE_SPHERE_BLOCKY = new ConfigColor("shapeSphereBlocky", "#6030B0B0")
@@ -514,26 +459,21 @@ public class Configs implements IConfigHandler {
                 public static final ConfigColor SPAWN_PLAYER_REDSTONE_OVERLAY_COLOR = new ConfigColor(
                                 "spawnPlayerRedstoneOverlayColor", "#30F8D641").apply(COLORS_KEY);
                 public static final ConfigColor SPAWN_PLAYER_LAZY_OVERLAY_COLOR = new ConfigColor(
-                                "spawnPlayerLazyOverlayColor",
-                                "#30D030D0").apply(COLORS_KEY);
+                                "spawnPlayerLazyOverlayColor", "#30D030D0").apply(COLORS_KEY);
                 public static final ConfigColor SPAWN_PLAYER_OUTER_OVERLAY_COLOR = new ConfigColor(
                                 "spawnPlayerOuterOverlayColor", "#306900D2").apply(COLORS_KEY);
                 public static final ConfigColor SPAWN_REAL_ENTITY_OVERLAY_COLOR = new ConfigColor(
-                                "spawnRealEntityOverlayColor",
-                                "#3030FF20").apply(COLORS_KEY);
+                                "spawnRealEntityOverlayColor", "#3030FF20").apply(COLORS_KEY);
                 public static final ConfigColor SPAWN_REAL_REDSTONE_OVERLAY_COLOR = new ConfigColor(
                                 "spawnRealRedstoneOverlayColor", "#30F8D641").apply(COLORS_KEY);
                 public static final ConfigColor SPAWN_REAL_LAZY_OVERLAY_COLOR = new ConfigColor(
-                                "spawnRealLazyOverlayColor",
-                                "#30FF3020").apply(COLORS_KEY);
+                                "spawnRealLazyOverlayColor", "#30FF3020").apply(COLORS_KEY);
                 public static final ConfigColor SPAWN_REAL_OUTER_OVERLAY_COLOR = new ConfigColor(
-                                "spawnRealOuterOverlayColor",
-                                "#309D581A").apply(COLORS_KEY);
+                                "spawnRealOuterOverlayColor", "#309D581A").apply(COLORS_KEY);
                 public static final ConfigColor SPAWNABLE_COLUMNS_OVERLAY_COLOR = new ConfigColor(
                                 "spawnableColumnHeightsOverlayColor", "#A0FF00FF").apply(COLORS_KEY);
                 public static final ConfigColor TEXT_BACKGROUND_COLOR = new ConfigColor("textBackgroundColor",
-                                "#A0505050")
-                                .apply(COLORS_KEY);
+                                "#A0505050").apply(COLORS_KEY);
                 public static final ConfigColor TEXT_COLOR = new ConfigColor("textColor", "#FFE0E0E0")
                                 .apply(COLORS_KEY);
 
