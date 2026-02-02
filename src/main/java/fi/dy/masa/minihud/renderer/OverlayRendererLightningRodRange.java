@@ -27,6 +27,7 @@ import fi.dy.masa.malilib.util.position.PositionUtils;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.RendererToggle;
 import fi.dy.masa.minihud.renderer.shapes.SideQuad;
+import fi.dy.masa.minihud.util.DataStorage;
 import fi.dy.masa.minihud.util.MiscUtils;
 import fi.dy.masa.minihud.util.ShapeRenderType;
 import fi.dy.masa.minihud.util.shape.SphereUtils;
@@ -52,23 +53,8 @@ public class OverlayRendererLightningRodRange extends OverlayRendererBase {
     this.useCulling = false;
   }
 
-  @Override
-  protected void allocateBuffers(boolean useOutlines) {
-    this.clearBuffers();
-    // Index 0: Attraction zones (sphere quads)
-    this.renderObjects.add(
-        new RenderObjectVbo(() -> this.getName() + "/AttractionZones", MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL));
-    // Index 1: Damage zones (box quads)
-    this.renderObjects
-        .add(new RenderObjectVbo(() -> this.getName() + "/DamageZones", MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL));
-    // Index 2: Outlines (lines)
-    if (useOutlines) {
-      this.renderObjects.add(new RenderObjectVbo(() -> this.getName() + "/Outlines",
-          MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH));
-    }
-    // Index 3: REMOVED - Coverage indicators no longer needed (sphere visual shows
-    // coverage)
-  }
+  // Phase 2: Removed allocateBuffers() override - using per-rod VBOs now
+  // Parent class renderObjects is not used
 
   @Override
   public String getName() {
@@ -106,15 +92,34 @@ public class OverlayRendererLightningRodRange extends OverlayRendererBase {
     if (isRod && !wasTracked) {
       // New lightning rod placed - check if it's eligible (sky access)
       boolean isEligible = isLightningRodEligible(world, pos, world.getMaxY());
-      RodEntry entry = calculateSphereForRod(pos.immutable(), isEligible);
-      addOrReplaceRodEntry(entry);
+
+      // ASYNC: Create placeholder entry immediately (responsive UI)
+      BlockPos immutablePos = pos.immutable();
+      RodEntry placeholderEntry = new RodEntry(immutablePos, isEligible);
+      addOrReplaceRodEntry(placeholderEntry);
+
+      // Phase 3: Only trigger update if this is the first rod
+      boolean wasEmpty = !this.hasData;
       this.hasData = true;
-      this.setNeedsUpdate(); // Trigger render update
+      if (wasEmpty) {
+        this.setNeedsUpdate();
+      }
+
+      // ASYNC: Calculate sphere on worker thread (prevents FPS drop)
+      if (isEligible) {
+        calculateSphereForRodAsync(immutablePos, isEligible);
+      }
     } else if (!isRod && wasTracked) {
       // Lightning rod removed - remove from cache
       this.lightningRods.removeIf(e -> e.pos.equals(pos));
-      this.hasData = !this.lightningRods.isEmpty();
-      this.setNeedsUpdate();
+
+      // Phase 3: Only trigger update if this was the last rod (transition to
+      // hasData=false)
+      boolean wasLastRod = this.lightningRods.isEmpty();
+      this.hasData = !wasLastRod;
+      if (wasLastRod) {
+        this.setNeedsUpdate(); // Last rod removed - trigger cleanup
+      }
     } else if (!isRod && !wasTracked) {
       // A block was placed/removed above/below existing rods - might affect
       // eligibility
@@ -128,10 +133,15 @@ public class OverlayRendererLightningRodRange extends OverlayRendererBase {
           boolean isNowEligible = isLightningRodEligible(world, rodPos, world.getMaxY());
           if (isNowEligible != entry.isEligible) {
             // Eligibility changed - rebuild sphere
-            RodEntry newEntry = calculateSphereForRod(rodPos, isNowEligible);
+            // Clear old entry and create placeholder
             entry.clear();
+            RodEntry newEntry = new RodEntry(rodPos, isNowEligible);
             this.lightningRods.set(i, newEntry);
-            this.setNeedsUpdate();
+
+            // ASYNC: Calculate sphere on worker thread
+            if (isNowEligible) {
+              calculateSphereForRodAsync(rodPos, isNowEligible);
+            }
           }
         }
       }
@@ -158,10 +168,14 @@ public class OverlayRendererLightningRodRange extends OverlayRendererBase {
     if (chunk != null) {
       this.scanChunkForLightningRods(chunk, world);
 
-      // Update hasData flag if we found any rods
+      // Phase 3: Update hasData flag if we found any rods
+      // No setNeedsUpdate() needed - entries have needsVboRebuild=true by constructor
       if (!this.lightningRods.isEmpty()) {
+        boolean wasEmpty = !this.hasData;
         this.hasData = true;
-        this.setNeedsUpdate();
+        if (wasEmpty) {
+          this.setNeedsUpdate(); // First rod(s) found - trigger initial render
+        }
       }
     }
   }
@@ -279,10 +293,15 @@ public class OverlayRendererLightningRodRange extends OverlayRendererBase {
 
           // Found first non-air block - check if it's a lightning rod
           if (isLightningRodBlock(state.getBlock())) {
-            // Check eligibility (sky access) and create entry with sphere calculation
-            boolean isEligible = isLightningRodEligible(world, pos, maxY);
-            RodEntry entry = calculateSphereForRod(pos.immutable(), isEligible);
-            addOrReplaceRodEntry(entry);
+            // ASYNC: Create placeholder immediately, calculate sphere on worker thread
+            BlockPos immutablePos = pos.immutable();
+            boolean isEligible = isLightningRodEligible(world, immutablePos, maxY);
+            RodEntry placeholderEntry = new RodEntry(immutablePos, isEligible);
+            addOrReplaceRodEntry(placeholderEntry);
+
+            if (isEligible) {
+              calculateSphereForRodAsync(immutablePos, isEligible);
+            }
           }
 
           // Stop scanning this column - we found the top block
@@ -355,43 +374,84 @@ public class OverlayRendererLightningRodRange extends OverlayRendererBase {
   }
 
   /**
-   * Calculates the sphere positions and builds optimized quads for a lightning
-   * rod.
-   * This is an expensive operation (~30-60ms), so results are cached.
+   * ASYNC: Queues sphere calculation on worker thread to prevent FPS drops.
+   * Creates placeholder entry immediately, calculates sphere asynchronously,
+   * then updates entry on main thread when complete.
    * 
    * @param pos        The position of the lightning rod
    * @param isEligible Whether the rod is eligible (has sky access)
-   * @return A RodEntry containing the cached sphere data
    */
-  private RodEntry calculateSphereForRod(BlockPos pos, boolean isEligible) {
-    RodEntry entry = new RodEntry(pos, isEligible);
-
+  private void calculateSphereForRodAsync(BlockPos pos, boolean isEligible) {
     if (!isEligible) {
-      return entry; // No sphere calculation for ineligible rods
+      return; // No calculation needed
+    }
+
+    // Submit calculation task to worker thread
+    Runnable task = () -> {
+      // Heavy computation on worker thread (30-60ms)
+      SphereData calculatedData = calculateSphereForRodSync(pos, isEligible);
+
+      // Update entry on main thread
+      Minecraft.getInstance().execute(() -> {
+        // Find and update the placeholder entry
+        for (int i = 0; i < this.lightningRods.size(); i++) {
+          RodEntry existing = this.lightningRods.get(i);
+          if (existing.pos.equals(pos)) {
+            existing.updateSphereData(calculatedData);
+            // CRITICAL: Must trigger render pass after async data arrives
+            // The render system doesn't know to call render() unless we explicitly request
+            // it
+            this.setNeedsUpdate();
+            break;
+          }
+        }
+      });
+    };
+
+    // Queue on worker thread (chunk position not relevant for lightning rods)
+    DataStorage.getInstance().addTask(task, null, pos);
+  }
+
+  /**
+   * SYNC: Calculates sphere synchronously (runs on worker thread).
+   * This is an expensive operation (~30-60ms).
+   * Returns data-only structure (no VBOs created).
+   * 
+   * @param pos        The position of the lightning rod
+   * @param isEligible Whether the rod is eligible (has sky access)
+   * @return A SphereData containing the calculated sphere data
+   */
+  private SphereData calculateSphereForRodSync(BlockPos pos, boolean isEligible) {
+    if (!isEligible) {
+      return null; // No sphere calculation for ineligible rods
     }
 
     final int RADIUS = 128;
 
-    // Create position test for this rod's sphere
-    entry.setTest(getPositionTest(pos, RADIUS));
+    // Create data structures (NO VBOs - worker thread safe)
+    LongOpenHashSet positions = new LongOpenHashSet();
+    List<SideQuad> quads = new ArrayList<>();
+    SphereUtils.RingPositionTest test = getPositionTest(pos, RADIUS);
 
     // Collect all block positions on sphere shell
-    Consumer<BlockPos.MutableBlockPos> positionCollector = (p) -> entry.addPosition(p.asLong());
-    SphereUtils.collectSpherePositions(positionCollector, entry.getTest(), pos, RADIUS);
+    Consumer<BlockPos.MutableBlockPos> positionCollector = (p) -> positions.add(p.asLong());
+    SphereUtils.collectSpherePositions(positionCollector, test, pos, RADIUS);
 
     // Build optimized quads from positions
     if (this.combineQuads) {
-      entry.setQuads(SphereUtils.buildSphereShellToQuads(
-          entry.getPositions(), this.quadAxis, entry.getTest(),
+      quads.addAll(SphereUtils.buildSphereShellToQuads(
+          positions, this.quadAxis, test,
           this.renderType, this.layerRange));
     }
 
-    return entry;
+    return new SphereData(positions, test, quads);
   }
 
   /**
    * Adds or replaces a rod entry in the list.
    * If an entry already exists at the same position, it's replaced.
+   * CRITICAL: Transfers sphere data from existing entry to preserve
+   * async-calculated data.
    * 
    * @param entry The rod entry to add or use as replacement
    */
@@ -400,6 +460,26 @@ public class OverlayRendererLightningRodRange extends OverlayRendererBase {
     for (int i = 0; i < this.lightningRods.size(); i++) {
       RodEntry existing = this.lightningRods.get(i);
       if (existing.pos.equals(entry.pos)) {
+        // CRITICAL: Transfer sphere data from existing entry before replacing
+        // This preserves async-calculated data during re-scans
+        if (!existing.positions.isEmpty() || existing.test != null) {
+          System.out.println("[DEBUG] Transferring sphere data from existing rod at " + existing.pos.toShortString() +
+              " (" + existing.positions.size() + " positions, " + existing.quads.size() + " quads)");
+
+          // Copy collections to preserve data
+          LongOpenHashSet copiedPositions = new LongOpenHashSet();
+          copiedPositions.addAll(existing.positions);
+
+          List<SideQuad> copiedQuads = new ArrayList<>();
+          copiedQuads.addAll(existing.quads);
+
+          // Create SphereData with copied data
+          SphereData existingData = new SphereData(copiedPositions, existing.test, copiedQuads);
+
+          // Transfer to new entry
+          entry.updateSphereData(existingData);
+        }
+
         existing.clear();
         this.lightningRods.set(i, entry);
         return;
@@ -415,183 +495,60 @@ public class OverlayRendererLightningRodRange extends OverlayRendererBase {
     Level world = mc.level;
 
     if (world == null || this.lightningRods.isEmpty()) {
-      this.clearBuffers();
       return;
     }
 
-    // Rebuild VBOs because vertices are camera-relative
-    // Simply render all cached rod positions - no validation needed
-    // Cache is updated by: initial scan, events (when wired up), or manual toggle
-    this.allocateBuffers(true);
+    // Phase 2: Check if camera moved significantly (requires VBO rebuild)
+    // Threshold: 1.0 blocks to reduce false positives from small movements
+    boolean cameraMoved = this.lastUpdatePos == null ||
+        Math.abs(cameraPos.x - this.lastUpdatePos.getX()) > 1.0 ||
+        Math.abs(cameraPos.y - this.lastUpdatePos.getY()) > 1.0 ||
+        Math.abs(cameraPos.z - this.lastUpdatePos.getZ()) > 1.0;
 
-    profiler.push("attraction_zones");
-    this.renderAttractionZones(cameraPos, mc, profiler);
-    profiler.pop();
-
-    profiler.push("damage_zones");
-    this.renderDamageZones(cameraPos, mc, profiler);
-    profiler.pop();
-
-    profiler.push("outlines");
-    this.renderOutlines(cameraPos, mc, profiler);
-    profiler.pop();
-  }
-
-  private void renderAttractionZones(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler) {
-    Level world = mc.level;
-
-    if (world == null) {
-      return;
+    if (cameraMoved) {
+      // Mark ALL rods dirty (camera-relative vertices changed)
+      this.lightningRods.forEach(RodEntry::markDirty);
+      this.lastUpdatePos = BlockPos.containing(cameraPos);
     }
 
-    Color4f color = Color4f.fromColor(Configs.Colors.LIGHTNING_ROD_RANGE_OVERLAY_COLOR.getIntegerValue());
+    // Get colors once for all rods
+    Color4f attractionColor = Color4f.fromColor(
+        Configs.Colors.LIGHTNING_ROD_RANGE_OVERLAY_COLOR.getIntegerValue());
+    Color4f damageColor = Color4f.fromColor(
+        Configs.Colors.LIGHTNING_ROD_DAMAGE_ZONE_COLOR.getIntegerValue());
 
-    profiler.push("attraction_zone_quads");
-    RenderObjectVbo ctx = this.renderObjects.get(0);
-    BufferBuilder builder = ctx.start(() -> "minihud:lightning_rod/attraction_zones",
-        MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL);
-
-    // Render each eligible rod's sphere
-    this.lightningRods.forEach((entry) -> {
-      if (!entry.isEligible) {
-        return;
-      }
-
-      if (this.combineQuads) {
-        // Render optimized quads (FAST)
-        RenderUtils.renderQuads(entry.getQuads(), color, 0, cameraPos, builder);
-      } else {
-        // Render individual block positions (SLOWER, more accurate at distance)
-        RenderUtils.renderCircleBlockPositions(
-            entry.getPositions(), PositionUtils.ALL_DIRECTIONS,
-            entry.getTest(), this.renderType, this.layerRange,
-            color, 0, cameraPos, builder);
-      }
-    });
-
-    try {
-      MeshData meshData = builder.build();
-
-      if (meshData != null) {
-        ctx.upload(meshData, false); // Static geometry - no sorting needed
-        meshData.close(); // Release mesh data after upload
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
+    // Build VBOs for dirty rods only
+    profiler.push("build_vbos");
+    for (RodEntry entry : this.lightningRods) {
+      entry.buildVBOs(cameraPos, this.combineQuads, this.renderType,
+          this.layerRange, attractionColor, damageColor, this.glLineWidth);
     }
-
     profiler.pop();
   }
 
-  private void renderDamageZones(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler) {
-    final double camX = cameraPos.x;
-    final double camY = cameraPos.y;
-    final double camZ = cameraPos.z;
-
-    RenderObjectVbo ctx = this.renderObjects.get(1);
-    BufferBuilder builder = ctx.start(() -> "minihud:lightning_rod/damage_zones",
-        MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL);
-
-    Color4f color = Color4f.fromColor(Configs.Colors.LIGHTNING_ROD_DAMAGE_ZONE_COLOR.getIntegerValue());
-
-    this.lightningRods.forEach((entry) -> {
-      if (entry.isEligible) {
-        BlockPos pos = entry.pos;
-        final double rodX = pos.getX() + 0.5 - camX;
-        final double rodY = pos.getY() - camY;
-        final double rodZ = pos.getZ() + 0.5 - camZ;
-
-        // Damage zone is 6×12×6 (3 blocks each direction horizontally, 2 below and 9
-        // above)
-        final double minX = rodX - 3;
-        final double minY = rodY - 2;
-        final double minZ = rodZ - 3;
-        final double maxX = rodX + 3;
-        final double maxY = rodY + 10; // 9 blocks above + 1 for the rod itself
-        final double maxZ = rodZ + 3;
-
-        fi.dy.masa.malilib.render.RenderUtils.drawBoxAllSidesBatchedQuads(
-            (float) minX, (float) minY, (float) minZ,
-            (float) maxX, (float) maxY, (float) maxZ,
-            color, builder);
-      }
-    });
-
-    try {
-      MeshData meshData = builder.build();
-
-      if (meshData != null) {
-        ctx.upload(meshData, false); // Static geometry - no sorting needed
-        meshData.close(); // Release mesh data after upload
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
+  @Override
+  public void draw(Vec3 cameraPos) {
+    // Phase 2: Draw all per-rod VBOs
+    for (RodEntry entry : this.lightningRods) {
+      entry.draw(cameraPos);
     }
   }
 
-  private void renderOutlines(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler) {
-    Level world = mc.level;
+  // Phase 2: Removed renderAttractionZones(), renderDamageZones(),
+  // renderOutlines()
+  // Now handled by RodEntry.buildVBOs() and RodEntry.draw()
 
-    if (world == null) {
-      return;
-    }
-
-    Color4f attractionColor = Color4f.fromColor(Configs.Colors.LIGHTNING_ROD_RANGE_OVERLAY_COLOR.getIntegerValue(),
-        1.0f);
-    Color4f damageColor = Color4f.fromColor(Configs.Colors.LIGHTNING_ROD_DAMAGE_ZONE_COLOR.getIntegerValue(), 1.0f);
-
-    profiler.push("outlines");
-    RenderObjectVbo ctx = this.renderObjects.get(2);
-    BufferBuilder builder = ctx.start(() -> "minihud:lightning_rod/outlines",
-        MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH);
-
-    this.lightningRods.forEach((entry) -> {
-      if (!entry.isEligible) {
-        return;
-      }
-
-      // Render sphere outlines
-      if (this.combineQuads) {
-        RenderUtils.renderQuadLines(entry.getQuads(), attractionColor,
-            0, cameraPos, this.glLineWidth, builder);
-      } else {
-        RenderUtils.renderCircleBlockOutlines(
-            entry.getPositions(), PositionUtils.ALL_DIRECTIONS,
-            entry.getTest(), this.renderType, this.layerRange,
-            attractionColor, 0, cameraPos, this.glLineWidth, builder);
-      }
-
-      // Render damage zone box (unchanged)
-      BlockPos pos = entry.pos;
-      final double rodX = pos.getX() + 0.5 - cameraPos.x;
-      final double rodY = pos.getY() - cameraPos.y;
-      final double rodZ = pos.getZ() + 0.5 - cameraPos.z;
-
-      final double minX = rodX - 3;
-      final double minY = rodY - 2;
-      final double minZ = rodZ - 3;
-      final double maxX = rodX + 3;
-      final double maxY = rodY + 10;
-      final double maxZ = rodZ + 3;
-
-      fi.dy.masa.malilib.render.RenderUtils.drawBoxAllEdgesBatchedLines(
-          (float) minX, (float) minY, (float) minZ,
-          (float) maxX, (float) maxY, (float) maxZ,
-          damageColor, this.glLineWidth, builder);
+  @Override
+  protected void clearBuffers() {
+    // Phase 2: Clear per-rod VBOs instead of shared buffers
+    this.lightningRods.forEach(entry -> {
+      if (entry.attractionVbo != null)
+        entry.attractionVbo.reset();
+      if (entry.damageVbo != null)
+        entry.damageVbo.reset();
+      if (entry.outlineVbo != null)
+        entry.outlineVbo.reset();
     });
-
-    try {
-      MeshData meshData = builder.build();
-
-      if (meshData != null) {
-        ctx.upload(meshData, false); // Lines don't need sorting
-        meshData.close(); // Release mesh data after upload
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-
-    profiler.pop();
   }
 
   @Override
@@ -604,7 +561,7 @@ public class OverlayRendererLightningRodRange extends OverlayRendererBase {
     // This method is called every frame when hasData is false
     // Only reset scan flag on explicit events (toggle, dimension change)
     // which call setNeedsUpdate() directly
-    this.clearBuffers();
+    // Note: RodEntry.clear() already handles VBO disposal
   }
 
   /**
@@ -617,8 +574,28 @@ public class OverlayRendererLightningRodRange extends OverlayRendererBase {
   }
 
   /**
+   * Data-only class to hold sphere calculation results.
+   * Used to transfer data from worker thread to main thread.
+   * Does NOT create VBOs (must be created on render thread).
+   */
+  private static class SphereData {
+    public final LongOpenHashSet positions;
+    public final SphereUtils.RingPositionTest test;
+    public final List<SideQuad> quads;
+
+    SphereData(LongOpenHashSet positions, SphereUtils.RingPositionTest test, List<SideQuad> quads) {
+      this.positions = positions;
+      this.test = test;
+      this.quads = quads;
+    }
+  }
+
+  /**
    * Inner class to hold data for each lightning rod's spherical range.
    * Similar to Entry class in OverlayRendererConduitRange.
+   * 
+   * Phase 1: Added per-rod VBO architecture to eliminate O(N) rebuild cost
+   * when placing/removing rods. Each rod now owns its VBO contexts.
    */
   private static class RodEntry {
     public final BlockPos pos;
@@ -628,12 +605,187 @@ public class OverlayRendererLightningRodRange extends OverlayRendererBase {
     private SphereUtils.RingPositionTest test;
     private final List<SideQuad> quads;
 
+    // Phase 1: Per-rod VBO contexts
+    private RenderObjectVbo attractionVbo;
+    private RenderObjectVbo damageVbo;
+    private RenderObjectVbo outlineVbo;
+    private boolean needsVboRebuild = true;
+
     RodEntry(BlockPos pos, boolean isEligible) {
       this.pos = pos;
       this.isEligible = isEligible;
       this.positions = new LongOpenHashSet();
       this.test = null;
       this.quads = new ArrayList<>();
+
+      // Phase 1: Initialize per-rod VBO contexts
+      String name = "LightningRod@" + pos.toShortString();
+      this.attractionVbo = new RenderObjectVbo(
+          () -> name + "/Attraction",
+          MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL);
+      this.damageVbo = new RenderObjectVbo(
+          () -> name + "/Damage",
+          MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL);
+      this.outlineVbo = new RenderObjectVbo(
+          () -> name + "/Outline",
+          MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH);
+    }
+
+    /**
+     * Phase 1: Build VBOs for this specific rod only.
+     * Skips if rod is ineligible or VBOs are already up-to-date.
+     * 
+     * @param cameraPos       Camera position for relative coordinates
+     * @param combineQuads    Whether to use optimized quad rendering
+     * @param renderType      Shape render type
+     * @param layerRange      Layer range for rendering
+     * @param attractionColor Color for attraction zone
+     * @param damageColor     Color for damage zone
+     * @param lineWidth       Line width for outlines
+     */
+    public void buildVBOs(Vec3 cameraPos, boolean combineQuads, ShapeRenderType renderType,
+        LayerRange layerRange, Color4f attractionColor, Color4f damageColor,
+        float lineWidth) {
+      if (!this.isEligible) {
+        return;
+      }
+
+      if (!this.needsVboRebuild) {
+        return;
+      }
+
+      // Calculate rod coordinates once (used by damage box and outline)
+      double rodX = this.pos.getX() + 0.5 - cameraPos.x;
+      double rodY = this.pos.getY() - cameraPos.y;
+      double rodZ = this.pos.getZ() + 0.5 - cameraPos.z;
+
+      // Build attraction zone VBO (only if sphere data is ready)
+      if (!this.positions.isEmpty() && this.test != null) {
+        System.out.println("[DEBUG] Building attraction zone VBO for rod at " + this.pos.toShortString());
+        BufferBuilder builder = this.attractionVbo.start(
+            () -> "attraction", MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL);
+
+        if (combineQuads) {
+          RenderUtils.renderQuads(this.quads, attractionColor, 0, cameraPos, builder);
+        } else {
+          RenderUtils.renderCircleBlockPositions(this.positions,
+              PositionUtils.ALL_DIRECTIONS, this.test, renderType, layerRange,
+              attractionColor, 0, cameraPos, builder);
+        }
+
+        try {
+          MeshData meshData = builder.build();
+          if (meshData != null) {
+            this.attractionVbo.upload(meshData, false);
+            meshData.close();
+          }
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
+      }
+
+      // Build damage zone VBO (always - doesn't need sphere data)
+      BufferBuilder builder = this.damageVbo.start(
+          () -> "damage", MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL);
+
+      fi.dy.masa.malilib.render.RenderUtils.drawBoxAllSidesBatchedQuads(
+          (float) (rodX - 3), (float) (rodY - 2), (float) (rodZ - 3),
+          (float) (rodX + 3), (float) (rodY + 10), (float) (rodZ + 3),
+          damageColor, builder);
+
+      try {
+        MeshData meshData = builder.build();
+        if (meshData != null) {
+          this.damageVbo.upload(meshData, false);
+          meshData.close();
+        }
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+
+      // Build outline VBO
+      builder = this.outlineVbo.start(
+          () -> "outline", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH);
+
+      // Add sphere outlines only if data is ready
+      if (!this.positions.isEmpty() && this.test != null) {
+        if (combineQuads) {
+          RenderUtils.renderQuadLines(this.quads, attractionColor,
+              0, cameraPos, lineWidth, builder);
+        } else {
+          RenderUtils.renderCircleBlockOutlines(this.positions,
+              PositionUtils.ALL_DIRECTIONS, this.test, renderType, layerRange,
+              attractionColor, 0, cameraPos, lineWidth, builder);
+        }
+      }
+
+      // Add damage zone box outline (always - doesn't need sphere data)
+      fi.dy.masa.malilib.render.RenderUtils.drawBoxAllEdgesBatchedLines(
+          (float) (rodX - 3), (float) (rodY - 2), (float) (rodZ - 3),
+          (float) (rodX + 3), (float) (rodY + 10), (float) (rodZ + 3),
+          damageColor, lineWidth, builder);
+
+      try {
+        MeshData meshData = builder.build();
+        if (meshData != null) {
+          this.outlineVbo.upload(meshData, false);
+          meshData.close();
+        }
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+
+      this.needsVboRebuild = false;
+    }
+
+    /**
+     * Phase 1: Draw this rod's VBOs.
+     * Only draws if rod is eligible and VBOs have been uploaded.
+     */
+    public void draw(Vec3 cameraPos) {
+      if (!this.isEligible) {
+        return;
+      }
+
+      if (this.attractionVbo.isUploaded()) {
+        this.attractionVbo.drawPost(null, false, false);
+      }
+      if (this.damageVbo.isUploaded()) {
+        this.damageVbo.drawPost(null, false, false);
+      }
+      if (this.outlineVbo.isUploaded()) {
+        this.outlineVbo.drawPost(null, false, false);
+      }
+    }
+
+    /**
+     * Phase 1: Mark VBOs as needing rebuild (e.g., camera moved).
+     * Camera-relative coordinates require rebuilding all VBOs when camera moves.
+     */
+    public void markDirty() {
+      this.needsVboRebuild = true;
+    }
+
+    /**
+     * ASYNC: Updates sphere data from async calculation.
+     * Called on main thread after worker thread completes calculation.
+     * 
+     * @param data The calculated sphere data from worker thread
+     */
+    public void updateSphereData(SphereData data) {
+      if (data == null) {
+        return;
+      }
+
+      // Copy calculated data from worker thread result
+      this.positions.clear();
+      this.positions.addAll(data.positions);
+      this.quads.clear();
+      this.quads.addAll(data.quads);
+      this.test = data.test;
+
+      // Mark VBOs as needing rebuild with new data
+      this.needsVboRebuild = true;
     }
 
     public void addPosition(long pos) {
@@ -666,6 +818,17 @@ public class OverlayRendererLightningRodRange extends OverlayRendererBase {
       this.positions.clear();
       this.quads.clear();
       this.test = null;
+
+      // Phase 1: Dispose VBO resources
+      if (this.attractionVbo != null) {
+        this.attractionVbo.reset();
+      }
+      if (this.damageVbo != null) {
+        this.damageVbo.reset();
+      }
+      if (this.outlineVbo != null) {
+        this.outlineVbo.reset();
+      }
     }
   }
 }
