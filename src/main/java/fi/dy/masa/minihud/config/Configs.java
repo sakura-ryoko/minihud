@@ -54,6 +54,7 @@ public class Configs implements IConfigHandler
         public static final ConfigBoolean       CONDUIT_RANGE_OVERLAY_COMBINE_QUADS  = new ConfigBoolean("conduitRangeOverlayCombineQuads", true).apply(GENERIC_KEY);
         public static final ConfigBoolean       CONDUIT_RANGE_OVERLAY_RENDER_OUTLINES= new ConfigBoolean("conduitRangeOverlayOutlines", false).apply(GENERIC_KEY);
         public static final ConfigBoolean       CONDUIT_RANGE_OVERLAY_RENDER_THROUGH = new ConfigBoolean("conduitRangeOverlayThrough", false).apply(GENERIC_KEY);
+        public static final ConfigBoolean       LIGHTNING_ROD_RANGE_OVERLAY_COMBINE_QUADS = new ConfigBoolean("lightningRodRangeOverlayCombineQuads", true).apply(GENERIC_KEY);
         public static final ConfigString        COORDINATE_FORMAT_STRING            = new ConfigString("coordinateFormat", "x: %.1f y: %.1f z: %.1f").apply(GENERIC_KEY);
 		public static final ConfigOptionList    COPPER_AGING_MODE                   = new ConfigOptionList("copperAgingMode", CopperAgingMode.MC_TIME).apply(GENERIC_KEY);
         public static final ConfigOptionList    DATE_FORMAT_TYPE                    = new ConfigOptionList("dateFormatType", TimeFormat.REGULAR).apply(GENERIC_KEY);
@@ -166,6 +167,7 @@ public class Configs implements IConfigHandler
                 CONDUIT_RANGE_OVERLAY_COMBINE_QUADS,
                 CONDUIT_RANGE_OVERLAY_RENDER_OUTLINES,
                 CONDUIT_RANGE_OVERLAY_RENDER_THROUGH,
+                LIGHTNING_ROD_RANGE_OVERLAY_COMBINE_QUADS,
                 HUD_DATA_SYNC,
                 ENTITY_DATA_SYNC,
                 ENTITY_DATA_SYNC_BACKUP,
@@ -287,6 +289,8 @@ public class Configs implements IConfigHandler
         public static final ConfigColor BLOCK_GRID_OVERLAY_COLOR                = new ConfigColor("blockGridOverlayColor",              "#80FFFFFF").apply(COLORS_KEY);
         public static final ConfigColor CONDUIT_RANGE_OVERLAY_COLOR             = new ConfigColor("conduitRange",                       "#2030FFFF").apply(COLORS_KEY);
         public static final ConfigColor CONDUIT_RANGE_OUTLINES                  = new ConfigColor("conduitRangeOutlines",               "#80FFFFFF").apply(COLORS_KEY);
+        public static final ConfigColor LIGHTNING_ROD_RANGE_OVERLAY_COLOR       = new ConfigColor("lightningRodRange",                  "#6030C0FF").apply(COLORS_KEY);
+        public static final ConfigColor LIGHTNING_ROD_DAMAGE_ZONE_COLOR         = new ConfigColor("lightningRodDamageZone",             "#60FF4040").apply(COLORS_KEY);
         public static final ConfigColor LIGHT_LEVEL_MARKER_BLOCK_LIT            = new ConfigColor("lightLevelMarkerBlockLit",           "#FF209040").apply(COLORS_KEY);
         public static final ConfigColor LIGHT_LEVEL_MARKER_DARK                 = new ConfigColor("lightLevelMarkerDark",               "#FFFF4848").apply(COLORS_KEY);
         public static final ConfigColor LIGHT_LEVEL_MARKER_DIM                  = new ConfigColor("lightLevelMarkerDim",                "#FFC0C040").apply(COLORS_KEY);
@@ -329,6 +333,8 @@ public class Configs implements IConfigHandler
                 BLOCK_GRID_OVERLAY_COLOR,
                 CONDUIT_RANGE_OVERLAY_COLOR,
                 CONDUIT_RANGE_OUTLINES,
+                LIGHTNING_ROD_RANGE_OVERLAY_COLOR,
+                LIGHTNING_ROD_DAMAGE_ZONE_COLOR,
                 LIGHT_LEVEL_MARKER_BLOCK_LIT,
                 LIGHT_LEVEL_MARKER_DARK,
                 LIGHT_LEVEL_MARKER_DIM,

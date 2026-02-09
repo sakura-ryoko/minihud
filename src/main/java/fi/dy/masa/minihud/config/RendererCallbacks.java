@@ -44,6 +44,12 @@ public class RendererCallbacks
         }
     }
 
+    public static void onLightningRodRangeToggled(IConfigBoolean config)
+    {
+        OverlayRendererLightningRodRange.INSTANCE.reset();
+        OverlayRendererLightningRodRange.INSTANCE.forceRescan();
+    }
+
     public static void onLightLevelToggled(IConfigBoolean config)
     {
         if (config.getBooleanValue())

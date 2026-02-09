@@ -40,6 +40,8 @@ public class KeyCallbacks
         Configs.Colors.BEACON_RANGE_LVL3_OVERLAY_COLOR.setValueChangeCallback((config) -> updateBeaconOverlay());
         Configs.Colors.BEACON_RANGE_LVL4_OVERLAY_COLOR.setValueChangeCallback((config) -> updateBeaconOverlay());
         Configs.Colors.CONDUIT_RANGE_OVERLAY_COLOR.setValueChangeCallback(cfg -> OverlayRendererBeaconRange.INSTANCE.setNeedsUpdate());
+        Configs.Colors.LIGHTNING_ROD_RANGE_OVERLAY_COLOR.setValueChangeCallback((config) -> OverlayRendererLightningRodRange.INSTANCE.setNeedsUpdate());
+        Configs.Colors.LIGHTNING_ROD_DAMAGE_ZONE_COLOR.setValueChangeCallback((config) -> OverlayRendererLightningRodRange.INSTANCE.setNeedsUpdate());
 
         Configs.Generic.LIGHT_LEVEL_RANGE.setValueChangeCallback((config) -> OverlayRendererLightLevel.INSTANCE.setNeedsUpdate());
         Configs.Generic.LIGHT_LEVEL_RENDER_THROUGH.setValueChangeCallback((config) -> OverlayRendererLightLevel.INSTANCE.setRenderThrough(config.getBooleanValue()));
@@ -65,6 +67,7 @@ public class KeyCallbacks
         RendererToggle.OVERLAY_BEACON_RANGE.setValueChangeCallback(RendererCallbacks::onBeaconRangeToggled);
         RendererToggle.OVERLAY_BIOME_BORDER.setValueChangeCallback(RendererCallbacks::onBiomeBorderToggled);
         RendererToggle.OVERLAY_CONDUIT_RANGE.setValueChangeCallback(RendererCallbacks::onConduitRangeToggled);
+        RendererToggle.OVERLAY_LIGHTNING_ROD_RANGE.setValueChangeCallback(RendererCallbacks::onLightningRodRangeToggled);
         RendererToggle.OVERLAY_LIGHT_LEVEL.setValueChangeCallback(RendererCallbacks::onLightLevelToggled);
         RendererToggle.OVERLAY_RANDOM_TICKS_FIXED.setValueChangeCallback(RendererCallbacks::onRandomTicksFixedToggled);
         RendererToggle.OVERLAY_RANDOM_TICKS_PLAYER.setValueChangeCallback(RendererCallbacks::onRandomTicksPlayerToggled);

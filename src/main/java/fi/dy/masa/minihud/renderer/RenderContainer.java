@@ -30,6 +30,7 @@ public class RenderContainer
         this.addRenderer(OverlayRendererConduitRange.INSTANCE);
         this.addRenderer(OverlayRendererLightLevel.INSTANCE);
         this.addRenderer(OverlayRendererHandheldBeaconRange.INSTANCE);
+        this.addRenderer(OverlayRendererLightningRodRange.INSTANCE);
         this.addRenderer(OverlayRendererRandomTickableChunks.INSTANCE_FIXED);
         this.addRenderer(OverlayRendererRandomTickableChunks.INSTANCE_PLAYER);
         this.addRenderer(OverlayRendererRegion.INSTANCE);

@@ -27,6 +27,7 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
     OVERLAY_BIOME_BORDER                ("overlayBiomeBorder",          ""),
     OVERLAY_BLOCK_GRID                  ("overlayBlockGrid",            ""),
     OVERLAY_CONDUIT_RANGE               ("overlayConduitRange",         ""),
+    OVERLAY_LIGHTNING_ROD_RANGE         ("overlayLightningRodRange",    ""),
     OVERLAY_LIGHT_LEVEL                 ("overlayLightLevel",           ""),
     OVERLAY_RANDOM_TICKS_FIXED          ("overlayRandomTicksFixed",     ""),
     OVERLAY_RANDOM_TICKS_PLAYER         ("overlayRandomTicksPlayer",    ""),
