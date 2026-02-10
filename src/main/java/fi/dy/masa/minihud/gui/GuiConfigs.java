@@ -13,6 +13,7 @@ import fi.dy.masa.malilib.gui.GuiConfigsBase;
 import fi.dy.masa.malilib.gui.button.ButtonBase;
 import fi.dy.masa.malilib.gui.button.ButtonGeneric;
 import fi.dy.masa.malilib.gui.button.IButtonActionListener;
+import fi.dy.masa.malilib.gui.interfaces.IConfigGuiAllTab;
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.Configs;
@@ -20,7 +21,7 @@ import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.config.RendererToggle;
 import fi.dy.masa.minihud.config.StructureToggle;
 
-public class GuiConfigs extends GuiConfigsBase
+public class GuiConfigs extends GuiConfigsBase implements IConfigGuiAllTab
 {
     // If you have an add-on mod, you can append stuff to these GUI lists by re-assigning a new list to it.
     // I'd recommend using your own config handler for the config serialization to/from config files.
@@ -53,6 +54,7 @@ public class GuiConfigs extends GuiConfigsBase
 
         for (ConfigGuiTab tab : ConfigGuiTab.values())
         {
+            if (!this.useAllTab() && tab == ConfigGuiTab.ALL) continue;
             int width = this.getStringWidth(tab.getDisplayName()) + 10;
 
             if (x >= this.getScreenWidth() - width - 10)
@@ -118,7 +120,11 @@ public class GuiConfigs extends GuiConfigsBase
     {
         ConfigGuiTab tab = GuiConfigs.tab;
 
-        if (tab == ConfigGuiTab.GENERIC)
+        if (tab == ConfigGuiTab.ALL && this.useAllTab())
+        {
+            return this.getAllConfigs();
+        }
+        else if (tab == ConfigGuiTab.GENERIC)
         {
             return ConfigOptionWrapper.createFor(Configs.Generic.OPTIONS);
         }
@@ -154,6 +160,36 @@ public class GuiConfigs extends GuiConfigsBase
         return Collections.emptyList();
     }
 
+    @Override
+    public boolean useAllTab()
+    {
+        return true;
+    }
+
+    @Override
+    public List<ConfigOptionWrapper> getAllConfigs()
+    {
+        List<ConfigOptionWrapper> configs = new ArrayList<>();
+
+        configs.addAll(ConfigOptionWrapper.createFor(Configs.Generic.OPTIONS));
+        configs.addAll(ConfigOptionWrapper.createFor(Configs.Colors.OPTIONS));
+
+        List<IConfigBase> list = new ArrayList<>();
+
+        // Info Lines
+        list.addAll(INFO_LINE_LIST.stream().map(this::wrapConfig).toList());
+        list.addAll(ConfigUtils.createConfigWrapperForType(ConfigType.INTEGER, INFO_LINE_LIST));
+        // Structures
+        list.add(this.wrapConfig(RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE));
+        list.addAll(StructureToggle.VALUES.stream().map(this::wrapConfig).toList());
+        list.addAll(StructureToggle.COLOR_CONFIGS);
+        // Overlay Renderers
+        list.addAll(RENDERER_LIST.stream().map(this::wrapConfig).toList());
+        configs.addAll(ConfigOptionWrapper.createFor(list));
+
+        return configs;
+    }
+
     protected BooleanHotkeyGuiWrapper wrapConfig(InfoToggle config)
     {
         return new BooleanHotkeyGuiWrapper(config.getName(), config, config.getKeybind());
@@ -169,17 +205,8 @@ public class GuiConfigs extends GuiConfigsBase
         return new BooleanHotkeyGuiWrapper(config.getToggleOption().getName(), config.getToggleOption(), config.getHotkey().getKeybind());
     }
 
-    private static class ButtonListenerConfigTabs implements IButtonActionListener
+    private record ButtonListenerConfigTabs(ConfigGuiTab tab, GuiConfigs parent) implements IButtonActionListener
     {
-        private final GuiConfigs parent;
-        private final ConfigGuiTab tab;
-
-        public ButtonListenerConfigTabs(ConfigGuiTab tab, GuiConfigs parent)
-        {
-            this.tab = tab;
-            this.parent = parent;
-        }
-
         @Override
         public void actionPerformedWithButton(ButtonBase button, int mouseButton)
         {
@@ -192,7 +219,10 @@ public class GuiConfigs extends GuiConfigsBase
             else
             {
                 this.parent.reCreateListWidget(); // apply the new config width
-                this.parent.getListWidget().resetScrollbarPosition();
+                if (this.parent.getListWidget() != null)
+                {
+                    this.parent.getListWidget().resetScrollbarPosition();
+                }
                 this.parent.initGui();
             }
         }
@@ -200,6 +230,7 @@ public class GuiConfigs extends GuiConfigsBase
 
     public enum ConfigGuiTab
     {
+        ALL                 (IConfigGuiAllTab.getTranslationKey()),
         GENERIC             ("minihud.gui.button.config_gui.generic"),
         COLORS              ("minihud.gui.button.config_gui.colors"),
         INFO_LINES          ("minihud.gui.button.config_gui.info_lines"),

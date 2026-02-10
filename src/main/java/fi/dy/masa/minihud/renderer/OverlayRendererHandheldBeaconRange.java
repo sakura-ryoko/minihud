@@ -151,12 +151,12 @@ public class OverlayRendererHandheldBeaconRange extends OverlayRendererBase
         }
 
         profiler.push("held_beacon_outlines");
-        Color4f color = OverlayRendererBeaconRange.getColorForLevel(this.level);
+        final Color4f color = Color4f.fromColor(OverlayRendererBeaconRange.getColorForLevel(this.level), 0xFF);
 
         RenderObjectVbo ctx = this.renderObjects.get(1);
         BufferBuilder builder = ctx.start(() -> "minihud:held_beacon/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH);
 
-        RenderUtils.drawBoxAllEdgesBatchedLines(this.box, Color4f.fromColor(color.intValue, 1f), this.glLineWidth, builder);
+        RenderUtils.drawBoxAllEdgesBatchedLines(this.box, color, this.glLineWidth, builder);
 
         try
         {

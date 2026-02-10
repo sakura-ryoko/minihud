@@ -25,8 +25,9 @@ public abstract class MixinMinecraftServer
 
 	@Inject(method = "prepareLevels",
 			at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/server/MinecraftServer;updateMobSpawningFlags()V",
-			shift = At.Shift.BEFORE)
+            target = "Lnet/minecraft/server/MinecraftServer;updateMobSpawningFlags()V"
+			         // shift = At.Shift.BEFORE
+			)
     )
     private void minihud_onPrepareStartRegion(CallbackInfo ci)
     {

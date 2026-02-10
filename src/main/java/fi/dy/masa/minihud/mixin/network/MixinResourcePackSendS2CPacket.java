@@ -4,6 +4,7 @@ import net.minecraft.network.protocol.common.ClientboundResourcePackPushPacket;
 import org.spongepowered.asm.mixin.Mixin;
 
 @Mixin(ClientboundResourcePackPushPacket.class)
+@Deprecated
 public class MixinResourcePackSendS2CPacket
 {
     /*

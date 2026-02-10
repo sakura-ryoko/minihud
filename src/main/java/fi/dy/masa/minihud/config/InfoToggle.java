@@ -5,16 +5,16 @@ import javax.annotation.Nullable;
 import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
-import fi.dy.masa.malilib.config.ConfigType;
-import fi.dy.masa.malilib.config.IConfigInteger;
-import fi.dy.masa.malilib.config.IHotkeyTogglable;
+import fi.dy.masa.malilib.config.*;
 import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.hotkeys.IKeybind;
 import fi.dy.masa.malilib.hotkeys.KeyCallbackToggleBoolean;
 import fi.dy.masa.malilib.hotkeys.KeybindMulti;
 import fi.dy.masa.malilib.hotkeys.KeybindSettings;
+import fi.dy.masa.malilib.interfaces.IValueChangeCallback;
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.Reference;
@@ -24,11 +24,11 @@ import fi.dy.masa.minihud.info.InfoLineFlag;
 import fi.dy.masa.minihud.info.InfoLineType;
 import fi.dy.masa.minihud.info.InfoLineTypes;
 
-public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
+public enum InfoToggle implements IConfigInteger, IEnumBooleanHotkey
 {
     // Basic Info
     FPS                     ("infoFPS",                     InfoLineTypes.FPS, false, ""),
-	GPU                     ("infoGPU",                     InfoLineTypes.GPU, false, ""),
+//	GPU                     ("infoGPU",                     InfoLineTypes.GPU, false, ""),
     MEMORY_USAGE            ("infoMemoryUsage",             InfoLineTypes.MEMORY, false, ""),
     TIME_REAL               ("infoTimeIRL",                 InfoLineTypes.TIME_IRL, true,  ""),
     TIME_WORLD              ("infoTimeWorld",               InfoLineTypes.TIME_WORLD, false, ""),
@@ -124,6 +124,8 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     static private int nextDefaultLinePosition;
     private final boolean serverDataRequired;
     private boolean dirty = false;
+    private Pair<Boolean, String> lastBooleanHotkey;
+    private int lastInteger;
 
     private static int getNextDefaultLinePosition()
     {
@@ -260,6 +262,8 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
         this.prettyName = prettyName;
         this.translatedName = translatedName;
         this.serverDataRequired = serverDataRequired;
+        this.updateLastBooleanHotkeyValue();
+        this.updateLastIntegerValue();
     }
 
     @Override
@@ -287,17 +291,17 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     {
         return this.type != null && this.type.getFlags().contains(flag);
     }
-    
+
     public @Nullable InfoLine initParser()
     {
         if (this.type != null)
         {
             return this.type.init(this);
         }
-        
+
         return null;
     }
-    
+
     @Override
     public String getName()
     {
@@ -393,12 +397,14 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     @Override
     public void markDirty()
     {
+        this.getKeybind().markDirty();
         this.dirty = true;
     }
 
     @Override
     public void markClean()
     {
+        this.getKeybind().markClean();
         this.dirty = false;
     }
 
@@ -408,6 +414,7 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
         if (this.isDirty())
         {
             this.markClean();
+            this.onValueChanged();
         }
     }
 
@@ -431,18 +438,34 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     @Override
     public void setBooleanValue(boolean value)
     {
+        this.updateLastBooleanHotkeyValue();
         this.valueBoolean = value;
     }
 
     @Override
     public void toggleBooleanValue()
     {
-        IHotkeyTogglable.super.toggleBooleanValue();
+        this.updateLastBooleanHotkeyValue();
+        this.valueBoolean = !this.valueBoolean;
+        this.markClean();
+        this.onValueChanged();
 
         if (this == InfoToggle.SERVER_TPS || this == InfoToggle.MOB_CAPS)
         {
             HudDataManager.getInstance().refreshDataLoggers();
         }
+    }
+
+    @Override
+    public boolean getLastBooleanValue()
+    {
+        return this.lastBooleanHotkey.getLeft();
+    }
+
+    @Override
+    public void updateLastBooleanValue()
+    {
+        this.updateLastBooleanHotkeyValue();
     }
 
     @Override
@@ -460,6 +483,7 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     @Override
     public void setIntegerValue(int value)
     {
+        this.updateLastIntegerValue();
         this.linePosition = value;
     }
 
@@ -473,6 +497,18 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     public int getMaxIntegerValue()
     {
         return InfoToggle.values().length - 1;
+    }
+
+    @Override
+    public int getLastIntegerValue()
+    {
+        return this.lastInteger;
+    }
+
+    @Override
+    public void updateLastIntegerValue()
+    {
+        this.lastInteger = this.linePosition;
     }
 
     @Override
@@ -496,15 +532,70 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     @Override
     public void resetToDefault()
     {
+        this.updateLastBooleanHotkeyValue();
+        this.updateLastIntegerValue();
         this.valueBoolean = this.defaultValueBoolean;
+    }
+
+    @Override
+    public Pair<Boolean, String> getBooleanHotkeyValue()
+    {
+        return Pair.of(this.valueBoolean, this.getKeybind().getStringValue());
+    }
+
+    @Override
+    public Pair<Boolean, String> getDefaultBooleanHotkeyValue()
+    {
+        return Pair.of(this.defaultValueBoolean, this.getKeybind().getDefaultStringValue());
+    }
+
+    @Override
+    public void setBooleanHotkeyValue(Pair<Boolean, String> value)
+    {
+        this.updateLastBooleanHotkeyValue();
+        this.setBooleanValue(value.getLeft());
+        this.getKeybind().setValueFromString(value.getRight());
+    }
+
+    @Override
+    public Pair<Boolean, String> getLastBooleanHotkeyValue()
+    {
+        return this.lastBooleanHotkey;
+    }
+
+    @Override
+    public void updateLastBooleanHotkeyValue()
+    {
+        this.lastBooleanHotkey = this.getBooleanHotkeyValue();
+    }
+
+    @Override
+    public void onValueChanged()
+    {
+        // NO-OP
+    }
+
+    @Override
+    public void setValueChangeCallback(IValueChangeCallback<IConfigBoolean> iValueChangeCallback)
+    {
+        // NO-OP
     }
 
     @Override
     public void setValueFromString(String value)
     {
+        this.updateLastBooleanHotkeyValue();
+        boolean oldValue = this.valueBoolean;
+
         try
         {
             this.valueBoolean = Boolean.parseBoolean(value);
+
+            if (oldValue != this.valueBoolean)
+            {
+                this.markClean();
+                this.onValueChanged();
+            }
         }
         catch (Exception e)
         {
@@ -515,15 +606,31 @@ public enum InfoToggle implements IConfigInteger, IHotkeyTogglable
     @Override
     public void setValueFromJsonElement(JsonElement element)
     {
+        final boolean oldBool = this.valueBoolean;
+        final String oldKeybind = this.keybind.getStringValue();
+
         try
         {
             if (element.isJsonPrimitive())
             {
-                this.valueBoolean = element.getAsBoolean();
+                boolean temp = element.getAsBoolean();
+                this.valueBoolean = temp;       // This seems redundant, but this makes it safer from corruption
             }
             else
             {
                 MiniHUD.LOGGER.warn("Failed to read config value for {} from the JSON config", this.getName());
+            }
+
+            if (oldBool != this.valueBoolean ||
+                oldKeybind != null && !oldKeybind.equals(this.keybind.getStringValue()) ||
+                this.isDirty())
+            {
+                this.markClean();
+
+                if (!this.getLastBooleanHotkeyValue().equals(this.getBooleanHotkeyValue()))
+                {
+                    this.onValueChanged();
+                }
             }
         }
         catch (Exception e)

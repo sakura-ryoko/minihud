@@ -181,7 +181,7 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
             final double y = pos.getY() - camY;
             final double z = pos.getZ() - camZ;
 
-            final Color4f color = getColorForLevel(level);
+            final Color4f color = Color4f.fromColor(getColorForLevel(level), 0xFF);
             final int range = level * 10 + 10;
             final double minX = x - range;
             final double minY = y - range;
@@ -190,7 +190,7 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
             final double maxY = this.getTopYOverTerrain(world, pos, range);
             final double maxZ = z + range + 1;
 
-            fi.dy.masa.malilib.render.RenderUtils.drawBoxAllEdgesBatchedLines((float) minX, (float) minY, (float) minZ, (float) maxX, (float) maxY, (float) maxZ, Color4f.fromColor(color.intValue, 1f), this.glLineWidth, builder);
+            fi.dy.masa.malilib.render.RenderUtils.drawBoxAllEdgesBatchedLines((float) minX, (float) minY, (float) minZ, (float) maxX, (float) maxY, (float) maxZ, color, this.glLineWidth, builder);
         });
 
         try

@@ -491,21 +491,21 @@ public class RenderHandler implements IRenderer
                 return;
             }
         }
-		else if (type == InfoToggle.GPU)
-		{
-			// Make into a generic call
-			InfoLine parser = type.initParser();
-
-			if (parser != null)
-			{
-				InfoLineContext ctx = new InfoLineContext(world, null, null, null, null, null, null);
-				this.processEntries(parser.parse(ctx));
-			}
-			else
-			{
-				return;
-			}
-		}
+//		else if (type == InfoToggle.GPU)
+//		{
+//			// Make into a generic call
+//			InfoLine parser = type.initParser();
+//
+//			if (parser != null)
+//			{
+//				InfoLineContext ctx = new InfoLineContext(world, null, null, null, null, null, null);
+//				this.processEntries(parser.parse(ctx));
+//			}
+//			else
+//			{
+//				return;
+//			}
+//		}
         else if (type == InfoToggle.MEMORY_USAGE)
         {
             // Make into a generic call

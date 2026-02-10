@@ -1,15 +1,17 @@
 package fi.dy.masa.minihud.info;
 
-import com.mojang.blaze3d.systems.TimerQuery;
-import fi.dy.masa.minihud.config.InfoToggle;
-import fi.dy.masa.minihud.mixin.render.IMixinGlTimer;
+import javax.annotation.Nullable;
 import org.jetbrains.annotations.ApiStatus;
 
-import javax.annotation.Nullable;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.components.debug.DebugScreenEntries;
+import com.mojang.blaze3d.systems.TimerQuery;
 import net.minecraft.util.Util;
 
+import fi.dy.masa.minihud.mixin.render.IMixinGlTimer;
+
+/**
+ * This just causes issues; so it's deprecated.
+ */
+@Deprecated
 public class InfoLineProfiler
 {
 	public static final InfoLineProfiler INSTANCE = new InfoLineProfiler();
@@ -20,18 +22,19 @@ public class InfoLineProfiler
 	private double gpuUtilization;
 	private boolean measurementEnable = false;
 
-	private InfoLineProfiler() { }
+	private InfoLineProfiler() {}
 
 	@ApiStatus.Internal
 	private boolean shouldGPUProfilerStop()
 	{
-		return Minecraft.getInstance().debugEntries.isCurrentlyEnabled(DebugScreenEntries.GPU_UTILIZATION) || !InfoToggle.GPU.getBooleanValue();
+//		return Minecraft.getInstance().debugEntries.isCurrentlyEnabled(DebugScreenEntries.GPU_UTILIZATION) || !InfoToggle.GPU.getBooleanValue();
+		return true;
 	}
 
 	private boolean isGPUQuerySafe()
 	{
-        return  ((IMixinGlTimer) TimerQuery.getInstance()).minihud_getQuery() != null &&
-		        ((IMixinGlTimer) TimerQuery.getInstance()).minihud_getCommandEncoder() != null;
+		return ((IMixinGlTimer) TimerQuery.getInstance()).minihud_getQuery() != null &&
+				((IMixinGlTimer) TimerQuery.getInstance()).minihud_getCommandEncoder() != null;
 	}
 
 	@ApiStatus.Internal

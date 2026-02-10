@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import fi.dy.masa.minihud.util.IServerEntityManager;
 
 @Mixin(PersistentEntitySectionManager.class)
-public abstract class MixinServerEntityManager implements IServerEntityManager
+public abstract class MixinPersistentEntitySectionManager implements IServerEntityManager
 {
     @Shadow @Final Set<UUID> knownUuids;
     @Shadow @Final private EntityLookup<?> visibleEntityStorage;

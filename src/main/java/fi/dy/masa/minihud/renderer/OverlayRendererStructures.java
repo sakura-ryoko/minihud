@@ -180,11 +180,17 @@ public class OverlayRendererStructures extends OverlayRendererBase
 
 		for (StructureData structure : this.structures)
 		{
-//			StructureToggle toggle = structure.getStructureType().getToggle();
-//			Color4f mainColor = toggle.getColorMain().getColor();
+			Color4f mainColor = Color4f.WHITE;
+
+			if (!Configs.Generic.STRUCTURES_RENDER_OUTLINES_WHITE.getBooleanValue())
+			{
+				StructureToggle toggle = structure.getStructureType().getToggle();
+				mainColor = Color4f.fromColor(toggle.getColorMain().getColor(), 0xFF);
+			}
+
 			IntBoundingBox bb = structure.getBoundingBox();
 
-			RenderUtils.drawBoxOutlines(bb, cameraPos, Color4f.WHITE, this.glLineWidth, builder);
+			RenderUtils.drawBoxOutlines(bb, cameraPos, mainColor, this.glLineWidth, builder);
 		}
 
 		try
@@ -279,8 +285,14 @@ public class OverlayRendererStructures extends OverlayRendererBase
 
 		for (StructureData structure : this.structures)
 		{
-//			StructureToggle toggle = structure.getStructureType().getToggle();
-//			Color4f componentColor = toggle.getColorComponents().getColor();
+			Color4f componentColor = Color4f.WHITE;
+
+			if (!Configs.Generic.STRUCTURES_RENDER_OUTLINES_WHITE.getBooleanValue())
+			{
+				StructureToggle toggle = structure.getStructureType().getToggle();
+				componentColor = Color4f.fromColor(toggle.getColorComponents().getColor(), 0xFF);
+			}
+
 			ImmutableList<IntBoundingBox> components = structure.getComponents();
 
 			if (!components.isEmpty())
@@ -289,7 +301,7 @@ public class OverlayRendererStructures extends OverlayRendererBase
 				{
 					for (IntBoundingBox bb : components)
 					{
-						RenderUtils.drawBoxOutlines(bb, cameraPos, Color4f.WHITE, this.glLineWidth, builder);
+						RenderUtils.drawBoxOutlines(bb, cameraPos, componentColor, this.glLineWidth, builder);
 					}
 				}
 			}

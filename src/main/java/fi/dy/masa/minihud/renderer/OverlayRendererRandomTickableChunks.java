@@ -216,9 +216,11 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
         }
 
         profiler.push("random_tick_outlines");
-        final Color4f color = this.toggle == RendererToggle.OVERLAY_RANDOM_TICKS_PLAYER ?
+        Color4f color = this.toggle == RendererToggle.OVERLAY_RANDOM_TICKS_PLAYER ?
                               Configs.Colors.RANDOM_TICKS_PLAYER_OVERLAY_COLOR.getColor() :
                               Configs.Colors.RANDOM_TICKS_FIXED_OVERLAY_COLOR.getColor();
+
+        final Color4f colorSolid = Color4f.fromColor(color, 0xFF);
 
         RenderObjectVbo ctx = this.renderObjects.get(1);
         BufferBuilder builder = ctx.start(() -> "minihud:random_tick/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH);
@@ -228,7 +230,7 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
                 {
                     for (AABB bb : boxes)
                     {
-                        RenderUtils.renderWallOutlines(bb, 16, 16, true, cameraPos, color, this.glLineWidth, builder);
+                        RenderUtils.renderWallOutlines(bb, 16, 16, true, cameraPos, colorSolid, this.glLineWidth, builder);
                     }
                 });
 

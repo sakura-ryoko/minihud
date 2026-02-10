@@ -3,14 +3,15 @@ package fi.dy.masa.minihud.renderer;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
+import com.google.gson.JsonObject;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.Vec3;
-import com.google.gson.JsonObject;
+
 import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.WorldUtils;
-import fi.dy.masa.minihud.config.Configs;
 
 public abstract class OverlayRendererBase implements IOverlayRenderer
 {
@@ -25,7 +26,7 @@ public abstract class OverlayRendererBase implements IOverlayRenderer
     public OverlayRendererBase()
     {
 //        this.glLineWidth = Configs.Generic.DEFAULT_GL_LINE_WIDTH.getFloatValue();
-        this.glLineWidth = 1.0f;
+        this.glLineWidth = 1.6f;
         this.lastUpdatePos = BlockPos.ZERO;
         this.updateCameraPos = Vec3.ZERO;
         this.renderThrough = false;

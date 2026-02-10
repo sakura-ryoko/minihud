@@ -11,7 +11,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.storage.LevelData;
 
 @Mixin(ServerLevel.class)
-public class MixinServerWorld
+public class MixinServerLevel
 {
 //    @Shadow private int spawnChunkRadius;
 

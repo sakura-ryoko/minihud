@@ -183,7 +183,7 @@ public class OverlayRendererSpawnableColumnHeights extends OverlayRendererBase
             return;
         }
 
-        final Color4f color = Configs.Colors.SPAWNABLE_COLUMNS_OVERLAY_COLOR.getColor();
+        final Color4f color = Color4f.fromColor(Configs.Colors.SPAWNABLE_COLUMNS_OVERLAY_COLOR.getColor(), 0xFF);
         profiler.push("column_outlines");
         RenderObjectVbo ctx = this.renderObjects.get(1);
         BufferBuilder builder = ctx.start(() -> "minihud:spawnable_column/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH);

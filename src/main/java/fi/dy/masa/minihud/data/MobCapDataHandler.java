@@ -3,6 +3,7 @@ package fi.dy.masa.minihud.data;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
@@ -12,10 +13,11 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.NaturalSpawner;
+
+import fi.dy.masa.malilib.util.MathUtils;
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.data.MobCapData.EntityCategory;
-import fi.dy.masa.minihud.util.MiscUtils;
 
 public class MobCapDataHandler
 {
@@ -157,16 +159,21 @@ public class MobCapDataHandler
 
                     if (info != null)
                     {
-                        int spawnableChunks = MiscUtils.getSpawnableChunksCount(world);
-                        int divisor = 17 * 17;
+                        // Fix the math
+//                        int spawnableChunks = MiscUtils.getSpawnableChunksCount(world);
+                        int spawnableChunks = info.getSpawnableChunkCount();
+//                        int divisor = 17 * 17;      // NaturalSpawner.MAGIC_NUMBER = (int) Math.pow((double) 17.0F, (double) 2.0F)
+                        int divisor = NaturalSpawner.MAGIC_NUMBER;
                         long worldTime = world.getGameTime();
 
                         for (Object2IntMap.Entry<MobCategory> entry : info.getMobCategoryCounts().object2IntEntrySet())
                         {
                             EntityCategory category = EntityCategory.fromVanillaCategory(entry.getKey());
 
+                            final int vanillaCap = entry.getKey().getMaxInstancesPerChunk();
                             int current = entry.getIntValue();
-                            int cap = entry.getKey().getMaxInstancesPerChunk() * spawnableChunks / divisor;
+                            int cap = MathUtils.clamp(entry.getKey().getMaxInstancesPerChunk() * (spawnableChunks / divisor), 0, vanillaCap);
+
                             data[category.ordinal()].setCurrentAndCap(current, cap);
                         }
 
@@ -175,7 +182,7 @@ public class MobCapDataHandler
                             for (EntityCategory type : ENTITY_CATEGORIES)
                             {
                                 MobCapData.Cap cap = data[type.ordinal()];
-                                this.localData.setCurrentAndCapValues(type, cap.getCurrent(), cap.getCap(), worldTime);
+                                this.localData.setCurrentAndCapValues(type, cap.getCurrent(), MathUtils.max(cap.getCap(), type.getVanillaCategory().getMaxInstancesPerChunk()), worldTime);
                             }
                         });
                     }

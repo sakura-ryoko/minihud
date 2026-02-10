@@ -202,7 +202,7 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
 
         for (ColoredQuad quad : this.renderQuads)
         {
-            Color4f color = this.getColor(quad.biomeId);
+            Color4f color = Color4f.fromColor(this.getColor(quad.biomeId), 0xFF);
             RenderUtils.renderBiomeBorderLines(quad.start, quad.width, quad.height, quad.side, inset, color, cameraPos, this.glLineWidth, builder);
         }
 

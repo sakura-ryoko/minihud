@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import fi.dy.masa.minihud.util.IServerChunkLoading;
 
 @Mixin(ChunkMap.class)
-public abstract class MixinServerChunkLoadingManager implements IServerChunkLoading
+public abstract class MixinChunkMap implements IServerChunkLoading
 {
 	@Unique private final AtomicInteger totalLoadedCount = new AtomicInteger();
 

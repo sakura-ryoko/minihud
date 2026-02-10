@@ -15,6 +15,7 @@ import fi.dy.masa.malilib.gui.button.*;
 import fi.dy.masa.malilib.gui.interfaces.ITextFieldListener;
 import fi.dy.masa.malilib.gui.widgets.WidgetCheckBox;
 import fi.dy.masa.malilib.gui.widgets.WidgetColorIndicator;
+import fi.dy.masa.malilib.gui.wrappers.TextFieldType;
 import fi.dy.masa.malilib.interfaces.ICoordinateValueModifier;
 import fi.dy.masa.malilib.util.*;
 import fi.dy.masa.malilib.util.position.PositionUtils;
@@ -71,8 +72,8 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
 
         GuiTextFieldGeneric textField = new GuiTextFieldGeneric(x, y, 70, 17, this.font);
         textField.setMaxLengthWrapper(12);
-        textField.setTextWrapper(String.format("#%08X", this.shape.getColor().intValue));
-        this.addTextField(textField, new TextFieldListenerColor(this.shape));
+        textField.setValueWrapper(String.format("#%08X", this.shape.getColor().intValue));
+        this.addTextField(textField, new TextFieldListenerColor(this.shape), TextFieldType.STRING);
         this.nextY = y + 20;
         this.colorY = y - 1;
 
@@ -86,8 +87,8 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
 
         GuiTextFieldGeneric textField = new GuiTextFieldGeneric(x, y, 70, 17, this.font);
         textField.setMaxLengthWrapper(12);
-        textField.setTextWrapper(String.format("#%08X", this.shape.getColorLines().intValue));
-        this.addTextField(textField, new TextFieldListenerColorLines(this.shape));
+        textField.setValueWrapper(String.format("#%08X", this.shape.getColorLines().intValue));
+        this.addTextField(textField, new TextFieldListenerColorLines(this.shape), TextFieldType.STRING);
         this.nextY = y + 20;
         this.colorY = y - 1;
 
@@ -100,8 +101,8 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         y += 12;
 
         GuiTextFieldGeneric textField = new GuiTextFieldGeneric(x, y, 240, 17, this.font);
-        textField.setTextWrapper(this.shape.getDisplayName());
-        this.addTextField(textField, (txtFld) -> { this.shape.setDisplayName(txtFld.getTextWrapper()); return true; });
+        textField.setValueWrapper(this.shape.getDisplayName());
+        this.addTextField(textField, (txtFld) -> { this.shape.setDisplayName(txtFld.getValueWrapper()); return true; }, TextFieldType.STRING);
         y += 20;
 
         int renderTypeX = x + 230;
@@ -446,7 +447,7 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
     {
         Font textRenderer = Minecraft.getInstance().font;
         GuiTextFieldGeneric textField = new GuiTextFieldGeneric(x, y + 1, textFieldWidth, 14, textRenderer);
-        textField.setTextWrapper("" + coordinateSource.getAsDouble());
+        textField.setValueWrapper("" + coordinateSource.getAsDouble());
 
         this.addTextFieldAndButtonForBoxCoordinate(x + textFieldWidth + 4, y, textField,
                                                    coordinateSource, coordinateConsumer);
@@ -464,13 +465,13 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
                                                                 DoubleSupplier coordinateSource,
                                                                 DoubleConsumer coordinateConsumer)
     {
-        this.addTextField(textField, new TextFieldListenerDouble(coordinateConsumer));
+        this.addTextField(textField, new TextFieldListenerDouble(coordinateConsumer), TextFieldType.DOUBLE);
 
         String hover = StringUtils.translate("malilib.gui.button.hover.plus_minus_tip");
         ButtonGeneric button = new ButtonGeneric(x, y, MaLiLibIcons.BTN_PLUSMINUS_16, hover);
         this.addButton(button, new ButtonListenerDoubleModifier(coordinateSource, (v) -> {
             coordinateConsumer.accept(v);
-            textField.setTextWrapper("" + coordinateSource.getAsDouble());
+            textField.setValueWrapper("" + coordinateSource.getAsDouble());
         }));
     }
 
@@ -490,14 +491,14 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         y += 11;
 
         GuiTextFieldDouble txtField = new GuiTextFieldDouble(x + 12, y, 40, 14, this.font);
-        txtField.setTextWrapper(String.valueOf(supplier.getAsDouble()));
-        this.addTextField(txtField, new TextFieldListenerDouble(consumer));
+        txtField.setValueWrapper(String.valueOf(supplier.getAsDouble()));
+        this.addTextField(txtField, new TextFieldListenerDouble(consumer), TextFieldType.DOUBLE);
 
         if (addButton)
         {
             String hover = StringUtils.translate("malilib.gui.button.hover.plus_minus_tip");
             ButtonGeneric button = new ButtonGeneric(x + 54, y - 1, MaLiLibIcons.BTN_PLUSMINUS_16, hover);
-            this.addButton(button, new ButtonListenerDoubleModifier(supplier, new ChainedDoubleConsumer(consumer, (val) -> txtField.setTextWrapper(String.valueOf(supplier.getAsDouble())) )));
+            this.addButton(button, new ButtonListenerDoubleModifier(supplier, new ChainedDoubleConsumer(consumer, (val) -> txtField.setValueWrapper(String.valueOf(supplier.getAsDouble())) )));
         }
     }
 
@@ -507,14 +508,14 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         y += 11;
 
         GuiTextFieldInteger txtField = new GuiTextFieldInteger(x + 12, y, 40, 14, this.font);
-        txtField.setTextWrapper(String.valueOf(supplier.getAsInt()));
-        this.addTextField(txtField, new TextFieldListenerInteger(consumer));
+        txtField.setValueWrapper(String.valueOf(supplier.getAsInt()));
+        this.addTextField(txtField, new TextFieldListenerInteger(consumer), TextFieldType.INTEGER);
 
         if (addButton)
         {
             String hover = StringUtils.translate("malilib.gui.button.hover.plus_minus_tip");
             ButtonGeneric button = new ButtonGeneric(x + 54, y - 1, MaLiLibIcons.BTN_PLUSMINUS_16, hover);
-            this.addButton(button, new ButtonListenerIntModifier(supplier, new ChainedIntConsumer(consumer, (val) -> txtField.setTextWrapper(String.valueOf(supplier.getAsInt())) )));
+            this.addButton(button, new ButtonListenerIntModifier(supplier, new ChainedIntConsumer(consumer, (val) -> txtField.setValueWrapper(String.valueOf(supplier.getAsInt())) )));
         }
     }
 
@@ -747,7 +748,7 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         @Override
         public boolean onTextChange(GuiTextFieldGeneric textField)
         {
-            this.shape.setColorFromString(textField.getTextWrapper());
+            this.shape.setColorFromString(textField.getValueWrapper());
             return false;
         }
     }
@@ -757,7 +758,7 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         @Override
         public boolean onTextChange(GuiTextFieldGeneric textField)
         {
-            this.shape.setColorLinesFromString(textField.getTextWrapper());
+            this.shape.setColorLinesFromString(textField.getValueWrapper());
             return false;
         }
     }
@@ -769,7 +770,7 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         {
             try
             {
-                this.consumer.accept(Integer.parseInt(textField.getTextWrapper()));
+                this.consumer.accept(Integer.parseInt(textField.getValueWrapper()));
                 return true;
             }
             catch (Exception ignore) {}
@@ -785,7 +786,7 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         {
             try
             {
-                this.consumer.accept(Double.parseDouble(textField.getTextWrapper()));
+                this.consumer.accept(Double.parseDouble(textField.getValueWrapper()));
                 return true;
             }
             catch (Exception ignore) {}

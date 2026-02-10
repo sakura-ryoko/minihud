@@ -155,7 +155,7 @@ public class OverlayRendererRegion extends OverlayRendererBase
         }
 
         profiler.push("region_outlines");
-        Color4f color = Configs.Colors.REGION_OVERLAY_COLOR.getColor();
+        final Color4f color = Color4f.fromColor(Configs.Colors.REGION_OVERLAY_COLOR.getColor(), 0xFF);
         RenderObjectVbo ctx = this.renderObjects.get(1);
         BufferBuilder builder = ctx.start(() -> "minihud:region/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH);
 

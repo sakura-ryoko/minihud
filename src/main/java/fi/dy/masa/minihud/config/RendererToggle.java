@@ -4,12 +4,10 @@ import javax.annotation.Nullable;
 import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
-import fi.dy.masa.malilib.config.ConfigType;
-import fi.dy.masa.malilib.config.IConfigBoolean;
-import fi.dy.masa.malilib.config.IConfigNotifiable;
-import fi.dy.masa.malilib.config.IHotkeyTogglable;
+import fi.dy.masa.malilib.config.*;
 import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.hotkeys.IKeybind;
 import fi.dy.masa.malilib.hotkeys.KeyAction;
@@ -21,7 +19,7 @@ import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.Reference;
 
-public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfigBoolean>
+public enum RendererToggle implements IEnumBooleanHotkey
 {
     OVERLAY_BEACON_RANGE                ("overlayBeaconRange",          ""),
     OVERLAY_BIOME_BORDER                ("overlayBiomeBorder",          ""),
@@ -89,6 +87,7 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
     private final boolean serverDataRequired;
     @Nullable private IValueChangeCallback<IConfigBoolean> callback;
     private boolean dirty;
+    private Pair<Boolean, String> lastBooleanHotkey;
 
     RendererToggle(String name, String defaultHotkey)
     {
@@ -224,6 +223,7 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
         this.prettyName = prettyName;
         this.translatedName = translatedName;
         this.serverDataRequired = serverDataRequired;
+        this.updateLastBooleanHotkeyValue();
     }
 
     private boolean toggleValueWithMessage(KeyAction action, IKeybind key)
@@ -336,12 +336,14 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
     @Override
     public void markDirty()
     {
+        this.getKeybind().markDirty();
         this.dirty = true;
     }
 
     @Override
     public void markClean()
     {
+        this.getKeybind().markClean();
         this.dirty = false;
     }
 
@@ -370,6 +372,7 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
     @Override
     public void setBooleanValue(boolean value)
     {
+        this.updateLastBooleanHotkeyValue();
         boolean oldValue = this.valueBoolean;
         this.valueBoolean = value;
 
@@ -379,7 +382,28 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
         }
     }
 
-	public void setBooleanValueNoCallback(boolean value)
+    @Override
+    public void toggleBooleanValue()
+    {
+        this.updateLastBooleanHotkeyValue();
+        this.valueBoolean = !this.valueBoolean;
+        this.markClean();
+        this.onValueChanged();
+    }
+
+    @Override
+    public boolean getLastBooleanValue()
+    {
+        return this.lastBooleanHotkey.getLeft();
+    }
+
+    @Override
+    public void updateLastBooleanValue()
+    {
+        this.updateLastBooleanHotkeyValue();
+    }
+
+    public void setBooleanValueNoCallback(boolean value)
 	{
 		this.valueBoolean = value;
 	}
@@ -405,7 +429,6 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
         return this.keybind;
     }
 
-
     public boolean needsServerData()
     {
         return this.serverDataRequired;
@@ -426,6 +449,7 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
     @Override
     public void resetToDefault()
     {
+        this.updateLastBooleanHotkeyValue();
         boolean oldValue = this.valueBoolean;
         this.valueBoolean = this.defaultValueBoolean;
 
@@ -441,11 +465,52 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
     }
 
     @Override
+    public Pair<Boolean, String> getBooleanHotkeyValue()
+    {
+        return Pair.of(this.valueBoolean, this.getKeybind().getStringValue());
+    }
+
+    @Override
+    public Pair<Boolean, String> getDefaultBooleanHotkeyValue()
+    {
+        return Pair.of(this.defaultValueBoolean, this.getKeybind().getDefaultStringValue());
+    }
+
+    @Override
+    public void setBooleanHotkeyValue(Pair<Boolean, String> value)
+    {
+        this.updateLastBooleanHotkeyValue();
+        this.setBooleanValue(value.getLeft());
+        this.getKeybind().setValueFromString(value.getRight());
+    }
+
+    @Override
+    public Pair<Boolean, String> getLastBooleanHotkeyValue()
+    {
+        return this.lastBooleanHotkey;
+    }
+
+    @Override
+    public void updateLastBooleanHotkeyValue()
+    {
+        this.lastBooleanHotkey = this.getBooleanHotkeyValue();
+    }
+
+    @Override
     public void setValueFromString(String value)
     {
+        this.updateLastBooleanHotkeyValue();
+        boolean oldValue = this.valueBoolean;
+
         try
         {
-            this.setBooleanValue(Boolean.parseBoolean(value));
+            this.valueBoolean = Boolean.parseBoolean(value);
+
+            if (oldValue != this.valueBoolean)
+            {
+                this.markClean();
+                this.onValueChanged();
+            }
         }
         catch (Exception e)
         {
@@ -456,15 +521,31 @@ public enum RendererToggle implements IHotkeyTogglable, IConfigNotifiable<IConfi
     @Override
     public void setValueFromJsonElement(JsonElement element)
     {
+        final boolean oldBool = this.valueBoolean;
+        final String oldKeybind = this.keybind.getStringValue();
+
         try
         {
             if (element.isJsonPrimitive())
             {
-                this.setBooleanValue(element.getAsBoolean());
+                boolean temp = element.getAsBoolean();
+                this.valueBoolean = temp;       // This seems redundant, but this makes it safer from corruption
             }
             else
             {
                 MiniHUD.LOGGER.warn("Failed to read config value for {} from the JSON config", this.getName());
+            }
+
+            if (oldBool != this.valueBoolean ||
+                oldKeybind != null && !oldKeybind.equals(this.keybind.getStringValue()) ||
+                this.isDirty())
+            {
+                this.markClean();
+
+                if (!this.getLastBooleanHotkeyValue().equals(this.getBooleanHotkeyValue()))
+                {
+                    this.onValueChanged();
+                }
             }
         }
         catch (Exception e)

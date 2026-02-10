@@ -118,7 +118,7 @@ public abstract class ShapeBase extends OverlayRendererBase implements IRangeCha
     {
         if (newColor != this.colorLines.intValue)
         {
-            this.colorLines = Color4f.fromColor(newColor);
+            this.colorLines = Color4f.fromColor(newColor, 0xFF);
             this.setNeedsUpdate();
         }
     }

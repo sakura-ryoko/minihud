@@ -9,7 +9,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.SubtitleOverlay;
 
 @Mixin(SubtitleOverlay.class)
-public abstract class MixinSubtitlesHud
+public abstract class MixinSubtitleOverlay
 {
     @Inject(method = "render(Lnet/minecraft/client/gui/GuiGraphics;)V",
             at = @At(value = "INVOKE",

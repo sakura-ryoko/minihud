@@ -4,6 +4,7 @@ import net.minecraft.client.multiplayer.ClientCommonPacketListenerImpl;
 import org.spongepowered.asm.mixin.Mixin;
 
 @Mixin(value = ClientCommonPacketListenerImpl.class, priority = 999)
+@Deprecated
 public abstract class MixinClientCommonNetworkHandler
 {
     /*

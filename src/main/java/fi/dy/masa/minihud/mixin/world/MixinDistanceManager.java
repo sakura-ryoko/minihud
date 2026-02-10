@@ -8,7 +8,7 @@ import fi.dy.masa.minihud.util.DataStorage;
 import net.minecraft.server.level.DistanceManager;
 
 @Mixin(DistanceManager.class)
-public class MixinChunkLevelManager
+public class MixinDistanceManager
 {
     @Inject(method = "updateSimulationDistance", at = @At("TAIL"))
     private void minihud_getSimulationDistance(int distance, CallbackInfo ci)

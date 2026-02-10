@@ -301,43 +301,51 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
         }
 
         profiler.push("spawn_chunk_outlines");
-		final Color4f colorEntity = this.isPlayerFollowing ?
+		Color4f colorEntity = this.isPlayerFollowing ?
 									Configs.Colors.SPAWN_PLAYER_ENTITY_OVERLAY_COLOR.getColor() :
 									Configs.Colors.SPAWN_REAL_ENTITY_OVERLAY_COLOR.getColor();
-		final Color4f colorRedstone = this.isPlayerFollowing ?
+		Color4f colorRedstone = this.isPlayerFollowing ?
 									  Configs.Colors.SPAWN_PLAYER_REDSTONE_OVERLAY_COLOR.getColor() :
 									  Configs.Colors.SPAWN_REAL_REDSTONE_OVERLAY_COLOR.getColor();
-		final Color4f colorLazy = this.isPlayerFollowing ?
+		Color4f colorLazy = this.isPlayerFollowing ?
 								  Configs.Colors.SPAWN_PLAYER_LAZY_OVERLAY_COLOR.getColor() :
 								  Configs.Colors.SPAWN_REAL_LAZY_OVERLAY_COLOR.getColor();
-		final Color4f colorOuter = this.isPlayerFollowing ?
+		Color4f colorOuter = this.isPlayerFollowing ?
 								   Configs.Colors.SPAWN_PLAYER_OUTER_OVERLAY_COLOR.getColor() :
 								   Configs.Colors.SPAWN_REAL_OUTER_OVERLAY_COLOR.getColor();
 
+		// Solid Lines
+		colorEntity = Color4f.fromColor(colorEntity, 0xFF);
+	    colorRedstone = Color4f.fromColor(colorRedstone, 0xFF);
+	    colorLazy = Color4f.fromColor(colorLazy, 0xFF);
+	    colorOuter = Color4f.fromColor(colorOuter, 0xFF);
+
+		final float lineWidth = 3.0f;
+		this.glLineWidth = lineWidth;
 
 		RenderObjectVbo ctx = this.renderObjects.get(1);
         BufferBuilder builder = ctx.start(() -> "minihud:spawn_chunk/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH);
 
         // The SpawnPos box looks better with white outlines.  You can't really see the `colorEntity` value
-        fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(this.center, cameraPos, Color4f.WHITE, 0.001, this.glLineWidth, builder);
+        fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(this.center, cameraPos, Color4f.WHITE, 0.001, lineWidth, builder);
 
 		if (this.isPlayerFollowing || HudDataManager.getInstance().isSpawnChunkRadiusKnown())
 		{
 			for (AABB entry : this.boxesBrown)
 			{
-				RenderUtils.renderWallOutlines(entry, 16, 16, true, cameraPos, colorOuter, this.glLineWidth, builder);
+				RenderUtils.renderWallOutlines(entry, 16, 16, true, cameraPos, colorOuter, lineWidth, builder);
 			}
 			for (AABB entry : this.boxesRed)
 			{
-				RenderUtils.renderWallOutlines(entry, 16, 16, true, cameraPos, colorLazy, this.glLineWidth, builder);
+				RenderUtils.renderWallOutlines(entry, 16, 16, true, cameraPos, colorLazy, lineWidth, builder);
 			}
 			for (AABB entry : this.boxesYellow)
 			{
-				RenderUtils.renderWallOutlines(entry, 16, 16, true, cameraPos, colorRedstone, this.glLineWidth, builder);
+				RenderUtils.renderWallOutlines(entry, 16, 16, true, cameraPos, colorRedstone, lineWidth, builder);
 			}
 			for (AABB entry : this.boxesGreen)
 			{
-				RenderUtils.renderWallOutlines(entry, 16, 16, true, cameraPos, colorEntity, this.glLineWidth, builder);
+				RenderUtils.renderWallOutlines(entry, 16, 16, true, cameraPos, colorEntity, lineWidth, builder);
 			}
 		}
 

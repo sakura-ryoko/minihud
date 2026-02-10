@@ -13,3 +13,4 @@ mutable field net/minecraft/SharedConstants DEBUG_BEES Z
 mutable field net/minecraft/SharedConstants DEBUG_RAIDS Z
 mutable field net/minecraft/SharedConstants DEBUG_BREEZE_MOB Z
 mutable field net/minecraft/SharedConstants DEBUG_ENTITY_BLOCK_INTERSECTION Z
+accessible field net/minecraft/world/level/NaturalSpawner MAGIC_NUMBER I

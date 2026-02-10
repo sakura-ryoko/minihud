@@ -5,8 +5,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.network.protocol.game.ClientboundLevelChunkPacketData;
 import net.minecraft.network.protocol.game.ClientboundSectionBlocksUpdatePacket;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+
 import fi.dy.masa.minihud.renderer.OverlayRendererLightningRodRange;
 
 public class NotificationUtils
@@ -17,6 +17,7 @@ public class NotificationUtils
 
         // Notify lightning rod renderer of block changes for instant updates
         Minecraft mc = Minecraft.getInstance();
+
         if (mc.level != null)
         {
             OverlayRendererLightningRodRange.INSTANCE.onBlockChange(pos, stateNew, mc.level);
@@ -34,6 +35,7 @@ public class NotificationUtils
 
         // Scan newly loaded chunk for lightning rods
         Minecraft mc = Minecraft.getInstance();
+
         if (mc.level != null)
         {
             OverlayRendererLightningRodRange.INSTANCE.onChunkLoad(chunkX, chunkZ, mc.level);
