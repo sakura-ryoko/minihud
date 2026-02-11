@@ -21,6 +21,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.RegistryAccess;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -90,8 +91,37 @@ public class WorldLoadListener implements IWorldLoadListener
         Path file = getCurrentStorageFile(false);
         JsonObject root = new JsonObject();
 
-        root.add("data_storage", DataStorage.getInstance().toJson());
-        root.add("shapes", ShapeManager.INSTANCE.toJson());
+        JsonObject entry = DataStorage.getInstance().toJson();
+
+        if (!entry.isEmpty())
+        {
+            root.add("data_storage", entry);
+        }
+
+        entry = ShapeManager.INSTANCE.toJson();
+
+        if (!entry.isEmpty())
+        {
+            root.add("shapes", entry);
+        }
+
+        // Delete file if the data is "empty"
+        if (root.isEmpty())
+        {
+            if (Files.exists(file))
+            {
+                try
+                {
+                    Files.delete(file);
+                }
+                catch (IOException e)
+                {
+                    MiniHUD.LOGGER.warn("writeDataPerDimension: Failed to delete file '{}'; {}", file, e.getLocalizedMessage());
+                }
+            }
+
+            return;
+        }
 
         JsonUtils.writeJsonToFileAsPath(root, file);
     }
@@ -101,8 +131,37 @@ public class WorldLoadListener implements IWorldLoadListener
         Path file = getCurrentStorageFile(true);
         JsonObject root = new JsonObject();
 
-        root.add("renderers", RenderContainer.INSTANCE.toJson());
-        root.add("hud_data", HudDataManager.getInstance().toJson());
+        JsonObject entry = RenderContainer.INSTANCE.toJson();
+
+        if (!entry.isEmpty())
+        {
+            root.add("renderers", entry);
+        }
+
+        entry = HudDataManager.getInstance().toJson();
+
+        if (!entry.isEmpty())
+        {
+            root.add("hud_data", entry);
+        }
+
+        // Delete file if the data is "empty"
+        if (root.isEmpty())
+        {
+            if (Files.exists(file))
+            {
+                try
+                {
+                    Files.delete(file);
+                }
+                catch (IOException e)
+                {
+                    MiniHUD.LOGGER.warn("writeDataGlobal: Failed to delete file '{}'; {}", file, e.getLocalizedMessage());
+                }
+            }
+
+            return;
+        }
 
         JsonUtils.writeJsonToFileAsPath(root, file);
     }

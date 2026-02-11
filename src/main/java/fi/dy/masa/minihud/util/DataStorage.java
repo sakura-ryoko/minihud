@@ -1067,7 +1067,10 @@ public class DataStorage
     {
         JsonObject obj = new JsonObject();
 
-        obj.add("distance_pos", JsonUtils.vec3dToJson(this.distanceReferencePoint));
+        if (!this.distanceReferencePoint.equals(Vec3.ZERO))
+        {
+            obj.add("distance_pos", JsonUtils.vec3dToJson(this.distanceReferencePoint));
+        }
 
         return obj;
     }

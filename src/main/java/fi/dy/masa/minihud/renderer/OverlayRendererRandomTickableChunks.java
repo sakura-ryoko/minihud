@@ -355,18 +355,26 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
     public JsonObject toJson()
     {
         JsonObject obj = new JsonObject();
-        obj.add("pos", JsonUtils.vec3dToJson(this.pos));
+
+        if (!this.pos.equals(Vec3.ZERO))
+        {
+            obj.add("pos", JsonUtils.vec3dToJson(this.pos));
+        }
+
         return obj;
     }
 
     @Override
     public void fromJson(JsonObject obj)
     {
-        Vec3 pos = JsonUtils.vec3dFromJson(obj, "pos");
-
-        if (pos != null && this.toggle == RendererToggle.OVERLAY_RANDOM_TICKS_FIXED)
+        if (obj.has("pos"))
         {
-            newPos = pos;
+            Vec3 pos = JsonUtils.vec3dFromJson(obj, "pos");
+
+            if (pos != null && this.toggle == RendererToggle.OVERLAY_RANDOM_TICKS_FIXED)
+            {
+                newPos = pos;
+            }
         }
     }
 }

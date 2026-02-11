@@ -906,6 +906,7 @@ public class HudDataManager
         {
             obj.add("seed", new JsonPrimitive(this.worldSeed));
         }
+
         if (this.isSpawnChunkRadiusKnown())
         {
             obj.add("spawn_chunk_radius", new JsonPrimitive(this.spawnChunkRadius));

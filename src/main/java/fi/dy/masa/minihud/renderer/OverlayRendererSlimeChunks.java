@@ -327,13 +327,21 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
     public JsonObject toJson()
     {
         JsonObject obj = new JsonObject();
-        obj.add("y_top", new JsonPrimitive(this.overlayTopY));
+
+        if (this.overlayTopY != 0.0F && this.overlayTopY != 40.0F)
+        {
+            obj.add("y_top", new JsonPrimitive(this.overlayTopY));
+        }
+
         return obj;
     }
 
     @Override
     public void fromJson(JsonObject obj)
     {
-        this.overlayTopY = JsonUtils.getFloat(obj, "y_top");
+        if (obj.has("y_top"))
+        {
+            this.overlayTopY = JsonUtils.getFloat(obj, "y_top");
+        }
     }
 }

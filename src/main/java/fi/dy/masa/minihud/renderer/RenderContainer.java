@@ -141,7 +141,12 @@ public class RenderContainer
 
             if (!id.isEmpty())
             {
-                obj.add(id, renderer.toJson());
+                JsonObject entry = renderer.toJson();
+
+                if (entry != null && !entry.isEmpty())
+                {
+                    obj.add(id, entry);
+                }
             }
         }
 
