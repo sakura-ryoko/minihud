@@ -18,7 +18,7 @@ public class MiniHUDMixinConfigPlugin extends RestrictiveMixinConfigPlugin
 	@Override
 	public String getRefMapperConfig()
 	{
-		return "";
+		return null;
 	}
 
 	@Override
