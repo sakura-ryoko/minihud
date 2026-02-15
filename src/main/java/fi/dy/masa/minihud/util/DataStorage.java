@@ -4,22 +4,18 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.PriorityBlockingQueue;
-import java.util.concurrent.ThreadFactory;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Queues;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.gson.JsonObject;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -33,13 +29,13 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.TickTask;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraft.world.phys.Vec3;
+
 import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.network.ClientPlayHandler;
 import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
@@ -59,12 +55,9 @@ import fi.dy.masa.minihud.network.ServuxStructuresHandler;
 import fi.dy.masa.minihud.network.ServuxStructuresPacket;
 import fi.dy.masa.minihud.renderer.*;
 import fi.dy.masa.minihud.renderer.shapes.ShapeManager;
-import fi.dy.masa.minihud.renderer.worker.ChunkTask;
-import fi.dy.masa.minihud.renderer.worker.ThreadWorker;
 
 public class DataStorage
 {
-    private static final ThreadFactory THREAD_FACTORY = (new ThreadFactoryBuilder()).setNameFormat("MiniHUD Worker Thread %d").setDaemon(true).build();
     private static final Pattern PATTERN_CARPET_TPS = Pattern.compile("TPS: (?<tps>[0-9]+[\\.,][0-9]) MSPT: (?<mspt>[0-9]+[\\.,][0-9])");
 
     private static final DataStorage INSTANCE = new DataStorage();
@@ -95,16 +88,8 @@ public class DataStorage
     private final Minecraft mc = Minecraft.getInstance();
     private IntegratedServer integratedServer;
     private RegistryAccess registryManager = RegistryAccess.EMPTY;
-    private final PriorityBlockingQueue<ChunkTask> taskQueue = Queues.newPriorityBlockingQueue();
-    private final Thread workerThread;
-    private final ThreadWorker worker;
 
-    private DataStorage()
-    {
-        this.worker = new ThreadWorker();
-        this.workerThread = THREAD_FACTORY.newThread(this.worker);
-        this.workerThread.start();
-    }
+    private DataStorage() {}
 
     public static DataStorage getInstance()
     {
@@ -131,19 +116,6 @@ public class DataStorage
         if (isLogout)
         {
             MiniHUD.debugLog("DataStorage#reset() - log-out");
-            /*
-            this.worker.stopThread();
-
-            try
-            {
-                this.workerThread.interrupt();
-                this.workerThread.join();
-            }
-            catch (InterruptedException e)
-            {
-                MiniHUD.logger.warn("Interrupted whilst waiting for worker thread to die", e);
-            }
-            */
             HANDLER.reset(this.getNetworkChannel());
             HANDLER.resetFailures(this.getNetworkChannel());
 
@@ -168,7 +140,6 @@ public class DataStorage
 
         this.lastStructureUpdatePos = null;
         this.structures.clear();
-        this.clearTasks();
         this.servuxTimeout = -1;
 
         ShapeManager.INSTANCE.clear();
@@ -176,24 +147,6 @@ public class DataStorage
         OverlayRendererConduitRange.INSTANCE.reset();
         OverlayRendererBiomeBorders.INSTANCE.reset();
         OverlayRendererLightLevel.INSTANCE.reset();
-    }
-
-    public void clearTasks()
-    {
-        this.taskQueue.clear();
-    }
-
-    public ChunkTask getNextTask() throws InterruptedException
-    {
-        return this.taskQueue.take();
-    }
-
-    public void addTask(Runnable task, ChunkPos pos, Vec3i playerPos)
-    {
-        if (this.taskQueue.size() < 64000)
-        {
-            this.taskQueue.offer(new ChunkTask(task, pos, playerPos));
-        }
     }
 
     public void setIsServuxServer()

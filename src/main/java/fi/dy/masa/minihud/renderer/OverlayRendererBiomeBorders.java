@@ -34,7 +34,8 @@ import fi.dy.masa.malilib.util.data.Color4f;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.RendererToggle;
-import fi.dy.masa.minihud.util.DataStorage;
+import fi.dy.masa.minihud.renderer.worker.ChunkWorkerTask;
+import fi.dy.masa.minihud.renderer.worker.WorkerDaemonHandler;
 
 public class OverlayRendererBiomeBorders extends OverlayRendererBase
 {
@@ -328,7 +329,8 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
                     this.scheduledChunks.add(pos);
                 }
 
-                DataStorage.getInstance().addTask(task, chunk.getPos(), cameraBlockPos);
+//                DataStorage.getInstance().addTask(task, chunk.getPos(), cameraBlockPos);
+                WorkerDaemonHandler.INSTANCE.addTask(new ChunkWorkerTask(task, chunk.getPos(), cameraBlockPos));
             }
         }
         //long post = System.nanoTime(); System.out.printf("scheduleTasksForMissingChunks: %.6fs, scheduled: %d\n", ((double) post - (double) pre) / 1000000000D, count);

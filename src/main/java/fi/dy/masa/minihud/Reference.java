@@ -11,4 +11,5 @@ public class Reference
     public static final String MC_VERSION = SharedConstants.getCurrentVersion().id();
     public static final String MOD_TYPE = "fabric";
     public static final String MOD_STRING = MOD_ID+"-"+MOD_TYPE+"-"+MC_VERSION+"-"+MOD_VERSION;
+    public static final int MAX_PLATFORM_THREADS = 1;
 }

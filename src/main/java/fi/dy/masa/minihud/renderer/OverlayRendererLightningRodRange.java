@@ -28,7 +28,8 @@ import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.RendererToggle;
 import fi.dy.masa.minihud.renderer.shapes.SideQuad;
-import fi.dy.masa.minihud.util.DataStorage;
+import fi.dy.masa.minihud.renderer.worker.BlockScanWorkerTask;
+import fi.dy.masa.minihud.renderer.worker.WorkerDaemonHandler;
 import fi.dy.masa.minihud.util.MiscUtils;
 import fi.dy.masa.minihud.util.ShapeRenderType;
 import fi.dy.masa.minihud.util.shape.SphereUtils;
@@ -512,7 +513,8 @@ public class OverlayRendererLightningRodRange extends OverlayRendererBase
 		};
 
 		// Queue on worker thread (chunk position not relevant for lightning rods)
-		DataStorage.getInstance().addTask(task, null, pos);
+//		DataStorage.getInstance().addTask(task, null, pos);
+		WorkerDaemonHandler.INSTANCE.addTask(new BlockScanWorkerTask(task, pos));
 	}
 
 	/**
