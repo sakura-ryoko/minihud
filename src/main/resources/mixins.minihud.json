@@ -36,6 +36,7 @@
         "client.IMixinOptions",
         "client.MixinMinecraft",
         "debug.IMixinClientPlayNetworkHandler",
+        "debug.MixinDebugRenderer",
         "debug.MixinDebugScreenEntryList",
         "hud.MixinChatScreen",
         "hud.MixinSubtitleOverlay",
