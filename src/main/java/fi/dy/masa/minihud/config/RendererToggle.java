@@ -43,6 +43,7 @@ public enum RendererToggle implements IEnumBooleanHotkey
 	DEBUG_ENTITY_HITBOXES               ("debugEntityHitboxes",         ""),
 	DEBUG_BLOCK_OUTLINE                 ("debugBlockOutline" ,          ""),
 	DEBUG_WATER                         ("debugWaterEnabled",           ""),
+	DEBUG_LAVA                          ("debugLavaEnabled",            ""),
 	DEBUG_HEIGHTMAP                     ("debugHeightmapEnabled",       ""),
 	DEBUG_COLLISION_BOXES               ("debugCollisionBoxEnabled",    ""),
 	DEBUG_SUPPORTING_BLOCK              ("debugSupportingBlock",        ""),
