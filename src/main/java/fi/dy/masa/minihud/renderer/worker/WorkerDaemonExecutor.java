@@ -164,8 +164,8 @@ public class WorkerDaemonExecutor implements IThreadDaemonExecutor<AbstractWorke
 		return this.shouldPause();
 	}
 
-	// Sleep only 'sleepDelay' seconds after the last tasks have been run.
-	private boolean shouldPause()
+	@Override
+	public boolean shouldPause()
 	{
 		if (this.hasTasks()) { return false; }
 		return (System.currentTimeMillis() - this.lastTaskTime) > (this.sleepDelay * 1000L);
