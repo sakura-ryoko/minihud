@@ -1,10 +1,10 @@
 package fi.dy.masa.minihud.renderer.worker;
 
+import java.util.ConcurrentModificationException;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.PriorityBlockingQueue;
-import java.util.concurrent.ThreadFactory;
 import com.google.common.collect.Queues;
-import org.apache.commons.lang3.tuple.Pair;
 
 import net.minecraft.client.Minecraft;
 
@@ -12,40 +12,36 @@ import fi.dy.masa.malilib.interfaces.IThreadDaemonHandler;
 import fi.dy.masa.malilib.util.MathUtils;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.Reference;
-import fi.dy.masa.minihud.config.Configs;
-import fi.dy.masa.minihud.data.DebugDataManager;
-import fi.dy.masa.minihud.data.EntitiesDataManager;
-import fi.dy.masa.minihud.data.HudDataManager;
-import fi.dy.masa.minihud.util.DataStorage;
 
 // New Thread Worker system utilizing the MaLiLib Interface.
 public class WorkerDaemonHandler implements IThreadDaemonHandler<AbstractWorkerTask<?>>
 {
 	public static final WorkerDaemonHandler INSTANCE = new WorkerDaemonHandler();
+	private static final int MAX_PLATFORM_THREADS = 1;
+	private boolean useVirtual = false;
+	private final String namePrefix = Reference.MOD_NAME+" Worker Thread ";
 	private static final float TASK_INTERVAL = 3.0F;
 	private final int threadCount = this.calculateMaxThreads();
-	private final ConcurrentHashMap<String, Pair<Thread, WorkerDaemonExecutor>> threadMap = this.builder();
+	private final ConcurrentHashMap<String, Thread> threadMap = this.builder();
 	private final PriorityBlockingQueue<AbstractWorkerTask<?>> queue = Queues.newPriorityBlockingQueue();
 	private long lastTick;
 
 	private int calculateMaxThreads()
 	{
-		// Don't use more than 1 / 4 of possible Platform threads for this; or MAX_PLATFORM_THREADS.
-		return MathUtils.clamp((Runtime.getRuntime().availableProcessors() / 4), 1, Reference.MAX_PLATFORM_THREADS);
+		final int result = this.getThreadCountSafe();
+		if (result < 1) { this.useVirtual = true; }
+
+		return MathUtils.clamp(result, 1, MAX_PLATFORM_THREADS);
 	}
 
-	private ConcurrentHashMap<String, Pair<Thread, WorkerDaemonExecutor>> builder()
+	private ConcurrentHashMap<String, Thread> builder()
 	{
-		ConcurrentHashMap<String, Pair<Thread, WorkerDaemonExecutor>> threads = new ConcurrentHashMap<>(this.threadCount, 0.9f, 1);
-		String prefix = Reference.MOD_NAME+" Worker Thread ";
+		ConcurrentHashMap<String, Thread> threads = new ConcurrentHashMap<>(this.threadCount, 0.9f, 1);
 
 		for (int i = 0; i < this.threadCount; i++)
 		{
-			String name = prefix + (i+1);
-			ThreadFactory FACTORY = Thread.ofPlatform().name(name).daemon(true).factory();
-			WorkerDaemonExecutor executor = new WorkerDaemonExecutor();
-
-			threads.put(name, Pair.of(FACTORY.newThread(executor), executor));
+			final String name = this.namePrefix + (i+1);
+			threads.put(name, this.threadFactory(name, this.useVirtual, new WorkerDaemonExecutor()));
 		}
 
 		return threads;
@@ -54,62 +50,103 @@ public class WorkerDaemonHandler implements IThreadDaemonHandler<AbstractWorkerT
 	private WorkerDaemonHandler()
 	{
 		this.lastTick = System.currentTimeMillis();
-		this.start();
+	}
+
+	@Override
+	public String getName()
+	{
+		return this.namePrefix;
 	}
 
 	@Override
 	public void start()
 	{
 		MiniHUD.LOGGER.info("Starting [{}] Worker Daemon threads", this.threadMap.size());
+		Set<String> keys = this.threadMap.keySet();
 
-		synchronized (this.threadMap)
+		for (String key : keys)
 		{
-			this.threadMap.forEach(
-					(name, pair) ->
-					{
-						pair.getLeft().start();
-						pair.getRight().start();
-					}
-			);
+			try
+			{
+				this.safeStart(this.threadMap.get(key));
+			}
+			catch (ConcurrentModificationException cme)
+			{
+				// Busy
+			}
+			catch (IllegalStateException is)
+			{
+				// Terminated
+				Thread entry = this.threadFactory(key, this.useVirtual, new WorkerDaemonExecutor());
+				entry.start();
+
+				synchronized (this.threadMap)
+				{
+					this.threadMap.replace(key, entry);
+				}
+			}
+			catch (RuntimeException re)
+			{
+				// Already Running
+			}
+			catch (Exception ignored) {}
 		}
 	}
 
 	@Override
 	public void stop()
 	{
-		MiniHUD.debugLog("Stopping [{}] Worker Daemon threads", this.threadMap.size());
+		MiniHUD.LOGGER.info("Stopping [{}] Worker Daemon threads", this.threadMap.size());
+		Set<String> keys = this.threadMap.keySet();
 
-		synchronized (this.threadMap)
+		for (String key : keys)
 		{
-			this.threadMap.forEach(
-					(name, pair) ->
-					{
-						pair.getRight().stop();
-						pair.getLeft().interrupt();
-					}
-			);
+			try
+			{
+				this.safeStop(this.threadMap.get(key));
+			}
+			catch (ConcurrentModificationException cme)
+			{
+				// Busy
+				MiniHUD.LOGGER.warn("Thread [{}] is currently busy, and shouldn't be stopped", key);
+			}
+			catch (IllegalStateException is)
+			{
+				// Terminated already
+			}
+			catch (IllegalThreadStateException is)
+			{
+				// Never started
+			}
+			catch (Exception ignored) {}
 		}
 	}
 
 	@Override
-	public synchronized void reset()
+	public void reset()
 	{
 		this.queue.clear();
 	}
 
 	@Override
-	public synchronized void addTask(AbstractWorkerTask task)
+	public void addTask(AbstractWorkerTask task)
 	{
 		if (this.queue.size() < 64000)
 		{
-			this.queue.add(task);
+			this.queue.offer(task);
 		}
 	}
 
 	@Override
-	public synchronized AbstractWorkerTask<?> getNextTask()
+	public AbstractWorkerTask<?> getNextTask() throws InterruptedException
 	{
 		return this.queue.poll();
+	}
+
+	@Override
+	public boolean hasTasks()
+	{
+		return !this.queue.isEmpty();
 	}
 
 	@Override
@@ -125,53 +162,38 @@ public class WorkerDaemonHandler implements IThreadDaemonHandler<AbstractWorkerT
 
 		if ((now - this.lastTick) > this.getTaskInterval())
 		{
-			this.ensureThreadSafety();
+			MiniHUD.debugLog("taskCount: [{}]", this.queue.size());
+			this.ensureThreadsAreAlive();
 			this.lastTick = now;
 		}
 	}
 
-	// TODO -- is this even necessary?
-	private void ensureThreadSafety()
-			throws RuntimeException
+	private void ensureThreadsAreAlive()
 	{
-		this.threadMap.forEach(
-				(name, pair) ->
+		if (this.hasTasks())
+		{
+			Set<String> keySet = this.threadMap.keySet();
+
+			for (String key : keySet)
+			{
+				try
 				{
-					if (!pair.getLeft().isAlive() || pair.getLeft().isInterrupted())
+					this.safeStart(this.threadMap.get(key));
+				}
+				catch (IllegalStateException is)
+				{
+					// Terminated (Replace)
+					Thread entry = this.threadFactory(key, this.useVirtual, new WorkerDaemonExecutor());
+					entry.start();
+
+					synchronized (this.threadMap)
 					{
-						String err = String.format("'%s' was killed [%s]", name, this.getThreadStatus(pair.getLeft()));
-						this.reset();
-						this.stop();
-
-						DebugDataManager.getInstance().reset(true);
-						EntitiesDataManager.getInstance().reset(true);
-						HudDataManager.getInstance().reset(true);
-						DataStorage.getInstance().reset(true);
-						Configs.saveToFile();
-						MiniHUD.LOGGER.fatal(err);
-
-						throw new RuntimeException(err);
+						this.threadMap.replace(key, entry);
 					}
 				}
-		);
-	}
-
-	private String getThreadStatus(Thread thread)
-	{
-		if (thread == null)
-		{
-			return "<>";
+				catch (RuntimeException ignored) {}
+			}
 		}
-
-		return "(" + thread.threadId() + ')'
-				+ "/"
-				+ thread.getState().name();
-	}
-
-	public void endAll()
-	{
-		this.reset();
-		this.stop();
 	}
 
 	@Override

@@ -2,15 +2,25 @@ package fi.dy.masa.minihud.renderer.worker;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import net.minecraft.CrashReport;
-import net.minecraft.client.Minecraft;
-
 import fi.dy.masa.malilib.interfaces.IThreadDaemonExecutor;
+import fi.dy.masa.malilib.util.MathUtils;
 import fi.dy.masa.minihud.MiniHUD;
 
 public class WorkerDaemonExecutor implements IThreadDaemonExecutor<AbstractWorkerTask<?>>
 {
 	private final AtomicBoolean running = new AtomicBoolean(true);
+	private final AtomicBoolean paused = new AtomicBoolean(false);
+	private final long sleepTime;
+
+	public WorkerDaemonExecutor()
+	{
+		this.sleepTime = 50000L;
+	}
+
+	public WorkerDaemonExecutor(long sleepTime)
+	{
+		this.sleepTime = MathUtils.clamp(sleepTime, 5000L, Long.MAX_VALUE);
+	}
 
 	@Override
 	public boolean isRunning()
@@ -19,43 +29,133 @@ public class WorkerDaemonExecutor implements IThreadDaemonExecutor<AbstractWorke
 	}
 
 	@Override
+	public boolean isPaused()
+	{
+		return this.paused.get();
+	}
+
+	@Override
 	public void start()
 	{
-		this.running.set(true);
+		if (!this.isRunning())
+		{
+			MiniHUD.debugLog("Executor: Starting");
+			if (this.isPaused())
+			{
+				this.paused.set(false);
+			}
+
+			this.running.set(true);
+		}
+
+		this.run();
+	}
+
+	@Override
+	public void interrupt(InterruptedException interrupt)
+	{
+		MiniHUD.debugLog("Executor: Interrupt Signal: {}", interrupt.getLocalizedMessage());
+		if (this.isPaused() || !this.isRunning())
+		{
+			this.resume();
+		}
+	}
+
+	@Override
+	public void pause()
+	{
+		MiniHUD.debugLog("Executor: Pausing");
+		this.paused.set(true);
+	}
+
+	@Override
+	public void resume()
+	{
+		if (this.isPaused())
+		{
+			MiniHUD.debugLog("Executor: Resuming");
+			this.paused.set(false);
+		}
+
+		this.start();
 	}
 
 	@Override
 	public void stop()
 	{
-		this.running.set(false);
+		MiniHUD.debugLog("Executor: Stopping");
+		if (!this.isPaused())
+		{
+			this.paused.set(true);
+		}
+		if (this.isRunning())
+		{
+			this.running.set(false);
+		}
+	}
+
+	@Override
+	public long sleepTime()
+	{
+		return this.sleepTime;
+	}
+
+	@Override
+	public String getName()
+	{
+		return WorkerDaemonHandler.INSTANCE.getName();
+	}
+
+	@Override
+	public boolean hasTasks()
+	{
+		return WorkerDaemonHandler.INSTANCE.hasTasks();
 	}
 
 	@Override
 	public void run()
 	{
+		if (!this.isCorrectThread()) { return; }
+		MiniHUD.debugLog("Executor: Running: [{}/{}]", this.isRunning(), this.isPaused());
+
 		while (this.isRunning())
 		{
-			try
+			if (this.isPaused() && this.hasTasks())
 			{
-				AbstractWorkerTask<?> task = WorkerDaemonHandler.INSTANCE.getNextTask();
-
-				if (task != null)
-				{
-					this.processTask(task);
-				}
+				this.resume();
 			}
-			catch (InterruptedException e)
+			else if (!this.isPaused() && this.loopSafe())
 			{
-				MiniHUD.LOGGER.debug("Stopping worker thread due to an interrupt");
-				return;
-			}
-			catch (Throwable throwable)
-			{
-				CrashReport crashreport = CrashReport.forThrowable(throwable, "MiniHUD worker thread");
-				Minecraft.getInstance().delayCrashRaw(Minecraft.getInstance().fillReport(crashreport));
+				this.paused.set(true);
+				this.sleep();
 				return;
 			}
 		}
+	}
+
+	@Override
+	public boolean loopSafe()
+	{
+		try
+		{
+			AbstractWorkerTask<?> task = WorkerDaemonHandler.INSTANCE.getNextTask();
+
+			if (task != null)
+			{
+				this.processTask(task);
+				return false;
+			}
+		}
+		catch (InterruptedException e)
+		{
+			this.interrupt(e);
+		}
+		catch (Exception err)
+		{
+			MiniHUD.LOGGER.error("loopSafe: Exception: {}", err.getLocalizedMessage());
+		}
+
+		return !this.hasTasks();
 	}
 
 	@Override

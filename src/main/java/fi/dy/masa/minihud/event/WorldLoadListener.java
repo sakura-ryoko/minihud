@@ -15,6 +15,7 @@ import fi.dy.masa.minihud.renderer.OverlayRenderer;
 import fi.dy.masa.minihud.renderer.OverlayRendererVillagerInfo;
 import fi.dy.masa.minihud.renderer.RenderContainer;
 import fi.dy.masa.minihud.renderer.shapes.ShapeManager;
+import fi.dy.masa.minihud.renderer.worker.WorkerDaemonHandler;
 import fi.dy.masa.minihud.util.DataStorage;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
@@ -83,6 +84,7 @@ public class WorldLoadListener implements IWorldLoadListener
             HudDataManager.getInstance().onWorldJoin();
             EntitiesDataManager.getInstance().onWorldJoin();
             DebugDataManager.getInstance().onWorldJoin();
+            WorkerDaemonHandler.INSTANCE.start();
         }
     }
 
