@@ -11,6 +11,8 @@ public class WorkerDaemonExecutor implements IThreadDaemonExecutor<AbstractWorke
 	private final AtomicBoolean running = new AtomicBoolean(true);
 	private final AtomicBoolean paused = new AtomicBoolean(false);
 	private final long sleepTime;
+	private final float sleepDelay = 15.0F;
+	private long lastTaskTime;
 
 	public WorkerDaemonExecutor()
 	{
@@ -54,7 +56,9 @@ public class WorkerDaemonExecutor implements IThreadDaemonExecutor<AbstractWorke
 	@Override
 	public void interrupt(InterruptedException interrupt)
 	{
-		MiniHUD.debugLog("Executor: Interrupt Signal: {}", interrupt.getLocalizedMessage());
+		MiniHUD.debugLog("Executor: Interrupt Signal: {}", interrupt.getLocalizedMessage() != null
+		                                                   ? interrupt.getLocalizedMessage()  // This is null sometimes?
+		                                                   : "received interrupt signal");
 		if (this.isPaused() || !this.isRunning())
 		{
 			this.resume();
@@ -116,6 +120,7 @@ public class WorkerDaemonExecutor implements IThreadDaemonExecutor<AbstractWorke
 	public void run()
 	{
 		if (!this.isCorrectThread()) { return; }
+		this.lastTaskTime = System.currentTimeMillis();
 		MiniHUD.debugLog("Executor: Running: [{}/{}]", this.isRunning(), this.isPaused());
 
 		while (this.isRunning())
@@ -143,6 +148,7 @@ public class WorkerDaemonExecutor implements IThreadDaemonExecutor<AbstractWorke
 			if (task != null)
 			{
 				this.processTask(task);
+				this.lastTaskTime = System.currentTimeMillis();
 				return false;
 			}
 		}
@@ -155,8 +161,16 @@ public class WorkerDaemonExecutor implements IThreadDaemonExecutor<AbstractWorke
 			MiniHUD.LOGGER.error("loopSafe: Exception: {}", err.getLocalizedMessage());
 		}
 
-		return !this.hasTasks();
+		return this.shouldPause();
 	}
+
+	// Sleep only 'sleepDelay' seconds after the last tasks have been run.
+	private boolean shouldPause()
+	{
+		if (this.hasTasks()) { return false; }
+		return (System.currentTimeMillis() - this.lastTaskTime) > (this.sleepDelay * 1000L);
+	}
+
 
 	@Override
 	public void processTask(AbstractWorkerTask<?> task) throws InterruptedException

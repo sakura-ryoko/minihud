@@ -40,8 +40,8 @@ public class WorkerDaemonHandler implements IThreadDaemonHandler<AbstractWorkerT
 
 		for (int i = 0; i < this.threadCount; i++)
 		{
-			final String name = this.namePrefix + (i+1);
-			threads.put(name, this.threadFactory(name, this.useVirtual, new WorkerDaemonExecutor()));
+			final String name = this.namePrefix + (i+1); // this.useVirtual
+			threads.put(name, this.threadFactory(name, true, new WorkerDaemonExecutor()));
 		}
 
 		return threads;
@@ -133,7 +133,13 @@ public class WorkerDaemonHandler implements IThreadDaemonHandler<AbstractWorkerT
 	{
 		if (this.queue.size() < 64000)
 		{
+			final int lastSize = this.queue.size();
 			this.queue.offer(task);
+
+			if (lastSize == 0)
+			{
+				this.ensureThreadsAreAlive();
+			}
 		}
 	}
 
