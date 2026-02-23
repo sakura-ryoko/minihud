@@ -16,12 +16,12 @@ public class WorkerDaemonExecutor implements IThreadDaemonExecutor<AbstractWorke
 
 	public WorkerDaemonExecutor()
 	{
-		this.sleepTime = 50000L;
+		this.sleepTime = 300000L;
 	}
 
 	public WorkerDaemonExecutor(long sleepTime)
 	{
-		this.sleepTime = MathUtils.clamp(sleepTime, 5000L, Long.MAX_VALUE);
+		this.sleepTime = MathUtils.clamp(sleepTime, 50000L, Long.MAX_VALUE);
 	}
 
 	@Override
