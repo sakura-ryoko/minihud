@@ -171,7 +171,6 @@ public class WorkerDaemonExecutor implements IThreadDaemonExecutor<AbstractWorke
 		return (System.currentTimeMillis() - this.lastTaskTime) > (this.sleepDelay * 1000L);
 	}
 
-
 	@Override
 	public void processTask(AbstractWorkerTask<?> task) throws InterruptedException
 	{
