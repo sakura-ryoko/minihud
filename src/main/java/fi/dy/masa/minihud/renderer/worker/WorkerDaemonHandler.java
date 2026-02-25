@@ -19,7 +19,7 @@ public class WorkerDaemonHandler implements IThreadDaemonHandler<AbstractWorkerT
 	public static final WorkerDaemonHandler INSTANCE = new WorkerDaemonHandler();
 	private static final int MAX_PLATFORM_THREADS = 1;
 	private boolean useVirtual = false;
-	private final String namePrefix = Reference.MOD_NAME+" Worker Thread ";
+	private final String namePrefix = Reference.MOD_NAME+" Worker Thread";
 	private static final float TASK_INTERVAL = 3.0F;
 	private final int threadCount = this.calculateMaxThreads();
 	private final ConcurrentHashMap<String, Thread> threadMap = this.builder();
@@ -40,7 +40,7 @@ public class WorkerDaemonHandler implements IThreadDaemonHandler<AbstractWorkerT
 
 		for (int i = 0; i < this.threadCount; i++)
 		{
-			final String name = this.namePrefix + (i+1);
+			final String name = this.threadCount > 1 ? this.namePrefix+" "+ (i+1) : this.namePrefix;
 			threads.put(name, this.threadFactory(name, this.useVirtual, new WorkerDaemonExecutor()));
 		}
 
