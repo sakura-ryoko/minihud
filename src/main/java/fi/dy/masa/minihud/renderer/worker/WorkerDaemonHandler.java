@@ -133,10 +133,10 @@ public class WorkerDaemonHandler implements IThreadDaemonHandler<AbstractWorkerT
 	{
 		if (this.queue.size() < 64000)
 		{
-			final int lastSize = this.queue.size();
+			final boolean wasEmpty = this.queue.isEmpty();
 			this.queue.offer(task);
 
-			if (lastSize == 0)
+			if (wasEmpty)
 			{
 				this.ensureThreadsAreAlive();
 			}
@@ -168,8 +168,12 @@ public class WorkerDaemonHandler implements IThreadDaemonHandler<AbstractWorkerT
 
 		if ((now - this.lastTick) > this.getTaskInterval())
 		{
-			MiniHUD.debugLog("taskCount: [{}]", this.queue.size());
-			this.ensureThreadsAreAlive();
+			if (mc.level != null)
+			{
+				MiniHUD.debugLog("taskCount: [{}]", this.queue.size());
+				this.ensureThreadsAreAlive();
+			}
+
 			this.lastTick = now;
 		}
 	}

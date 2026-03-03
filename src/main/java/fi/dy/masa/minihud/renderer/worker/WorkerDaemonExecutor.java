@@ -11,8 +11,6 @@ public class WorkerDaemonExecutor implements IThreadDaemonExecutor<AbstractWorke
 	private final AtomicBoolean running = new AtomicBoolean(true);
 	private final AtomicBoolean paused = new AtomicBoolean(false);
 	private final long sleepTime;
-	private final float sleepDelay;
-	private long lastTaskTime;
 
 	public WorkerDaemonExecutor()
 	{
@@ -22,7 +20,6 @@ public class WorkerDaemonExecutor implements IThreadDaemonExecutor<AbstractWorke
 	public WorkerDaemonExecutor(long sleepTime)
 	{
 		this.sleepTime = MathUtils.clamp(sleepTime, 60000L, Long.MAX_VALUE); // 1 min
-		this.sleepDelay = 15.0F;
 	}
 
 	@Override
@@ -121,7 +118,6 @@ public class WorkerDaemonExecutor implements IThreadDaemonExecutor<AbstractWorke
 	public void run()
 	{
 		if (!this.isCorrectThread()) { return; }
-		this.lastTaskTime = System.currentTimeMillis();
 		MiniHUD.debugLog("Executor: Running: [{}/{}]", this.isRunning(), this.isPaused());
 
 		while (this.isRunning())
@@ -149,7 +145,6 @@ public class WorkerDaemonExecutor implements IThreadDaemonExecutor<AbstractWorke
 			if (task != null)
 			{
 				this.processTask(task);
-				this.lastTaskTime = System.currentTimeMillis();
 				return false;
 			}
 		}
@@ -163,13 +158,6 @@ public class WorkerDaemonExecutor implements IThreadDaemonExecutor<AbstractWorke
 		}
 
 		return this.shouldPause();
-	}
-
-	@Override
-	public boolean shouldPause()
-	{
-		if (this.hasTasks()) { return false; }
-		return (System.currentTimeMillis() - this.lastTaskTime) > (this.sleepDelay * 1000L);
 	}
 
 	@Override
