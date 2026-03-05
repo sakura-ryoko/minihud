@@ -1633,6 +1633,23 @@ public class RenderHandler implements IRenderer
                 return;
             }
         }
+        else if (type == InfoToggle.SCULK_WARNING_LEVEL)
+        {
+            if (this.addedTypes.contains(type))
+            {
+                return;
+            }
+
+            // Make into a generic call
+            Level bestWorld = WorldUtils.getBestWorld(mc);
+            InfoLine parser = type.initParser();
+
+            if (parser != null && mc.player != null)
+            {
+                InfoLineContext ctx = new InfoLineContext(bestWorld, mc.player, null, null, null, null, null);
+                this.processEntries(parser.parse(ctx));
+            }
+        }
     }
 
     private boolean isEntityDataValid(@Nonnull CompoundData data)

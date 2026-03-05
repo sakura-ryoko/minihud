@@ -52,6 +52,7 @@ public enum InfoToggle implements IConfigInteger, IEnumBooleanHotkey
     SPEED_AXIS              ("infoSpeedAxis",               InfoLineTypes.SPEED_AXIS, false, ""),
     SPEED_HV                ("infoSpeedHV",                 InfoLineTypes.SPEED_HV, false, ""),
     SPRINTING               ("infoSprinting",               InfoLineTypes.SPRINTING, false, ""),
+    SCULK_WARNING_LEVEL     ("infoSculkWarningLevel",       InfoLineTypes.SCULK_WARNING_LEVEL, false, true, ""),
 
     // Server
     SERVER_TPS              ("infoServerTPS",               InfoLineTypes.SERVER_TPS, false, ""),
