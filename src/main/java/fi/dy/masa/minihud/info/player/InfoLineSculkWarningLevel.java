@@ -1,5 +1,6 @@
 package fi.dy.masa.minihud.info.player;
 
+import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.malilib.util.data.Constants;
 import fi.dy.masa.malilib.util.data.tag.CompoundData;
 import fi.dy.masa.minihud.Reference;
@@ -7,6 +8,7 @@ import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.data.EntitiesDataManager;
 import fi.dy.masa.minihud.info.InfoLine;
 import fi.dy.masa.minihud.info.InfoLineContext;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -52,7 +54,7 @@ public class InfoLineSculkWarningLevel extends InfoLine
             ServerPlayer serverPlayer = players.getFirst();
             Optional<WardenSpawnTracker> wardenSpawnTracker = serverPlayer.getWardenSpawnTracker();
             return wardenSpawnTracker
-                .map(it -> List.of(this.translate(LEVEL_KEY, it.getWarningLevel())))
+                .map(it -> this.generateEntry(it.getWarningLevel()))
                 .orElse(null);
         } else {
             Pair<Entity, CompoundData> pair = EntitiesDataManager.getInstance().requestEntity(world, ent.getId());
@@ -60,10 +62,23 @@ public class InfoLineSculkWarningLevel extends InfoLine
                 CompoundData compound = pair.getRight();
                 if (compound.contains("warden_spawn_tracker", Constants.NBT.TAG_COMPOUND)) {
                     int warningLevel = compound.getCompound("warden_spawn_tracker").getInt("warning_level");
-                    return List.of(this.translate(LEVEL_KEY, warningLevel));
+                    return this.generateEntry(warningLevel);
                 }
             }
         }
 		return null;
+    }
+
+    private List<Entry> generateEntry(int warningLevel)
+    {
+        char color = switch (warningLevel) {
+            case 0 -> 'a';
+            case 1 -> 'e';
+            case 2 -> '6';
+            case 3, 4 -> 'c';
+            default -> 'r';
+        };
+        //noinspection DataFlowIssue
+        return List.of(this.translate(LEVEL_KEY, "§%s%s§r".formatted(color, warningLevel)));
     }
 }
