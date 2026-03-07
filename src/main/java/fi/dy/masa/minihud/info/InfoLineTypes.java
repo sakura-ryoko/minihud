@@ -74,7 +74,8 @@ public class InfoLineTypes
 
 	// Player
 	public static final InfoLineType<InfoLinePlayerExp>             PLAYER_EXP              = InfoLineType.build(InfoLinePlayerExp::new,            InfoToggle.PLAYER_EXPERIENCE, List.of(InfoLineFlag.WORLD, InfoLineFlag.PLAYER));
-	public static final InfoLineType<InfoLinePing>                  PING                    = InfoLineType.build(InfoLinePing::new,                 InfoToggle.PING, List.of(InfoLineFlag.WORLD, InfoLineFlag.PLAYER));
+    public static final InfoLineType<InfoLinePing>                  PING                    = InfoLineType.build(InfoLinePing::new,                 InfoToggle.PING, List.of(InfoLineFlag.WORLD, InfoLineFlag.PLAYER));
+    public static final InfoLineType<InfoLineSculkWarningLevel>     SCULK_WARNING_LEVEL     = InfoLineType.build(InfoLineSculkWarningLevel::new,    InfoToggle.SCULK_WARNING_LEVEL, List.of(InfoLineFlag.WORLD, InfoLineFlag.PLAYER));
 
     // Block Entity
     public static final InfoLineType<InfoLineFurnaceExp>            FURNACE_EXP             = InfoLineType.build(InfoLineFurnaceExp::new,           InfoToggle.FURNACE_XP, List.of(InfoLineFlag.WORLD, InfoLineFlag.TILE_ENTITY));
