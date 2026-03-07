@@ -1,6 +1,5 @@
 package fi.dy.masa.minihud.info.player;
 
-import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.malilib.util.data.Constants;
 import fi.dy.masa.malilib.util.data.tag.CompoundData;
 import fi.dy.masa.minihud.Reference;
@@ -8,17 +7,14 @@ import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.data.EntitiesDataManager;
 import fi.dy.masa.minihud.info.InfoLine;
 import fi.dy.masa.minihud.info.InfoLineContext;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.monster.warden.WardenSpawnTracker;
 import net.minecraft.world.level.Level;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
-import java.util.Optional;
 
 public class InfoLineSculkWarningLevel extends InfoLine
 {
@@ -48,30 +44,44 @@ public class InfoLineSculkWarningLevel extends InfoLine
     @Override
     public List<Entry> parseEnt(@NotNull Level world, @NotNull Entity ent)
     {
-        if (world instanceof ServerLevel serverLevel) {
+        if (world instanceof ServerLevel serverLevel)
+        {
             List<ServerPlayer> players = serverLevel.getPlayers(it -> it.getId() == ent.getId());
-            if (players.isEmpty()) return null;
-            ServerPlayer serverPlayer = players.getFirst();
-            Optional<WardenSpawnTracker> wardenSpawnTracker = serverPlayer.getWardenSpawnTracker();
-            return wardenSpawnTracker
+
+            if (players.isEmpty())
+            {
+                return null;
+            }
+            
+            return players
+                .getFirst()
+                .getWardenSpawnTracker()
                 .map(it -> this.generateEntry(it.getWarningLevel()))
                 .orElse(null);
-        } else {
+        }
+        else
+        {
             Pair<Entity, CompoundData> pair = EntitiesDataManager.getInstance().requestEntity(world, ent.getId());
-            if (pair != null) {
+
+            if (pair != null)
+            {
                 CompoundData compound = pair.getRight();
-                if (compound.contains("warden_spawn_tracker", Constants.NBT.TAG_COMPOUND)) {
+
+                if (compound.contains("warden_spawn_tracker", Constants.NBT.TAG_COMPOUND))
+                {
                     int warningLevel = compound.getCompound("warden_spawn_tracker").getInt("warning_level");
                     return this.generateEntry(warningLevel);
                 }
             }
         }
+
 		return null;
     }
 
     private List<Entry> generateEntry(int warningLevel)
     {
-        char color = switch (warningLevel) {
+        char color = switch (warningLevel)
+        {
             case 0 -> 'a';
             case 1 -> 'e';
             case 2 -> '6';

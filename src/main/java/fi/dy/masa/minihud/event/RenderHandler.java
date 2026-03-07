@@ -1649,6 +1649,10 @@ public class RenderHandler implements IRenderer
                 InfoLineContext ctx = new InfoLineContext(bestWorld, mc.player, null, null, null, null, null);
                 this.processEntries(parser.parse(ctx));
             }
+            else
+            {
+                return;
+            }
         }
     }
 
