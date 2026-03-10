@@ -16,9 +16,9 @@ public class BlockScanWorkerTask extends AbstractWorkerTask<BlockScanWorkerTask>
 	}
 
 	@Override
-	public int compareTo(@NonNull BlockScanWorkerTask o)
+	public int compareTo(@NonNull BlockScanWorkerTask other)
 	{
-		return this.referencePosition.compareTo(o.referencePosition);
+		return  this.referencePosition.compareTo(other.referencePosition);
 	}
 
 	@Override

@@ -443,10 +443,17 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
 
         for (String line : texts)
         {
-            // Get the lerp of Yaw / Pitch
-//            RenderUtils.drawTextPlate(List.of(line), x, y, z, 0.02f);
-            RenderUtils.drawTextPlate(List.of(line), x, y, z, cam.getYRot(delta), cam.getXRot(delta), 0.02f, 0xFFFFFFFF, 0x40000000, this.renderThrough);
-            y -= 0.2;
+            // Replace camera entity each call
+            cam = mc.getCameraEntity();
+
+            if (cam != null)
+            {
+                // Get the lerp of Yaw / Pitch
+                final float scale = Configs.Generic.VILLAGER_TEXT_SCALE.getFloatValue() * 0.01F;
+//                RenderUtils.drawTextPlate(List.of(line), x, y, z, 0.02f);
+                RenderUtils.drawTextPlate(List.of(line), x, y, z, cam.getYRot(delta), cam.getXRot(delta), scale, 0xFFFFFFFF, 0x40000000, this.renderThrough);
+                y -= 0.2;
+            }
         }
     }
 }

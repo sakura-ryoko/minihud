@@ -10,6 +10,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import fi.dy.masa.minihud.renderer.OverlayRendererBeaconRange;
 import net.minecraft.core.BlockPos;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BeaconBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -66,5 +68,14 @@ public abstract class MixinBeaconBlockEntity extends BlockEntity
     {
         BlockPos pos = new BlockPos(x, y, z);
         OverlayRendererBeaconRange.INSTANCE.onBlockStatusChange(pos);
+    }
+
+    @Inject(method = "playSound", at = @At("HEAD"))
+    private static void minihud_onBeaconPlaySound(Level level, BlockPos blockPos, SoundEvent soundEvent, CallbackInfo ci)
+    {
+        if (SoundEvents.BEACON_DEACTIVATE.equals(soundEvent) || SoundEvents.BEACON_ACTIVATE.equals(soundEvent))
+        {
+            OverlayRendererBeaconRange.INSTANCE.onBlockStatusChange(blockPos);
+        }
     }
 }

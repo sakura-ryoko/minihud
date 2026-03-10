@@ -20,7 +20,7 @@ public class WorkerDaemonHandler implements IThreadDaemonHandler<AbstractWorkerT
 	private static final int MAX_PLATFORM_THREADS = 1;
 	private boolean useVirtual = false;
 	private final String namePrefix = Reference.MOD_NAME+" Worker Thread";
-	private static final float TASK_INTERVAL = 3.0F;
+	private static final float TASK_INTERVAL = 2.0F;
 	private final int threadCount = this.calculateMaxThreads();
 	private final ConcurrentHashMap<String, Thread> threadMap = this.builder();
 	private final PriorityBlockingQueue<AbstractWorkerTask<?>> queue = Queues.newPriorityBlockingQueue();
@@ -123,13 +123,13 @@ public class WorkerDaemonHandler implements IThreadDaemonHandler<AbstractWorkerT
 	}
 
 	@Override
-	public void reset()
+	public synchronized void reset()
 	{
 		this.queue.clear();
 	}
 
 	@Override
-	public void addTask(AbstractWorkerTask task)
+	public synchronized void addTask(AbstractWorkerTask task)
 	{
 		if (this.queue.size() < 64000)
 		{
@@ -144,9 +144,14 @@ public class WorkerDaemonHandler implements IThreadDaemonHandler<AbstractWorkerT
 	}
 
 	@Override
-	public AbstractWorkerTask<?> getNextTask() throws InterruptedException
+	public synchronized AbstractWorkerTask<?> getNextTask() throws InterruptedException
 	{
 		return this.queue.poll();
+	}
+
+	protected int getTaskCount()
+	{
+		return this.queue.size();
 	}
 
 	@Override
@@ -170,7 +175,7 @@ public class WorkerDaemonHandler implements IThreadDaemonHandler<AbstractWorkerT
 		{
 			if (mc.level != null)
 			{
-				MiniHUD.debugLog("taskCount: [{}]", this.queue.size());
+//				MiniHUD.debugLog("taskCount: [{}]", this.queue.size());
 				this.ensureThreadsAreAlive();
 			}
 
