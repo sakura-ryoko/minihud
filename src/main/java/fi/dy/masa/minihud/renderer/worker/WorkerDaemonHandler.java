@@ -20,7 +20,7 @@ public class WorkerDaemonHandler implements IThreadDaemonHandler<AbstractWorkerT
 	private static final int MAX_PLATFORM_THREADS = 1;
 	private boolean useVirtual = false;
 	private final String namePrefix = Reference.MOD_NAME+" Worker Thread";
-	private static final float TASK_INTERVAL = 2.0F;
+	private static final float TASK_INTERVAL = 1.5F;
 	private final int threadCount = this.calculateMaxThreads();
 	private final ConcurrentHashMap<String, Thread> threadMap = this.builder();
 	private final PriorityBlockingQueue<AbstractWorkerTask<?>> queue = Queues.newPriorityBlockingQueue();
