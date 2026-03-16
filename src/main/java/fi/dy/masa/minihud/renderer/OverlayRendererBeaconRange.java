@@ -46,7 +46,7 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
     protected void updateBlockRange(Level world, BlockPos pos, BeaconBlockEntity be, Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
         List<BeaconBeamOwner.Section> segments = ((IMixinBeaconBlockEntity) be).minihud_getBeamEmitter();
-        Holder<MobEffect> primary = ((IMixinBeaconBlockEntity) be).minihud_getPrimary();
+//        Holder<MobEffect> primary = ((IMixinBeaconBlockEntity) be).minihud_getPrimary();
 //        RegistryEntry<StatusEffect> secondary = ((IMixinBeaconBlockEntity) be).minihud_getSecondary();
         final int level = ((IMixinBeaconBlockEntity) be).minihud_getLevel();
 
@@ -60,7 +60,7 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
         {
             this.positions.remove(pos);
         }
-        else if (level >= 1 && level <= 4 && primary != null)
+        else if (level >= 1 && level <= 4)
         {
             this.positions.put(pos, level);
         }
