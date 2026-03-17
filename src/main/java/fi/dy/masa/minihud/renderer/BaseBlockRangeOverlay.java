@@ -139,7 +139,7 @@ public abstract class BaseBlockRangeOverlay<T extends BlockEntity> extends Overl
         int chunkRadius = mc.options.renderDistance().get();
 
 //        LOGGER.debug("fetchAllTargetBlockEntityPositions(): hasData: {} // positions: {}", this.hasData, this.blockPositions.size());
-        this.blockPositions.clear();
+        LongOpenHashSet positions = new LongOpenHashSet();
 
         for (int cz = centerCZ - chunkRadius; cz <= centerCZ + chunkRadius; ++cz)
         {
@@ -153,18 +153,37 @@ public abstract class BaseBlockRangeOverlay<T extends BlockEntity> extends Overl
                     {
                         if (be.getType() == this.blockEntityType)
                         {
-                            synchronized (this.blockPositions)
-                            {
-                                this.blockPositions.add(be.getBlockPos().asLong());
-                                this.hasData = true;
-                            }
+                            positions.add(be.getBlockPos().asLong());
                         }
                     }
                 }
             }
         }
 
-        return !this.blockPositions.isEmpty() && this.blockPositions.size() > 0;
+        LongOpenHashSet removed = new LongOpenHashSet();
+
+        synchronized (this.blockPositions)
+        {
+            this.blockPositions.longStream()
+                .filter(pos -> !positions.contains(pos))
+                .forEach(removed::add);
+
+            this.blockPositions.clear();
+            this.blockPositions.addAll(positions);
+        }
+
+        if (!removed.isEmpty())
+        {
+            BlockPos.MutableBlockPos mutablePos = new BlockPos.MutableBlockPos();
+
+            for (Long pos : removed)
+            {
+                mutablePos.set(pos);
+                this.expireBlockRange(mutablePos.immutable());
+            }
+        }
+
+        return !this.blockPositions.isEmpty();
     }
 
     protected void updateBlockRanges(Level world, Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
