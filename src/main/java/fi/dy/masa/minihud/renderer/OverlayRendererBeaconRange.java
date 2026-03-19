@@ -101,7 +101,7 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
 
                 return key != null && BeaconBlockEntity.BEACON_EFFECTS
                         .stream()
-//                        .limit(level) ??
+                        .limit(level)
                         .flatMap(Collection::stream)
                         .anyMatch(it -> it.is(key));
             }
