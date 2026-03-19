@@ -2,7 +2,6 @@ package fi.dy.masa.minihud.renderer;
 
 import fi.dy.masa.malilib.util.WorldUtils;
 import fi.dy.masa.malilib.util.data.tag.CompoundData;
-import fi.dy.masa.malilib.util.data.tag.converter.DataConverterNbt;
 import fi.dy.masa.minihud.data.EntitiesDataManager;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
@@ -10,7 +9,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientChunkCache;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
@@ -92,8 +90,9 @@ public abstract class BaseBlockRangeOverlay<T extends BlockEntity> extends Overl
     {
         if (mc.level == null) return;
 
+        this.world = WorldUtils.getBestWorld(mc);
         this.hasData = this.fetchAllTargetBlockEntityPositions(mc.level, entity.blockPosition(), mc);
-        this.world = entity.level();
+        this.world = this.world == null ? entity.level() : this.world;
 
 //        LOGGER.debug("update(): hasData: {} // positions: {}", this.hasData, this.blockPositions.size());
 
@@ -207,7 +206,17 @@ public abstract class BaseBlockRangeOverlay<T extends BlockEntity> extends Overl
         while (it.hasNext())
         {
             mutablePos.set(it.nextLong());
-            BlockEntity be = world.getBlockEntity(mutablePos);
+            Pair<BlockEntity, CompoundData> pair = this.fetchBlockEntityData(world, mutablePos);
+            BlockEntity be;
+
+            if (pair != null)
+            {
+                be = pair.getLeft();
+            }
+            else
+            {
+                be = world.getBlockEntity(mutablePos);
+            }
 
             if (be == null || !this.blockEntityClass.isAssignableFrom(be.getClass()))
             {
@@ -231,26 +240,14 @@ public abstract class BaseBlockRangeOverlay<T extends BlockEntity> extends Overl
         profiler.pop();
     }
 
-    protected Pair<BlockEntity, CompoundData> fetchBlockEntityData(Minecraft mc, Level world, BlockPos pos)
+    protected Pair<BlockEntity, CompoundData> fetchBlockEntityData(Level world, BlockPos pos)
     {
-        WorldUtils.getBestWorld(mc);
-
-        Level bestWorld = WorldUtils.getBestWorld(mc);
-        BlockState state = bestWorld.getBlockState(pos);
-        Pair<BlockEntity, CompoundData> pair = null;
+        BlockState state = world.getBlockState(pos);
+        Pair<BlockEntity, CompoundData> pair;
 
         if (state.getBlock() instanceof EntityBlock)
         {
-            if (bestWorld instanceof ServerLevel)
-            {
-                CompoundData data = new CompoundData();
-                BlockEntity be = bestWorld.getChunkAt(pos).getBlockEntity(pos);
-                pair = Pair.of(be, be != null ? DataConverterNbt.fromVanillaCompound(be.saveWithFullMetadata(bestWorld.registryAccess())) : data);
-            }
-            else
-            {
-                pair = EntitiesDataManager.getInstance().requestBlockEntity(world, pos);
-            }
+            pair = EntitiesDataManager.getInstance().requestBlockEntity(this.world, pos);
 
             if (pair != null && (pair.getLeft() == null || !this.blockEntityClass.isAssignableFrom(pair.getLeft().getClass())))
             {

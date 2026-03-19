@@ -40,7 +40,7 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
         this.useCulling = false;
         this.positions = new HashMap<>();
         this.useCulling = false;
-        this.updateDistance = 24;
+        this.updateDistance = 16;
     }
 
     @Override
@@ -68,12 +68,12 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
     {
         final int level = be.minihud_getLevel();
         List<BeaconBeamOwner.Section> segments = be.minihud_getBeamEmitter();
-
-//        Holder<MobEffect> primary = beaconBE.minihud_getPrimary();
-//        RegistryEntry<StatusEffect> secondary = beaconBE.minihud_getSecondary();
-//        System.out.printf("beacon - pos [%s], level [%d], pri [%s], sec [%s], segment count: [%d]\n", pos, level,
-//                          primary != null ? primary.value().getName().getString() : "<NULL>",
-//                          secondary != null ? secondary.value().getName().getString() : "<NULL>",
+        Holder<MobEffect> primary;
+//        Holder<MobEffect> primary = be.minihud_getPrimary();
+//        Holder<MobEffect> secondary = be.minihud_getSecondary();
+//        LOGGER.debug("beacon - pos [{}], level [{}], pri [{}], sec [{}], segment count: [{}]", pos, level,
+//                          primary != null ? primary.value().getDisplayName().getString() : "<NULL>",
+//                          secondary != null ? secondary.value().getDisplayName().getString() : "<NULL>",
 //                          segments.size()
 //        );
 
@@ -84,22 +84,26 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
 
         if (Configs.Generic.BEACON_RANGE_OVERLAY_CHECK_PRIMARY_EFFECT.getBooleanValue())
         {
-            Pair<BlockEntity, CompoundData> pair = this.fetchBlockEntityData(mc, world, pos);
+            Pair<BlockEntity, CompoundData> pair = this.fetchBlockEntityData(world, pos);
 
             if (pair != null)
             {
-                Holder<MobEffect> primary = DataBlockUtils.getBeaconEffects(pair.getRight()).getLeft();
+                primary = DataBlockUtils.getBeaconEffects(pair.getRight()).getLeft();
+            }
+            else
+            {
+                primary = be.minihud_getPrimary();      // Fallback Check Only
+            }
 
-                if (primary != null)
-                {
-                    ResourceKey<MobEffect> key = primary.unwrapKey().orElse(null);
+            if (primary != null)
+            {
+                ResourceKey<MobEffect> key = primary.unwrapKey().orElse(null);
 
-                    return key != null && BeaconBlockEntity.BEACON_EFFECTS
+                return key != null && BeaconBlockEntity.BEACON_EFFECTS
                         .stream()
-                        .limit(level)
+//                        .limit(level) ??
                         .flatMap(Collection::stream)
                         .anyMatch(it -> it.is(key));
-                }
             }
 
             return false;
@@ -154,9 +158,6 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
         profiler.push("beacon_quads");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
         BufferBuilder builder = ctx.start(() -> "minihud:beacon/quads", this.renderThrough ? MaLiLibPipelines.POSITION_COLOR_MASA_NO_DEPTH_NO_CULL : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL);
-//        MatrixStack matrices = new MatrixStack();
-
-//        matrices.push();
 
         this.positions.forEach(
                 (pos, level) ->
@@ -250,7 +251,6 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
             MiniHUD.LOGGER.error("OverlayRendererBeaconRange#renderOutlines(): Exception; {}", err.getMessage());
         }
 
-//        matrices.pop();
         profiler.pop();
     }
 
