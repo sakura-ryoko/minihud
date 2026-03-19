@@ -1,5 +1,8 @@
 package fi.dy.masa.minihud.renderer;
 
+import fi.dy.masa.malilib.util.WorldUtils;
+import fi.dy.masa.malilib.util.data.tag.CompoundData;
+import fi.dy.masa.minihud.data.EntitiesDataManager;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.client.Minecraft;
@@ -9,12 +12,15 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.phys.Vec3;
 import fi.dy.masa.malilib.config.IConfigBoolean;
+import org.apache.commons.lang3.tuple.Pair;
 
 public abstract class BaseBlockRangeOverlay<T extends BlockEntity> extends OverlayRendererBase
 {
@@ -84,8 +90,9 @@ public abstract class BaseBlockRangeOverlay<T extends BlockEntity> extends Overl
     {
         if (mc.level == null) return;
 
+        this.world = WorldUtils.getBestWorld(mc);
         this.hasData = this.fetchAllTargetBlockEntityPositions(mc.level, entity.blockPosition(), mc);
-        this.world = entity.level();
+        this.world = this.world == null ? entity.level() : this.world;
 
 //        LOGGER.debug("update(): hasData: {} // positions: {}", this.hasData, this.blockPositions.size());
 
@@ -139,7 +146,7 @@ public abstract class BaseBlockRangeOverlay<T extends BlockEntity> extends Overl
         int chunkRadius = mc.options.renderDistance().get();
 
 //        LOGGER.debug("fetchAllTargetBlockEntityPositions(): hasData: {} // positions: {}", this.hasData, this.blockPositions.size());
-        this.blockPositions.clear();
+        LongOpenHashSet positions = new LongOpenHashSet();
 
         for (int cz = centerCZ - chunkRadius; cz <= centerCZ + chunkRadius; ++cz)
         {
@@ -153,18 +160,37 @@ public abstract class BaseBlockRangeOverlay<T extends BlockEntity> extends Overl
                     {
                         if (be.getType() == this.blockEntityType)
                         {
-                            synchronized (this.blockPositions)
-                            {
-                                this.blockPositions.add(be.getBlockPos().asLong());
-                                this.hasData = true;
-                            }
+                            positions.add(be.getBlockPos().asLong());
                         }
                     }
                 }
             }
         }
 
-        return !this.blockPositions.isEmpty() && this.blockPositions.size() > 0;
+        LongOpenHashSet removed = new LongOpenHashSet();
+
+        synchronized (this.blockPositions)
+        {
+            this.blockPositions.longStream()
+                .filter(pos -> !positions.contains(pos))
+                .forEach(removed::add);
+
+            this.blockPositions.clear();
+            this.blockPositions.addAll(positions);
+        }
+
+        if (!removed.isEmpty())
+        {
+            BlockPos.MutableBlockPos mutablePos = new BlockPos.MutableBlockPos();
+
+            for (Long pos : removed)
+            {
+                mutablePos.set(pos);
+                this.expireBlockRange(mutablePos.immutable());
+            }
+        }
+
+        return !this.blockPositions.isEmpty();
     }
 
     protected void updateBlockRanges(Level world, Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
@@ -180,7 +206,17 @@ public abstract class BaseBlockRangeOverlay<T extends BlockEntity> extends Overl
         while (it.hasNext())
         {
             mutablePos.set(it.nextLong());
-            BlockEntity be = world.getBlockEntity(mutablePos);
+            Pair<BlockEntity, CompoundData> pair = this.fetchBlockEntityData(world, mutablePos.immutable());
+            BlockEntity be;
+
+            if (pair != null)
+            {
+                be = pair.getLeft();
+            }
+            else
+            {
+                be = world.getBlockEntity(mutablePos);
+            }
 
             if (be == null || !this.blockEntityClass.isAssignableFrom(be.getClass()))
             {
@@ -202,6 +238,26 @@ public abstract class BaseBlockRangeOverlay<T extends BlockEntity> extends Overl
         }
 
         profiler.pop();
+    }
+
+    protected Pair<BlockEntity, CompoundData> fetchBlockEntityData(Level world, BlockPos pos)
+    {
+        BlockState state = world.getBlockState(pos);
+        Pair<BlockEntity, CompoundData> pair;
+
+        if (state.getBlock() instanceof EntityBlock)
+        {
+            pair = EntitiesDataManager.getInstance().requestBlockEntity(this.world, pos);
+
+            if (pair != null && (pair.getLeft() == null || !this.blockEntityClass.isAssignableFrom(pair.getLeft().getClass())))
+            {
+                pair = null;
+            }
+
+            return pair;
+        }
+
+        return null;
     }
 
     protected abstract void updateBlockRange(Level world, BlockPos pos, T be, Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler);

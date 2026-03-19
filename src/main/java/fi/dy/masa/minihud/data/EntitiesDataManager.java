@@ -76,8 +76,8 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
     private long lastOpCheck = 0L;
 
     // Data Cache
-    private final ConcurrentHashMap<BlockPos, Pair<Long, Pair<BlockEntity, CompoundData>>> blockEntityCache = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<Integer,  Pair<Long, Pair<Entity,      CompoundData>>> entityCache      = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<BlockPos, Pair<Long, Pair<BlockEntity, CompoundData>>> blockEntityCache = new ConcurrentHashMap<>(16, 0.9f, 1);
+    private final ConcurrentHashMap<Integer,  Pair<Long, Pair<Entity,      CompoundData>>> entityCache      = new ConcurrentHashMap<>(16, 0.9f, 1);
     private long serverTickTime = 0;
     // Requests to be executed
     private final Set<BlockPos> pendingBlockEntitiesQueue = new LinkedHashSet<>();
@@ -296,10 +296,13 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
             {
                 Pair<Long, Pair<BlockEntity, CompoundData>> pair = this.blockEntityCache.get(pos);
 
-                if ((nowTime - pair.getLeft()) > timeout || pair.getLeft() > nowTime)
+                if (pair != null)       // ???
                 {
-                    //MiniHUD.debugLog("entityCache: be at pos [{}] has timed out by [{}] ms", pos.toShortString(), timeout);
-                    this.blockEntityCache.remove(pos);
+                    if ((nowTime - pair.getLeft()) > timeout || pair.getLeft() > nowTime)
+                    {
+                        //MiniHUD.debugLog("entityCache: be at pos [{}] has timed out by [{}] ms", pos.toShortString(), timeout);
+                        this.blockEntityCache.remove(pos);
+                    }
                 }
             }
         }
@@ -310,10 +313,13 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
             {
                 Pair<Long, Pair<Entity, CompoundData>> pair = this.entityCache.get(entityId);
 
-                if ((nowTime - pair.getLeft()) > timeout || pair.getLeft() > nowTime)
+                if (pair != null)       // ???
                 {
-//                    MiniHUD.debugLog("entityCache: entity Id [{}] has timed out by [{}] ms", entityId, timeout);
-                    this.entityCache.remove(entityId);
+                    if ((nowTime - pair.getLeft()) > timeout || pair.getLeft() > nowTime)
+                    {
+//                        MiniHUD.debugLog("entityCache: entity Id [{}] has timed out by [{}] ms", entityId, timeout);
+                        this.entityCache.remove(entityId);
+                    }
                 }
             }
         }
