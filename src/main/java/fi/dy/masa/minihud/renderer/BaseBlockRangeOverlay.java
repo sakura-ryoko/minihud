@@ -206,7 +206,7 @@ public abstract class BaseBlockRangeOverlay<T extends BlockEntity> extends Overl
         while (it.hasNext())
         {
             mutablePos.set(it.nextLong());
-            Pair<BlockEntity, CompoundData> pair = this.fetchBlockEntityData(world, mutablePos);
+            Pair<BlockEntity, CompoundData> pair = this.fetchBlockEntityData(world, mutablePos.immutable());
             BlockEntity be;
 
             if (pair != null)
