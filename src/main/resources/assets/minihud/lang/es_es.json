@@ -6,7 +6,7 @@
     "minihud.config.colors.comment.beaconRangeLvl4": "Color de superposición para el Beacon nivel 4",
     "minihud.config.colors.comment.blockGridOverlayColor": "Color de superposición para la cuadrícula de bloques",
     "minihud.config.colors.comment.conduitRange": "Color de superposición para el rango de conductos",
-    "minihud.config.colors.comment.conduitRangeOutlines": "Color for the Conduit Range overlay Outlines",
+    "minihud.config.colors.comment.conduitRangeOutlines": "Color for the Conduit Range overlay lines",
     "minihud.config.colors.comment.lightLevelMarkerBlockLit": "The color for the safe (during day) spots marker",
     "minihud.config.colors.comment.lightLevelMarkerDark": "The color for the spawnable spots marker",
     "minihud.config.colors.comment.lightLevelMarkerDim": "The color for the \"dim\" marker (user-definable level)",
