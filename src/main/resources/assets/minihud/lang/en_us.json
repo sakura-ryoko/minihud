@@ -85,7 +85,7 @@
     "minihud.config.colors.name.textBackgroundColor": "textBackgroundColor",
     "minihud.config.colors.name.textColor": "textColor",
     "minihud.config.generic.comment.axolotlTooltips": "Adds the Axolotl variant name to the bucket tooltip",
-    "minihud.config.generic.comment.beaconRangeOverlayCheckPrimaryEffect": "Only render the \"Beacon Range\" after it is detected\nthat the beacon has an active primary effect.\n§6NOTE: This is used to show if the beacon is disabled by a block,\n§6and then block rendering of the overlay.",
+    "minihud.config.generic.comment.beaconRangeOverlayCheckPrimaryEffect": "Only render the \"Beacon Range\" after it is detected\nthat the beacon has an active primary effect.",
     "minihud.config.generic.comment.beeTooltips": "Adds the number of contained bees to the tooltip of Bee Hive and Bee Nest items",
     "minihud.config.generic.comment.biomeOverlayRange": "The horizontal chunk radius to render for the Biome Border Overlay",
     "minihud.config.generic.comment.biomeOverlayRangeVertical": "The vertical (sub-)chunk radius to render for the Biome Border Overlay",
