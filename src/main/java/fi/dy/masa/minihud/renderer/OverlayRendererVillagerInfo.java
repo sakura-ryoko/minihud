@@ -57,7 +57,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
 
     protected OverlayRendererVillagerInfo()
     {
-        this.recentEntityData = new ConcurrentHashMap<>();
+        this.recentEntityData = new ConcurrentHashMap<>(16, 0.9f, 1);
         this.lastTick = System.currentTimeMillis();
         this.xViewRange = 30;
         this.yViewRange = 10;
@@ -124,10 +124,13 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
         {
             this.recentEntityData.forEach(((integer, longPair) ->
             {
-                if ((now - longPair.getLeft()) > timeout || longPair.getLeft() > now)
+                if (longPair != null)
                 {
-//                    MiniHUD.debugLog("villagerOverlayCache: entity Id [{}] has timed out by [{}] ms", integer, timeout);
-                    this.recentEntityData.remove(integer);
+                    if ((now - longPair.getLeft()) > timeout || longPair.getLeft() > now)
+                    {
+//                        MiniHUD.debugLog("villagerOverlayCache: entity Id [{}] has timed out by [{}] ms", integer, timeout);
+                        this.recentEntityData.remove(integer);
+                    }
                 }
             }));
         }

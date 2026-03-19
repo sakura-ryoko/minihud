@@ -41,6 +41,7 @@ public class Configs implements IConfigHandler
         public static final ConfigBoolean       FOOD_TOOLTIPS                       = new ConfigBoolean("foodTooltips", false).apply(GENERIC_KEY);
         public static final ConfigBoolean       HONEY_TOOLTIPS                      = new ConfigBoolean("honeyTooltips", false).apply(GENERIC_KEY);
         public static final ConfigBoolean       LODESTONE_TOOLTIPS                  = new ConfigBoolean("lodestoneTooltips", false).apply(GENERIC_KEY);
+        public static final ConfigBoolean       BEACON_RANGE_OVERLAY_CHECK_PRIMARY_EFFECT= new ConfigBoolean("beaconRangeOverlayCheckPrimaryEffect", false).apply(GENERIC_KEY);
         public static final ConfigInteger       BIOME_OVERLAY_RANGE                 = new ConfigInteger("biomeOverlayRange", 4, 0, 32).apply(GENERIC_KEY);
         public static final ConfigInteger       BIOME_OVERLAY_RANGE_VERTICAL        = new ConfigInteger("biomeOverlayRangeVertical", 0, 0, 32).apply(GENERIC_KEY);
         public static final ConfigBoolean       BIOME_OVERLAY_SINGLE_COLOR          = new ConfigBoolean("biomeOverlaySingleColor", true).apply(GENERIC_KEY);
@@ -166,6 +167,7 @@ public class Configs implements IConfigHandler
                 //DEBUG_DEVELOPMENT_MODE,
                 //DEBUG_RENDERER_PATH_MAX_DIST,
                 DONT_RESET_SEED_ON_DIMENSION_CHANGE,
+                BEACON_RANGE_OVERLAY_CHECK_PRIMARY_EFFECT,
                 CONDUIT_RANGE_OVERLAY_COMBINE_QUADS,
                 CONDUIT_RANGE_OVERLAY_RENDER_OUTLINES,
                 CONDUIT_RANGE_OVERLAY_RENDER_THROUGH,
