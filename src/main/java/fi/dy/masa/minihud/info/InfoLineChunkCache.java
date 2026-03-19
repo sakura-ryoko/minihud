@@ -105,7 +105,7 @@ public class InfoLineChunkCache
             if (world != null)
             {
                 future = world.getChunkSource()
-                              .getChunkFuture(chunkPos.x, chunkPos.z, ChunkStatus.FULL, false)
+                              .getChunkFuture(chunkPos.x(), chunkPos.z(), ChunkStatus.FULL, false)
                               .thenApply((either) -> either.map((chunk) -> (LevelChunk) chunk) );
             }
         }
@@ -124,7 +124,7 @@ public class InfoLineChunkCache
     {
         if (this.cachedClientChunk == null || !this.cachedClientChunk.getPos().equals(chunkPos))
         {
-            this.cachedClientChunk = Objects.requireNonNull(this.getClientWorld()).getChunk(chunkPos.x, chunkPos.z);
+            this.cachedClientChunk = Objects.requireNonNull(this.getClientWorld()).getChunk(chunkPos.x(), chunkPos.z());
         }
 
         return this.cachedClientChunk;

@@ -50,23 +50,23 @@ public class InfoLineDifficulty extends InfoLine
         List<Entry> list = new ArrayList<>();
         long chunkInhabitedTime = 0L;
         float moonPhaseFactor = 0.0F;
-        ChunkPos chunkPos = new ChunkPos(pos);
+        ChunkPos chunkPos = ChunkPos.containing(pos);
 //            WorldChunk serverChunk = this.getChunk(chunkPos);
         LevelChunk serverChunk = InfoLineChunkCache.INSTANCE.getChunk(chunkPos);
 
         if (serverChunk != null)
         {
-			MoonPhase moonPhase = this.mc().gameRenderer.getLevelRenderState().skyRenderState.moonPhase;
+			MoonPhase moonPhase = this.mc().gameRenderer.getGameRenderState().levelRenderState.skyRenderState.moonPhase;
 	        moonPhaseFactor = DimensionType.MOON_BRIGHTNESS_PER_PHASE[moonPhase.index()];
 //            moonPhaseFactor = world.getMoonSize();
 	        // That was harder....
             chunkInhabitedTime = serverChunk.getInhabitedTime();
         }
 
-        DifficultyInstance diff = new DifficultyInstance(world.getDifficulty(), world.getDayTime(), chunkInhabitedTime, moonPhaseFactor);
+        DifficultyInstance diff = new DifficultyInstance(world.getDifficulty(), world.getDefaultClockTime(), chunkInhabitedTime, moonPhaseFactor);
 
         list.add(this.translate(DIFF_KEY,
-                                diff.getEffectiveDifficulty(), diff.getSpecialMultiplier(), world.getDayTime() / 24000L)
+                                diff.getEffectiveDifficulty(), diff.getSpecialMultiplier(), world.getDefaultClockTime() / 24000L)
         );
 
         return list;

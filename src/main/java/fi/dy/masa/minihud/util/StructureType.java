@@ -21,9 +21,9 @@ public enum StructureType
     SHIPWRECK           (StructureToggle.OVERLAY_STRUCTURE_SHIPWRECK,           "minecraft:shipwreck", "minecraft:shipwreck_beached"),
     STRONGHOLD          (StructureToggle.OVERLAY_STRUCTURE_STRONGHOLD,          "minecraft:stronghold"),
     TRIAL_CHAMBERS      (StructureToggle.OVERLAY_STRUCTURE_TRIAL_CHAMBERS,      "minecraft:trial_chambers"),
+    TRAIL_RUINS         (StructureToggle.OVERLAY_STRUCTURE_TRAIL_RUINS,         "minecraft:trail_ruins"),
     VILLAGE             (StructureToggle.OVERLAY_STRUCTURE_VILLAGE,             "minecraft:village_desert", "minecraft:village_plains", "minecraft:village_savanna", "minecraft:village_snowy", "minecraft:village_taiga"),
     WITCH_HUT           (StructureToggle.OVERLAY_STRUCTURE_WITCH_HUT,           "minecraft:swamp_hut"),
-    TRAIL_RUINS         (StructureToggle.OVERLAY_STRUCTURE_TRAIL_RUINS,         "minecraft:trail_ruins"),
 
     BASTION_REMNANT     (StructureToggle.OVERLAY_STRUCTURE_BASTION_REMNANT,     "minecraft:bastion_remnant"),
     NETHER_FORTRESS     (StructureToggle.OVERLAY_STRUCTURE_NETHER_FORTRESS,     "minecraft:fortress"),

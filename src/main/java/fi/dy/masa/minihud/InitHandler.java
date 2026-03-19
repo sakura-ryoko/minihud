@@ -35,7 +35,7 @@ public class InitHandler implements IInitializationHandler
         InputEventHandler.getInputManager().registerMouseInputHandler(InputHandler.getInstance());
 
         RenderHandler renderer = RenderHandler.getInstance();
-        RenderEventHandler.getInstance().registerGameOverlayRenderer(renderer);
+        RenderEventHandler.getInstance().registerInGameGuiRenderer(renderer);
         RenderEventHandler.getInstance().registerTooltipLastRenderer(renderer);
         RenderEventHandler.getInstance().registerWorldLastRenderer(renderer);
 

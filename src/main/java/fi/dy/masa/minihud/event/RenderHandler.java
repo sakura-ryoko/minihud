@@ -7,12 +7,17 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.tuple.Pair;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
+import org.joml.Vector4f;
 
+import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import net.minecraft.client.Camera;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderBuffers;
 import net.minecraft.client.renderer.culling.Frustum;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -78,9 +83,7 @@ public class RenderHandler implements IRenderer
     private final DataStorage data;
     private final HudDataManager hudData;
     private final Date date;
-//    private final Map<ChunkPos, CompletableFuture<OptionalChunk<Chunk>>> chunkFutures = new HashMap<>();
     private final Set<InfoToggle> addedTypes = new HashSet<>();
-//    @Nullable private WorldChunk cachedClientChunk;
     private long infoUpdateTime;
 
     private final List<StringHolder> lineWrappers = new ArrayList<>();
@@ -125,17 +128,15 @@ public class RenderHandler implements IRenderer
     }
 
     @Override
-    public void onRenderGameOverlayPostAdvanced(GuiContext ctx, float partialTicks, ProfilerFiller profiler)
+    public void onExtractInGameGuiPost(GuiContext ctx, float partialTicks, ProfilerFiller profiler)
     {
         if (Configs.Generic.MAIN_RENDERING_TOGGLE.getBooleanValue() == false)
         {
-//            this.resetCachedChunks();
             InfoLineChunkCache.INSTANCE.onReset();
             return;
         }
 
 		if (DebugDataManager.getInstance().shouldShowDebugHudFix() == false &&
-//        if (mc.getDebugHud().shouldShowDebugHud() == false &&
             mc.player != null && mc.options.hideGui == false &&
             (Configs.Generic.REQUIRE_SNEAK.getBooleanValue() == false || mc.player.isShiftKeyDown()) &&
             Configs.Generic.REQUIRED_KEY.getKeybind().isKeybindHeld())
@@ -166,24 +167,18 @@ public class RenderHandler implements IRenderer
         if (Configs.Generic.INVENTORY_PREVIEW_ENABLED.getBooleanValue() &&
             Configs.Generic.INVENTORY_PREVIEW.getKeybind().isKeybindHeld())
         {
-            /*
-            var inventory = RayTraceUtils.getTargetInventory(mc, true);
-
-            if (inventory != null)
-            {
-                fi.dy.masa.minihud.renderer.RenderUtils.renderInventoryOverlay(inventory, drawContext);
-            }
-             */
-
             InventoryOverlayHandler.getInstance().getRenderContext(ctx, profiler);
-
-            // OG method (Works with Crafters also)
-            //fi.dy.masa.minihud.renderer.RenderUtils.renderInventoryOverlay(mc, drawContext);
         }
     }
 
     @Override
-    public void onRenderWorldPreWeather(RenderTarget fb, Matrix4f posMatrix, Matrix4f projMatrix, Frustum frustum, Camera camera, RenderBuffers buffers, ProfilerFiller profiler)
+    public void onExtractWorldPreWeather(DeltaTracker deltaTracker, Camera camera, float ticks, ProfilerFiller profiler)
+    {
+        // TODO
+    }
+
+    @Override
+    public void onRenderWorldPreWeather(RenderTarget fb, Matrix4fc modelViewMatrix, CameraRenderState cameraState, Frustum culling, RenderBuffers buffers, GpuBufferSlice terrainFog, Vector4f fogColor, ProfilerFiller profiler)
     {
 //        if (Configs.Generic.MAIN_RENDERING_TOGGLE.getBooleanValue() &&
 //            this.mc.world != null && this.mc.player != null && this.mc.options.hudHidden == false)
@@ -193,12 +188,22 @@ public class RenderHandler implements IRenderer
     }
 
     @Override
-    public void onRenderWorldLastAdvanced(RenderTarget fb, Matrix4f posMatrix, Matrix4f projMatrix, Frustum frustum, Camera camera, RenderBuffers buffers, ProfilerFiller profiler)
+    public void onExtractWorldLast(DeltaTracker deltaTracker, Camera camera, float ticks, ProfilerFiller profiler)
     {
         if (Configs.Generic.MAIN_RENDERING_TOGGLE.getBooleanValue() &&
             this.mc.level != null && this.mc.player != null && this.mc.options.hideGui == false)
         {
-            OverlayRenderer.renderOverlays(posMatrix, projMatrix, this.mc, frustum, camera, profiler);
+            OverlayRenderer.extractOverlays(this.mc, deltaTracker, camera, ticks, profiler);
+        }
+    }
+
+    @Override
+    public void onRenderWorldLast(RenderTarget fb, Matrix4fc modelViewMatrix, CameraRenderState cameraState, Frustum culling, RenderBuffers buffers, GpuBufferSlice terrainFog, Vector4f fogColor, ProfilerFiller profiler)
+    {
+        if (Configs.Generic.MAIN_RENDERING_TOGGLE.getBooleanValue() &&
+            this.mc.level != null && this.mc.player != null && this.mc.options.hideGui == false)
+        {
+            OverlayRenderer.renderOverlays(modelViewMatrix, this.mc, culling, cameraState, profiler);
         }
     }
 
@@ -311,8 +316,6 @@ public class RenderHandler implements IRenderer
         }
 
         if (Configs.Generic.BEE_TOOLTIPS.getBooleanValue() &&
-            //stack.getItem() instanceof BlockItem blockItem &&
-            //blockItem.getBlock() instanceof BeehiveBlock)
             stack.has(DataComponents.BEES))
         {
             MiscUtils.addBeeTooltip(stack, list);
@@ -464,7 +467,7 @@ public class RenderHandler implements IRenderer
 		if (world == null || mc.level == null) return;
         double y = entity.getY();
         BlockPos pos = BlockPos.containing(entity.getX(), y, entity.getZ());
-        ChunkPos chunkPos = new ChunkPos(pos);
+        ChunkPos chunkPos = ChunkPos.containing(pos);
 
         @SuppressWarnings("deprecation")
         boolean isChunkLoaded = mc.level.hasChunkAt(pos);
@@ -1882,78 +1885,6 @@ public class RenderHandler implements IRenderer
             }
         }
     }
-
-    // # Moved to InfoLineChunkCache
-//    @Nullable
-//    private WorldChunk getChunk(ChunkPos chunkPos)
-//    {
-//        CompletableFuture<OptionalChunk<Chunk>> future = this.chunkFutures.get(chunkPos);
-//
-//        if (future == null)
-//        {
-//            future = this.setupChunkFuture(chunkPos);
-//        }
-//
-//        OptionalChunk<Chunk> chunkResult = future.getNow(null);
-//        if (chunkResult == null)
-//        {
-//            return null;
-//        }
-//        else
-//        {
-//            Chunk chunk = chunkResult.orElse(null);
-//            if (chunk instanceof WorldChunk)
-//            {
-//                return (WorldChunk) chunk;
-//            }
-//            else
-//            {
-//                return null;
-//            }
-//        }
-//    }
-
-//    private CompletableFuture<OptionalChunk<Chunk>> setupChunkFuture(ChunkPos chunkPos)
-//    {
-//        IntegratedServer server = this.getDataStorage().getIntegratedServer();
-//        CompletableFuture<OptionalChunk<Chunk>> future = null;
-//
-//        if (server != null)
-//        {
-//            ServerWorld world = server.getWorld(this.mc.world.getRegistryKey());
-//
-//            if (world != null)
-//            {
-//                future = world.getChunkManager().getChunkFutureSyncOnMainThread(chunkPos.x, chunkPos.z, ChunkStatus.FULL, false)
-//                        .thenApply((either) -> either.map((chunk) -> (WorldChunk) chunk) );
-//            }
-//        }
-//
-//        if (future == null)
-//        {
-//            future = CompletableFuture.completedFuture(OptionalChunk.of(this.getClientChunk(chunkPos)));
-//        }
-//
-//        this.chunkFutures.put(chunkPos, future);
-//
-//        return future;
-//    }
-
-//    private WorldChunk getClientChunk(ChunkPos chunkPos)
-//    {
-//        if (this.cachedClientChunk == null || this.cachedClientChunk.getPos().equals(chunkPos) == false)
-//        {
-//            this.cachedClientChunk = this.mc.world.getChunk(chunkPos.x, chunkPos.z);
-//        }
-//
-//        return this.cachedClientChunk;
-//    }
-
-//    private void resetCachedChunks()
-//    {
-//        this.chunkFutures.clear();
-//        this.cachedClientChunk = null;
-//    }
 
     private class StringHolder implements Comparable<StringHolder>
     {

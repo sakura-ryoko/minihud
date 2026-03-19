@@ -2,16 +2,22 @@ package fi.dy.masa.minihud.renderer.shapes;
 
 import java.util.List;
 import java.util.function.Consumer;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import fi.dy.masa.malilib.util.*;
+
+import fi.dy.masa.malilib.util.BlockSnap;
+import fi.dy.masa.malilib.util.EntityUtils;
+import fi.dy.masa.malilib.util.IntBoundingBox;
+import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.malilib.util.data.Color4f;
+import fi.dy.masa.malilib.util.data.json.JsonUtils;
+import fi.dy.masa.malilib.util.position.Vec3d;
 
 public abstract class ShapeBlocky extends ShapeBase
 {
@@ -48,23 +54,23 @@ public abstract class ShapeBlocky extends ShapeBase
         return this.combineQuads;
     }
 
-    protected void setRenderPerimeter(Vec3 center, double range)
+    protected void setRenderPerimeter(Vec3d center, double range)
     {
         this.renderPerimeter = new AABB(center.x - range, center.y - range, center.z - range,
                                        center.x + range, center.y + range, center.z + range);
     }
 
-    protected Vec3 getBlockSnappedPosition(Vec3 pos)
+    protected Vec3d getBlockSnappedPosition(Vec3d pos)
     {
         BlockSnap snap = this.getBlockSnap();
 
         if (snap == BlockSnap.CENTER)
         {
-            return new Vec3(Math.floor(pos.x) + 0.5, Math.floor(pos.y), Math.floor(pos.z) + 0.5);
+            return new Vec3d(Math.floor(pos.x) + 0.5, Math.floor(pos.y), Math.floor(pos.z) + 0.5);
         }
         else if (snap == BlockSnap.CORNER)
         {
-            return new Vec3(Math.floor(pos.x), Math.floor(pos.y), Math.floor(pos.z));
+            return new Vec3d(Math.floor(pos.x), Math.floor(pos.y), Math.floor(pos.z));
         }
 
         return pos;

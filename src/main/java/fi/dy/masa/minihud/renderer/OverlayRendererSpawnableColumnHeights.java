@@ -50,7 +50,7 @@ public class OverlayRendererSpawnableColumnHeights extends OverlayRendererBase
         {
             synchronized (this.DIRTY_CHUNKS)
             {
-                this.DIRTY_CHUNKS.add(ChunkPos.asLong(cx, cz));
+                this.DIRTY_CHUNKS.add(ChunkPos.pack(cx, cz));
             }
         }
     }
@@ -88,7 +88,7 @@ public class OverlayRendererSpawnableColumnHeights extends OverlayRendererBase
                 {
                     for (int cz = zStart; cz <= zEnd; ++cz)
                     {
-                        if (this.DIRTY_CHUNKS.contains(ChunkPos.asLong(cx, cz)))
+                        if (this.DIRTY_CHUNKS.contains(ChunkPos.pack(cx, cz)))
                         {
                             return true;
                         }

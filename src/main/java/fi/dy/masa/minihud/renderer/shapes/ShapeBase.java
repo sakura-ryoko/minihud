@@ -3,16 +3,18 @@ package fi.dy.masa.minihud.renderer.shapes;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.client.Minecraft;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.phys.Vec3;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.entity.Entity;
+
 import fi.dy.masa.malilib.interfaces.IRangeChangeListener;
-import fi.dy.masa.malilib.util.data.Color4f;
-import fi.dy.masa.malilib.util.JsonUtils;
 import fi.dy.masa.malilib.util.LayerRange;
 import fi.dy.masa.malilib.util.StringUtils;
+import fi.dy.masa.malilib.util.data.Color4f;
+import fi.dy.masa.malilib.util.data.json.JsonUtils;
+import fi.dy.masa.malilib.util.position.Vec3d;
 import fi.dy.masa.minihud.config.RendererToggle;
 import fi.dy.masa.minihud.renderer.OverlayRendererBase;
 import fi.dy.masa.minihud.util.ShapeRenderType;
@@ -170,7 +172,7 @@ public abstract class ShapeBase extends OverlayRendererBase implements IRangeCha
         this.needsUpdate = true;
     }
 
-    public void moveToPosition(Vec3 pos)
+    public void moveToPosition(Vec3d pos)
     {
     }
 

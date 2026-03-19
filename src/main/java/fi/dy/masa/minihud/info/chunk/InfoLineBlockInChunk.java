@@ -39,9 +39,9 @@ public class InfoLineBlockInChunk extends InfoLine
 	                                ctx.pos().getX() & 0xF,
 	                                ctx.pos().getY() & 0xF,
 	                                ctx.pos().getZ() & 0xF,
-	                                ctx.chunkPos().x,
+	                                ctx.chunkPos().x(),
 	                                ctx.pos().getY() >> 4,
-	                                ctx.chunkPos().z)
+	                                ctx.chunkPos().z())
 	        );
 
 	        return list;

@@ -215,7 +215,7 @@ public class MiscUtils
 
         if (bundleData != null)
         {
-            Fraction occupancy = bundleData.weight();
+            Fraction occupancy = bundleData.weight().getOrThrow();
             int count;
             float fillPercent;
 

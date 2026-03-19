@@ -224,7 +224,6 @@ public class OverlayRendererStructures extends OverlayRendererBase
             return;
         }
 
-        // ShaderPipelines.DEBUG_QUADS
         profiler.push("structure_component_quads");
         RenderObjectVbo ctx = this.renderObjects.get(1);
         BufferBuilder builder = ctx.start(() -> "minihud:structure/component_quads", this.renderThrough ? MaLiLibPipelines.MINIHUD_SHAPE_NO_DEPTH_OFFSET : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL);
@@ -278,7 +277,6 @@ public class OverlayRendererStructures extends OverlayRendererBase
 			return;
 		}
 
-		// ShaderPipelines.DEBUG_QUADS
 		profiler.push("structure_component_outlines");
 		RenderObjectVbo ctx = this.renderObjects.get(3);
 		BufferBuilder builder = ctx.start(() -> "minihud:structure/component_outlines", this.renderThrough ? MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_NO_DEPTH_NO_CULL : MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH);
@@ -337,37 +335,6 @@ public class OverlayRendererStructures extends OverlayRendererBase
         super.reset();
         this.structures.clear();
     }
-
-//    private void renderStructureBoxes(List<StructureData> wrappedData, Vec3d cameraPos,
-//                                      BufferBuilder builder1, BufferBuilder builder2)
-//    {
-//        for (StructureData data : wrappedData)
-//        {
-//            StructureToggle toggle = data.getStructureType().getToggle();
-//            Color4f mainColor = toggle.getColorMain().getColor();
-//            Color4f componentColor = toggle.getColorComponents().getColor();
-//            this.renderStructure(data, mainColor, componentColor, cameraPos, builder1, builder2);
-//        }
-//    }
-//
-//    private void renderStructure(StructureData structure, Color4f mainColor, Color4f componentColor, Vec3d cameraPos,
-//                                 BufferBuilder builder1, BufferBuilder builder2)
-//    {
-//        fi.dy.masa.malilib.render.RenderUtils.drawBox(structure.getBoundingBox(), cameraPos, mainColor, builder1, builder2);
-//
-//        ImmutableList<IntBoundingBox> components = structure.getComponents();
-//
-//        if (components.isEmpty() == false)
-//        {
-//            if (components.size() > 1 || MiscUtils.areBoxesEqual(components.get(0), structure.getBoundingBox()) == false)
-//            {
-//                for (IntBoundingBox bb : components)
-//                {
-//                    fi.dy.masa.malilib.render.RenderUtils.drawBox(bb, cameraPos, componentColor, builder1, builder2);
-//                }
-//            }
-//        }
-//    }
 
     private List<StructureData> getStructuresToRender(BlockPos playerPos, int maxRange)
     {

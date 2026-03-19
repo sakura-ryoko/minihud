@@ -43,7 +43,7 @@ public class InfoLineTimeDayModulo extends InfoLine
     {
         List<Entry> list = new ArrayList<>();
         final int mod = Configs.Generic.TIME_DAY_DIVISOR.getIntegerValue();
-        final long current = world.getDayTime() % mod;
+        final long current = world.getDefaultClockTime() % mod;
 
         list.add(this.translate(TIME_KEY, mod, current));
 

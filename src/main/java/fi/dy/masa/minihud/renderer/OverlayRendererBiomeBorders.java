@@ -329,7 +329,6 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
                     this.scheduledChunks.add(pos);
                 }
 
-//                DataStorage.getInstance().addTask(task, chunk.getPos(), cameraBlockPos);
                 WorkerDaemonHandler.INSTANCE.addTask(new ChunkWorkerTask(task, chunk.getPos(), cameraBlockPos));
             }
         }
@@ -827,12 +826,7 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
     {
         final BiomeManager biomeAccess = chunk.getLevel().getBiomeManager();
         BlockPos.MutableBlockPos mutablePos = new BlockPos.MutableBlockPos();
-        BiomeSource biomeSource = (x, y, z) -> biomeAccess.getBiome(mutablePos.set(x, y, z)).value();
-        //BiomeSource biomeSource = chunk::getBiomeForNoiseGen;
-        //long biomeSeed = ((IMixinBiomeAccess) biomeAccess).minihud_getSeed();
-        //BiomeSource biomeSource = (x, y, z) -> MiscUtils.getBiomeMasaOptimization(x, y, z, chunk, biomeSeed);
-
-        return biomeSource;
+        return (x, y, z) -> biomeAccess.getBiome(mutablePos.set(x, y, z)).value();
     }
 
     private interface BiomeSource

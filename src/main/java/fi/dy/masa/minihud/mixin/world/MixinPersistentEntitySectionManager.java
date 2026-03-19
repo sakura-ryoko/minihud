@@ -12,7 +12,7 @@ import fi.dy.masa.minihud.util.IServerEntityManager;
 @Mixin(PersistentEntitySectionManager.class)
 public abstract class MixinPersistentEntitySectionManager implements IServerEntityManager
 {
-    @Shadow @Final Set<UUID> knownUuids;
+    @Shadow @Final private Set<UUID> knownUuids;
     @Shadow @Final private EntityLookup<?> visibleEntityStorage;
 
     @Override

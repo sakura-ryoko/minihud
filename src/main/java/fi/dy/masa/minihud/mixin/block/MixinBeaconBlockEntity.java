@@ -21,7 +21,7 @@ import net.minecraft.world.level.block.state.BlockState;
 @Mixin(BeaconBlockEntity.class)
 public abstract class MixinBeaconBlockEntity extends BlockEntity
 {
-    @Shadow int levels;
+    @Shadow private int levels;
     @Unique private int levelPre = -1;
 
     private MixinBeaconBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state)

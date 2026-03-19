@@ -40,9 +40,10 @@ import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.network.ClientPlayHandler;
 import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
 import fi.dy.masa.malilib.util.InfoUtils;
-import fi.dy.masa.malilib.util.JsonUtils;
 import fi.dy.masa.malilib.util.StringUtils;
+import fi.dy.masa.malilib.util.data.json.JsonUtils;
 import fi.dy.masa.malilib.util.position.PositionUtils;
+import fi.dy.masa.malilib.util.position.Vec3d;
 import fi.dy.masa.malilib.util.time.TickUtils;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.Reference;
@@ -82,7 +83,7 @@ public class DataStorage
     private BlockPos lastStructureUpdatePos;
     private double serverTPS;
     private double serverMSPT;
-    private Vec3 distanceReferencePoint = Vec3.ZERO;
+    private Vec3d distanceReferencePoint = Vec3d.ZERO;
     private final int[] blockBreakCounter = new int[100];
     private final ArrayListMultimap<StructureType, StructureData> structures = ArrayListMultimap.create();
     private final Minecraft mc = Minecraft.getInstance();
@@ -334,12 +335,12 @@ public class DataStorage
         this.structureRendererNeedsUpdate = true;
     }
 
-    public Vec3 getDistanceReferencePoint()
+    public Vec3d getDistanceReferencePoint()
     {
         return this.distanceReferencePoint;
     }
 
-    public void setDistanceReferencePoint(Vec3 pos)
+    public void setDistanceReferencePoint(Vec3d pos)
     {
         this.distanceReferencePoint = pos;
         String str = String.format("x: %.2f, y: %.2f, z: %.2f", pos.x, pos.y, pos.z);
@@ -1030,8 +1031,7 @@ public class DataStorage
 
     public void fromJson(JsonObject obj)
     {
-        Vec3 pos = JsonUtils.vec3dFromJson(obj, "distance_pos");
-        this.distanceReferencePoint = Objects.requireNonNullElse(pos, Vec3.ZERO);
+        Vec3d pos = JsonUtils.getVec3dOrDefault(obj, "distance_pos", Vec3d.ZERO);
 
         // Backwards compat
         if (JsonUtils.hasLong(obj, "seed"))

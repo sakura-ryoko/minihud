@@ -1,11 +1,20 @@
 package fi.dy.masa.minihud.event;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import javax.annotation.Nullable;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.core.RegistryAccess;
+
 import fi.dy.masa.malilib.interfaces.IWorldLoadListener;
 import fi.dy.masa.malilib.util.FileUtils;
-import fi.dy.masa.malilib.util.JsonUtils;
 import fi.dy.masa.malilib.util.StringUtils;
+import fi.dy.masa.malilib.util.data.json.JsonUtils;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.data.DebugDataManager;
@@ -17,14 +26,6 @@ import fi.dy.masa.minihud.renderer.RenderContainer;
 import fi.dy.masa.minihud.renderer.shapes.ShapeManager;
 import fi.dy.masa.minihud.renderer.worker.WorkerDaemonHandler;
 import fi.dy.masa.minihud.util.DataStorage;
-import javax.annotation.Nullable;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.core.RegistryAccess;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 public class WorldLoadListener implements IWorldLoadListener
 {
@@ -129,7 +130,7 @@ public class WorldLoadListener implements IWorldLoadListener
             return;
         }
 
-        JsonUtils.writeJsonToFileAsPath(root, file);
+        JsonUtils.writeJsonToFile(root, file);
     }
 
     private void writeDataGlobal()
@@ -169,14 +170,14 @@ public class WorldLoadListener implements IWorldLoadListener
             return;
         }
 
-        JsonUtils.writeJsonToFileAsPath(root, file);
+        JsonUtils.writeJsonToFile(root, file);
     }
 
     private void readStoredDataPerDimension()
     {
         // Per-dimension file
         Path file = getCurrentStorageFile(false);
-        JsonElement element = JsonUtils.parseJsonFileAsPath(file);
+        JsonElement element = JsonUtils.parseJsonFile(file);
 
         if (element != null && element.isJsonObject())
         {
@@ -204,7 +205,7 @@ public class WorldLoadListener implements IWorldLoadListener
     {
         // Global file
         Path file = getCurrentStorageFile(true);
-        JsonElement element = JsonUtils.parseJsonFileAsPath(file);
+        JsonElement element = JsonUtils.parseJsonFile(file);
 
         if (element != null && element.isJsonObject())
         {
@@ -224,7 +225,7 @@ public class WorldLoadListener implements IWorldLoadListener
 
     public static Path getCurrentConfigDirectory()
     {
-        return FileUtils.getConfigDirectoryAsPath().resolve(Reference.MOD_ID);
+        return FileUtils.getConfigDirectory().resolve(Reference.MOD_ID);
     }
 
     private static Path getCurrentStorageFile(boolean globalData)

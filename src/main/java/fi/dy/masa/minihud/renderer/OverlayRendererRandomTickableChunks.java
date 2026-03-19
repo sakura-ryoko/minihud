@@ -2,6 +2,10 @@ package fi.dy.masa.minihud.renderer;
 
 import java.util.*;
 import javax.annotation.Nullable;
+import com.google.gson.JsonObject;
+
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.MeshData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Direction;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -10,12 +14,11 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import com.google.gson.JsonObject;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.MeshData;
+
 import fi.dy.masa.malilib.render.MaLiLibPipelines;
-import fi.dy.masa.malilib.util.JsonUtils;
 import fi.dy.masa.malilib.util.data.Color4f;
+import fi.dy.masa.malilib.util.data.json.JsonUtils;
+import fi.dy.masa.malilib.util.position.Vec3d;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.RendererToggle;
@@ -27,10 +30,10 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
 
     private static final Direction[] HORIZONTALS = new Direction[] { Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST };
     protected boolean needsUpdate = true;
-    @Nullable public Vec3 newPos;
+    @Nullable public Vec3d newPos;
 
     protected RendererToggle toggle;
-    protected Vec3 pos = Vec3.ZERO;
+    protected Vec3d pos = Vec3d.ZERO;
     protected double minX;
     protected double minZ;
     protected double maxX;
@@ -63,7 +66,7 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
 
     public void setNewPos(@Nullable Vec3 pos)
     {
-        this.newPos = pos;
+        this.newPos = pos != null ? Vec3d.of(pos) : null;
     }
 
     @Override
@@ -98,7 +101,7 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
     {
         if (this.toggle == RendererToggle.OVERLAY_RANDOM_TICKS_PLAYER)
         {
-            this.pos = entity.position();
+            this.pos = Vec3d.of(entity.position());
         }
         else if (this.newPos != null)
         {
@@ -112,13 +115,11 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
 
         for (ChunkPos pos : chunks)
         {
-//            this.calculateChunkEdgesIfApplicable(pos, chunks, entity.getEntityWorld());
-
             List<AABB> boxes = new ArrayList<>();
 
             for (Direction side : HORIZONTALS)
             {
-                ChunkPos posAdj = new ChunkPos(pos.x + side.getStepX(), pos.z + side.getStepZ());
+                ChunkPos posAdj = new ChunkPos(pos.x() + side.getStepX(), pos.z() + side.getStepZ());
 
                 if (!chunks.contains(posAdj))
                 {
@@ -261,7 +262,7 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
         this.hasData = false;
     }
 
-    protected Set<ChunkPos> getRandomTickableChunks(Vec3 posCenter)
+    protected Set<ChunkPos> getRandomTickableChunks(Vec3d posCenter)
     {
         Set<ChunkPos> set = new HashSet<>();
         final int centerChunkX = ((int) Math.floor(posCenter.x)) >> 4;
@@ -291,19 +292,6 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
         return set;
     }
 
-//    protected void calculateChunkEdgesIfApplicable(ChunkPos pos, Set<ChunkPos> chunks, World world)
-//    {
-//        for (Direction side : HORIZONTALS)
-//        {
-//            ChunkPos posAdj = new ChunkPos(pos.x + side.getOffsetX(), pos.z + side.getOffsetZ());
-//
-//            if (!chunks.contains(posAdj))
-//            {
-//                this.calculateChunkEdge(pos, side, world);
-//            }
-//        }
-//    }
-
     private @Nullable AABB calculateChunkEdge(ChunkPos pos, Direction side, Level world)
     {
         float minX, minZ, maxX, maxZ;
@@ -311,28 +299,28 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
         switch (side)
         {
             case NORTH:
-                minX = (float) (pos.x << 4);
-                minZ = (float) (pos.z << 4);
-                maxX = (float) ((double) (pos.x << 4) + 16.0);
-                maxZ = (float) (pos.z << 4);
+                minX = (float) (pos.x() << 4);
+                minZ = (float) (pos.z() << 4);
+                maxX = (float) ((double) (pos.x() << 4) + 16.0);
+                maxZ = (float) (pos.z() << 4);
                 break;
             case SOUTH:
-                minX = (float) (pos.x << 4);
-                minZ = (float) ((double) (pos.z << 4) + 16.0);
-                maxX = (float) ((double) (pos.x << 4) + 16.0);
-                maxZ = (float) ((double) (pos.z << 4) + 16.0);
+                minX = (float) (pos.x() << 4);
+                minZ = (float) ((double) (pos.z() << 4) + 16.0);
+                maxX = (float) ((double) (pos.x() << 4) + 16.0);
+                maxZ = (float) ((double) (pos.z() << 4) + 16.0);
                 break;
             case WEST:
-                minX = (float) (pos.x << 4);
-                minZ = (float) (pos.z << 4);
-                maxX = (float) (pos.x << 4);
-                maxZ = (float) ((double) (pos.z << 4) + 16.0);
+                minX = (float) (pos.x() << 4);
+                minZ = (float) (pos.z() << 4);
+                maxX = (float) (pos.x() << 4);
+                maxZ = (float) ((double) (pos.z() << 4) + 16.0);
                 break;
             case EAST:
-                minX = (float) ((double) (pos.x << 4) + 16.0);
-                minZ = (float) (pos.z << 4);
-                maxX = (float) ((double) (pos.x << 4) + 16.0);
-                maxZ = (float) ((double) (pos.z << 4) + 16.0);
+                minX = (float) ((double) (pos.x() << 4) + 16.0);
+                minZ = (float) (pos.z() << 4);
+                maxX = (float) ((double) (pos.x() << 4) + 16.0);
+                maxZ = (float) ((double) (pos.z() << 4) + 16.0);
                 break;
             default:
                 return null;
@@ -356,7 +344,7 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
     {
         JsonObject obj = new JsonObject();
 
-        if (!this.pos.equals(Vec3.ZERO))
+        if (this.pos != null && !this.pos.equals(Vec3d.ZERO))
         {
             obj.add("pos", JsonUtils.vec3dToJson(this.pos));
         }
@@ -369,11 +357,12 @@ public class OverlayRendererRandomTickableChunks extends OverlayRendererBase
     {
         if (obj.has("pos"))
         {
-            Vec3 pos = JsonUtils.vec3dFromJson(obj, "pos");
+            Vec3d pos = JsonUtils.getVec3dOrDefault(obj, "pos", Vec3d.ZERO);
 
-            if (pos != null && this.toggle == RendererToggle.OVERLAY_RANDOM_TICKS_FIXED)
+            if (pos != null && !pos.equals(Vec3d.ZERO) &&
+                this.toggle == RendererToggle.OVERLAY_RANDOM_TICKS_FIXED)
             {
-                newPos = pos;
+                this.newPos = pos;
             }
         }
     }

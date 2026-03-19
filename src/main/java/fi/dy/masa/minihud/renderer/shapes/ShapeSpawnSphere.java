@@ -1,21 +1,23 @@
 package fi.dy.masa.minihud.renderer.shapes;
 
 import java.util.List;
-import net.minecraft.core.Direction;
-import net.minecraft.util.Mth;
-import net.minecraft.world.phys.Vec3;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import fi.dy.masa.malilib.util.JsonUtils;
-import fi.dy.masa.malilib.util.Quadrant;
+
+import net.minecraft.core.Direction;
+
+import fi.dy.masa.malilib.util.MathUtils;
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.malilib.util.data.Color4f;
+import fi.dy.masa.malilib.util.data.json.JsonUtils;
+import fi.dy.masa.malilib.util.position.Quadrant;
+import fi.dy.masa.malilib.util.position.Vec3d;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.util.shape.SphereUtils;
 
 public class ShapeSpawnSphere extends ShapeSphereBlocky
 {
-    protected Vec3[] quadrantCenters;
+    protected Vec3d[] quadrantCenters;
     protected boolean useCornerQuadrants;
     protected double margin = 0.0;
 
@@ -51,17 +53,17 @@ public class ShapeSpawnSphere extends ShapeSphereBlocky
 
     private void updateQuadrantPoints()
     {
-        Vec3 center = this.getEffectiveCenter();
+        Vec3d center = this.getEffectiveCenter();
 
         if (this.quadrantCenters == null)
         {
-            this.quadrantCenters = new Vec3[4];
+            this.quadrantCenters = new Vec3d[4];
         }
 
-        this.quadrantCenters[Quadrant.NORTH_WEST.ordinal()] = new Vec3(center.x - this.margin, center.y, center.z - this.margin);
-        this.quadrantCenters[Quadrant.NORTH_EAST.ordinal()] = new Vec3(center.x + this.margin, center.y, center.z - this.margin);
-        this.quadrantCenters[Quadrant.SOUTH_WEST.ordinal()] = new Vec3(center.x - this.margin, center.y, center.z + this.margin);
-        this.quadrantCenters[Quadrant.SOUTH_EAST.ordinal()] = new Vec3(center.x + this.margin, center.y, center.z + this.margin);
+        this.quadrantCenters[Quadrant.NORTH_WEST.ordinal()] = new Vec3d(center.x - this.margin, center.y, center.z - this.margin);
+        this.quadrantCenters[Quadrant.NORTH_EAST.ordinal()] = new Vec3d(center.x + this.margin, center.y, center.z - this.margin);
+        this.quadrantCenters[Quadrant.SOUTH_WEST.ordinal()] = new Vec3d(center.x - this.margin, center.y, center.z + this.margin);
+        this.quadrantCenters[Quadrant.SOUTH_EAST.ordinal()] = new Vec3d(center.x + this.margin, center.y, center.z + this.margin);
 
         this.setNeedsUpdate();
     }
@@ -123,7 +125,7 @@ public class ShapeSpawnSphere extends ShapeSphereBlocky
 
     protected boolean isPositionOnOrInsideRing(int x, int y, int z, Direction outSide)
     {
-        final Vec3 effectiveCenter = this.getEffectiveCenter();
+        final Vec3d effectiveCenter = this.getEffectiveCenter();
         final double maxDistSq = this.getSquaredRadius();
         final double posX = x + 0.5;
         final double posY = y + 1;
@@ -131,17 +133,17 @@ public class ShapeSpawnSphere extends ShapeSphereBlocky
 
         if (this.useCornerQuadrants)
         {
-            Vec3 quadrantCenter = this.quadrantCenters[Quadrant.getQuadrant(x, z, effectiveCenter).ordinal()];
+            Vec3d quadrantCenter = this.quadrantCenters[Quadrant.getQuadrant(x, z, effectiveCenter.toVanilla()).ordinal()];
 
-            return quadrantCenter.distanceToSqr(posX, posY, posZ) < maxDistSq ||
-                   effectiveCenter.distanceToSqr(posX, posY, posZ) < maxDistSq;
+            return quadrantCenter.getSquaredDistanceTo(posX, posY, posZ) < maxDistSq ||
+                   effectiveCenter.getSquaredDistanceTo(posX, posY, posZ) < maxDistSq;
         }
         else
         {
             double margin = this.margin;
-            double centerX = Mth.clamp(posX, effectiveCenter.x - margin, effectiveCenter.x + margin);
+            double centerX = MathUtils.clamp(posX, effectiveCenter.x - margin, effectiveCenter.x + margin);
             double centerY = effectiveCenter.y;
-            double centerZ = Mth.clamp(posZ, effectiveCenter.z - margin, effectiveCenter.z + margin);
+            double centerZ = MathUtils.clamp(posZ, effectiveCenter.z - margin, effectiveCenter.z + margin);
             double distX = posX - centerX;
             double distY = posY - centerY;
             double distZ = posZ - centerZ;

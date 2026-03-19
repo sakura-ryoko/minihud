@@ -887,11 +887,11 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
 
         BlockEntity blockEntity = this.getClientWorld().getBlockEntity(pos);
 
-        if (blockEntity != null && (type == null || type.equals(BlockEntityType.getKey(blockEntity.getType()))))
+        if (blockEntity != null && (type == null || type.equals(BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(blockEntity.getType()))))
         {
             if (!data.contains(NbtKeys.ID, Constants.NBT.TAG_STRING))
             {
-                Identifier id = BlockEntityType.getKey(blockEntity.getType());
+                Identifier id = BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(blockEntity.getType());
 
                 if (id != null)
                 {
@@ -923,7 +923,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
                 {
                     if (!data.contains(NbtKeys.ID, Constants.NBT.TAG_STRING))
                     {
-                        Identifier id = BlockEntityType.getKey(beType);
+                        Identifier id = BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(beType);
 
                         if (id != null)
                         {

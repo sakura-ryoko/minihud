@@ -2,6 +2,11 @@ package fi.dy.masa.minihud.renderer;
 
 import java.util.ArrayList;
 import java.util.List;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.MeshData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
@@ -10,15 +15,11 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.MeshData;
-import com.mojang.blaze3d.vertex.PoseStack;
+
 import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.EntityUtils;
-import fi.dy.masa.malilib.util.JsonUtils;
 import fi.dy.masa.malilib.util.data.Color4f;
+import fi.dy.masa.malilib.util.data.json.JsonUtils;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.RendererToggle;
@@ -163,10 +164,6 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
         profiler.push("slime_chunk_quads");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
         BufferBuilder builder = ctx.start(() -> "minihud:slime_chunk/quads", this.renderThrough ? MaLiLibPipelines.POSITION_COLOR_MASA_NO_DEPTH_NO_CULL : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL);
-        // MaLiLibPipelines.POSITION_COLOR_LESSER_DEPTH
-        PoseStack matrices = new PoseStack();
-
-        matrices.pushPose();
 
         for (AABB bb : this.slimeChunks)
         {
@@ -201,7 +198,6 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
             MiniHUD.LOGGER.error("OverlayRendererSlimeChunks#renderQuads(): Exception; {}", err.getMessage());
         }
 
-        matrices.popPose();
         profiler.pop();
     }
 
@@ -341,7 +337,7 @@ public class OverlayRendererSlimeChunks extends OverlayRendererBase
     {
         if (obj.has("y_top"))
         {
-            this.overlayTopY = JsonUtils.getFloat(obj, "y_top");
+            this.overlayTopY = JsonUtils.getFloatOrDefault(obj, "y_top", 40.0F);
         }
     }
 }

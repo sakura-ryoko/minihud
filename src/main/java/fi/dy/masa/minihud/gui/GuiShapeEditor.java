@@ -2,13 +2,13 @@ package fi.dy.masa.minihud.gui;
 
 import java.util.Locale;
 import java.util.function.*;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
+
 import fi.dy.masa.malilib.config.options.ConfigOptionList;
 import fi.dy.masa.malilib.gui.*;
 import fi.dy.masa.malilib.gui.button.*;
@@ -20,6 +20,7 @@ import fi.dy.masa.malilib.interfaces.ICoordinateValueModifier;
 import fi.dy.masa.malilib.util.*;
 import fi.dy.masa.malilib.util.position.PositionUtils;
 import fi.dy.masa.malilib.util.position.PositionUtils.CoordinateType;
+import fi.dy.masa.malilib.util.position.Vec3d;
 import fi.dy.masa.minihud.gui.GuiConfigs.ConfigGuiTab;
 import fi.dy.masa.minihud.renderer.shapes.*;
 import fi.dy.masa.minihud.util.ShapeRenderType;
@@ -199,7 +200,7 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         }
 
         y += 12;
-        GuiUtils.createVec3dInputsVertical(x, y, 120, shape.getEffectiveCenter(), new Vec3dEditor(shape::getEffectiveCenter, shape::setCenter, this), true, this);
+        GuiUtils.createVec3dInputsVertical(x, y, 120, shape.getEffectiveCenter().toVanilla(), new Vec3dEditor(shape::getEffectiveCenter, shape::setCenter, this), true, this);
         x += 11;
         y += 54;
 
@@ -234,7 +235,7 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         //TODO: Maybe Change that +12 to 0 and reset to 0 also createShapeEditorElementIntField or add some type of offset
         this.addLabel(x4 + 12, y4, -1, 12, 0xFFFFFFFF, StringUtils.translate("minihud.gui.label.center_colon"));
         y4 += 12;
-        GuiUtils.createVec3dInputsVertical(x4, y4, textFieldWidth, shape.getCenter(), new Vec3dEditor(shape::getCenter, shape::setCenter, this), true, this);
+        GuiUtils.createVec3dInputsVertical(x4, y4, textFieldWidth, shape.getCenter().toVanilla(), new Vec3dEditor(shape::getCenter, shape::setCenter, this), true, this);
 
         int x = x1 + 12;
         ButtonGeneric btn = new ButtonGeneric(x, y4 + 50, -1, 14, StringUtils.translate("malilib.gui.button.render_layers_gui.set_to_player"));
@@ -269,16 +270,16 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         if (shape.isGridEnabled())
         {
             this.addLabel(x, y, 60, 14, 0xFFFFFFFF, StringUtils.translate("minihud.gui.label.shape.box.grid_size"));
-            GuiUtils.createVec3dInputsVertical(x, y + 12, 50, shape.getGridSize(),
+            GuiUtils.createVec3dInputsVertical(x, y + 12, 50, shape.getGridSize().toVanilla(),
                                                new Vec3dEditor(shape::getGridSize, shape::setGridSize, this), true, this);
 
             y += 70;
             this.addLabel(x, y, 60, 14, 0xFFFFFFFF, StringUtils.translate("minihud.gui.label.shape.box.grid_start_offset"));
-            GuiUtils.createVec3dInputsVertical(x, y + 12, 50, shape.getGridStartOffset(),
+            GuiUtils.createVec3dInputsVertical(x, y + 12, 50, shape.getGridStartOffset().toVanilla(),
                                                new Vec3dEditor(shape::getGridStartOffset, shape::setGridStartOffset, this), true, this);
 
             this.addLabel(x + 100, y, 60, 14, 0xFFFFFFFF, StringUtils.translate("minihud.gui.label.shape.box.grid_end_offset"));
-            GuiUtils.createVec3dInputsVertical(x + 100, y + 12, 50, shape.getGridEndOffset(),
+            GuiUtils.createVec3dInputsVertical(x + 100, y + 12, 50, shape.getGridEndOffset().toVanilla(),
                                                new Vec3dEditor(shape::getGridEndOffset, shape::setGridEndOffset, this), true, this);
         }
 
@@ -315,16 +316,16 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         if (shape.isGridEnabled())
         {
             this.addLabel(x, y, 60, 14, 0xFFFFFFFF, StringUtils.translate("minihud.gui.label.shape.box.grid_size"));
-            GuiUtils.createVec3dInputsVertical(x, y + 12, 50, shape.getGridSize(),
+            GuiUtils.createVec3dInputsVertical(x, y + 12, 50, shape.getGridSize().toVanilla(),
                                                new Vec3dEditor(shape::getGridSize, shape::setGridSize, this), true, this);
 
             y += 70;
             this.addLabel(x, y, 60, 14, 0xFFFFFFFF, StringUtils.translate("minihud.gui.label.shape.box.grid_start_offset"));
-            GuiUtils.createVec3dInputsVertical(x, y + 12, 50, shape.getGridStartOffset(),
+            GuiUtils.createVec3dInputsVertical(x, y + 12, 50, shape.getGridStartOffset().toVanilla(),
                                                new Vec3dEditor(shape::getGridStartOffset, shape::setGridStartOffset, this), true, this);
 
             this.addLabel(x + 100, y, 60, 14, 0xFFFFFFFF, StringUtils.translate("minihud.gui.label.shape.box.grid_end_offset"));
-            GuiUtils.createVec3dInputsVertical(x + 100, y + 12, 50, shape.getGridEndOffset(),
+            GuiUtils.createVec3dInputsVertical(x + 100, y + 12, 50, shape.getGridEndOffset().toVanilla(),
                                                new Vec3dEditor(shape::getGridEndOffset, shape::setGridEndOffset, this), true, this);
         }
 
@@ -345,8 +346,8 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         this.addLabel(x2, y, -1, 14, 0xFFFFFFFF, StringUtils.translate("minihud.gui.label.shape.box.maximum_coord"));
         y += 14;
 
-        GuiUtils.createVec3dInputsVertical(x , y, 120, shape.getStartPos(), new Vec3dEditor(shape::getStartPos, shape::setStartPos, this), true, this);
-        GuiUtils.createVec3dInputsVertical(x2, y, 120, shape.getEndPos(), new Vec3dEditor(shape::getEndPos, shape::setEndPos, this), true, this);
+        GuiUtils.createVec3dInputsVertical(x , y, 120, shape.getStartPos().toVanilla(), new Vec3dEditor(shape::getStartPos, shape::setStartPos, this), true, this);
+        GuiUtils.createVec3dInputsVertical(x2, y, 120, shape.getEndPos().toVanilla(), new Vec3dEditor(shape::getEndPos, shape::setEndPos, this), true, this);
         y += 54;
 
         ButtonGeneric btn = new ButtonGeneric(x + 11, y, -1, 20, StringUtils.translate("malilib.gui.button.render_layers_gui.set_to_player"));
@@ -428,8 +429,8 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         this.addLabel(x2, y2, -1, 14, 0xFFFFFFFF, StringUtils.translate("minihud.gui.label.shape.box.corner_2"));
         y2 += 12;
 
-        GuiUtils.createVec3dInputsVertical(x1, y1, textFieldWidth, shape.getCorner1(), new Vec3dEditor(shape::getCorner1, shape::setCorner1, this), true, this);
-        GuiUtils.createVec3dInputsVertical(x2, y2, textFieldWidth, shape.getCorner2(), new Vec3dEditor(shape::getCorner2, shape::setCorner2, this), true, this);
+        GuiUtils.createVec3dInputsVertical(x1, y1, textFieldWidth, shape.getCorner1().toVanilla(), new Vec3dEditor(shape::getCorner1, shape::setCorner1, this), true, this);
+        GuiUtils.createVec3dInputsVertical(x2, y2, textFieldWidth, shape.getCorner2().toVanilla(), new Vec3dEditor(shape::getCorner2, shape::setCorner2, this), true, this);
 
         int x = x1 + 12;
 
@@ -553,13 +554,13 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         return Direction.from3DDataValue(index);
     }
 
-    protected void setPositionFromCamera(Consumer<Vec3> consumer)
+    protected void setPositionFromCamera(Consumer<Vec3d> consumer)
     {
         Entity entity = EntityUtils.getCameraEntity();
 
         if (entity != null)
         {
-            consumer.accept(entity.position());
+            consumer.accept(Vec3d.of(entity.position()));
             this.initGui();
         }
     }
@@ -575,122 +576,12 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         }
     }
 
-    public static class MutableWrapperBox
-    {
-        protected final Consumer<AABB> boxConsumer;
-        protected double minX;
-        protected double minY;
-        protected double minZ;
-        protected double maxX;
-        protected double maxY;
-        protected double maxZ;
-
-        public MutableWrapperBox(AABB box, Consumer<AABB> boxConsumer)
-        {
-            this.minX = box.minX;
-            this.minY = box.minY;
-            this.minZ = box.minZ;
-            this.maxX = box.maxX;
-            this.maxY = box.maxY;
-            this.maxZ = box.maxZ;
-            this.boxConsumer = boxConsumer;
-        }
-
-        public double getMinX()
-        {
-            return this.minX;
-        }
-
-        public double getMinY()
-        {
-            return this.minY;
-        }
-
-        public double getMinZ()
-        {
-            return this.minZ;
-        }
-
-        public double getMaxX()
-        {
-            return this.maxX;
-        }
-
-        public double getMaxY()
-        {
-            return this.maxY;
-        }
-
-        public double getMaxZ()
-        {
-            return this.maxZ;
-        }
-
-        public void setMinX(double minX)
-        {
-            this.minX = minX;
-            this.updateBox();
-        }
-
-        public void setMinY(double minY)
-        {
-            this.minY = minY;
-            this.updateBox();
-        }
-
-        public void setMinZ(double minZ)
-        {
-            this.minZ = minZ;
-            this.updateBox();
-        }
-
-        public void setMaxX(double maxX)
-        {
-            this.maxX = maxX;
-            this.updateBox();
-        }
-
-        public void setMaxY(double maxY)
-        {
-            this.maxY = maxY;
-            this.updateBox();
-        }
-
-        public void setMaxZ(double maxZ)
-        {
-            this.maxZ = maxZ;
-            this.updateBox();
-        }
-
-        public void setMinCorner(Vec3 pos)
-        {
-            this.minX = pos.x;
-            this.minY = pos.y;
-            this.minZ = pos.z;
-            this.updateBox();
-        }
-
-        public void setMaxCorner(Vec3 pos)
-        {
-            this.maxX = pos.x;
-            this.maxY = pos.y;
-            this.maxZ = pos.z;
-            this.updateBox();
-        }
-
-        protected void updateBox()
-        {
-            AABB box = new AABB(this.minX, this.minY, this.minZ, this.maxX, this.maxY, this.maxZ);
-            this.boxConsumer.accept(box);
-        }
-    }
-
-    public record Vec3dEditor(Supplier<Vec3> supplier, Consumer<Vec3> consumer, GuiShapeEditor gui) implements ICoordinateValueModifier
+    public record Vec3dEditor(Supplier<Vec3d> supplier, Consumer<Vec3d> consumer, GuiShapeEditor gui) implements ICoordinateValueModifier
     {
         @Override
         public boolean modifyValue(CoordinateType type, int amount)
         {
-            this.consumer.accept(PositionUtils.modifyValue(type, this.supplier.get(), amount));
+            this.consumer.accept(Vec3d.of(PositionUtils.modifyValue(type, this.supplier.get().toVanilla(), amount)));
             this.gui.initGui();
             return true;
         }
@@ -700,7 +591,7 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         {
             try
             {
-                this.consumer.accept(PositionUtils.setValue(type, this.supplier.get(), Double.parseDouble(newValue)));
+                this.consumer.accept(Vec3d.of(PositionUtils.setValue(type, this.supplier.get().toVanilla(), Double.parseDouble(newValue))));
                 return true;
             }
             catch (Exception ignore) {}

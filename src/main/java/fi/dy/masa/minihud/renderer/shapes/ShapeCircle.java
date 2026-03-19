@@ -3,6 +3,14 @@ package fi.dy.masa.minihud.renderer.shapes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+import it.unimi.dsi.fastutil.longs.Long2ByteOpenHashMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.MeshData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -10,17 +18,12 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.MeshData;
-import it.unimi.dsi.fastutil.longs.Long2ByteOpenHashMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+
 import fi.dy.masa.malilib.render.MaLiLibPipelines;
-import fi.dy.masa.malilib.util.JsonUtils;
 import fi.dy.masa.malilib.util.StringUtils;
+import fi.dy.masa.malilib.util.data.json.JsonUtils;
 import fi.dy.masa.malilib.util.position.PositionUtils;
+import fi.dy.masa.malilib.util.position.Vec3d;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.renderer.RenderObjectVbo;
@@ -159,7 +162,7 @@ public class ShapeCircle extends ShapeCircleBase
         Consumer<BlockPos.MutableBlockPos> positionConsumer = this.getPositionCollector(positions);
         SphereUtils.RingPositionTest test = this::isPositionOnOrInsideRing;
         BlockPos.MutableBlockPos mutablePos = new BlockPos.MutableBlockPos();
-        Vec3 effectiveCenter = this.getEffectiveCenter();
+        Vec3d effectiveCenter = this.getEffectiveCenter();
         Direction.Axis axis = this.mainAxis.getAxis();
         double expand = 0;
 
@@ -184,7 +187,7 @@ public class ShapeCircle extends ShapeCircleBase
         }
         else
         {
-            BlockPos posCenter = BlockPos.containing(effectiveCenter);
+            BlockPos posCenter = BlockPos.containing(effectiveCenter.toVanilla());
             int offX = this.mainAxis.getStepX();
             int offY = this.mainAxis.getStepY();
             int offZ = this.mainAxis.getStepZ();
@@ -219,7 +222,7 @@ public class ShapeCircle extends ShapeCircleBase
         Consumer<BlockPos.MutableBlockPos> positionConsumer = this.getPositionCollector(positions);
         SphereUtils.RingPositionTest test = this::isPositionOnOrInsideRing;
         BlockPos.MutableBlockPos mutablePos = new BlockPos.MutableBlockPos();
-        Vec3 effectiveCenter = this.getEffectiveCenter();
+        Vec3d effectiveCenter = this.getEffectiveCenter();
         Direction.Axis axis = this.mainAxis.getAxis();
         double expand = 0;
 
@@ -244,7 +247,7 @@ public class ShapeCircle extends ShapeCircleBase
         }
         else
         {
-            BlockPos posCenter = BlockPos.containing(effectiveCenter);
+            BlockPos posCenter = BlockPos.containing(effectiveCenter.toVanilla());
             int offX = this.mainAxis.getStepX();
             int offY = this.mainAxis.getStepY();
             int offZ = this.mainAxis.getStepZ();
@@ -286,12 +289,12 @@ public class ShapeCircle extends ShapeCircleBase
     {
         Direction.Axis axis = this.mainAxis.getAxis();
 
-        Vec3 effectiveCenter = this.getEffectiveCenter();
+        Vec3d effectiveCenter = this.getEffectiveCenter();
         double radiusSq = this.getSquaredRadius();
         double x = axis == Direction.Axis.X ? effectiveCenter.x : (double) blockX + 0.5;
         double y = axis == Direction.Axis.Y ? effectiveCenter.y : (double) blockY + 0.5;
         double z = axis == Direction.Axis.Z ? effectiveCenter.z : (double) blockZ + 0.5;
-        double distSq = effectiveCenter.distanceToSqr(x, y, z);
+        double distSq = effectiveCenter.getSquaredDistanceTo(x, y, z);
         double diff = radiusSq - distSq;
 
         return diff >= 0;

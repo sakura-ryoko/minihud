@@ -45,7 +45,7 @@ public class InfoLineTimeWorldFormatted extends InfoLine
 
         try
         {
-            final long timeDay = world.getDayTime();
+            final long timeDay = world.getGameTime();
             final long day = (int) (timeDay / 24000);
             // 1 tick = 3.6 seconds in MC (0.2777... seconds IRL)
             final int dayTicks = (int) (timeDay % 24000);

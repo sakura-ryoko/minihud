@@ -54,7 +54,7 @@ public abstract class InfoLineBlockChunkRegionBase extends InfoLine
 
 	        if (InfoToggle.CHUNK_POS.getBooleanValue())
 	        {
-		        str.append(pre).append(this.qt(CHUNK_KEY, ctx.chunkPos().x, ctx.pos().getY() >> 4, ctx.chunkPos().z));
+		        str.append(pre).append(this.qt(CHUNK_KEY, ctx.chunkPos().x(), ctx.pos().getY() >> 4, ctx.chunkPos().z()));
 		        pre = " / ";
 	        }
 

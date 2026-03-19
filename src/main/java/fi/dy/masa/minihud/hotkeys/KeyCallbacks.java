@@ -3,6 +3,7 @@ package fi.dy.masa.minihud.hotkeys;
 import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.hotkeys.*;
 import fi.dy.masa.malilib.render.InventoryOverlayScreen;
+import fi.dy.masa.malilib.util.position.Vec3d;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.RendererCallbacks;
 import fi.dy.masa.minihud.config.RendererToggle;
@@ -140,13 +141,13 @@ public class KeyCallbacks
 
                 if (shape != null)
                 {
-                    shape.moveToPosition(entity.position());
+                    shape.moveToPosition(Vec3d.of(entity.position()));
                 }
             }
             else if (key == Configs.Generic.SET_DISTANCE_REFERENCE_POINT.getKeybind())
             {
                 Entity entity = mc.getCameraEntity() != null ? mc.getCameraEntity() : mc.player;
-                DataStorage.getInstance().setDistanceReferencePoint(entity.position());
+                DataStorage.getInstance().setDistanceReferencePoint(Vec3d.of(entity.position()));
             }
             else if (key == Configs.Generic.SHAPE_EDITOR.getKeybind())
             {

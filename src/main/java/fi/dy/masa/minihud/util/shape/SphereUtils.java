@@ -5,14 +5,16 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import javax.annotation.Nullable;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.world.phys.Vec3;
 import it.unimi.dsi.fastutil.longs.Long2ByteOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+
 import fi.dy.masa.malilib.util.LayerRange;
 import fi.dy.masa.malilib.util.position.PositionUtils;
+import fi.dy.masa.malilib.util.position.Vec3d;
 import fi.dy.masa.minihud.renderer.shapes.SideQuad;
 import fi.dy.masa.minihud.util.ShapeRenderType;
 
@@ -181,14 +183,14 @@ public class SphereUtils
     public static boolean isPositionInsideOrClosestToRadiusOnBlockRing(int blockX,
                                                                        int blockY,
                                                                        int blockZ,
-                                                                       Vec3 center,
+                                                                       Vec3d center,
                                                                        double squareRadius,
                                                                        Direction escapeDirection)
     {
         double x = (double) blockX + 0.5;
         double y = (double) blockY + 0.5;
         double z = (double) blockZ + 0.5;
-        double dist = center.distanceToSqr(x, y, z);
+        double dist = center.getSquaredDistanceTo(x, y, z);
         double diff = squareRadius - dist;
 
 	    return diff >= 0;

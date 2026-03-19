@@ -42,7 +42,7 @@ public class InfoLineTimeWorld extends InfoLine
     {
         List<Entry> list = new ArrayList<>();
 
-        list.add(this.translate(TIME_KEY, world.getDayTime(), world.getGameTime()));
+        list.add(this.translate(TIME_KEY, world.getDefaultClockTime(), world.getGameTime()));
 
         return list;
     }

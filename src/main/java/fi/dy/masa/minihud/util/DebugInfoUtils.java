@@ -109,11 +109,11 @@ public class DebugInfoUtils
     {
         Minecraft.getInstance().gui
 		        .getChat()
-		        .addMessage(Component.empty()
-		                        .append(Component.translatable("debug.prefix").withStyle(ChatFormatting.YELLOW, ChatFormatting.BOLD))
-		                        .append(" ")
-		                        .append(Component.translatable(key, args)
-		                        )
+		        .addClientSystemMessage(Component.empty()
+		                                         .append(Component.translatable("debug.prefix").withStyle(ChatFormatting.YELLOW, ChatFormatting.BOLD))
+		                                         .append(" ")
+		                                         .append(Component.translatable(key, args)
+		                                         )
 		        );
     }
 

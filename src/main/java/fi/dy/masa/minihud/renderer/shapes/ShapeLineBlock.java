@@ -2,6 +2,13 @@ package fi.dy.masa.minihud.renderer.shapes;
 
 import java.util.List;
 import java.util.function.LongConsumer;
+import com.google.gson.JsonObject;
+import it.unimi.dsi.fastutil.longs.Long2ByteOpenHashMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.MeshData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -9,15 +16,12 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import com.google.gson.JsonObject;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.MeshData;
-import it.unimi.dsi.fastutil.longs.Long2ByteOpenHashMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+
 import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.*;
+import fi.dy.masa.malilib.util.data.json.JsonUtils;
 import fi.dy.masa.malilib.util.position.PositionUtils;
+import fi.dy.masa.malilib.util.position.Vec3d;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.renderer.RenderObjectVbo;
@@ -27,11 +31,11 @@ import fi.dy.masa.minihud.util.shape.SphereUtils;
 
 public class ShapeLineBlock extends ShapeBlocky
 {
-    protected Vec3 startPos = Vec3.ZERO;
-    protected Vec3 endPos = Vec3.ZERO;
-    protected Vec3 effectiveStartPos = Vec3.ZERO;
-    protected Vec3 effectiveEndPos = Vec3.ZERO;
-	protected Vec3 initialSize = new Vec3(16.0D, 16.0D, 16.0D);
+    protected Vec3d startPos = Vec3d.ZERO;
+    protected Vec3d endPos = Vec3d.ZERO;
+    protected Vec3d effectiveStartPos = Vec3d.ZERO;
+    protected Vec3d effectiveEndPos = Vec3d.ZERO;
+	protected Vec3d initialSize = new Vec3d(16.0D, 16.0D, 16.0D);
 
     private boolean hasData;
 
@@ -52,9 +56,9 @@ public class ShapeLineBlock extends ShapeBlocky
 		Entity cameraEntity = EntityUtils.getCameraEntity();
 
 		if (cameraEntity != null &&
-			this.startPos == Vec3.ZERO)
+			this.startPos == Vec3d.ZERO)
 		{
-			Vec3 pos = cameraEntity.position();
+			Vec3d pos = Vec3d.of(cameraEntity.position());
 
 			this.startPos = pos;
 			this.endPos = pos.add(this.initialSize);
@@ -62,37 +66,37 @@ public class ShapeLineBlock extends ShapeBlocky
 		}
 	}
 
-    public Vec3 getStartPos()
+    public Vec3d getStartPos()
     {
         return this.effectiveStartPos;
     }
 
-    public Vec3 getEndPos()
+    public Vec3d getEndPos()
     {
         return this.effectiveEndPos;
     }
 
-    public void setStartPos(Vec3 startPos)
+    public void setStartPos(Vec3d startPos)
     {
         this.startPos = startPos;
         this.updateEffectivePositions();
     }
 
-    public void setEndPos(Vec3 endPos)
+    public void setEndPos(Vec3d endPos)
     {
         this.endPos = endPos;
         this.updateEffectivePositions();
     }
 
     @Override
-    public void moveToPosition(Vec3 pos)
+    public void moveToPosition(Vec3d pos)
     {
-        Vec3 diff = this.endPos.subtract(this.startPos);
+        Vec3d diff = this.endPos.subtract(this.startPos);
         this.startPos = pos;
         this.endPos = pos.add(diff);
         this.updateEffectivePositions();
         InfoUtils.printActionbarMessage(String.format("Moved shape to %.1f %.1f %.1f",
-                                                      pos.x(), pos.y(), pos.z()));
+                                                      pos.x, pos.y, pos.z));
     }
 
     @Override
@@ -210,8 +214,8 @@ public class ShapeLineBlock extends ShapeBlocky
     public List<String> getWidgetHoverLines()
     {
         List<String> lines = super.getWidgetHoverLines();
-        Vec3 s = this.startPos;
-        Vec3 e = this.endPos;
+        Vec3d s = this.startPos;
+        Vec3d e = this.endPos;
 
         lines.add(StringUtils.translate("minihud.gui.label.shape.line.start", d2(s.x), d2(s.y), d2(s.z)));
         lines.add(StringUtils.translate("minihud.gui.label.shape.line.end",   d2(e.x), d2(e.y), d2(e.z)));
@@ -239,8 +243,8 @@ public class ShapeLineBlock extends ShapeBlocky
     {
         super.fromJson(obj);
 
-        Vec3 startPos = JsonUtils.vec3dFromJson(obj, "start");
-        Vec3 endPos = JsonUtils.vec3dFromJson(obj, "end");
+        Vec3d startPos = JsonUtils.getVec3d(obj, "start");
+        Vec3d endPos = JsonUtils.getVec3d(obj, "end");
 
         if (startPos != null)
         {
@@ -258,12 +262,12 @@ public class ShapeLineBlock extends ShapeBlocky
     protected void updateRenderPerimeter()
     {
         double range = 512;
-        double minX = Math.min(this.effectiveStartPos.x(), this.effectiveEndPos.x()) - range;
-        double minY = Math.min(this.effectiveStartPos.y(), this.effectiveEndPos.y()) - range;
-        double minZ = Math.min(this.effectiveStartPos.z(), this.effectiveEndPos.z()) - range;
-        double maxX = Math.max(this.effectiveStartPos.x(), this.effectiveEndPos.x()) + range;
-        double maxY = Math.max(this.effectiveStartPos.y(), this.effectiveEndPos.y()) + range;
-        double maxZ = Math.max(this.effectiveStartPos.z(), this.effectiveEndPos.z()) + range;
+        double minX = Math.min(this.effectiveStartPos.x, this.effectiveEndPos.x) - range;
+        double minY = Math.min(this.effectiveStartPos.y, this.effectiveEndPos.y) - range;
+        double minZ = Math.min(this.effectiveStartPos.z, this.effectiveEndPos.z) - range;
+        double maxX = Math.max(this.effectiveStartPos.x, this.effectiveEndPos.x) + range;
+        double maxY = Math.max(this.effectiveStartPos.y, this.effectiveEndPos.y) + range;
+        double maxZ = Math.max(this.effectiveStartPos.z, this.effectiveEndPos.z) + range;
 
         this.renderPerimeter = new AABB(minX, minY, minZ, maxX, maxY, maxZ);
     }
@@ -280,13 +284,13 @@ public class ShapeLineBlock extends ShapeBlocky
     {
         final double maxDist = 30000;
 
-        if (this.effectiveEndPos.distanceTo(this.effectiveStartPos) > maxDist)
+        if (this.effectiveEndPos.getDistanceTo(this.effectiveStartPos) > maxDist)
         {
             return;
         }
 
         LongOpenHashSet positions = new LongOpenHashSet();
-        RayTracer tracer = new RayTracer(this.effectiveStartPos, this.effectiveEndPos);
+        RayTracer tracer = new RayTracer(this.effectiveStartPos.toVanilla(), this.effectiveEndPos.toVanilla());
         double expand = 0;
 
         tracer.iterateAllPositions(this.getLinePositionCollector(positions));
@@ -308,13 +312,13 @@ public class ShapeLineBlock extends ShapeBlocky
     {
         final double maxDist = 30000;
 
-        if (this.effectiveEndPos.distanceTo(this.effectiveStartPos) > maxDist)
+        if (this.effectiveEndPos.getDistanceTo(this.effectiveStartPos) > maxDist)
         {
             return;
         }
 
         LongOpenHashSet positions = new LongOpenHashSet();
-        RayTracer tracer = new RayTracer(this.effectiveStartPos, this.effectiveEndPos);
+        RayTracer tracer = new RayTracer(this.effectiveStartPos.toVanilla(), this.effectiveEndPos.toVanilla());
         double expand = 0;
 
         tracer.iterateAllPositions(this.getLinePositionCollector(positions));
@@ -349,9 +353,9 @@ public class ShapeLineBlock extends ShapeBlocky
         Long2ObjectOpenHashMap<SideQuad> strips = new Long2ObjectOpenHashMap<>();
         Long2ByteOpenHashMap handledPositions = new Long2ByteOpenHashMap();
         Direction[] sides = PositionUtils.ALL_DIRECTIONS;
-        double lengthX = Math.abs(this.effectiveEndPos.x() - this.effectiveStartPos.x());
-        double lengthY = Math.abs(this.effectiveEndPos.y() - this.effectiveStartPos.y());
-        double lengthZ = Math.abs(this.effectiveEndPos.z() - this.effectiveStartPos.z());
+        double lengthX = Math.abs(this.effectiveEndPos.x - this.effectiveStartPos.x);
+        double lengthY = Math.abs(this.effectiveEndPos.y - this.effectiveStartPos.y);
+        double lengthZ = Math.abs(this.effectiveEndPos.z - this.effectiveStartPos.z);
         Direction mainAxisHor = lengthX >= lengthZ ? Direction.WEST : Direction.NORTH;
         Direction mainAxisAll = lengthY >= lengthX && lengthY >= lengthZ ? Direction.DOWN : mainAxisHor;
 

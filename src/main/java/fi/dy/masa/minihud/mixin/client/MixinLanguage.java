@@ -22,7 +22,7 @@ public class MixinLanguage
                     target = "Ljava/util/function/BiConsumer;accept(Ljava/lang/Object;Ljava/lang/Object;)V"
             )
     )
-    private static void loadCustomText(Args args, @Local Map.Entry<String, JsonElement> entry)
+    private static void loadCustomText(Args args, @Local(name = "entry") Map.Entry<String, JsonElement> entry)
     {
         if (args.<String>get(0).startsWith("minihud.") &&
 	        entry.getValue() instanceof JsonPrimitive primitive)

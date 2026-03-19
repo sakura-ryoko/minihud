@@ -20,8 +20,8 @@ public class ChunkWorkerTask extends AbstractWorkerTask<ChunkWorkerTask>
 
 	private double distanceSq(ChunkPos pos)
 	{
-		double dx = (double) (pos.x << 4) - this.referencePosition.getX();
-		double dz = (double) (pos.z << 4) - this.referencePosition.getZ();
+		double dx = (double) (pos.x() << 4) - this.referencePosition.getX();
+		double dz = (double) (pos.z() << 4) - this.referencePosition.getZ();
 
 		return dx * dx + dz * dz;
 	}

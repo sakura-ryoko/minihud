@@ -2,18 +2,21 @@ package fi.dy.masa.minihud.renderer;
 
 import java.util.ArrayList;
 import java.util.List;
+import com.google.gson.JsonObject;
+import org.joml.Matrix4fStack;
+import org.joml.Matrix4fc;
+
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Camera;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.culling.Frustum;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
-import com.google.gson.JsonObject;
-import org.joml.Matrix4f;
-import org.joml.Matrix4fStack;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import fi.dy.masa.malilib.util.JsonUtils;
+import fi.dy.masa.malilib.util.data.json.JsonUtils;
 import fi.dy.masa.malilib.util.position.PositionUtils;
 
 public class RenderContainer
@@ -52,15 +55,12 @@ public class RenderContainer
         this.renderers.remove(renderer);
     }
 
-    public void render(Entity entity, Matrix4f posMatrix, Matrix4f projMatrix, Minecraft mc, Camera camera, Frustum frustum, ProfilerFiller profiler)
+    public void extract(Entity entity, Minecraft mc, DeltaTracker deltaTracker, Camera camera, float ticks, ProfilerFiller profiler)
     {
-        profiler.push("render_container");
-        this.update(camera.position(), entity, mc, profiler);
-        this.draw(camera.position(), profiler);
-        profiler.pop();
+        this.update(camera, entity, mc, profiler);
     }
 
-    protected void update(Vec3 cameraPos, Entity entity, Minecraft mc, ProfilerFiller profiler)
+    protected void update(Camera camera, Entity entity, Minecraft mc, ProfilerFiller profiler)
     {
         profiler.popPush("render_update");
 
@@ -76,8 +76,8 @@ public class RenderContainer
                 {
 //                    MiniHUD.LOGGER.error("Container: renderer [{}] needs update!", renderer.getName());
                     renderer.lastUpdatePos = PositionUtils.getEntityBlockPos(entity);
-                    renderer.update(cameraPos, entity, mc, profiler);
-                    renderer.setUpdatePosition(cameraPos);
+                    renderer.update(camera.position(), entity, mc, profiler);
+                    renderer.setUpdatePosition(camera.position());
                 }
 
                 ++this.countActive;
@@ -91,7 +91,14 @@ public class RenderContainer
         }
     }
 
-    protected void draw(Vec3 cameraPos, ProfilerFiller profiler)
+    public void render(Matrix4fc modelViewMatrix, Minecraft mc, Frustum frustum, CameraRenderState camera, ProfilerFiller profiler)
+    {
+        profiler.push("render_container");
+        this.draw(camera, profiler);
+        profiler.pop();
+    }
+
+    protected void draw(CameraRenderState camera, ProfilerFiller profiler)
     {
         profiler.popPush("render_draw");
 
@@ -107,6 +114,7 @@ public class RenderContainer
                 if (renderer.hasData())
                 {
                     Vec3 updatePos = renderer.getUpdatePosition();
+                    Vec3 cameraPos = camera.pos;
 
                     matrix4fstack.pushMatrix();
                     matrix4fstack.translate((float) (updatePos.x - cameraPos.x), (float) (updatePos.y - cameraPos.y), (float) (updatePos.z - cameraPos.z));

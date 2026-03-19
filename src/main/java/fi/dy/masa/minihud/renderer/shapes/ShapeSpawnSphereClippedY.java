@@ -3,11 +3,14 @@ package fi.dy.masa.minihud.renderer.shapes;
 import java.util.List;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+
 import net.minecraft.core.Direction;
-import net.minecraft.world.phys.Vec3;
-import fi.dy.masa.malilib.util.JsonUtils;
+
+import fi.dy.masa.malilib.util.MathUtils;
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.malilib.util.data.Color4f;
+import fi.dy.masa.malilib.util.data.json.JsonUtils;
+import fi.dy.masa.malilib.util.position.Vec3d;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.util.shape.SphereUtils;
 
@@ -40,13 +43,13 @@ public class ShapeSpawnSphereClippedY extends ShapeSpawnSphere
 
     public void setTopTrim(double v)
     {
-        this.topTrim = Math.max(0.0, v);
+        this.topTrim = MathUtils.max(0.0, v);
         this.setNeedsUpdate();
     }
 
     public void setBottomTrim(double v)
     {
-        this.bottomTrim = Math.max(0.0, v);
+        this.bottomTrim = MathUtils.max(0.0, v);
         this.setNeedsUpdate();
     }
 
@@ -58,7 +61,7 @@ public class ShapeSpawnSphereClippedY extends ShapeSpawnSphere
 
     private boolean isInsideSphereWithYClip(int x, int y, int z, Direction outSide)
     {
-        Vec3 c = this.getEffectiveCenter();
+        Vec3d c = this.getEffectiveCenter();
         double r = this.getRadius();
 
         double minY = c.y - (r - this.bottomTrim);

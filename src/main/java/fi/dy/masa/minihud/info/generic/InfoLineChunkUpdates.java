@@ -42,7 +42,7 @@ public class InfoLineChunkUpdates extends InfoLine
             // This should never throw, but just being careful.
             try
             {
-                list.add(this.translate(CHUNKS_KEY, Objects.requireNonNull(mc().levelRenderer.getSectionRenderDispatcher()).getToUpload()));
+                list.add(this.translate(CHUNKS_KEY, Objects.requireNonNull(mc().levelRenderer.getSectionRenderDispatcher()).getCompileQueueSize()));
             }
             catch (Exception ignored) { }
         }

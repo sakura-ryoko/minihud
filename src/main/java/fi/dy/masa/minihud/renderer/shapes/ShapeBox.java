@@ -1,23 +1,26 @@
 package fi.dy.masa.minihud.renderer.shapes;
 
 import java.util.List;
+import com.google.gson.JsonObject;
+
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.MeshData;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Direction;
-import net.minecraft.util.Mth;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import com.google.gson.JsonObject;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.MeshData;
-import com.mojang.blaze3d.vertex.PoseStack;
+
 import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.EntityUtils;
-import fi.dy.masa.malilib.util.JsonUtils;
+import fi.dy.masa.malilib.util.MathUtils;
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.malilib.util.data.Color4f;
+import fi.dy.masa.malilib.util.data.json.JsonUtils;
 import fi.dy.masa.malilib.util.position.PositionUtils;
+import fi.dy.masa.malilib.util.position.Vec3d;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.renderer.RenderObjectVbo;
@@ -29,14 +32,14 @@ public class ShapeBox extends ShapeBase
 
     protected AABB box;
     protected AABB renderPerimeter;
-    protected Vec3 corner1;
-    protected Vec3 corner2;
+    protected Vec3d corner1;
+    protected Vec3d corner2;
     protected int enabledSidesMask;
     protected double maxDimensions;
     protected boolean gridEnabled;
-    protected Vec3 gridSize;
-    protected Vec3 gridStartOffset;
-    protected Vec3 gridEndOffset;
+    protected Vec3d gridSize;
+    protected Vec3d gridStartOffset;
+    protected Vec3d gridEndOffset;
 
     private AABB renderBox;
     private boolean hasData;
@@ -61,14 +64,14 @@ public class ShapeBox extends ShapeBase
 	{
         this.box = DEFAULT_BOX;
         this.renderPerimeter = DEFAULT_BOX;
-        this.corner1 = Vec3.ZERO;
-        this.corner2 = Vec3.ZERO;
+        this.corner1 = Vec3d.ZERO;
+        this.corner2 = Vec3d.ZERO;
         this.enabledSidesMask = 0x3F;
         this.maxDimensions = MAX_DIMENSIONS;
         this.gridEnabled = true;
-        this.gridSize = new Vec3(16.0, 16.0, 16.0);
-        this.gridStartOffset = Vec3.ZERO;
-        this.gridEndOffset = Vec3.ZERO;
+        this.gridSize = new Vec3d(16.0, 16.0, 16.0);
+        this.gridStartOffset = Vec3d.ZERO;
+        this.gridEndOffset = Vec3d.ZERO;
         this.renderBox = null;
         this.hasData = false;
         this.useCulling = false;
@@ -80,9 +83,9 @@ public class ShapeBox extends ShapeBase
 		Entity cameraEntity = EntityUtils.getCameraEntity();
 
 		if (cameraEntity != null &&
-			this.getCorner1() == Vec3.ZERO)
+			this.getCorner1() == Vec3d.ZERO)
 		{
-			Vec3 pos = cameraEntity.position();
+			Vec3d pos = Vec3d.of(cameraEntity.position());
 			this.corner1 = pos;
 			this.corner2 = pos.add(this.gridSize);
 			this.setBoxFromCorners();
@@ -104,38 +107,38 @@ public class ShapeBox extends ShapeBase
         return this.gridEnabled;
     }
 
-    public Vec3 getGridSize()
+    public Vec3d getGridSize()
     {
         return this.gridSize;
     }
 
-    public Vec3 getGridStartOffset()
+    public Vec3d getGridStartOffset()
     {
         return this.gridStartOffset;
     }
 
-    public Vec3 getGridEndOffset()
+    public Vec3d getGridEndOffset()
     {
         return this.gridEndOffset;
     }
 
-    public Vec3 getCorner1()
+    public Vec3d getCorner1()
     {
         return this.corner1;
     }
 
-    public Vec3 getCorner2()
+    public Vec3d getCorner2()
     {
         return this.corner2;
     }
 
-    public void setCorner1(Vec3 corner1)
+    public void setCorner1(Vec3d corner1)
     {
         this.corner1 = corner1;
         this.setBoxFromCorners();
     }
 
-    public void setCorner2(Vec3 corner2)
+    public void setCorner2(Vec3d corner2)
     {
         this.corner2 = corner2;
         this.setBoxFromCorners();
@@ -143,7 +146,7 @@ public class ShapeBox extends ShapeBase
 
     protected void setBoxFromCorners()
     {
-        AABB box = new AABB(this.corner1, this.corner2);
+        AABB box = new AABB(this.corner1.toVanilla(), this.corner2.toVanilla());
         this.box = this.clampBox(box, this.maxDimensions);
 
         double margin = Minecraft.getInstance().options.renderDistance().get() * 16 * 2;
@@ -175,30 +178,30 @@ public class ShapeBox extends ShapeBase
         this.setNeedsUpdate();
     }
 
-    public void setGridSize(Vec3 gridSize)
+    public void setGridSize(Vec3d gridSize)
     {
-        double x = Mth.clamp(gridSize.x, 0.5, 1024);
-        double y = Mth.clamp(gridSize.y, 0.5, 1024);
-        double z = Mth.clamp(gridSize.z, 0.5, 1024);
-        this.gridSize = new Vec3(x, y, z);
+        double x = MathUtils.clamp(gridSize.x, 0.5, 1024);
+        double y = MathUtils.clamp(gridSize.y, 0.5, 1024);
+        double z = MathUtils.clamp(gridSize.z, 0.5, 1024);
+        this.gridSize = new Vec3d(x, y, z);
         this.setNeedsUpdate();
     }
 
-    public void setGridStartOffset(Vec3 gridStartOffset)
+    public void setGridStartOffset(Vec3d gridStartOffset)
     {
-        double x = Mth.clamp(gridStartOffset.x, 0.0, 1024);
-        double y = Mth.clamp(gridStartOffset.y, 0.0, 1024);
-        double z = Mth.clamp(gridStartOffset.z, 0.0, 1024);
-        this.gridStartOffset = new Vec3(x, y, z);
+        double x = MathUtils.clamp(gridStartOffset.x, 0.0, 1024);
+        double y = MathUtils.clamp(gridStartOffset.y, 0.0, 1024);
+        double z = MathUtils.clamp(gridStartOffset.z, 0.0, 1024);
+        this.gridStartOffset = new Vec3d(x, y, z);
         this.setNeedsUpdate();
     }
 
-    public void setGridEndOffset(Vec3 gridEndOffset)
+    public void setGridEndOffset(Vec3d gridEndOffset)
     {
-        double x = Mth.clamp(gridEndOffset.x, 0.0, 1024);
-        double y = Mth.clamp(gridEndOffset.y, 0.0, 1024);
-        double z = Mth.clamp(gridEndOffset.z, 0.0, 1024);
-        this.gridEndOffset = new Vec3(x, y, z);
+        double x = MathUtils.clamp(gridEndOffset.x, 0.0, 1024);
+        double y = MathUtils.clamp(gridEndOffset.y, 0.0, 1024);
+        double z = MathUtils.clamp(gridEndOffset.z, 0.0, 1024);
+        this.gridEndOffset = new Vec3d(x, y, z);
         this.setNeedsUpdate();
     }
 
@@ -635,16 +638,16 @@ public class ShapeBox extends ShapeBase
 
         this.enabledSidesMask = JsonUtils.getIntegerOrDefault(obj, "enabled_sides", 0x3F);
         this.gridEnabled     = JsonUtils.getBooleanOrDefault(obj, "grid_enabled", true);
-        this.gridSize        = JsonUtils.vec3dFromJson(obj, "grid_size");
-        this.gridStartOffset = JsonUtils.vec3dFromJson(obj, "grid_start_offset");
-        this.gridEndOffset   = JsonUtils.vec3dFromJson(obj, "grid_end_offset");
+        this.gridSize        = JsonUtils.getVec3d(obj, "grid_size");
+        this.gridStartOffset = JsonUtils.getVec3d(obj, "grid_start_offset");
+        this.gridEndOffset   = JsonUtils.getVec3d(obj, "grid_end_offset");
 
-        if (this.gridSize == null)        { this.gridSize = new Vec3(16.0, 16.0, 16.0); }
-        if (this.gridStartOffset == null) { this.gridStartOffset = Vec3.ZERO; }
-        if (this.gridEndOffset == null)   { this.gridEndOffset = Vec3.ZERO; }
+        if (this.gridSize == null)        { this.gridSize = new Vec3d(16.0, 16.0, 16.0); }
+        if (this.gridStartOffset == null) { this.gridStartOffset = Vec3d.ZERO; }
+        if (this.gridEndOffset == null)   { this.gridEndOffset = Vec3d.ZERO; }
 
-        Vec3 corner1 = JsonUtils.vec3dFromJson(obj, "corner1");
-        Vec3 corner2 = JsonUtils.vec3dFromJson(obj, "corner2");
+        Vec3d corner1 = JsonUtils.getVec3d(obj, "corner1");
+        Vec3d corner2 = JsonUtils.getVec3d(obj, "corner2");
 
         if (corner1 != null && corner2 != null)
         {
@@ -660,8 +663,8 @@ public class ShapeBox extends ShapeBase
             double maxY = JsonUtils.getDoubleOrDefault(obj, "maxY", 0);
             double maxZ = JsonUtils.getDoubleOrDefault(obj, "maxZ", 0);
 
-            this.corner1 = new Vec3(minX, minY, minZ);
-            this.corner2 = new Vec3(maxX, maxY, maxZ);
+            this.corner1 = new Vec3d(minX, minY, minZ);
+            this.corner2 = new Vec3d(maxX, maxY, maxZ);
         }
 
         this.setBoxFromCorners();

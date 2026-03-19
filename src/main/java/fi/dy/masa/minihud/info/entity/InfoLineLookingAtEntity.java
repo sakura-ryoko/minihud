@@ -55,6 +55,10 @@ public class InfoLineLookingAtEntity extends InfoLine
             {
                 health = living.getHealth();
             }
+            if (living.getMaxHealth() != maxHealth)
+            {
+                maxHealth = living.getMaxHealth();
+            }
 
             String entityLine = this.qt(LOOKING_KEY+".livingentity", living.getName().getString(), health, maxHealth);
 

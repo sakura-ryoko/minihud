@@ -24,6 +24,7 @@ import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.LayerRange;
 import fi.dy.masa.malilib.util.data.Color4f;
 import fi.dy.masa.malilib.util.position.PositionUtils;
+import fi.dy.masa.malilib.util.position.Vec3d;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.RendererToggle;
@@ -458,7 +459,7 @@ public class OverlayRendererLightningRodRange extends OverlayRendererBase
 	private SphereUtils.RingPositionTest getPositionTest(BlockPos rodPos, int range)
 	{
 		// Rod center position (block center)
-		Vec3 center = new Vec3(rodPos.getX() + 0.5, rodPos.getY() + 0.5, rodPos.getZ() + 0.5);
+		Vec3d center = new Vec3d(rodPos.getX() + 0.5, rodPos.getY() + 0.5, rodPos.getZ() + 0.5);
 		double squareRange = range * range; // 128 * 128 = 16384
 
 		return (x, y, z, dir) ->
