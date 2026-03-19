@@ -86,25 +86,23 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
         {
             Pair<BlockEntity, CompoundData> pair = this.fetchBlockEntityData(mc, world, pos);
 
-            if (pair == null)
+            if (pair != null)
             {
-                return false;
+                Holder<MobEffect> primary = DataBlockUtils.getBeaconEffects(pair.getRight()).getLeft();
+
+                if (primary != null)
+                {
+                    ResourceKey<MobEffect> key = primary.unwrapKey().orElse(null);
+
+                    return key != null && BeaconBlockEntity.BEACON_EFFECTS
+                        .stream()
+                        .limit(level)
+                        .flatMap(Collection::stream)
+                        .anyMatch(it -> it.is(key));
+                }
             }
 
-            Holder<MobEffect> primary = DataBlockUtils.getBeaconEffects(pair.getRight()).getLeft();
-
-            if (primary == null)
-            {
-                return false;
-            }
-
-            ResourceKey<MobEffect> key = primary.unwrapKey().orElse(null);
-
-            return key != null && BeaconBlockEntity.BEACON_EFFECTS
-                .stream()
-                .limit(level)
-                .flatMap(Collection::stream)
-                .anyMatch(it -> it.is(key));
+            return false;
         }
         else
         {
