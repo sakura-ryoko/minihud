@@ -2,12 +2,16 @@ package fi.dy.masa.minihud.renderer;
 
 import java.util.HashMap;
 import java.util.List;
+
+import fi.dy.masa.malilib.util.data.Constants;
+import fi.dy.masa.malilib.util.data.tag.CompoundData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BeaconBeamOwner;
 import net.minecraft.world.level.block.entity.BeaconBlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.phys.Vec3;
 import com.mojang.blaze3d.vertex.BufferBuilder;
@@ -18,6 +22,7 @@ import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.RendererToggle;
 import fi.dy.masa.minihud.mixin.block.IMixinBeaconBlockEntity;
+import org.apache.commons.lang3.tuple.Pair;
 
 public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBlockEntity>
 {
@@ -43,22 +48,18 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
     @Override
     protected void updateBlockRange(Level world, BlockPos pos, BeaconBlockEntity be, Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
-        List<BeaconBeamOwner.Section> segments = ((IMixinBeaconBlockEntity) be).minihud_getBeamEmitter();
-//        Holder<MobEffect> primary = ((IMixinBeaconBlockEntity) be).minihud_getPrimary();
-//        RegistryEntry<StatusEffect> secondary = ((IMixinBeaconBlockEntity) be).minihud_getSecondary();
-        final int level = ((IMixinBeaconBlockEntity) be).minihud_getLevel();
+        IMixinBeaconBlockEntity beaconBE = (IMixinBeaconBlockEntity) be;
+        final int level = beaconBE.minihud_getLevel();
 
+//        Holder<MobEffect> primary = beaconBE.minihud_getPrimary();
+//        RegistryEntry<StatusEffect> secondary = beaconBE.minihud_getSecondary();
 //        System.out.printf("beacon - pos [%s], level [%d], pri [%s], sec [%s], segment count: [%d]\n", pos, level,
 //                          primary != null ? primary.value().getName().getString() : "<NULL>",
 //                          secondary != null ? secondary.value().getName().getString() : "<NULL>",
 //                          segments.size()
 //        );
 
-        if (segments.isEmpty() || level == 0)
-        {
-            this.positions.remove(pos);
-        }
-        else if (level >= 1 && level <= 4)
+        if (level >= 1 && level <= 4 && this.checkBeaconActivation(mc, world, pos, beaconBE))
         {
             this.positions.put(pos, level);
         }
@@ -66,6 +67,33 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
         {
             this.positions.remove(pos);
         }
+    }
+
+    private boolean checkBeaconActivation(Minecraft mc, Level world, BlockPos pos, IMixinBeaconBlockEntity be)
+    {
+        List<BeaconBeamOwner.Section> segments = be.minihud_getBeamEmitter();
+
+        if (segments.isEmpty())
+        {
+            return false;
+        }
+
+        if (Configs.Generic.BEACON_RANGE_OVERLAY_CHECK_PRIMARY_EFFECT.getBooleanValue())
+        {
+            Pair<BlockEntity, CompoundData> pair = this.fetchBlockEntityData(mc, world, pos);
+
+            if (pair == null)
+            {
+                return false;
+            }
+
+            return pair.getRight().contains("primary_effect", Constants.NBT.TAG_STRING);
+        }
+        else
+        {
+            return true;
+        }
+
     }
 
     @Override

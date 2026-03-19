@@ -1,20 +1,28 @@
 package fi.dy.masa.minihud.renderer;
 
+import fi.dy.masa.malilib.util.WorldUtils;
+import fi.dy.masa.malilib.util.data.tag.CompoundData;
+import fi.dy.masa.malilib.util.data.tag.converter.DataConverterNbt;
+import fi.dy.masa.minihud.data.EntitiesDataManager;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientChunkCache;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.phys.Vec3;
 import fi.dy.masa.malilib.config.IConfigBoolean;
+import org.apache.commons.lang3.tuple.Pair;
 
 public abstract class BaseBlockRangeOverlay<T extends BlockEntity> extends OverlayRendererBase
 {
@@ -221,6 +229,38 @@ public abstract class BaseBlockRangeOverlay<T extends BlockEntity> extends Overl
         }
 
         profiler.pop();
+    }
+
+    protected Pair<BlockEntity, CompoundData> fetchBlockEntityData(Minecraft mc, Level world, BlockPos pos)
+    {
+        WorldUtils.getBestWorld(mc);
+
+        Level bestWorld = WorldUtils.getBestWorld(mc);
+        BlockState state = bestWorld.getBlockState(pos);
+        Pair<BlockEntity, CompoundData> pair = null;
+
+        if (state.getBlock() instanceof EntityBlock)
+        {
+            if (bestWorld instanceof ServerLevel)
+            {
+                CompoundData data = new CompoundData();
+                BlockEntity be = bestWorld.getChunkAt(pos).getBlockEntity(pos);
+                pair = Pair.of(be, be != null ? DataConverterNbt.fromVanillaCompound(be.saveWithFullMetadata(bestWorld.registryAccess())) : data);
+            }
+            else
+            {
+                pair = EntitiesDataManager.getInstance().requestBlockEntity(world, pos);
+            }
+
+            if (pair != null && (pair.getLeft() == null || !this.blockEntityClass.isAssignableFrom(pair.getLeft().getClass())))
+            {
+                pair = null;
+            }
+
+            return pair;
+        }
+
+        return null;
     }
 
     protected abstract void updateBlockRange(Level world, BlockPos pos, T be, Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler);

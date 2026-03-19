@@ -52,6 +52,7 @@ public class Configs implements IConfigHandler
         public static final ConfigBoolean       BUNDLE_DISPLAY_REQUIRE_SHIFT        = new ConfigBoolean("bundleDisplayRequireShift", true).apply(GENERIC_KEY);
         public static final ConfigInteger       BUNDLE_DISPLAY_ROW_WIDTH            = new ConfigInteger("bundleDisplayRowWidth", 9, 6, 9).apply(GENERIC_KEY);
         public static final ConfigBoolean       CONDUIT_RANGE_OVERLAY_COMBINE_QUADS  = new ConfigBoolean("conduitRangeOverlayCombineQuads", true).apply(GENERIC_KEY);
+        public static final ConfigBoolean       BEACON_RANGE_OVERLAY_CHECK_PRIMARY_EFFECT= new ConfigBoolean("beaconRangeOverlayCheckPrimaryEffect", false).apply(GENERIC_KEY);
         public static final ConfigBoolean       CONDUIT_RANGE_OVERLAY_RENDER_OUTLINES= new ConfigBoolean("conduitRangeOverlayOutlines", false).apply(GENERIC_KEY);
         public static final ConfigBoolean       CONDUIT_RANGE_OVERLAY_RENDER_THROUGH = new ConfigBoolean("conduitRangeOverlayThrough", false).apply(GENERIC_KEY);
         public static final ConfigBoolean       LIGHTNING_ROD_RANGE_OVERLAY_COMBINE_QUADS = new ConfigBoolean("lightningRodRangeOverlayCombineQuads", true).apply(GENERIC_KEY);
@@ -166,6 +167,7 @@ public class Configs implements IConfigHandler
                 //DEBUG_DEVELOPMENT_MODE,
                 //DEBUG_RENDERER_PATH_MAX_DIST,
                 DONT_RESET_SEED_ON_DIMENSION_CHANGE,
+                BEACON_RANGE_OVERLAY_CHECK_PRIMARY_EFFECT,
                 CONDUIT_RANGE_OVERLAY_COMBINE_QUADS,
                 CONDUIT_RANGE_OVERLAY_RENDER_OUTLINES,
                 CONDUIT_RANGE_OVERLAY_RENDER_THROUGH,
