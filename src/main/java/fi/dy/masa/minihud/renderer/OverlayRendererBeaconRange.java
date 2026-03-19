@@ -1,13 +1,17 @@
 package fi.dy.masa.minihud.renderer;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
-import fi.dy.masa.malilib.util.data.Constants;
+import fi.dy.masa.malilib.util.data.DataBlockUtils;
 import fi.dy.masa.malilib.util.data.tag.CompoundData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BeaconBeamOwner;
 import net.minecraft.world.level.block.entity.BeaconBlockEntity;
@@ -49,19 +53,10 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
     protected void updateBlockRange(Level world, BlockPos pos, BeaconBlockEntity be, Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
         IMixinBeaconBlockEntity beaconBE = (IMixinBeaconBlockEntity) be;
-        final int level = beaconBE.minihud_getLevel();
 
-//        Holder<MobEffect> primary = beaconBE.minihud_getPrimary();
-//        RegistryEntry<StatusEffect> secondary = beaconBE.minihud_getSecondary();
-//        System.out.printf("beacon - pos [%s], level [%d], pri [%s], sec [%s], segment count: [%d]\n", pos, level,
-//                          primary != null ? primary.value().getName().getString() : "<NULL>",
-//                          secondary != null ? secondary.value().getName().getString() : "<NULL>",
-//                          segments.size()
-//        );
-
-        if (level >= 1 && level <= 4 && this.checkBeaconActivation(mc, world, pos, beaconBE))
+        if (this.checkBeaconActivation(mc, world, pos, beaconBE))
         {
-            this.positions.put(pos, level);
+            this.positions.put(pos, beaconBE.minihud_getLevel());
         }
         else
         {
@@ -71,9 +66,18 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
 
     private boolean checkBeaconActivation(Minecraft mc, Level world, BlockPos pos, IMixinBeaconBlockEntity be)
     {
+        final int level = be.minihud_getLevel();
         List<BeaconBeamOwner.Section> segments = be.minihud_getBeamEmitter();
 
-        if (segments.isEmpty())
+//        Holder<MobEffect> primary = beaconBE.minihud_getPrimary();
+//        RegistryEntry<StatusEffect> secondary = beaconBE.minihud_getSecondary();
+//        System.out.printf("beacon - pos [%s], level [%d], pri [%s], sec [%s], segment count: [%d]\n", pos, level,
+//                          primary != null ? primary.value().getName().getString() : "<NULL>",
+//                          secondary != null ? secondary.value().getName().getString() : "<NULL>",
+//                          segments.size()
+//        );
+
+        if (level < 1 || level > 4 || segments.isEmpty())
         {
             return false;
         }
@@ -87,7 +91,20 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
                 return false;
             }
 
-            return pair.getRight().contains("primary_effect", Constants.NBT.TAG_STRING);
+            Holder<MobEffect> primary = DataBlockUtils.getBeaconEffects(pair.getRight()).getLeft();
+
+            if (primary == null)
+            {
+                return false;
+            }
+
+            ResourceKey<MobEffect> key = primary.unwrapKey().orElse(null);
+
+            return key != null && BeaconBlockEntity.BEACON_EFFECTS
+                .stream()
+                .limit(level)
+                .flatMap(Collection::stream)
+                .anyMatch(it -> it.is(key));
         }
         else
         {
