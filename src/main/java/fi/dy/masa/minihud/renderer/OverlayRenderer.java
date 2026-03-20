@@ -8,6 +8,8 @@ import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.Entity;
 
+import fi.dy.masa.minihud.renderer.worker.WorkerDaemonHandler;
+
 public class OverlayRenderer
 {
     private static long loginTime;
@@ -48,6 +50,7 @@ public class OverlayRenderer
 
     public static void reset()
     {
+        WorkerDaemonHandler.INSTANCE.reset();
         RenderContainer.INSTANCE.reset();
     }
 }
