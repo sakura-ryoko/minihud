@@ -87,10 +87,6 @@ public class WorldLoadListener implements IWorldLoadListener
             DebugDataManager.getInstance().onWorldJoin();
             WorkerDaemonHandler.INSTANCE.start();
         }
-        else
-        {
-            WorkerDaemonHandler.INSTANCE.endAll();
-        }
     }
 
     private void writeDataPerDimension()
