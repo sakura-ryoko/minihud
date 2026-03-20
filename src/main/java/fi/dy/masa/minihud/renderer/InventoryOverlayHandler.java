@@ -277,7 +277,7 @@ public class InventoryOverlayHandler implements IInventoryOverlayHandler
                 if (pair != null)
                 {
 	                data = pair.getRight();
-                    entity = pair.getLeft();
+                    entity = pair.getLeft() != null ? pair.getLeft() : entity;
                 }
             }
 
