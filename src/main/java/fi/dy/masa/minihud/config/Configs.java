@@ -40,6 +40,8 @@ public class Configs implements IConfigHandler
         public static final ConfigBoolean       CUSTOM_MODEL_TOOLTIPS               = new ConfigBoolean("customModelTooltips", false).apply(GENERIC_KEY);
         public static final ConfigBoolean       FOOD_TOOLTIPS                       = new ConfigBoolean("foodTooltips", false).apply(GENERIC_KEY);
         public static final ConfigBoolean       HONEY_TOOLTIPS                      = new ConfigBoolean("honeyTooltips", false).apply(GENERIC_KEY);
+        public static final ConfigBoolean       ITEM_MODEL_TOOLTIPS                 = new ConfigBoolean("itemModelTooltips", false).apply(GENERIC_KEY);
+        public static final ConfigBoolean       ITEM_MODEL_TOOLTIPS_SHOW_VANILLA    = new ConfigBoolean("itemModelTooltipsShowVanilla", false).apply(GENERIC_KEY);
         public static final ConfigBoolean       LODESTONE_TOOLTIPS                  = new ConfigBoolean("lodestoneTooltips", false).apply(GENERIC_KEY);
         public static final ConfigBoolean       BEACON_RANGE_OVERLAY_CHECK_PRIMARY_EFFECT= new ConfigBoolean("beaconRangeOverlayCheckPrimaryEffect", false).apply(GENERIC_KEY);
         public static final ConfigInteger       BIOME_OVERLAY_RANGE                 = new ConfigInteger("biomeOverlayRange", 4, 0, 32).apply(GENERIC_KEY);
@@ -157,6 +159,8 @@ public class Configs implements IConfigHandler
                 CUSTOM_MODEL_TOOLTIPS,
                 FOOD_TOOLTIPS,
                 HONEY_TOOLTIPS,
+                ITEM_MODEL_TOOLTIPS,
+                ITEM_MODEL_TOOLTIPS_SHOW_VANILLA,
                 LODESTONE_TOOLTIPS,
                 BIOME_OVERLAY_SINGLE_COLOR,
                 BUNDLE_PREVIEW,

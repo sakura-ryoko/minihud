@@ -128,7 +128,7 @@ public class RenderHandler implements IRenderer
     }
 
     @Override
-    public void onExtractInGameGuiPost(GuiContext ctx, float partialTicks, ProfilerFiller profiler)
+    public void onExtractGuiOverlayPost(GuiContext ctx, float partialTicks, ProfilerFiller profiler)
     {
         if (Configs.Generic.MAIN_RENDERING_TOGGLE.getBooleanValue() == false)
         {
@@ -325,6 +325,12 @@ public class RenderHandler implements IRenderer
             stack.has(DataComponents.CUSTOM_MODEL_DATA))
         {
             MiscUtils.addCustomModelTooltip(stack, list);
+        }
+
+        if (Configs.Generic.ITEM_MODEL_TOOLTIPS.getBooleanValue() &&
+            stack.has(DataComponents.ITEM_MODEL))
+        {
+            MiscUtils.addItemModelTooltip(stack, list);
         }
 
         if (Configs.Generic.FOOD_TOOLTIPS.getBooleanValue() &&

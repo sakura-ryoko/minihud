@@ -21,6 +21,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
@@ -287,6 +288,22 @@ public class MiscUtils
             {
                 lines.accept(StringUtils.translateAsText("minihud.label.custom_model_data_tooltip.color", aColor));
             }
+        }
+    }
+
+    public static void addItemModelTooltip(ItemStack stack, Consumer<Component> lines)
+    {
+        Identifier data = stack.get(DataComponents.ITEM_MODEL);
+
+        if (data != null)
+        {
+            if (data.getNamespace().equalsIgnoreCase("minecraft") &&
+                !Configs.Generic.ITEM_MODEL_TOOLTIPS_SHOW_VANILLA.getBooleanValue())
+            {
+                return;
+            }
+
+            lines.accept(StringUtils.translateAsText("minihud.label.item_model_tooltip", data.toString()));
         }
     }
 
