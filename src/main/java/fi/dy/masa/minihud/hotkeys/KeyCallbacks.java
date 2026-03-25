@@ -40,7 +40,8 @@ public class KeyCallbacks
         Configs.Colors.BEACON_RANGE_LVL2_OVERLAY_COLOR.setValueChangeCallback((config) -> updateBeaconOverlay());
         Configs.Colors.BEACON_RANGE_LVL3_OVERLAY_COLOR.setValueChangeCallback((config) -> updateBeaconOverlay());
         Configs.Colors.BEACON_RANGE_LVL4_OVERLAY_COLOR.setValueChangeCallback((config) -> updateBeaconOverlay());
-        Configs.Colors.CONDUIT_RANGE_OVERLAY_COLOR.setValueChangeCallback(cfg -> OverlayRendererBeaconRange.INSTANCE.setNeedsUpdate());
+        Configs.Colors.CONDUIT_RANGE_OVERLAY_COLOR.setValueChangeCallback(cfg -> OverlayRendererConduitRange.INSTANCE.setNeedsUpdate());
+        Configs.Colors.CONDUIT_RANGE_OUTLINES.setValueChangeCallback(cfg -> OverlayRendererConduitRange.INSTANCE.setNeedsUpdate());
         Configs.Colors.LIGHTNING_ROD_RANGE_OVERLAY_COLOR.setValueChangeCallback((config) -> OverlayRendererLightningRodRange.INSTANCE.setNeedsUpdate());
         Configs.Colors.LIGHTNING_ROD_DAMAGE_ZONE_COLOR.setValueChangeCallback((config) -> OverlayRendererLightningRodRange.INSTANCE.setNeedsUpdate());
 

@@ -39,7 +39,7 @@ public class RendererCallbacks
     {
         if (config.getBooleanValue())
         {
-            OverlayRendererBeaconRange.INSTANCE.reset();
+            OverlayRendererConduitRange.INSTANCE.reset();
             OverlayRendererConduitRange.INSTANCE.setNeedsUpdate();
         }
     }
