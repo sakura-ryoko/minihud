@@ -209,20 +209,19 @@ public class InventoryOverlayHandler implements IInventoryOverlayHandler
                     if (pair != null)
                     {
 	                    data = pair.getRight();
-                        be = pair.getLeft();
                     }
                 }
 
-                if (be == null)
-                {
-                    if (this.lastBlockEntityContext != null && this.lastBlockEntityContext.getLeft().equals(pos))
-                    {
-                        this.context = this.lastBlockEntityContext.getRight();
-                        return this.context;
-                    }
-
-                    return null;
-                }
+//                if (be == null)
+//                {
+//                    if (this.lastBlockEntityContext != null && this.lastBlockEntityContext.getLeft().equals(pos))
+//                    {
+//                        this.context = this.lastBlockEntityContext.getRight();
+//                        return this.context;
+//                    }
+//
+//                    return null;
+//                }
 
                 //MiniHUD.LOGGER.warn("getTarget():2: pos [{}], be [{}], nbt [{}]", pos.toShortString(), be != null, nbt != null);
                 InventoryOverlayContext ctx = getTargetInventoryFromBlock(world, pos, be, data);

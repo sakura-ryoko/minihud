@@ -5,6 +5,10 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.MeshData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -13,9 +17,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.ConduitBlockEntity;
 import net.minecraft.world.phys.Vec3;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.MeshData;
+
 import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.LayerRange;
 import fi.dy.masa.malilib.util.data.Color4f;
@@ -25,6 +27,8 @@ import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.RendererToggle;
 import fi.dy.masa.minihud.renderer.shapes.SideQuad;
+import fi.dy.masa.minihud.renderer.worker.BlockScanWorkerTask;
+import fi.dy.masa.minihud.renderer.worker.WorkerDaemonHandler;
 import fi.dy.masa.minihud.util.ConduitExtra;
 import fi.dy.masa.minihud.util.ShapeRenderType;
 import fi.dy.masa.minihud.util.shape.SphereUtils;
@@ -71,12 +75,12 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
         this.renderThrough = Configs.Generic.CONDUIT_RANGE_OVERLAY_RENDER_THROUGH.getBooleanValue();
 
 //        LOGGER.debug("updateBlockRange(): pos [{}], count [{}]", pos.toShortString(), this.conduits.size());
-
         final int range = ((ConduitExtra) be).minihud$getStoredActivatingBlockCount() / 7 * 16;
 
         if (this.checkIfNeedsUpdate(pos, range))
         {
-            this.addOrReplaceEntry(this.calculateEach(pos, range));
+            WorkerDaemonHandler.INSTANCE.addTask(
+                    new BlockScanWorkerTask(() -> this.addOrReplaceEntry(this.calculateEach(pos, range)), pos));
         }
     }
 
@@ -142,7 +146,6 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
     protected void renderBlockRange(Level world, Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
         boolean outlines = Configs.Generic.CONDUIT_RANGE_OVERLAY_RENDER_OUTLINES.getBooleanValue();
-
 //        LOGGER.debug("renderBlockRange(): count [{}]", this.conduits.size());
 
         this.allocateBuffers(outlines);
@@ -157,6 +160,7 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
     @Override
     protected void expireBlockRange(BlockPos pos)
     {
+//        final int preCount = this.conduits.size();
         for (Entry entry : this.conduits)
         {
             if (entry.pos.equals(pos))
@@ -165,6 +169,8 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
                 this.conduits.remove(entry);
             }
         }
+
+//        LOGGER.debug("expireBlockRange(): pos [{}] // result: [{} -> {}]", pos.toString(), preCount, this.conduits.size());
     }
 
     @Override

@@ -3,6 +3,8 @@ package fi.dy.masa.minihud.mixin.block;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.ConduitBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.spongepowered.asm.mixin.Final;
@@ -17,10 +19,15 @@ import fi.dy.masa.minihud.renderer.OverlayRendererConduitRange;
 import fi.dy.masa.minihud.util.ConduitExtra;
 
 @Mixin(ConduitBlockEntity.class)
-public abstract class MixinConduitBlockEntity implements ConduitExtra
+public abstract class MixinConduitBlockEntity extends BlockEntity implements ConduitExtra
 {
     @Shadow @Final private List<BlockPos> effectBlocks;
     @Unique private int minihud_activatingBlockCount;
+
+    public MixinConduitBlockEntity(BlockEntityType<?> type, BlockPos worldPosition, BlockState blockState)
+    {
+        super(type, worldPosition, blockState);
+    }
 
     @Override
     public int minihud$getCurrentActivatingBlockCount()

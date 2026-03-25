@@ -1,10 +1,9 @@
 package fi.dy.masa.minihud.renderer;
 
-import fi.dy.masa.malilib.util.WorldUtils;
-import fi.dy.masa.malilib.util.data.tag.CompoundData;
-import fi.dy.masa.minihud.data.EntitiesDataManager;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import org.apache.commons.lang3.tuple.Pair;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientChunkCache;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -19,8 +18,11 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.phys.Vec3;
+
 import fi.dy.masa.malilib.config.IConfigBoolean;
-import org.apache.commons.lang3.tuple.Pair;
+import fi.dy.masa.malilib.util.WorldUtils;
+import fi.dy.masa.malilib.util.data.tag.CompoundData;
+import fi.dy.masa.minihud.data.EntitiesDataManager;
 
 public abstract class BaseBlockRangeOverlay<T extends BlockEntity> extends OverlayRendererBase
 {
@@ -32,6 +34,7 @@ public abstract class BaseBlockRangeOverlay<T extends BlockEntity> extends Overl
     protected Level world;
     protected boolean needsUpdate;
     protected boolean hasData;
+    protected boolean needsNbt;
     protected int updateDistance = 48;
 
     protected BaseBlockRangeOverlay(IConfigBoolean renderToggleConfig,
@@ -44,6 +47,7 @@ public abstract class BaseBlockRangeOverlay<T extends BlockEntity> extends Overl
         this.blockPositions = new LongOpenHashSet();
         this.world = null;
         this.hasData = false;
+        this.needsUpdate = false;
     }
 
     public void setNeedsUpdate()
@@ -90,7 +94,11 @@ public abstract class BaseBlockRangeOverlay<T extends BlockEntity> extends Overl
     {
         if (mc.level == null) return;
 
-        this.world = WorldUtils.getBestWorld(mc);
+        if (this.needsNbt)
+        {
+            this.world = WorldUtils.getBestWorld(mc);
+        }
+
         this.hasData = this.fetchAllTargetBlockEntityPositions(mc.level, entity.blockPosition(), mc);
         this.world = this.world == null ? entity.level() : this.world;
 
@@ -205,13 +213,21 @@ public abstract class BaseBlockRangeOverlay<T extends BlockEntity> extends Overl
 
         while (it.hasNext())
         {
-            mutablePos.set(it.nextLong());
-            Pair<BlockEntity, CompoundData> pair = this.fetchBlockEntityData(world, mutablePos.immutable());
             BlockEntity be;
+            mutablePos.set(it.nextLong());
 
-            if (pair != null)
+            if (this.needsNbt)
             {
-                be = pair.getLeft();
+                Pair<BlockEntity, CompoundData> pair = this.fetchBlockEntityData(world, mutablePos.immutable());
+
+                if (pair != null)
+                {
+                    be = pair.getLeft();
+                }
+                else
+                {
+                    be = world.getBlockEntity(mutablePos);
+                }
             }
             else
             {

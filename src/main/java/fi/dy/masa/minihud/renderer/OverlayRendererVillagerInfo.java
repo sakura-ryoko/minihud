@@ -50,6 +50,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
 
     // Mini Secondary Cache so villagers' data doesn't ... `Flash`
     private final ConcurrentHashMap<Integer, Pair<Long, Pair<Entity, CompoundData>>> recentEntityData;
+    private final HashMap<Entity, List<String>> villagerData;
     private long lastTick;
     private final int xViewRange;
     private final int yViewRange;
@@ -58,6 +59,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
     protected OverlayRendererVillagerInfo()
     {
         this.recentEntityData = new ConcurrentHashMap<>(16, 0.9f, 1);
+        this.villagerData = new HashMap<>();
         this.lastTick = System.currentTimeMillis();
         this.xViewRange = 30;
         this.yViewRange = 10;
@@ -128,7 +130,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
                 {
                     if ((now - longPair.getLeft()) > timeout || longPair.getLeft() > now)
                     {
-//                        MiniHUD.debugLog("villagerOverlayCache: entity Id [{}] has timed out by [{}] ms", integer, timeout);
+                        MiniHUD.debugLog("villagerOverlayCache: entity Id [{}] has timed out by [{}] ms", integer, timeout);
                         this.recentEntityData.remove(integer);
                     }
                 }
@@ -198,7 +200,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
         return list;
     }
 
-	private int getConversionTime(Level world, ZombieVillager villager)
+    private int getConversionTime(Level world, ZombieVillager villager)
     {
         if (world == null || villager == null)
         {
@@ -379,7 +381,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
                     }
                 }
 
-                this.renderAtEntity(overlay, camera, librarian, mc);
+                this.extractTarget(overlay, librarian);
             }
         }
 
@@ -393,7 +395,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
 
                 if (conversionTimer > 0)
                 {
-                    this.renderAtEntity(List.of(String.format("%ds", Math.round((float) conversionTimer / 20))), camera, villager, mc);
+                    this.extractTarget(List.of(String.format("%ds", Math.round((float) conversionTimer / 20))), villager);
                 }
             }
         }
@@ -402,7 +404,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
     @Override
     public boolean hasData()
     {
-        return false;
+        return !this.villagerData.isEmpty();
     }
 
     @Override
@@ -412,16 +414,38 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
     }
 
     @Override
+    public void draw(Vec3 cameraPos)
+    {
+        if (this.hasData())
+        {
+            Minecraft mc = Minecraft.getInstance();
+
+            this.villagerData.forEach(
+                    (target, text) ->
+                            this.renderAtEntity(text, target, cameraPos, mc)
+            );
+
+            this.villagerData.clear();
+        }
+    }
+
+    @Override
     public void reset()
     {
         super.reset();
+        this.villagerData.clear();
     }
 
-    private void renderAtEntity(List<String> texts, Entity cam, Entity targetEntity, Minecraft mc)
+    private void extractTarget(List<String> texts, Entity target)
     {
-        if (cam == null) return;
+        this.villagerData.put(target, texts);
+    }
+
+    private void renderAtEntity(List<String> texts, Entity targetEntity, Vec3 cameraPos, Minecraft mc)
+    {
+//        if (cam == null) return;
         float delta = mc.getDeltaTracker().getGameTimeDeltaPartialTick(true);
-        Vec3 cameraPos = cam.getPosition(delta);
+//        Vec3 cameraPos = cam.getPosition(delta);
         Vec3 targetPos = targetEntity.getPosition(delta);
         double hypot = Mth.length(cameraPos.x() - targetPos.x(), cameraPos.z() - targetPos.z());
         double distance = 0.8;
@@ -447,14 +471,15 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
         for (String line : texts)
         {
             // Replace camera entity each call
-            cam = mc.getCameraEntity();
+            Entity cam = mc.getCameraEntity();
 
             if (cam != null)
             {
                 // Get the lerp of Yaw / Pitch
                 final float scale = Configs.Generic.VILLAGER_TEXT_SCALE.getFloatValue() * 0.01F;
 //                RenderUtils.drawTextPlate(List.of(line), x, y, z, 0.02f);
-                RenderUtils.drawTextPlate(List.of(line), x, y, z, cam.getYRot(delta), cam.getXRot(delta), scale, 0xFFFFFFFF, 0x40000000, this.renderThrough);
+//                RenderUtils.drawTextPlate(List.of(line), x, y, z, cam.getYRot(delta), cam.getXRot(delta), scale, 0xFFFFFFFF, 0x40000000, this.renderThrough);
+                RenderUtils.drawTextPlate(List.of(line), x, y, z, cam.getYRot(), cam.getXRot(), scale, 0xFFFFFFFF, 0x40000000, this.renderThrough);
                 y -= 0.2;
             }
         }

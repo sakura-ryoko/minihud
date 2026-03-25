@@ -297,7 +297,7 @@ public class Configs implements IConfigHandler
         public static final ConfigColor BEACON_RANGE_LVL3_OVERLAY_COLOR         = new ConfigColor("beaconRangeLvl3",                    "#20FFF040").apply(COLORS_KEY);
         public static final ConfigColor BEACON_RANGE_LVL4_OVERLAY_COLOR         = new ConfigColor("beaconRangeLvl4",                    "#2060FF40").apply(COLORS_KEY);
         public static final ConfigColor BLOCK_GRID_OVERLAY_COLOR                = new ConfigColor("blockGridOverlayColor",              "#80FFFFFF").apply(COLORS_KEY);
-        public static final ConfigColor CONDUIT_RANGE_OVERLAY_COLOR             = new ConfigColor("conduitRange",                       "#2030FFFF").apply(COLORS_KEY);
+        public static final ConfigColor CONDUIT_RANGE_OVERLAY_COLOR             = new ConfigColor("conduitRange",                       "#3030FFFF").apply(COLORS_KEY);
         public static final ConfigColor CONDUIT_RANGE_OUTLINES                  = new ConfigColor("conduitRangeOutlines",               "#80FFFFFF").apply(COLORS_KEY);
         public static final ConfigColor LIGHTNING_ROD_RANGE_OVERLAY_COLOR       = new ConfigColor("lightningRodRange",                  "#6030C0FF").apply(COLORS_KEY);
         public static final ConfigColor LIGHTNING_ROD_DAMAGE_ZONE_COLOR         = new ConfigColor("lightningRodDamageZone",             "#60FF4040").apply(COLORS_KEY);
@@ -415,7 +415,10 @@ public class Configs implements IConfigHandler
                     }
                 }
 
-                MiniHUD.debugLogError("loadFromFile(): Successfully loaded config file '{}'.", configFile.toAbsolutePath());
+                if (Reference.DEBUG_MODE)
+                {
+                    MiniHUD.debugLogError("loadFromFile(): Successfully loaded config file '{}'.", configFile.toAbsolutePath());
+                }
             }
             else
             {
@@ -435,7 +438,11 @@ public class Configs implements IConfigHandler
         if (!Files.exists(dir))
         {
             FileUtils.createDirectoriesIfMissing(dir);
-            MiniHUD.debugLogError("saveToFile(): Creating directory '{}'.", dir.toAbsolutePath());
+
+            if (Reference.DEBUG_MODE)
+            {
+                MiniHUD.debugLogError("saveToFile(): Creating directory '{}'.", dir.toAbsolutePath());
+            }
         }
 
         if (Files.isDirectory(dir))
