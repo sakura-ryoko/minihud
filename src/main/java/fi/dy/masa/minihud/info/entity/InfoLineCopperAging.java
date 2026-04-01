@@ -126,7 +126,7 @@ public class InfoLineCopperAging extends InfoLine
 			}
 			else
 			{
-				final long diff = (world.getDefaultClockTime() - age) * -1;
+				final long diff = (world.getGameTime() - age) * -1;
 				final String formatted = this.formatCountdown(diff);
 
 				if (formatted.isEmpty())
