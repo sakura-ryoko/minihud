@@ -245,10 +245,10 @@ public enum RendererToggle implements IEnumBooleanHotkey
     @Override
     public String getName()
     {
-        if (this.serverDataRequired)
-        {
-            return GuiBase.TXT_GOLD + this.name + GuiBase.TXT_RST;
-        }
+//        if (this.serverDataRequired)
+//        {
+//            return GuiBase.TXT_GOLD + this.name + GuiBase.TXT_RST;
+//        }
 
         return this.name;
     }

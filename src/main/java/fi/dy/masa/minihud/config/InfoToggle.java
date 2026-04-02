@@ -305,10 +305,10 @@ public enum InfoToggle implements IConfigInteger, IEnumBooleanHotkey
     @Override
     public String getName()
     {
-        if (this.serverDataRequired)
-        {
-            return GuiBase.TXT_GOLD + this.name + GuiBase.TXT_RST;
-        }
+//        if (this.serverDataRequired)
+//        {
+//            return GuiBase.TXT_GOLD + this.name + GuiBase.TXT_RST;
+//        }
 
         return this.name;
     }
