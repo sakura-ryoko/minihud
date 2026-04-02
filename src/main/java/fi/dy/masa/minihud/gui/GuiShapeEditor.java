@@ -74,7 +74,7 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         GuiTextFieldGeneric textField = new GuiTextFieldGeneric(x, y, 70, 17, this.font);
         textField.setMaxLengthWrapper(12);
         textField.setValueWrapper(String.format("#%08X", this.shape.getColor().intValue));
-        this.addTextField(textField, new TextFieldListenerColor(this.shape), TextFieldType.STRING);
+        this.addTextField(textField, new TextFieldListenerColor(this.shape), TextFieldType.STRING.setMaxLength(12));
         this.nextY = y + 20;
         this.colorY = y - 1;
 
@@ -89,7 +89,7 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         GuiTextFieldGeneric textField = new GuiTextFieldGeneric(x, y, 70, 17, this.font);
         textField.setMaxLengthWrapper(12);
         textField.setValueWrapper(String.format("#%08X", this.shape.getColorLines().intValue));
-        this.addTextField(textField, new TextFieldListenerColorLines(this.shape), TextFieldType.STRING);
+        this.addTextField(textField, new TextFieldListenerColorLines(this.shape), TextFieldType.STRING.setMaxLength(12));
         this.nextY = y + 20;
         this.colorY = y - 1;
 
@@ -102,8 +102,8 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         y += 12;
 
         GuiTextFieldGeneric textField = new GuiTextFieldGeneric(x, y, 240, 17, this.font);
-        textField.setValueWrapper(this.shape.getDisplayName());
-        this.addTextField(textField, (txtFld) -> { this.shape.setDisplayName(txtFld.getValueWrapper()); return true; }, TextFieldType.STRING);
+        textField.setValueWrapper(this.shape.getDisplayName());         // Why is this field getting mixed up with the Color Entry box???
+        this.addTextField(textField, (txtFld) -> { this.shape.setDisplayName(txtFld.getValueWrapper()); return true; }, TextFieldType.STRING.setMaxLength(256));
         y += 20;
 
         int renderTypeX = x + 230;

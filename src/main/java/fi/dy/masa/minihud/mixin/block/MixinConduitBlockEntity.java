@@ -75,14 +75,14 @@ public abstract class MixinConduitBlockEntity extends BlockEntity implements Con
             final boolean isActive = blockEntity.isActive();
             final boolean wasActive = ((ConduitExtra) blockEntity).minihud$getStoredActiveStatus();
 
-            if (wasActive != isActive)
-            {
-                System.out.printf("isActive: %s, wasActive: %s\n", isActive, wasActive);
-            }
-            if (countBefore != count)
-            {
-                System.out.printf("count: %d, countBefore: %d\n", count, countBefore);
-            }
+//            if (wasActive != isActive)
+//            {
+//                System.out.printf("isActive: %s, wasActive: %s\n", isActive, wasActive);
+//            }
+//            if (countBefore != count)
+//            {
+//                System.out.printf("count: %d, countBefore: %d\n", count, countBefore);
+//            }
 
             if (isActive != wasActive || count != countBefore)
             {

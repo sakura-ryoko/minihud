@@ -55,7 +55,7 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
         this.layerRange = new LayerRange(null);
         this.conduits = new CopyOnWriteArrayList<>();
         this.useCulling = false;
-        this.updateDistance = 16;
+        this.updateDistance = 24;
     }
 
     @Override

@@ -12,7 +12,7 @@ public class WorkerDaemonExecutor implements IThreadDaemonExecutor<AbstractWorke
 	private final AtomicBoolean paused = new AtomicBoolean(false);
 	private final long sleepTime;
 	private final float sleepDelay;
-	private final long maxTicks = 250L;
+	private final long maxTicks = 64L;
 	private long lastTaskTime;
 	private long ticks = 0L;
 

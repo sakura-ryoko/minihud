@@ -35,6 +35,7 @@
         "client.IMixinOptions",
         "client.MixinMinecraft",
         "debug.IMixinClientPlayNetworkHandler",
+        "debug.MixinSimpleGizmoCollector_GizmoInstance",
         "debug.MixinDebugRenderer",
         "debug.MixinDebugScreenEntryList",
         "hud.MixinChatScreen",
