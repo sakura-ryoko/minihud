@@ -63,10 +63,10 @@ public class InfoLineDifficulty extends InfoLine
             chunkInhabitedTime = serverChunk.getInhabitedTime();
         }
 
-        DifficultyInstance diff = new DifficultyInstance(world.getDifficulty(), world.getDefaultClockTime(), chunkInhabitedTime, moonPhaseFactor);
+        DifficultyInstance diff = new DifficultyInstance(world.getDifficulty(), this.dayTime(world), chunkInhabitedTime, moonPhaseFactor);
 
         list.add(this.translate(DIFF_KEY,
-                                diff.getEffectiveDifficulty(), diff.getSpecialMultiplier(), world.getDefaultClockTime() / 24000L)
+                                diff.getEffectiveDifficulty(), diff.getSpecialMultiplier(), this.dayTime(world) / 24000L)
         );
 
         return list;

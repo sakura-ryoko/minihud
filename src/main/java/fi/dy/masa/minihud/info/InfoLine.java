@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.ChunkPos;
@@ -57,6 +58,28 @@ public abstract class InfoLine
     public Level getClientWorld()
     {
         return this.mc().level;
+    }
+
+    // Always return the Overworld time clock
+    public long dayTime(Level level)
+    {
+        if (level != null)
+        {
+            ResourceKey<Level> dimKey = level.dimension();
+
+            long result = !dimKey.equals(Level.OVERWORLD)
+                          ? (dimKey.equals(Level.END) ? level.getDefaultClockTime() : level.getOverworldClockTime())
+                          : level.getOverworldClockTime();
+
+            if (result == 0L)
+            {
+                return level.getGameTime();
+            }
+
+            return result;
+        }
+
+        return 0L;
     }
 
     public List<Entry> parse(@Nonnull InfoLineContext ctx)
