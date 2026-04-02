@@ -67,16 +67,9 @@ public abstract class InfoLine
         {
             ResourceKey<Level> dimKey = level.dimension();
 
-            long result = !dimKey.equals(Level.OVERWORLD)
-                          ? (dimKey.equals(Level.END) ? level.getDefaultClockTime() : level.getOverworldClockTime())
-                          : level.getOverworldClockTime();
-
-            if (result == 0L)
-            {
-                return level.getGameTime();
-            }
-
-            return result;
+	        return !dimKey.equals(Level.OVERWORLD)
+	                      ? (dimKey.equals(Level.END) ? level.getDefaultClockTime() : level.getOverworldClockTime())
+	                      : level.getOverworldClockTime();
         }
 
         return 0L;
