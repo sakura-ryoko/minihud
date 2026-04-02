@@ -25,6 +25,7 @@ public class OverlayRendererBlockGrid extends OverlayRendererBase
     public static final OverlayRendererBlockGrid INSTANCE = new OverlayRendererBlockGrid();
     private Entity cameraEntity;
     private boolean hasData;
+    private boolean needsUpdate;
 
     public OverlayRendererBlockGrid()
     {
@@ -32,6 +33,7 @@ public class OverlayRendererBlockGrid extends OverlayRendererBase
         this.hasData = false;
         this.useCulling = true;
         this.renderThrough = false;
+        this.needsUpdate = true;
     }
 
     @Override
@@ -49,7 +51,7 @@ public class OverlayRendererBlockGrid extends OverlayRendererBase
     @Override
     public boolean needsUpdate(Entity entity, Minecraft mc)
     {
-        if (this.lastUpdatePos == null)
+        if (this.lastUpdatePos == null || this.needsUpdate)
         {
             return true;
         }
@@ -68,6 +70,8 @@ public class OverlayRendererBlockGrid extends OverlayRendererBase
             this.hasData = true;
             this.render(cameraPos, mc, profiler);
         }
+
+        this.needsUpdate = false;
     }
 
     @Override
@@ -298,5 +302,10 @@ public class OverlayRendererBlockGrid extends OverlayRendererBase
                 }
             }
         }
+    }
+
+	public void setNeedsUpdate()
+    {
+        this.needsUpdate = true;
     }
 }
