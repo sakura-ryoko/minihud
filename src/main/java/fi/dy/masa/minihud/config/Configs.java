@@ -288,12 +288,12 @@ public class Configs implements IConfigHandler
     private static final String COLORS_KEY = Reference.MOD_ID+".config.colors";
     public static class Colors
     {
-        public static final ConfigColor BEACON_RANGE_LVL1_OVERLAY_COLOR         = new ConfigColor("beaconRangeLvl1",                    "#20E060FF").apply(COLORS_KEY);
-        public static final ConfigColor BEACON_RANGE_LVL2_OVERLAY_COLOR         = new ConfigColor("beaconRangeLvl2",                    "#20FFB040").apply(COLORS_KEY);
-        public static final ConfigColor BEACON_RANGE_LVL3_OVERLAY_COLOR         = new ConfigColor("beaconRangeLvl3",                    "#20FFF040").apply(COLORS_KEY);
+        public static final ConfigColor BEACON_RANGE_LVL1_OVERLAY_COLOR         = new ConfigColor("beaconRangeLvl1",                    "#30E060FF").apply(COLORS_KEY);
+        public static final ConfigColor BEACON_RANGE_LVL2_OVERLAY_COLOR         = new ConfigColor("beaconRangeLvl2",                    "#30FFB040").apply(COLORS_KEY);
+        public static final ConfigColor BEACON_RANGE_LVL3_OVERLAY_COLOR         = new ConfigColor("beaconRangeLvl3",                    "#30FFF040").apply(COLORS_KEY);
         public static final ConfigColor BEACON_RANGE_LVL4_OVERLAY_COLOR         = new ConfigColor("beaconRangeLvl4",                    "#2060FF40").apply(COLORS_KEY);
         public static final ConfigColor BLOCK_GRID_OVERLAY_COLOR                = new ConfigColor("blockGridOverlayColor",              "#80FFFFFF").apply(COLORS_KEY);
-        public static final ConfigColor CONDUIT_RANGE_OVERLAY_COLOR             = new ConfigColor("conduitRange",                       "#2030FFFF").apply(COLORS_KEY);
+        public static final ConfigColor CONDUIT_RANGE_OVERLAY_COLOR             = new ConfigColor("conduitRange",                       "#4030FFFF").apply(COLORS_KEY);
         public static final ConfigColor CONDUIT_RANGE_OUTLINES                  = new ConfigColor("conduitRangeOutlines",               "#80FFFFFF").apply(COLORS_KEY);
         public static final ConfigColor LIGHTNING_ROD_RANGE_OVERLAY_COLOR       = new ConfigColor("lightningRodRange",                  "#6030C0FF").apply(COLORS_KEY);
         public static final ConfigColor LIGHTNING_ROD_DAMAGE_ZONE_COLOR         = new ConfigColor("lightningRodDamageZone",             "#60FF4040").apply(COLORS_KEY);

@@ -40,6 +40,7 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
         this.useCulling = false;
         this.positions = new HashMap<>();
         this.useCulling = false;
+        this.needsNbt = true;
         this.updateDistance = 16;
     }
 

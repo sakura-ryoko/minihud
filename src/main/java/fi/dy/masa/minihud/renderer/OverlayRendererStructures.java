@@ -29,6 +29,7 @@ public class OverlayRendererStructures extends OverlayRendererBase
     private List<StructureData> structures;
     private boolean hasData;
 	private boolean renderOutlines;
+	private boolean needsUpdate;
 
     private OverlayRendererStructures()
     {
@@ -36,6 +37,7 @@ public class OverlayRendererStructures extends OverlayRendererBase
         this.hasData = false;
 		this.renderOutlines = false;
 	    this.useCulling = false;
+		this.needsUpdate = true;
     }
 
     @Override
@@ -68,7 +70,7 @@ public class OverlayRendererStructures extends OverlayRendererBase
     {
         int hysteresis = 16;
 
-        return DataStorage.getInstance().structureRendererNeedsUpdate() ||
+        return DataStorage.getInstance().structureRendererNeedsUpdate() || this.needsUpdate ||
                Math.abs(entity.getX() - this.lastUpdatePos.getX()) > hysteresis ||
                Math.abs(entity.getY() - this.lastUpdatePos.getY()) > hysteresis ||
                Math.abs(entity.getZ() - this.lastUpdatePos.getZ()) > hysteresis;
@@ -87,6 +89,8 @@ public class OverlayRendererStructures extends OverlayRendererBase
         {
             this.render(cameraPos, mc, profiler);
         }
+
+	    this.needsUpdate = false;
     }
 
     @Override
@@ -368,6 +372,11 @@ public class OverlayRendererStructures extends OverlayRendererBase
 //            }
 //        }
 //    }
+
+	public void setNeedsUpdate()
+	{
+		this.needsUpdate = true;
+	}
 
     private List<StructureData> getStructuresToRender(BlockPos playerPos, int maxRange)
     {

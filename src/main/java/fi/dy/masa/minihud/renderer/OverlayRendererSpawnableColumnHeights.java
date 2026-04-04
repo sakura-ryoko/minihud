@@ -30,12 +30,14 @@ public class OverlayRendererSpawnableColumnHeights extends OverlayRendererBase
     private final BlockPos.MutableBlockPos posMutable = new BlockPos.MutableBlockPos();
     private long lastCheckTime;
     private final List<AABB> boxes;
+    private boolean needsUpdate;
 
     protected OverlayRendererSpawnableColumnHeights()
     {
         this.boxes = new ArrayList<>();
         this.renderThrough = false;
         this.useCulling = false;
+        this.needsUpdate = true;
     }
 
     @Override
@@ -52,6 +54,8 @@ public class OverlayRendererSpawnableColumnHeights extends OverlayRendererBase
             {
                 this.DIRTY_CHUNKS.add(ChunkPos.asLong(cx, cz));
             }
+
+            this.setNeedsUpdate();
         }
     }
 
@@ -69,7 +73,7 @@ public class OverlayRendererSpawnableColumnHeights extends OverlayRendererBase
         int lx = this.lastUpdatePos.getX();
         int lz = this.lastUpdatePos.getZ();
 
-        if (Math.abs(lx - ex) > 8 || Math.abs(lz - ez) > 8)
+        if (Math.abs(lx - ex) > 8 || Math.abs(lz - ez) > 8 || this.needsUpdate)
         {
             return true;
         }
@@ -117,6 +121,8 @@ public class OverlayRendererSpawnableColumnHeights extends OverlayRendererBase
         {
             this.render(cameraPos, mc, profiler);
         }
+
+        this.needsUpdate = false;
     }
 
     @Override
@@ -253,5 +259,10 @@ public class OverlayRendererSpawnableColumnHeights extends OverlayRendererBase
         {
             this.DIRTY_CHUNKS.clear();
         }
+    }
+
+    public void setNeedsUpdate()
+    {
+        this.needsUpdate = true;
     }
 }

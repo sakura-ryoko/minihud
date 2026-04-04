@@ -2,6 +2,7 @@ package fi.dy.masa.minihud.renderer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
@@ -20,10 +21,13 @@ import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.LayerRange;
 import fi.dy.masa.malilib.util.data.Color4f;
 import fi.dy.masa.malilib.util.position.PositionUtils;
+import fi.dy.masa.malilib.util.position.Vec3d;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.RendererToggle;
 import fi.dy.masa.minihud.renderer.shapes.SideQuad;
+import fi.dy.masa.minihud.renderer.worker.BlockScanWorkerTask;
+import fi.dy.masa.minihud.renderer.worker.WorkerDaemonHandler;
 import fi.dy.masa.minihud.util.ConduitExtra;
 import fi.dy.masa.minihud.util.ShapeRenderType;
 import fi.dy.masa.minihud.util.shape.SphereUtils;
@@ -39,7 +43,7 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
     private boolean combineQuads;
     private Color4f colorLines;
 
-    private final List<Entry> conduits;
+    private final CopyOnWriteArrayList<Entry> conduits;
 
     public OverlayRendererConduitRange()
     {
@@ -47,8 +51,9 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
         this.quadAxis = Direction.UP.getAxis();
         this.renderType = ShapeRenderType.OUTER_EDGE;
         this.layerRange = new LayerRange(null);
-        this.conduits = new ArrayList<>();
+        this.conduits = new CopyOnWriteArrayList<>();
         this.useCulling = false;
+        this.updateDistance = 24;
     }
 
     @Override
@@ -68,40 +73,54 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
         this.colorLines = Configs.Colors.CONDUIT_RANGE_OUTLINES.getColor();
         this.combineQuads = Configs.Generic.CONDUIT_RANGE_OVERLAY_COMBINE_QUADS.getBooleanValue();
         this.renderThrough = Configs.Generic.CONDUIT_RANGE_OVERLAY_RENDER_THROUGH.getBooleanValue();
-
-//        LOGGER.debug("updateBlockRange(): pos [{}], count [{}]", pos.toShortString(), this.conduits.size());
-
         final int range = ((ConduitExtra) be).minihud$getStoredActivatingBlockCount() / 7 * 16;
+        final boolean active = be.isActive();
 
-        if (this.checkIfNeedsUpdate(pos, range))
+        WorkerDaemonHandler.INSTANCE.addTask(
+                new BlockScanWorkerTask(() -> this.processEachConduit(pos, range, active), pos));
+    }
+
+    private void processEachConduit(final BlockPos pos, final int range, final boolean active)
+    {
+//        LOGGER.debug("processEachConduit(): pos [{}], count [{}], active [{}]", pos.toShortString(), this.conduits.size(), active);
+
+        if (this.checkIfNeedsUpdate(pos, range, active))
         {
-            this.addOrReplaceEntry(this.calculateEach(pos, range));
+//            LOGGER.warn("processEachConduit(): pos [{}] --> UPDATE", pos.toShortString());
+            Entry newEntry = this.calculateEach(pos, range, active);
+            this.addOrReplaceEntry(newEntry);
         }
     }
 
-    private boolean checkIfNeedsUpdate(BlockPos pos, int range)
+    private boolean checkIfNeedsUpdate(BlockPos pos, int range, boolean active)
     {
         AtomicBoolean matched = new AtomicBoolean(false);
 
-        this.conduits.forEach(entry ->
-                              {
-                                  if (entry.pos.equals(pos) && entry.range == range)
-                                  {
-                                      matched.set(true);
-                                  }
-                              });
+        synchronized (this.conduits)
+        {
+            for (Entry entry : this.conduits)
+            {
+                if (entry.pos.equals(pos) &&
+                    entry.range == range &&
+                    entry.active == active)
+                {
+                    matched.set(true);
+                }
+            }
+        }
 
-	    return !matched.get();
+        return !matched.get();
     }
 
     // This is an expensive task, so we need to limit how
     // often it gets called; say hello 'checkIfNeedsUpdate()'.
-    private Entry calculateEach(BlockPos pos, int range)
+    private Entry calculateEach(BlockPos pos, int range, boolean active)
     {
         Entry entry = new Entry(pos, range);
 
         Consumer<BlockPos.MutableBlockPos> positionCollector = (p) -> entry.addPosition(p.asLong());
         entry.setTest(this.getPositionTest(pos, entry.range));
+        entry.setActive(active);
         SphereUtils.collectSpherePositions(positionCollector, entry.getTest(), pos, entry.range);
 
         if (this.combineQuads)
@@ -116,24 +135,28 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
     {
         AtomicBoolean replaced = new AtomicBoolean(false);
 
-        this.conduits.forEach(
-                (e) ->
-                {
-                    if (e.pos.compareTo(entry.pos) == 0)
-                    {
-                        e.clear();
-                        e.range = entry.range;
-                        e.positions.addAll(entry.getPositions());
-                        e.setTest(entry.getTest());
-                        e.setQuads(entry.getQuads());
-                        replaced.set(true);
-                    }
-                }
-        );
-
-        if (!replaced.get())
+        synchronized (this.conduits)
         {
-            this.conduits.add(entry);
+            this.conduits.forEach(
+                    (e) ->
+                    {
+                        if (e.pos.compareTo(entry.pos) == 0)
+                        {
+                            e.clear();
+                            e.range = entry.range;
+                            e.positions.addAll(entry.getPositions());
+                            e.setTest(entry.getTest());
+                            e.setQuads(entry.getQuads());
+                            e.setActive(entry.isActive());
+                            replaced.set(true);
+                        }
+                    }
+            );
+
+            if (!replaced.get())
+            {
+                this.conduits.add(entry);
+            }
         }
     }
 
@@ -156,21 +179,30 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
     @Override
     protected void expireBlockRange(BlockPos pos)
     {
-        for (Entry entry : this.conduits)
+//        final int preCount = this.conduits.size();
+        synchronized (this.conduits)
         {
-            if (entry.pos.equals(pos))
+            for (Entry entry : this.conduits)
             {
-                entry.clear();
-                this.conduits.remove(entry);
+                if (entry.pos.equals(pos))
+                {
+                    entry.clear();
+                    this.conduits.remove(entry);
+                }
             }
         }
+
+//        LOGGER.debug("expireBlockRange(): pos [{}] // result: [{} -> {}]", pos.toString(), preCount, this.conduits.size());
     }
 
     @Override
     protected void resetBlockRange()
     {
-        this.conduits.forEach(Entry::clear);
-        this.conduits.clear();
+        synchronized (this.conduits)
+        {
+            this.conduits.forEach(Entry::clear);
+            this.conduits.clear();
+        }
     }
 
     private void renderQuads(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
@@ -186,24 +218,26 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
         RenderObjectVbo ctx = this.renderObjects.getFirst();
         BufferBuilder builder = ctx.start(() -> "minihud:conduit/quads", this.renderThrough ? MaLiLibPipelines.MINIHUD_SHAPE_NO_DEPTH_OFFSET : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL);
 
-        this.conduits.forEach(
-                (entry) ->
-                {
-//                    LOGGER.debug("renderQuads(): pos [{}], count [{}]", entry.pos.toShortString(), this.conduits.size());
+        synchronized (this.conduits)
+        {
+            for (Entry entry : this.conduits)
+            {
+//                LOGGER.debug("renderQuads(): pos [{}], count [{}]", entry.pos.toShortString(), this.conduits.size());
+                if (entry == null || entry.positions == null || entry.quads == null || !entry.isActive()) { continue; }
 
-                    if (this.combineQuads)
-                    {
-                        RenderUtils.renderQuads(entry.getQuads(), color, 0, cameraPos, builder);
-                    }
-                    else
-                    {
-                        RenderUtils.renderCircleBlockPositions(entry.getPositions(), PositionUtils.ALL_DIRECTIONS,
-                                                               entry.getTest(), this.renderType,
-                                                               this.layerRange, color, 0,
-                                                               cameraPos, builder);
-                    }
+                if (this.combineQuads)
+                {
+                    RenderUtils.renderQuads(entry.getQuads(), color, 0, cameraPos, builder);
                 }
-        );
+                else
+                {
+                    RenderUtils.renderCircleBlockPositions(entry.getPositions(), PositionUtils.ALL_DIRECTIONS,
+                                                           entry.getTest(), this.renderType,
+                                                           this.layerRange, color, 0,
+                                                           cameraPos, builder);
+                }
+            }
+        }
 
         try
         {
@@ -240,24 +274,26 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
         RenderObjectVbo ctx = this.renderObjects.get(1);
         BufferBuilder builder = ctx.start(() -> "minihud:conduit/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH);
 
-        this.conduits.forEach(
-                (entry) ->
-                {
-//                    LOGGER.debug("renderOutlines(): pos [{}], count [{}]", entry.pos.toShortString(), this.conduits.size());
+        synchronized (this.conduits)
+        {
+            for (Entry entry : this.conduits)
+            {
+//                LOGGER.debug("renderOutlines(): pos [{}], count [{}]", entry.pos.toShortString(), this.conduits.size());
+                if (entry == null || entry.positions == null || entry.quads == null || !entry.isActive()) { continue; }
 
-                    if (this.combineQuads)
-                    {
-                        RenderUtils.renderQuadLines(entry.getQuads(), this.colorLines, 0, cameraPos, this.glLineWidth, builder);
-                    }
-                    else
-                    {
-                        RenderUtils.renderCircleBlockOutlines(entry.getPositions(), PositionUtils.ALL_DIRECTIONS,
-                                                              entry.getTest(), this.renderType,
-                                                              this.layerRange, this.colorLines, 0,
-                                                              cameraPos, this.glLineWidth, builder);
-                    }
+                if (this.combineQuads)
+                {
+                    RenderUtils.renderQuadLines(entry.getQuads(), this.colorLines, 0, cameraPos, this.glLineWidth, builder);
                 }
-        );
+                else
+                {
+                    RenderUtils.renderCircleBlockOutlines(entry.getPositions(), PositionUtils.ALL_DIRECTIONS,
+                                                          entry.getTest(), this.renderType,
+                                                          this.layerRange, this.colorLines, 0,
+                                                          cameraPos, this.glLineWidth, builder);
+                }
+            }
+        }
 
         try
         {
@@ -284,19 +320,20 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
         this.resetBlockRange();
     }
 
-    protected static SphereUtils.RingPositionTest getPositionTest(BlockPos centerPos, int range)
+    protected SphereUtils.RingPositionTest getPositionTest(BlockPos centerPos, int range)
     {
-        Vec3 center = new Vec3(centerPos.getX() + 0.5, centerPos.getY() + 0.5, centerPos.getZ() + 0.5);
+        Vec3d center = new Vec3d(centerPos.getX() + 0.5, centerPos.getY() + 0.5, centerPos.getZ() + 0.5);
         double squareRange = range * range;
 
         return (x, y, z, dir) -> SphereUtils.isPositionInsideOrClosestToRadiusOnBlockRing(
-                x, y, z, center, squareRange, Direction.EAST);
+                x, y, z, center.toVanilla(), squareRange, Direction.EAST);
     }
 
     public static class Entry
     {
         public BlockPos pos;
         public int range;
+        public boolean active;
 
         private final LongOpenHashSet positions;
         @Nullable
@@ -342,6 +379,16 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
         public List<SideQuad> getQuads()
         {
             return this.quads;
+        }
+
+        public boolean isActive()
+        {
+            return this.active;
+        }
+
+        public void setActive(boolean active)
+        {
+            this.active = active;
         }
 
         public void clear()
