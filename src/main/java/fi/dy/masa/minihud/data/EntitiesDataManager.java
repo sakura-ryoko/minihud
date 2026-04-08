@@ -3,6 +3,9 @@ package fi.dy.masa.minihud.data;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nullable;
+import org.apache.commons.lang3.tuple.Pair;
+
+import com.mojang.datafixers.util.Either;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ClientPacketListener;
@@ -13,7 +16,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.util.Mth;
 import net.minecraft.world.CompoundContainer;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
@@ -33,9 +35,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.ChestType;
-import org.apache.commons.lang3.tuple.Pair;
 
-import com.mojang.datafixers.util.Either;
 import fi.dy.masa.malilib.config.options.ConfigBoolean;
 import fi.dy.masa.malilib.interfaces.IClientTickHandler;
 import fi.dy.masa.malilib.interfaces.IDataSyncer;
@@ -46,6 +46,7 @@ import fi.dy.masa.malilib.mixin.network.IMixinDataQueryHandler;
 import fi.dy.masa.malilib.network.ClientPlayHandler;
 import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
 import fi.dy.masa.malilib.util.InventoryUtils;
+import fi.dy.masa.malilib.util.MathUtils;
 import fi.dy.masa.malilib.util.WorldUtils;
 import fi.dy.masa.malilib.util.data.Constants;
 import fi.dy.masa.malilib.util.data.tag.CompoundData;
@@ -86,6 +87,9 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
     private final Map<Integer, Either<BlockPos, Integer>> transactionToBlockPosOrEntityId = new HashMap<>();
     private ClientLevel clientWorld;
 
+    private boolean sentBackupPackets = false;
+    private boolean receivedBackupPackets = false;
+
     @Nullable
     @Override
     public Level getWorld()
@@ -112,9 +116,9 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
     @Override
     public void onClientTick(Minecraft mc)
     {
-        long now = System.currentTimeMillis();
+        final long now = System.currentTimeMillis();
 
-        if (now - this.serverTickTime > 50)
+        if ((now - this.serverTickTime) > 50)
         {
             // In this block, we do something every server tick
             if (!Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue())
@@ -140,7 +144,6 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
                         this.pendingEntitiesQueue.clear();
                     }
 
-//                    this.tickCache(now);
                     return;
                 }
             }
@@ -228,6 +231,8 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
             HANDLER.resetFailures(this.getNetworkChannel());
             this.servuxServer = false;
             this.hasInValidServux = false;
+            this.sentBackupPackets = false;
+            this.receivedBackupPackets = false;
             this.checkOpStatus = false;
             this.hasOpStatus = false;
             this.lastOpCheck = 0L;
@@ -253,11 +258,11 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
 
     private boolean shouldUseQuery()
     {
-        if (this.hasOpStatus) return true;
+        if (this.hasOpStatus) { return true; }
         if (this.checkOpStatus)
         {
             // Check for 15 minutes after login, or changing dimensions
-            if ((System.currentTimeMillis() - this.lastOpCheck) < 900000L) return true;
+            if ((System.currentTimeMillis() - this.lastOpCheck) < 900000L) { return true; }
             this.checkOpStatus = false;
         }
 
@@ -273,22 +278,22 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
 
     public long getCacheRefresh()
     {
-        long result = (long) (Mth.clamp(Configs.Generic.ENTITY_DATA_SYNC_CACHE_REFRESH.getFloatValue(), 0.05f, 1.0f) * 1000L);
+        long result = (long) (MathUtils.clamp(Configs.Generic.ENTITY_DATA_SYNC_CACHE_REFRESH.getFloatValue(), 0.05f, 1.0f) * 1000L);
         long clamp = (this.getCacheTimeout() / 2);
 
-        return Math.min(result, clamp);
+        return MathUtils.min(result, clamp);
     }
 
     public long getCacheTimeout()
     {
         // Increase cache timeout when in Backup Mode.
         int modifier = Configs.Generic.ENTITY_DATA_SYNC_BACKUP.getBooleanValue() ? 5 : 1;
-        return (long) (Mth.clamp((Configs.Generic.ENTITY_DATA_SYNC_CACHE_TIMEOUT.getFloatValue() * modifier), 1.0f, 50.0f) * 1000L);
+        return (long) (MathUtils.clamp((Configs.Generic.ENTITY_DATA_SYNC_CACHE_TIMEOUT.getFloatValue() * modifier), 1.0f, 50.0f) * 1000L);
     }
 
-    private void tickCache(long nowTime)
+    private void tickCache(final long nowTime)
     {
-        long timeout = this.getCacheTimeout();
+        final long timeout = this.getCacheTimeout();
 
         synchronized (this.blockEntityCache)
         {
@@ -326,7 +331,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
     }
 
     @Override
-    public @Nullable CompoundData getFromBlockEntityCacheData(BlockPos pos)
+    public synchronized @Nullable CompoundData getFromBlockEntityCacheData(BlockPos pos)
     {
         if (this.blockEntityCache.containsKey(pos))
         {
@@ -337,7 +342,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
     }
 
     @Override
-    public @Nullable BlockEntity getFromBlockEntityCache(BlockPos pos)
+    public synchronized @Nullable BlockEntity getFromBlockEntityCache(BlockPos pos)
     {
         if (this.blockEntityCache.containsKey(pos))
         {
@@ -347,7 +352,31 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
         return null;
     }
 
-	@Override
+    @Override
+    public synchronized @Nullable CompoundData getFromEntityCacheData(int entityId)
+    {
+        if (this.entityCache.containsKey(entityId))
+        {
+            return this.entityCache.get(entityId).getRight().getRight();
+        }
+
+        return null;
+    }
+
+    @Override
+    public @Nullable CompoundTag getFromBlockEntityCacheNbt(BlockPos pos)
+    {
+        CompoundData data = this.getFromBlockEntityCacheData(pos);
+
+        if (data != null)
+        {
+            return DataConverterNbt.toVanillaCompound(data);
+        }
+
+        return null;
+    }
+
+    @Override
 	public @Nullable CompoundTag getFromEntityCacheNbt(int entityId)
 	{
 		CompoundData data = this.getFromEntityCacheData(entityId);
@@ -360,19 +389,8 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
 		return null;
 	}
 
-	@Override
-    public @Nullable CompoundData getFromEntityCacheData(int entityId)
-    {
-        if (this.entityCache.containsKey(entityId))
-        {
-            return this.entityCache.get(entityId).getRight().getRight();
-        }
-
-        return null;
-    }
-
     @Override
-    public @Nullable Entity getFromEntityCache(int entityId)
+    public synchronized @Nullable Entity getFromEntityCache(int entityId)
     {
         if (this.entityCache.containsKey(entityId))
         {
@@ -381,19 +399,6 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
 
         return null;
     }
-
-	@Override
-	public @Nullable Pair<BlockEntity, CompoundTag> requestBlockEntityNbt(Level world, BlockPos pos)
-	{
-		Pair<BlockEntity, CompoundData> pair = this.requestBlockEntity(world, pos);
-
-		if (pair != null)
-		{
-			return Pair.of(pair.getLeft(), DataConverterNbt.toVanillaCompound(pair.getRight()));
-		}
-
-		return null;
-	}
 
 	public void setIsServuxServer()
     {
@@ -454,6 +459,16 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
         return this.entityCache.size();
     }
 
+    public boolean getIfReceivedBackupPackets()
+    {
+        if (Configs.Generic.ENTITY_DATA_SYNC_BACKUP.getBooleanValue())
+        {
+            return this.sentBackupPackets & this.receivedBackupPackets;
+        }
+
+        return false;
+    }
+
     @Override
     public void onGameInit()
     {
@@ -476,33 +491,10 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
         // NO-OP
     }
 
-	@Override
-	public @Nullable CompoundTag getFromBlockEntityCacheNbt(BlockPos pos)
-	{
-		CompoundData data = this.getFromBlockEntityCacheData(pos);
-
-		if (data != null)
-		{
-			return DataConverterNbt.toVanillaCompound(data);
-		}
-
-		return null;
-	}
-
-	public void onEntityDataSyncToggled(ConfigBoolean config)
-    {
-        if (this.hasInValidServux)
-        {
-            this.reset(true);
-        }
-
-        // Do something?
-    }
-
     public void requestMetadata()
     {
         if (!DataStorage.getInstance().hasIntegratedServer() &&
-            Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue())
+                Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue())
         {
             CompoundTag nbt = new CompoundTag();
             nbt.putString("version", Reference.MOD_STRING);
@@ -540,6 +532,29 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
         this.hasInValidServux = true;
     }
 
+    public void onEntityDataSyncToggled(ConfigBoolean config)
+    {
+        if (this.hasInValidServux)
+        {
+            this.reset(true);
+        }
+
+        // Do something?
+    }
+
+    @Override
+    public @Nullable Pair<BlockEntity, CompoundTag> requestBlockEntityNbt(Level world, BlockPos pos)
+    {
+        Pair<BlockEntity, CompoundData> pair = this.requestBlockEntity(world, pos);
+
+        if (pair != null)
+        {
+            return Pair.of(pair.getLeft(), DataConverterNbt.toVanillaCompound(pair.getRight()));
+        }
+
+        return null;
+    }
+
     @Override
     public @Nullable Pair<BlockEntity, CompoundData> requestBlockEntity(Level world, BlockPos pos)
     {
@@ -559,7 +574,8 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
 
             if (world instanceof ServerLevel)
             {
-                return this.refreshBlockEntityFromWorld(world, pos);
+//                return this.refreshBlockEntityFromWorld(world, pos);
+                this.requestBlockEntityFromLocalServer(this.mc, world, pos);
             }
 
             return this.blockEntityCache.get(pos).getRight();
@@ -579,19 +595,6 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
         return null;
     }
 
-	@Override
-	public @Nullable Pair<Entity, CompoundTag> requestEntityNbt(Level world, int entityId)
-	{
-		Pair<Entity, CompoundData> pair = this.requestEntity(world, entityId);
-
-		if (pair != null)
-		{
-			return Pair.of(pair.getLeft(), DataConverterNbt.toVanillaCompound(pair.getRight()));
-		}
-
-		return null;
-	}
-
 	private @Nullable Pair<BlockEntity, CompoundData> refreshBlockEntityFromWorld(Level world, BlockPos pos)
     {
         if (world != null && world.getBlockState(pos).hasBlockEntity())
@@ -610,6 +613,19 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
 
                 return pair;
             }
+        }
+
+        return null;
+    }
+
+    @Override
+    public @Nullable Pair<Entity, CompoundTag> requestEntityNbt(Level world, int entityId)
+    {
+        Pair<Entity, CompoundData> pair = this.requestEntity(world, entityId);
+
+        if (pair != null)
+        {
+            return Pair.of(pair.getLeft(), DataConverterNbt.toVanillaCompound(pair.getRight()));
         }
 
         return null;
@@ -636,7 +652,8 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
             if (world instanceof ServerLevel)
             {
 //                MiniHUD.debugLog("requestEntity: entity Id [{}] refresh from local server", entityId);
-                return this.refreshEntityFromWorld(world, entityId);
+//                return this.refreshEntityFromWorld(world, entityId);
+                this.requestEntityFromLocalServer(this.mc, world, entityId);
             }
 
 //            MiniHUD.debugLog("requestEntity: entity Id [{}] get from cache", entityId);
@@ -787,7 +804,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
                 {
                     inv = (Container) entity;
                 }
-                else if (entity instanceof Player player)
+                else if (entity instanceof Player player && player != null)
                 {
                     inv = new SimpleContainer(player.getInventory().getNonEquipmentItems().toArray(new ItemStack[36]));
                 }
@@ -824,18 +841,6 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
         return null;
     }
 
-	@Override
-	public BlockEntity handleBlockEntityData(BlockPos pos, CompoundTag nbt, @Nullable Identifier type)
-	{
-		return handleBlockEntityData(pos, DataConverterNbt.fromVanillaCompound(nbt), type);
-	}
-
-	@Override
-	public Entity handleEntityData(int entityId, CompoundTag nbt)
-	{
-		return handleEntityData(entityId, DataConverterNbt.fromVanillaCompound(nbt));
-	}
-
 	private void requestQueryBlockEntity(BlockPos pos)
     {
         if (!Configs.Generic.ENTITY_DATA_SYNC_BACKUP.getBooleanValue())
@@ -847,6 +852,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
 
         if (handler != null)
         {
+            this.sentBackupPackets = true;
             handler.getDebugQueryHandler().queryBlockEntityTag(pos, nbtCompound -> handleBlockEntityData(pos, nbtCompound, null));
             this.transactionToBlockPosOrEntityId.put(((IMixinDataQueryHandler) handler.getDebugQueryHandler()).malilib_currentTransactionId(), Either.left(pos));
         }
@@ -863,6 +869,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
 
         if (handler != null)
         {
+            this.sentBackupPackets = true;
             handler.getDebugQueryHandler().queryEntityTag(entityId, nbtCompound -> handleEntityData(entityId, nbtCompound));
             this.transactionToBlockPosOrEntityId.put(((IMixinDataQueryHandler) handler.getDebugQueryHandler()).malilib_currentTransactionId(), Either.right(entityId));
         }
@@ -882,6 +889,18 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
         {
             HANDLER.encodeClientData(ServuxEntitiesPacket.EntityRequest(entityId));
         }
+    }
+
+    @Override
+    public BlockEntity handleBlockEntityData(BlockPos pos, CompoundTag nbt, @Nullable Identifier type)
+    {
+        return this.handleBlockEntityData(pos, DataConverterNbt.fromVanillaCompound(nbt), type);
+    }
+
+    @Override
+    public Entity handleEntityData(int entityId, CompoundTag nbt)
+    {
+        return this.handleEntityData(entityId, DataConverterNbt.fromVanillaCompound(nbt));
     }
 
     @Nullable
@@ -915,6 +934,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
             return blockEntity;
         }
 
+        if (type == null) { return null; }
         Optional<Holder.Reference<BlockEntityType<?>>> opt = BuiltInRegistries.BLOCK_ENTITY_TYPE.get(type);
 
         if (opt.isPresent())
@@ -1021,6 +1041,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
 
         if (either != null)
         {
+            this.receivedBackupPackets = true;
             either.ifLeft(pos -> handleBlockEntityData(pos, nbt, null))
                   .ifRight(entityId -> handleEntityData(entityId, nbt));
         }

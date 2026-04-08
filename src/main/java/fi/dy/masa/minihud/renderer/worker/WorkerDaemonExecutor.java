@@ -12,19 +12,21 @@ public class WorkerDaemonExecutor implements IThreadDaemonExecutor<AbstractWorke
 	private final AtomicBoolean paused = new AtomicBoolean(false);
 	private final long sleepTime;
 	private final float sleepDelay;
-	private final long maxTicks = 64L;
+	private final long maxTicks;
 	private long lastTaskTime;
-	private long ticks = 0L;
+	private long ticks;
 
 	public WorkerDaemonExecutor()
 	{
-		this(600000L);  // 10 min
+		this(1800000L);  // 30 min
 	}
 
 	public WorkerDaemonExecutor(long sleepTime)
 	{
 		this.sleepTime = MathUtils.clamp(sleepTime, 60000L, Long.MAX_VALUE); // 1 min
-		this.sleepDelay = 0.75F;     // <1-second sleep delay (Must be 1/2 tick rate)
+		this.sleepDelay = 0.75F;        // <1-second sleep delay (Must be 1/2 tick rate)
+		this.maxTicks = 64L;            // Cap how many ticks per an interrupt cycle without tasks to do
+		this.ticks = 0L;
 	}
 
 	@Override

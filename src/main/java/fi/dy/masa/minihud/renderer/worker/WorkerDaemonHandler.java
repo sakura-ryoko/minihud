@@ -17,10 +17,10 @@ import fi.dy.masa.minihud.Reference;
 public class WorkerDaemonHandler implements IThreadDaemonHandler<AbstractWorkerTask<?>>
 {
 	public static final WorkerDaemonHandler INSTANCE = new WorkerDaemonHandler();
-	private static final int MAX_PLATFORM_THREADS = 1;
+	private static final int MAX_PLATFORM_THREADS = 1;          // The hard limit of usable Threads
+	private static final float TASK_INTERVAL = 1.50F;           // The amount of time in between task check updates
 	private boolean useVirtual = false;
 	private final String namePrefix = Reference.MOD_NAME+" Worker Thread";
-	private static final float TASK_INTERVAL = 1.5F;
 	private final int threadCount = this.calculateMaxThreads();
 	private final ConcurrentHashMap<String, Thread> threadMap = this.builder();
 	private final PriorityBlockingQueue<AbstractWorkerTask<?>> queue = Queues.newPriorityBlockingQueue();
@@ -175,7 +175,6 @@ public class WorkerDaemonHandler implements IThreadDaemonHandler<AbstractWorkerT
 		{
 			if (mc.level != null)
 			{
-//				MiniHUD.debugLog("taskCount: [{}]", this.queue.size());
 				this.ensureThreadsAreAlive();
 			}
 
@@ -185,8 +184,11 @@ public class WorkerDaemonHandler implements IThreadDaemonHandler<AbstractWorkerT
 
 	private void ensureThreadsAreAlive()
 	{
-		if (this.hasTasks())
+		final int count = this.getTaskCount();
+
+		if (count > 0)
 		{
+			MiniHUD.debugLogError("WorkerDaemonHandler: {} tasks detected --> checking Thread states", count);
 			Set<String> keySet = this.threadMap.keySet();
 
 			for (String key : keySet)
