@@ -233,7 +233,7 @@
     "minihud.config.generic.name.durationFormatString": "지속 시간 형식 문자열",
     "minihud.config.generic.name.durationFormatType": "지속 시간 형식 유형",
     "minihud.config.generic.name.enableVanillaDebugRenderThroughFix": "활성화 바닐라 디버그 렌더 투시 개선",
-    "minihud.config.generic.name.enableVanillaDebugRendererFix": "바닐라 디버그 렌더러 고정",
+    "minihud.config.generic.name.enableVanillaDebugRendererFix": "활성화 바닐라 디버그 렌더러 고정",
     "minihud.config.generic.name.entityDataSync": "엔티티 데이터 동기화",
     "minihud.config.generic.name.entityDataSyncBackup": "엔티티 데이터 동기화 백업",
     "minihud.config.generic.name.entityDataSyncBackupOpenToLan": "엔티티 데이터 동기화 백업 LAN 서버 열기",
