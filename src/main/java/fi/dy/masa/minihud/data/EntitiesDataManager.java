@@ -738,6 +738,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
                             if (!world.hasChunkAt(posAdj)) return null;
                             BlockState stateAdj = world.getBlockState(posAdj);
 
+                            // FIXME -- don't use the raw BlockEntity
                             var dataAdj = this.getFromBlockEntityCache(posAdj);
 
                             if (dataAdj == null)
@@ -927,9 +928,12 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
                 this.blockEntityCache.put(pos, Pair.of(System.currentTimeMillis(), Pair.of(blockEntity, data)));
             }
 
-            NbtView view = NbtView.getReader(data, this.getClientWorld().registryAccess());
+            if (blockEntity instanceof Container)
+            {
+                NbtView view = NbtView.getReader(data, this.getClientWorld().registryAccess());
+                blockEntity.loadWithComponents(view.getReader());
+            }
 
-            blockEntity.loadWithComponents(view.getReader());
             return blockEntity;
         }
 
