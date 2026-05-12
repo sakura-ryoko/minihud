@@ -150,8 +150,11 @@ public class Configs implements IConfigHandler
         public static final ConfigBoolean       VILLAGER_OFFER_LOWEST_PRICE_NEARBY  = new ConfigBoolean("villagerOfferLowestPriceNearby" , false).apply(GENERIC_KEY);
         public static final ConfigDouble        VILLAGER_OFFER_PRICE_THRESHOLD      = new ConfigDouble("villagerOfferPriceThreshold", 1, 0, 1).apply(GENERIC_KEY);
         public static final ConfigFloat         VILLAGER_TEXT_SCALE                 = new ConfigFloat("villagerTextScale", 2.0f, 0.5F, 5.0F).apply(GENERIC_KEY);
+        public static final ConfigOptionList    WORKER_THREAD_PROFILE               = new ConfigOptionList("workerThreadProfile", WorkerThreadProfile.DEFAULT).apply(GENERIC_KEY);
 
         public static final ImmutableList<IConfigBase> OPTIONS = ImmutableList.of(
+                WORKER_THREAD_PROFILE,
+
                 AXOLOTL_TOOLTIPS,
                 BEE_TOOLTIPS,
                 DISABLE_VANILLA_BEE_TOOLTIPS,
