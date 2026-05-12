@@ -12,7 +12,7 @@ public class WorkerDaemonExecutor implements IThreadDaemonExecutor<AbstractWorke
 	private final AtomicBoolean paused = new AtomicBoolean(false);
 	private final long sleepTime;
 	private final float sleepDelay;
-	private final long maxTicks;
+	private long maxTicks;
 	private long lastTaskTime;
 	private long ticks;
 
@@ -25,7 +25,7 @@ public class WorkerDaemonExecutor implements IThreadDaemonExecutor<AbstractWorke
 	{
 		this.sleepTime = MathUtils.clamp(sleepTime, 60000L, Long.MAX_VALUE); // 1 min
 		this.sleepDelay = 0.75F;        // <1-second sleep delay (Must be 1/2 tick rate)
-		this.maxTicks = 64L;            // Cap how many ticks per an interrupt cycle without tasks to do
+		this.maxTicks = 8L;             // Cap how many ticks per an interrupt cycle without tasks to do
 		this.ticks = 0L;
 	}
 
@@ -52,18 +52,17 @@ public class WorkerDaemonExecutor implements IThreadDaemonExecutor<AbstractWorke
 				this.paused.set(false);
 			}
 
-			this.running.set(true);
+			this.run();
 		}
-
-		this.run();
 	}
 
 	@Override
 	public void interrupt(InterruptedException interrupt)
 	{
-		MiniHUD.debugLog("Executor: Interrupt Signal: {}", interrupt.getLocalizedMessage() != null
-		                                                   ? interrupt.getLocalizedMessage()  // This is null sometimes?
-		                                                   : "received interrupt signal");
+		MiniHUD.debugLog("Executor: Interrupt Signal: {}",
+		                 interrupt.getLocalizedMessage() != null
+		                 ? interrupt.getLocalizedMessage()  // This is null sometimes?
+		                 : "received interrupt signal");
 		if (this.isPaused() || !this.isRunning())
 		{
 			this.resume();
@@ -86,7 +85,7 @@ public class WorkerDaemonExecutor implements IThreadDaemonExecutor<AbstractWorke
 			this.paused.set(false);
 		}
 
-		this.start();
+//		this.start();
 	}
 
 	@Override
@@ -125,7 +124,11 @@ public class WorkerDaemonExecutor implements IThreadDaemonExecutor<AbstractWorke
 	public void run()
 	{
 		if (!this.isCorrectThread()) { return; }
+
+		this.running.set(true);
+		this.maxTicks = WorkerDaemonHandler.INSTANCE.getProfile().maxTicks();
 		this.lastTaskTime = System.currentTimeMillis();
+		this.ticks = 0L;
 		MiniHUD.debugLog("Executor: Running: [{}/{}]", this.isRunning(), this.isPaused());
 
 		while (this.isRunning())
@@ -137,8 +140,16 @@ public class WorkerDaemonExecutor implements IThreadDaemonExecutor<AbstractWorke
 			else if (!this.isPaused() && this.loopSafe())
 			{
 				this.paused.set(true);
-				this.sleep();
-				return;
+				this.ticks = 0L;
+
+				if (this.hasTasks())
+				{
+					this.sleep(WorkerDaemonHandler.INSTANCE.getProfile().yieldTime());
+				}
+				else
+				{
+					this.sleep();
+				}
 			}
 		}
 	}
@@ -146,6 +157,8 @@ public class WorkerDaemonExecutor implements IThreadDaemonExecutor<AbstractWorke
 	@Override
 	public boolean loopSafe()
 	{
+		this.ticks++;
+
 		try
 		{
 			AbstractWorkerTask<?> task = this.takeNextTask();
@@ -154,7 +167,6 @@ public class WorkerDaemonExecutor implements IThreadDaemonExecutor<AbstractWorke
 			{
 				this.processTask(task);
 				this.lastTaskTime = System.currentTimeMillis();
-				return false;
 			}
 		}
 		catch (InterruptedException e)
@@ -172,6 +184,7 @@ public class WorkerDaemonExecutor implements IThreadDaemonExecutor<AbstractWorke
 	@Override
 	public boolean shouldPause()
 	{
+		if (this.ticks > this.maxTicks) { return true; }
 		if (this.hasTasks()) { return false; }
 		return (System.currentTimeMillis() - this.lastTaskTime) > (this.sleepDelay * 1000L);
 	}

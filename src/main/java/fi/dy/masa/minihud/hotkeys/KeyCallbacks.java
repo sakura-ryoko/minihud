@@ -15,6 +15,7 @@ import fi.dy.masa.minihud.gui.GuiShapeManager;
 import fi.dy.masa.minihud.renderer.*;
 import fi.dy.masa.minihud.renderer.shapes.ShapeBase;
 import fi.dy.masa.minihud.renderer.shapes.ShapeManager;
+import fi.dy.masa.minihud.renderer.worker.WorkerDaemonHandler;
 import fi.dy.masa.minihud.util.DataStorage;
 import fi.dy.masa.minihud.util.DebugInfoUtils;
 import net.minecraft.client.Minecraft;
@@ -25,6 +26,8 @@ public class KeyCallbacks
     public static void init()
     {
         Callbacks callback = new Callbacks();
+
+        Configs.Generic.WORKER_THREAD_PROFILE.setValueChangeCallback(WorkerDaemonHandler.INSTANCE::resetProfile);
 
         Configs.Generic.SET_DISTANCE_REFERENCE_POINT.getKeybind().setCallback(callback);
         Configs.Generic.MOVE_SHAPE_TO_PLAYER.getKeybind().setCallback(callback);
