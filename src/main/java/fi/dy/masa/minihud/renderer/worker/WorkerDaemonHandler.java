@@ -76,7 +76,7 @@ public class WorkerDaemonHandler implements IThreadDaemonHandler<AbstractWorkerT
 		{
 			MiniHUD.LOGGER.info("Resetting Worker Thread profile from config change [{} -> {}]", lastProfile.getDisplayName(), profile.getDisplayName());
 			this.stop();
-			this.reset();
+//			this.reset();
 			this.start();
 		}
 	}
