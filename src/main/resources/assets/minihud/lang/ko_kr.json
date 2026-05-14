@@ -120,7 +120,7 @@
     "minihud.config.generic.comment.entityDataSync": "Servux의 엔티티 데이터 동기화 프로토콜을 사용하여\n서버에서 엔티티 데이터를 가져옵니다.\n이 기능을 사용하려면 \"정보 라인 NBT 사용\" 또는\n\"엔티티 데이터 동기화 NBT 불러오기\"가 활성화되어 있어야 합니다.",
     "minihud.config.generic.comment.entityDataSyncBackup": "Servux를 사용할 수 없는 경우 바닐라 NBT 쿼리 방법을\n사용합니다. 이 방법에는 관리자 권한이 필요합니다.",
     "minihud.config.generic.comment.entityDataSyncBackupOpenToLan": "다른 플레이어들에 대해 '§e엔티티 데이터 동기화 백업§r'의\nLAN-서버-열기 패킷 처리 오버라이드를 활성화합니다.",
-    "minihud.config.generic.comment.entityDataSyncCacheRefresh": "초 단위로 표시되는 캐시 새로고침 값입니다.\n이 값은 엔터티 데이터 요청이 서버에서 새로고침 될 때마다\n사용되며, 캐시에 아직 남아있더라도 마찬가지입니다.\n이 값은 \"엔티티 데이터 동기화 캐시 시간 지연\" 값의\n약 25% 이하로 설정해야 합니다.\n'0.05f' 값은 50ms 또는 게임 틱마다 한 번을 의미합니다.",
+    "minihud.config.generic.comment.entityDataSyncCacheRefresh": "초 단위로 표시되는 캐시 새로고침 값입니다.\n이 값은 엔터티 데이터 요청이 서버에서 새로고침 될 때마다\n사용되며, 캐시에 아직 남아있더라도 마찬가지입니다.\n이 값은 \"엔티티 데이터 동기화 캐시 시간 지연\" 값의\n약 1/4 이하로 설정해야 합니다.\n'0.05f' 값은 50ms 또는 게임 틱마다 한 번을 의미합니다.",
     "minihud.config.generic.comment.entityDataSyncCacheTimeout": "엔티티 캐시가 정보를 보관하는 시간 지연 값(초).\n값이 낮을수록 캐시 제거가 더 자주 이루어집니다.\n이 값은 언제나 \"엔티티 데이터 동기화 캐시 새로고침\" 값보다\n높게 설정되어야 합니다. 그렇지 않으면 예기치 않은 결과가\n생길 수 있습니다.",
     "minihud.config.generic.comment.entityDataSyncLoadNbt": "동기화된 NBT 데이터를 클라이언트 월드에 불러옵니다.\n§6경고! 이 기능은 이 데이터에 의존하는 다른 모드와\n§6호환되지 않습니다.",
     "minihud.config.generic.comment.fontScale": "정보 라인 HUD의 글꼴 크기 비율입니다. 기본값: 0.5",
