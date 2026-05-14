@@ -3,6 +3,7 @@ package fi.dy.masa.minihud.config;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -13,8 +14,12 @@ import fi.dy.masa.malilib.config.options.*;
 import fi.dy.masa.malilib.hotkeys.IHotkey;
 import fi.dy.masa.malilib.hotkeys.KeyAction;
 import fi.dy.masa.malilib.hotkeys.KeybindSettings;
+import fi.dy.masa.malilib.registry.Registry;
 import fi.dy.masa.malilib.util.FileUtils;
 import fi.dy.masa.malilib.util.JsonUtils;
+import fi.dy.masa.malilib.util.i18n.i18nConfig;
+import fi.dy.masa.malilib.util.i18n.i18nManager;
+import fi.dy.masa.malilib.util.i18n.i18nOption;
 import fi.dy.masa.malilib.util.time.DurationFormat;
 import fi.dy.masa.malilib.util.time.TimeFormat;
 import fi.dy.masa.minihud.MiniHUD;
@@ -27,6 +32,7 @@ import fi.dy.masa.minihud.util.*;
 public class Configs implements IConfigHandler
 {
     private static final String CONFIG_FILE_NAME = Reference.MOD_ID + ".json";
+    public static final Optional<i18nManager> LANG = Optional.ofNullable(i18nManager.create(Reference.MOD_ID));
     private static final int CONFIG_VERSION = 1;
 
     private static final String GENERIC_KEY = Reference.MOD_ID+".config.generic";
@@ -137,6 +143,8 @@ public class Configs implements IConfigHandler
         public static final ConfigInteger       TEXT_POS_Y                          = new ConfigInteger("textPosY", 4, 0, 8192).apply(GENERIC_KEY);
         public static final ConfigInteger       TIME_DAY_DIVISOR                    = new ConfigInteger("timeDayDivisor", 24000, 1, Integer.MAX_VALUE).apply(GENERIC_KEY);
         public static final ConfigInteger       TIME_TOTAL_DIVISOR                  = new ConfigInteger("timeTotalDivisor", 24000, 1, Integer.MAX_VALUE).apply(GENERIC_KEY);
+        public static final ConfigBoolean       TRANSLATION_TRY_BASE_LANGUAGE       = new ConfigBoolean("translationTryBaseLanguage",false).apply(GENERIC_KEY);
+        public static final ConfigOptionList    TRANSLATION_LANGUAGE                = new ConfigOptionList("translationLanguage", new i18nConfig(LANG.orElseThrow())).apply(GENERIC_KEY);
         public static final ConfigBoolean       USE_CUSTOMIZED_COORDINATES          = new ConfigBoolean("useCustomizedCoordinateFormat", true).apply(GENERIC_KEY);
         public static final ConfigBoolean       USE_FONT_SHADOW                     = new ConfigBoolean("useFontShadow", false).apply(GENERIC_KEY);
         public static final ConfigBoolean       USE_TEXT_BACKGROUND                 = new ConfigBoolean("useTextBackground", true).apply(GENERIC_KEY);
@@ -150,8 +158,6 @@ public class Configs implements IConfigHandler
         public static final ConfigOptionList    WORKER_THREAD_PROFILE               = new ConfigOptionList("workerThreadProfile", WorkerThreadProfile.DEFAULT).apply(GENERIC_KEY);
 
         public static final ImmutableList<IConfigBase> OPTIONS = ImmutableList.of(
-                WORKER_THREAD_PROFILE,
-
                 AXOLOTL_TOOLTIPS,
                 BEE_TOOLTIPS,
                 DISABLE_VANILLA_BEE_TOOLTIPS,
@@ -211,9 +217,12 @@ public class Configs implements IConfigHandler
                 STRUCTURES_RENDER_THROUGH,
                 STRUCTURES_RENDER_OUTLINES,
                 STRUCTURES_RENDER_OUTLINES_WHITE,
+                TRANSLATION_TRY_BASE_LANGUAGE,
+                TRANSLATION_LANGUAGE,
                 USE_CUSTOMIZED_COORDINATES,
                 USE_FONT_SHADOW,
                 USE_TEXT_BACKGROUND,
+                WORKER_THREAD_PROFILE,
 
                 MAIN_RENDERING_TOGGLE,
                 MOVE_SHAPE_TO_PLAYER,
@@ -421,6 +430,7 @@ public class Configs implements IConfigHandler
                 MiniHUD.LOGGER.error("loadFromFile(): Failed to load config file '{}'.", configFile.toAbsolutePath());
             }
 
+            checkBaseLanguage();
             OverlayRendererLightLevel.INSTANCE.setRenderThrough(Configs.Generic.LIGHT_LEVEL_RENDER_THROUGH.getBooleanValue());
             OverlayRendererStructures.INSTANCE.setRenderThrough(Configs.Generic.STRUCTURES_RENDER_THROUGH.getBooleanValue());
 	        DebugDataManager.getInstance().onConfigSync();
@@ -478,5 +488,35 @@ public class Configs implements IConfigHandler
     public void save()
     {
         saveToFile();
+    }
+
+    // Attempts to load the same language file as MaLiLib; where available -- on occasion
+    public static void checkBaseLanguage()
+    {
+        if (Generic.TRANSLATION_TRY_BASE_LANGUAGE.getBooleanValue())
+        {
+            LANG.ifPresent(
+                    i18nManager ->
+                    {
+                        String baseKey = Registry.TRANSLATION_OVERRIDE_MANAGER.getBaseLanguageCode();
+
+                        // Try setting language if it doesn't match
+                        if (!i18nManager.getLang().getLangCode().equals(baseKey))
+                        {
+                            List<i18nOption> list = i18nManager.getLanguageOptions();
+
+                            for (i18nOption entry : list)
+                            {
+                                if (entry.getKey().equals(baseKey))
+                                {
+                                    i18nConfig newConfig = ((i18nConfig) Generic.TRANSLATION_LANGUAGE.getOptionListValue()).fromString(baseKey);
+                                    Generic.TRANSLATION_LANGUAGE.setOptionListValue(newConfig);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+            );
+        }
     }
 }
