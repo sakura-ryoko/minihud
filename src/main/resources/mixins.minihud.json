@@ -2,7 +2,7 @@
     "required": true,
     "package": "fi.dy.masa.minihud.mixin",
     "plugin": "fi.dy.masa.minihud.compat.mixin.MiniHUDMixinConfigPlugin",
-    "compatibilityLevel": "JAVA_21",
+    "compatibilityLevel": "JAVA_25",
     "minVersion": "0.8",
     "mixins": [
         "block.IMixinAbstractFurnaceBlockEntity",
@@ -35,7 +35,6 @@
         "client.IMixinOptions",
         "client.MixinMinecraft",
         "debug.IMixinClientPlayNetworkHandler",
-        "debug.MixinSimpleGizmoCollector_GizmoInstance",
         "debug.MixinDebugRenderer",
         "debug.MixinDebugScreenEntryList",
         "hud.MixinChatScreen",

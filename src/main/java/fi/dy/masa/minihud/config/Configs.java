@@ -82,7 +82,7 @@ public class Configs implements IConfigHandler
         public static final ConfigFloat         ENTITY_DATA_SYNC_CACHE_TIMEOUT      = new ConfigFloat("entityDataSyncCacheTimeout", 2.75f, 1.0f, 25.0f).apply(GENERIC_KEY);
 //        public static final ConfigBoolean       ENTITY_DATA_LOAD_NBT                = new ConfigBoolean("entityDataSyncLoadNbt", false).apply(GENERIC_KEY);
         //public static final ConfigBoolean       FIX_VANILLA_DEBUG_RENDERERS         = new ConfigBoolean("enableVanillaDebugRendererFix", true).apply(GENERIC_KEY);
-        public static final ConfigBoolean       FIX_VANILLA_DEBUG_RENDERER_THROUGH  = new ConfigBoolean("enableVanillaDebugRenderThroughFix", true).apply(GENERIC_KEY);
+//        public static final ConfigBoolean       FIX_VANILLA_DEBUG_RENDERER_THROUGH  = new ConfigBoolean("enableVanillaDebugRenderThroughFix", true).apply(GENERIC_KEY);
         public static final ConfigDouble        FONT_SCALE                          = new ConfigDouble("fontScale", 0.5, 0.01, 100.0).apply(GENERIC_KEY);
         public static final ConfigOptionList    HUD_ALIGNMENT                       = new ConfigOptionList("hudAlignment", HudAlignment.TOP_LEFT).apply(GENERIC_KEY);
         public static final ConfigBooleanHotkeyed HUD_DATA_SYNC                     = new ConfigBooleanHotkeyed("hudDataSync", false, "").apply(GENERIC_KEY);
@@ -195,7 +195,7 @@ public class Configs implements IConfigHandler
 //                ENTITY_DATA_LOAD_NBT,
 //                INFO_LINES_USES_NBT,
                 //FIX_VANILLA_DEBUG_RENDERERS,
-                FIX_VANILLA_DEBUG_RENDERER_THROUGH,
+//                FIX_VANILLA_DEBUG_RENDERER_THROUGH,
                 LIGHT_LEVEL_AUTO_HEIGHT,
                 LIGHT_LEVEL_COLLISION_CHECK,
                 LIGHT_LEVEL_COLORED_NUMBERS,
