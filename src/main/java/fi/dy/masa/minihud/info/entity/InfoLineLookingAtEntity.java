@@ -13,6 +13,7 @@ import net.minecraft.world.entity.OwnableEntity;
 import fi.dy.masa.malilib.util.data.DataEntityUtils;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
+import fi.dy.masa.minihud.data.EntitiesDataManager;
 import fi.dy.masa.minihud.info.InfoLine;
 import fi.dy.masa.minihud.info.InfoLineContext;
 import fi.dy.masa.minihud.mixin.entity.IMixinPassiveEntity;
@@ -40,12 +41,16 @@ public class InfoLineLookingAtEntity extends InfoLine
     {
         if (ctx.world() == null) return null;
         List<Entry> list = new ArrayList<>();
+        boolean forceNbt = this.getEntData().hasServuxServer() || this.getEntData().hasBackupStatus();
 
-        if (ctx.ent() instanceof LivingEntity living && ctx.hasData())
+        // Force using NBT only while using Servux or OP Status;
+        // should help keep the "HP" numbers accurate more often
+        if (ctx.ent() instanceof LivingEntity living && ctx.hasData() && forceNbt)
         {
             Pair<Double, Double> healthPair = DataEntityUtils.getHealth(ctx.data());
             Pair<UUID, Boolean> ownerPair = DataEntityUtils.getTamableOwner(ctx.data());
             Pair<Integer, Integer> agePair = DataEntityUtils.getAge(ctx.data());
+            boolean isAgeLocked = ctx.data().getBooleanOrDefault("AgeLocked", false);
 
             double health = healthPair.getLeft();
             double maxHealth = healthPair.getRight();
@@ -71,10 +76,14 @@ public class InfoLineLookingAtEntity extends InfoLine
                     entityLine = entityLine + " - " + this.qt(LOOKING_KEY+".owner") + ": " + owner.getName().tryCollapseToString();
                 }
             }
-            if (agePair.getLeft() < 0)
+            if (!isAgeLocked && agePair.getLeft() < 0)
             {
                 int untilGrown = agePair.getLeft() * (-1);
                 entityLine = entityLine+ " [" + MiscUtils.formatDuration(untilGrown * 50L) + " " + this.qt(REMAINING_KEY) + "]";
+            }
+            else if (isAgeLocked)
+            {
+                entityLine = entityLine+ " ["+this.qt(LOOKING_KEY+".age_locked")+"]";
             }
 
             list.add(this.format(entityLine));
@@ -92,12 +101,16 @@ public class InfoLineLookingAtEntity extends InfoLine
                     entityLine = entityLine + " - " + this.qt(LOOKING_KEY+".owner") + ": " + owner.getName().tryCollapseToString();
                 }
             }
-            if (living instanceof AgeableMob passive)
+            if (living instanceof AgeableMob ageMob)
             {
-                if (passive.getAge() < 0)
+                if (ageMob.getAge() < 0 && !ageMob.isAgeLocked())
                 {
-                    int untilGrown = ((IMixinPassiveEntity) passive).minihud_getRealBreedingAge() * (-1);
+                    int untilGrown = ((IMixinPassiveEntity) ageMob).minihud_getRealBreedingAge() * (-1);
                     entityLine = entityLine+ " [" + MiscUtils.formatDuration(untilGrown * 50L) + " " + this.qt(REMAINING_KEY) + "]";
+                }
+                else if (ageMob.isAgeLocked())
+                {
+                    entityLine = entityLine+ " ["+this.qt(LOOKING_KEY+".age_locked")+"]";
                 }
             }
 
