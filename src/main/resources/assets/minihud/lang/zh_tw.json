@@ -971,6 +971,7 @@
     "minihud.info_line.looking_at_effects.amplifier": "x%d / ",
     "minihud.info_line.looking_at_effects.infinite": "持續時間無限",
     "minihud.info_line.looking_at_entity": "實體：%s",
+    "minihud.info_line.looking_at_entity.age_locked": "§6§lAge Locked§r",
     "minihud.info_line.looking_at_entity.livingentity": "實體：%s - 生命值：%.1f / %.1f",
     "minihud.info_line.looking_at_entity.owner": "主人",
     "minihud.info_line.looking_at_player_exp": "Target Experience: %d / %.2f%% (total %d)",
