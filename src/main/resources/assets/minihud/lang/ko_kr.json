@@ -971,7 +971,7 @@
     "minihud.info_line.looking_at_effects.amplifier": "x%d / ",
     "minihud.info_line.looking_at_effects.infinite": "무한",
     "minihud.info_line.looking_at_entity": "엔티티: %s",
-    "minihud.info_line.looking_at_entity.age_locked": "§6§lAge Locked§r",
+    "minihud.info_line.looking_at_entity.age_locked": "§6§l나이 고정§r",
     "minihud.info_line.looking_at_entity.livingentity": "엔티티: %s - HP: %.1f / %.1f",
     "minihud.info_line.looking_at_entity.owner": "소유자",
     "minihud.info_line.looking_at_player_exp": "대상 경험치: %d / %.2f%% (총 %d)",
