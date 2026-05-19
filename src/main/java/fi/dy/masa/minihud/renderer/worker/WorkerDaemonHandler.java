@@ -8,14 +8,11 @@ import com.google.common.collect.Queues;
 
 import net.minecraft.client.Minecraft;
 
-import fi.dy.masa.malilib.config.options.ConfigOptionList;
 import fi.dy.masa.malilib.interfaces.IThreadDaemonHandler;
 import fi.dy.masa.malilib.util.MathUtils;
 import fi.dy.masa.malilib.util.thread.ThreadExecutorPair;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.Reference;
-import fi.dy.masa.minihud.config.Configs;
-import fi.dy.masa.minihud.util.WorkerThreadProfile;
 
 // New Thread Worker system utilizing the MaLiLib Interface.
 public class WorkerDaemonHandler implements IThreadDaemonHandler<AbstractWorkerTask<?>>
@@ -62,29 +59,30 @@ public class WorkerDaemonHandler implements IThreadDaemonHandler<AbstractWorkerT
 		return this.namePrefix;
 	}
 
-	public WorkerThreadProfile getProfile()
-	{
-		return (WorkerThreadProfile) Configs.Generic.WORKER_THREAD_PROFILE.getOptionListValue();
-	}
-
-	public void resetProfile(ConfigOptionList config)
-	{
-		WorkerThreadProfile profile = (WorkerThreadProfile) config.getOptionListValue();
-		WorkerThreadProfile lastProfile = (WorkerThreadProfile) config.getLastOptionListValue();
-
-		if (!lastProfile.equals(profile) && Minecraft.getInstance().level != null)
-		{
-			MiniHUD.LOGGER.info("Resetting Worker Thread profile from config change [{} -> {}]", lastProfile.getDisplayName(), profile.getDisplayName());
-			this.stop();
-//			this.reset();
-			this.start();
-		}
-	}
+//	public WorkerThreadProfile getProfile()
+//	{
+//		return (WorkerThreadProfile) Configs.Generic.WORKER_THREAD_PROFILE.getOptionListValue();
+//	}
+//
+//	public void resetProfile(ConfigOptionList config)
+//	{
+//		WorkerThreadProfile profile = (WorkerThreadProfile) config.getOptionListValue();
+//		WorkerThreadProfile lastProfile = (WorkerThreadProfile) config.getLastOptionListValue();
+//
+//		if (!lastProfile.equals(profile) && Minecraft.getInstance().level != null)
+//		{
+//			MiniHUD.LOGGER.info("Resetting Worker Thread profile from config change [{} -> {}]", lastProfile.getDisplayName(), profile.getDisplayName());
+//			this.stop();
+////			this.reset();
+//			this.start();
+//		}
+//	}
 
 	@Override
 	public void start()
 	{
-		MiniHUD.LOGGER.info("Starting [{}] Worker Daemon threads [Profile: {}]", this.threadMap.size(), this.getProfile().getDisplayName());
+		// , this.getProfile().getDisplayName()
+		MiniHUD.LOGGER.info("Starting [{}] Worker Daemon threads", this.threadMap.size());
 		Set<String> keys = this.threadMap.keySet();
 
 		for (String key : keys)

@@ -28,7 +28,7 @@ public class KeyCallbacks
     {
         Callbacks callback = new Callbacks();
 
-        Configs.Generic.WORKER_THREAD_PROFILE.setValueChangeCallback(WorkerDaemonHandler.INSTANCE::resetProfile);
+//        Configs.Generic.WORKER_THREAD_PROFILE.setValueChangeCallback(WorkerDaemonHandler.INSTANCE::resetProfile);
 
         Configs.Generic.SET_DISTANCE_REFERENCE_POINT.getKeybind().setCallback(callback);
         Configs.Generic.MOVE_SHAPE_TO_PLAYER.getKeybind().setCallback(callback);

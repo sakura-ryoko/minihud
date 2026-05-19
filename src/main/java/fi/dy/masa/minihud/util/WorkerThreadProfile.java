@@ -5,12 +5,13 @@ import com.google.common.collect.ImmutableList;
 import fi.dy.masa.malilib.config.IConfigOptionListEntry;
 import fi.dy.masa.malilib.util.StringUtils;
 
+@Deprecated(forRemoval = true)
 public enum WorkerThreadProfile implements IConfigOptionListEntry
 {
-    MAX         ("max",     "minihud.label.worker_profile.max",     16,20L),
-    DEFAULT     ("default", "minihud.label.worker_profile.default", 8, 50L),
-    MINIMAL     ("min",     "minihud.label.worker_profile.min",     2, 100L),
-    POTATO      ("potato",  "minihud.label.worker_profile.potato",  1, 200L),
+    MAX("max", "minihud.label.worker_profile.max", 16, 20L),
+    DEFAULT("default", "minihud.label.worker_profile.default", 8, 50L),
+    MINIMAL("min", "minihud.label.worker_profile.min", 2, 100L),
+    POTATO("potato", "minihud.label.worker_profile.potato", 1, 200L),
     ;
 
     private static final ImmutableList<WorkerThreadProfile> VALUES = ImmutableList.copyOf(values());
