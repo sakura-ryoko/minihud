@@ -2,8 +2,6 @@ package fi.dy.masa.minihud.renderer.worker;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.mojang.authlib.minecraft.TelemetrySession;
-
 import fi.dy.masa.malilib.interfaces.IThreadDaemonExecutor;
 import fi.dy.masa.malilib.util.MathUtils;
 import fi.dy.masa.minihud.MiniHUD;
