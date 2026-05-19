@@ -2,6 +2,8 @@ package fi.dy.masa.minihud.renderer.worker;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.mojang.authlib.minecraft.TelemetrySession;
+
 import fi.dy.masa.malilib.interfaces.IThreadDaemonExecutor;
 import fi.dy.masa.malilib.util.MathUtils;
 import fi.dy.masa.minihud.MiniHUD;
@@ -12,7 +14,7 @@ public class WorkerDaemonExecutor implements IThreadDaemonExecutor<AbstractWorke
 	private final AtomicBoolean paused = new AtomicBoolean(false);
 	private final long sleepTime;
 	private final float sleepDelay;
-	private long maxTicks;
+	private final long maxTicks;
 	private long lastTaskTime;
 	private long ticks;
 
@@ -25,7 +27,7 @@ public class WorkerDaemonExecutor implements IThreadDaemonExecutor<AbstractWorke
 	{
 		this.sleepTime = MathUtils.clamp(sleepTime, 60000L, Long.MAX_VALUE); // 1 min
 		this.sleepDelay = 0.75F;        // <1-second sleep delay (Must be 1/2 tick rate)
-		this.maxTicks = 8L;             // Cap how many ticks per an interrupt cycle without tasks to do
+		this.maxTicks = 64L;             // Cap how many ticks per an interrupt cycle without tasks to do
 		this.ticks = 0L;
 	}
 
@@ -126,7 +128,6 @@ public class WorkerDaemonExecutor implements IThreadDaemonExecutor<AbstractWorke
 		if (!this.isCorrectThread()) { return; }
 
 		this.running.set(true);
-		this.maxTicks = WorkerDaemonHandler.INSTANCE.getProfile().maxTicks();
 		this.lastTaskTime = System.currentTimeMillis();
 		this.ticks = 0L;
 		MiniHUD.debugLog("Executor: Running: [{}/{}]", this.isRunning(), this.isPaused());
@@ -142,14 +143,16 @@ public class WorkerDaemonExecutor implements IThreadDaemonExecutor<AbstractWorke
 				this.paused.set(true);
 				this.ticks = 0L;
 
-				if (this.hasTasks())
-				{
-					this.sleep(WorkerDaemonHandler.INSTANCE.getProfile().yieldTime());
-				}
-				else
-				{
-					this.sleep();
-				}
+//				if (this.hasTasks())
+//				{
+//					this.sleep(WorkerDaemonHandler.INSTANCE.getProfile().yieldTime());
+//				}
+//				else
+//				{
+//					this.sleep();
+//				}
+
+				this.sleep();
 			}
 		}
 	}
@@ -184,8 +187,13 @@ public class WorkerDaemonExecutor implements IThreadDaemonExecutor<AbstractWorke
 	@Override
 	public boolean shouldPause()
 	{
-		if (this.ticks > this.maxTicks) { return true; }
 		if (this.hasTasks()) { return false; }
+		if (this.ticks > this.maxTicks) { return true; }
+		return this.checkTaskTime();
+	}
+
+	private boolean checkTaskTime()
+	{
 		return (System.currentTimeMillis() - this.lastTaskTime) > (this.sleepDelay * 1000L);
 	}
 
