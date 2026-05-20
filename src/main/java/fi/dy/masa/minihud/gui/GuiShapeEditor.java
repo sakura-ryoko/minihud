@@ -204,7 +204,7 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         y += 54;
 
         int btnX = x;
-        ButtonGeneric button = new ButtonGeneric(btnX, y, -1, false, "malilib.gui.button.render_layers_gui.set_to_player");
+        ButtonGeneric button = new ButtonGeneric(btnX, y, -1, false, "minihud.gui.button.render_layers_gui.set_to_player");
         this.addButton(button, (btn, mbtn) -> this.setPositionFromCamera(shape::setCenter));
         btnX = button.getX() + button.getWidth() + 4;
 
@@ -237,7 +237,7 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         GuiUtils.createVec3dInputsVertical(x4, y4, textFieldWidth, shape.getCenter(), new Vec3dEditor(shape::getCenter, shape::setCenter, this), true, this);
 
         int x = x1 + 12;
-        ButtonGeneric btn = new ButtonGeneric(x, y4 + 50, -1, 14, StringUtils.translate("malilib.gui.button.render_layers_gui.set_to_player"));
+        ButtonGeneric btn = new ButtonGeneric(x, y4 + 50, -1, 14, StringUtils.translate("minihud.gui.button.render_layers_gui.set_to_player"));
         btn.setRenderDefaultBackground(false);
         this.addButton(btn, (b, mb) -> this.setPositionFromCamera(shape::setCenter));
     }
@@ -349,10 +349,10 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         GuiUtils.createVec3dInputsVertical(x2, y, 120, shape.getEndPos(), new Vec3dEditor(shape::getEndPos, shape::setEndPos, this), true, this);
         y += 54;
 
-        ButtonGeneric btn = new ButtonGeneric(x + 11, y, -1, 20, StringUtils.translate("malilib.gui.button.render_layers_gui.set_to_player"));
+        ButtonGeneric btn = new ButtonGeneric(x + 11, y, -1, 20, StringUtils.translate("minihud.gui.button.render_layers_gui.set_to_player"));
         this.addButton(btn, (b, mb) -> this.setPositionFromCamera(shape::setStartPos));
 
-        btn = new ButtonGeneric(x2 + 11, y, -1, 20, StringUtils.translate("malilib.gui.button.render_layers_gui.set_to_player"));
+        btn = new ButtonGeneric(x2 + 11, y, -1, 20, StringUtils.translate("minihud.gui.button.render_layers_gui.set_to_player"));
         this.addButton(btn, (b, mb) -> this.setPositionFromCamera(shape::setEndPos));
         y += 24;
 
@@ -433,11 +433,11 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
 
         int x = x1 + 12;
 
-        ButtonGeneric btn = new ButtonGeneric(x, y1 + 50, -1, 14, StringUtils.translate("malilib.gui.button.render_layers_gui.set_to_player"));
+        ButtonGeneric btn = new ButtonGeneric(x, y1 + 50, -1, 14, StringUtils.translate("minihud.gui.button.render_layers_gui.set_to_player"));
         btn.setRenderDefaultBackground(false);
         this.addButton(btn, (b, mb) -> this.setPositionFromCamera(shape::setCorner1));
 
-        btn = new ButtonGeneric(x, y2 + 50, -1, 14, StringUtils.translate("malilib.gui.button.render_layers_gui.set_to_player"));
+        btn = new ButtonGeneric(x, y2 + 50, -1, 14, StringUtils.translate("minihud.gui.button.render_layers_gui.set_to_player"));
         btn.setRenderDefaultBackground(false);
         this.addButton(btn, (b, mb) -> this.setPositionFromCamera(shape::setCorner2));
     }

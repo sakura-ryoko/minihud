@@ -1,5 +1,4 @@
 {
-    "malilib.gui.button.render_layers_gui.set_to_player": "设为当前位置",
     "minihud.config.colors.comment.beaconRangeLvl1": "信标1级作用范围显示颜色",
     "minihud.config.colors.comment.beaconRangeLvl2": "信标2级作用范围显示颜色",
     "minihud.config.colors.comment.beaconRangeLvl3": "信标3级作用范围显示颜色",
@@ -826,6 +825,7 @@
     "minihud.gui.button.configure": "配置",
     "minihud.gui.button.hover.shape_renderer.spawn_sphere.toggle_use_quadrants": "§7角落象限模式将在由中心点和边距距离定义的矩形区域四角\n§7生成四个独立球体。此模式为旧有行为，当边距增大时\n§7（尤其在基轴方向）会出现异常效果。\n§7新默认模式不再使用角落象限，\n§7而是通过\"沿边距周界滑动球体\"\n§7来生成最终形状。",
     "minihud.gui.button.remove": "移除",
+    "minihud.gui.button.render_layers_gui.set_to_player": "设为当前位置",
     "minihud.gui.button.shape_entry.enabled": "启用：%s",
     "minihud.gui.button.shape_renderer.spawn_sphere.toggle_use_quadrants": "使用角落象限：%s",
     "minihud.gui.button.shape_renderer.toggle_combine_quads": "合并四边形：%s",

@@ -1,5 +1,4 @@
 {
-    "malilib.gui.button.render_layers_gui.set_to_player": "ここに設定",
     "minihud.config.colors.comment.beaconRangeLvl1": "ビーコンレベル1の効果範囲オーバーレイの色",
     "minihud.config.colors.comment.beaconRangeLvl2": "ビーコンレベル2の効果範囲オーバーレイの色",
     "minihud.config.colors.comment.beaconRangeLvl3": "ビーコンレベル3の効果範囲オーバーレイの色",
@@ -826,6 +825,7 @@
     "minihud.gui.button.configure": "設定する",
     "minihud.gui.button.hover.shape_renderer.spawn_sphere.toggle_use_quadrants": "§7Corner Quadrants uses basically 4 separate spheres at the corners\n§7of the rectangle area defined by the center and the margin distance.\n§7The corner quadrants was the old behavior, and it gets derpy (especially on the\n§7cardinal sides) if the margin increases to more than a few blocks.\n§7The new default is not using the corner quadrants anymore,\n§7but instead to kind of \"slide the sphere around the margin perimeter\"\n§7to create the final shape.",
     "minihud.gui.button.remove": "削除",
+    "minihud.gui.button.render_layers_gui.set_to_player": "ここに設定",
     "minihud.gui.button.shape_entry.enabled": "有効: %s",
     "minihud.gui.button.shape_renderer.spawn_sphere.toggle_use_quadrants": "Use Corner Quadrants: %s",
     "minihud.gui.button.shape_renderer.toggle_combine_quads": "Combine Quads: %s",
