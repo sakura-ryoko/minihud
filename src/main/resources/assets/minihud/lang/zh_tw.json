@@ -1,5 +1,4 @@
 {
-    "malilib.gui.button.render_layers_gui.set_to_player": "定位至玩家",
     "minihud.config.colors.comment.beaconRangeLvl1": "1級烽火台範圍的顏色",
     "minihud.config.colors.comment.beaconRangeLvl2": "2級烽火台範圍的顏色",
     "minihud.config.colors.comment.beaconRangeLvl3": "3級烽火台範圍的顏色",
@@ -826,6 +825,7 @@
     "minihud.gui.button.configure": "設定",
     "minihud.gui.button.hover.shape_renderer.spawn_sphere.toggle_use_quadrants": "§7角象限生成基本上是在由中心和邊緣距離定義的\n§7矩形區域的四角上生成了 4 個獨立的球體。\n§7角象限生成是舊的生成方式，此時如果半徑增加\n§7到一定數量，它就會變得離譜（特別是在基點）。\n§7新的生成方式將不再使用角象限生成，\n§7而是「在邊緣滑動生成球體」來建立最終的形狀。",
     "minihud.gui.button.remove": "刪除",
+    "minihud.gui.button.render_layers_gui.set_to_player": "定位至玩家",
     "minihud.gui.button.shape_entry.enabled": "啟用: %s",
     "minihud.gui.button.shape_renderer.spawn_sphere.toggle_use_quadrants": "使用角象限生成：%s",
     "minihud.gui.button.shape_renderer.toggle_combine_quads": "合併顯示：%s",
