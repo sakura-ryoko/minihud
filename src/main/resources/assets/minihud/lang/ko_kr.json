@@ -825,7 +825,7 @@
     "minihud.gui.button.configure": "설정",
     "minihud.gui.button.hover.shape_renderer.spawn_sphere.toggle_use_quadrants": "§7코너 쿼드런트는 기본적으로 중심과 여백 거리로 정의된 직사각형\n§7영역의 모서리에 4개의 개별 구를 사용합니다. 코너 쿼드런트는 예전\n§7방식이었고, 여백이 몇 블록 이상으로 늘어나면 (특히 사분면 방향으로)\n§7이상해집니다. 새로운 기본 설정은 더 이상 코너 쿼드런트을 사용하지\n§7않고 대신 \"구체를 여백 주변으로 밀어서\" 최종 모양을 만듭니다.",
     "minihud.gui.button.remove": "삭제",
-    "minihud.gui.button.render_layers_gui.set_to_player": "현재 위치로",
+    "minihud.gui.button.render_layers_gui.set_to_player": "여기로 설정",
     "minihud.gui.button.shape_entry.enabled": "활성화: %s",
     "minihud.gui.button.shape_renderer.spawn_sphere.toggle_use_quadrants": "코너 쿼드런트 사용: %s",
     "minihud.gui.button.shape_renderer.toggle_combine_quads": "쿼드 결합: %s",
