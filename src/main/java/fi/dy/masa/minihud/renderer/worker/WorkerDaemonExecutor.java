@@ -25,7 +25,7 @@ public class WorkerDaemonExecutor implements IThreadDaemonExecutor<AbstractWorke
 	{
 		this.sleepTime = MathUtils.clamp(sleepTime, 60000L, Long.MAX_VALUE); // 1 min
 		this.sleepDelay = 0.75F;        // <1-second sleep delay (Must be 1/2 tick rate)
-		this.maxTicks = 64L;             // Cap how many ticks per an interrupt cycle without tasks to do
+		this.maxTicks = 32L;            // Cap how many ticks per an interrupt cycle without tasks to do
 		this.ticks = 0L;
 	}
 
@@ -44,6 +44,12 @@ public class WorkerDaemonExecutor implements IThreadDaemonExecutor<AbstractWorke
 	@Override
 	public void start()
 	{
+		if (WorkerDaemonHandler.INSTANCE.isForceStop())
+		{
+			this.stop();
+			return;
+		}
+
 		if (!this.isRunning())
 		{
 			MiniHUD.debugLog("Executor: Starting");
@@ -79,13 +85,19 @@ public class WorkerDaemonExecutor implements IThreadDaemonExecutor<AbstractWorke
 	@Override
 	public void resume()
 	{
+		if (WorkerDaemonHandler.INSTANCE.isForceStop())
+		{
+			this.stop();
+			return;
+		}
+
 		if (this.isPaused())
 		{
 			MiniHUD.debugLog("Executor: Resuming");
 			this.paused.set(false);
 		}
 
-//		this.start();
+		this.start();
 	}
 
 	@Override
@@ -125,6 +137,12 @@ public class WorkerDaemonExecutor implements IThreadDaemonExecutor<AbstractWorke
 	{
 		if (!this.isCorrectThread()) { return; }
 
+		if (WorkerDaemonHandler.INSTANCE.isForceStop())
+		{
+			this.stop();
+			return;
+		}
+
 		this.running.set(true);
 		this.lastTaskTime = System.currentTimeMillis();
 		this.ticks = 0L;
@@ -140,19 +158,18 @@ public class WorkerDaemonExecutor implements IThreadDaemonExecutor<AbstractWorke
 			{
 				this.paused.set(true);
 				this.ticks = 0L;
-
-//				if (this.hasTasks())
-//				{
-//					this.sleep(WorkerDaemonHandler.INSTANCE.getProfile().yieldTime());
-//				}
-//				else
-//				{
-//					this.sleep();
-//				}
-
 				this.sleep();
+				// calls this.resume() when sleep is interrupt() or times out.
+			}
+
+			if (WorkerDaemonHandler.INSTANCE.isForceStop())
+			{
+				this.stop();
+				return;
 			}
 		}
+
+		MiniHUD.debugLog("Executor: Stopped: [{}/{}]", this.isRunning(), this.isPaused());
 	}
 
 	@Override

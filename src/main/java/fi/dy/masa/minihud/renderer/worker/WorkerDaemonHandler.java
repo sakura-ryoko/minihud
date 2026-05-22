@@ -26,6 +26,7 @@ public class WorkerDaemonHandler implements IThreadDaemonHandler<AbstractWorkerT
 	private final ConcurrentHashMap<String, ThreadExecutorPair<AbstractWorkerTask<?>>> threadMap = this.builder();
 	private final PriorityBlockingQueue<AbstractWorkerTask<?>> queue = Queues.newPriorityBlockingQueue();
 	private long lastTick;
+	private boolean forceStop = false;
 
 	private int calculateMaxThreads()
 	{
@@ -59,28 +60,10 @@ public class WorkerDaemonHandler implements IThreadDaemonHandler<AbstractWorkerT
 		return this.namePrefix;
 	}
 
-//	public WorkerThreadProfile getProfile()
-//	{
-//		return (WorkerThreadProfile) Configs.Generic.WORKER_THREAD_PROFILE.getOptionListValue();
-//	}
-//
-//	public void resetProfile(ConfigOptionList config)
-//	{
-//		WorkerThreadProfile profile = (WorkerThreadProfile) config.getOptionListValue();
-//		WorkerThreadProfile lastProfile = (WorkerThreadProfile) config.getLastOptionListValue();
-//
-//		if (!lastProfile.equals(profile) && Minecraft.getInstance().level != null)
-//		{
-//			MiniHUD.LOGGER.info("Resetting Worker Thread profile from config change [{} -> {}]", lastProfile.getDisplayName(), profile.getDisplayName());
-//			this.stop();
-////			this.reset();
-//			this.start();
-//		}
-//	}
-
 	@Override
 	public void start()
 	{
+		if (this.forceStop) { return; }
 		// , this.getProfile().getDisplayName()
 		MiniHUD.LOGGER.info("Starting [{}] Worker Daemon threads", this.threadMap.size());
 		Set<String> keys = this.threadMap.keySet();
@@ -194,6 +177,7 @@ public class WorkerDaemonHandler implements IThreadDaemonHandler<AbstractWorkerT
 	@Override
 	public void onClientTick(Minecraft mc)
 	{
+		if (this.forceStop) { return; }
 		final long now = System.currentTimeMillis();
 
 		if ((now - this.lastTick) > this.getTaskInterval())
@@ -213,7 +197,7 @@ public class WorkerDaemonHandler implements IThreadDaemonHandler<AbstractWorkerT
 
 		if (count > 0)
 		{
-			MiniHUD.debugLogError("WorkerDaemonHandler: {} tasks detected --> checking Thread states", count);
+			MiniHUD.debugLog("WorkerDaemonHandler: {} tasks detected --> checking Thread states", count);
 			Set<String> keySet = this.threadMap.keySet();
 
 			for (String key : keySet)
@@ -238,6 +222,30 @@ public class WorkerDaemonHandler implements IThreadDaemonHandler<AbstractWorkerT
 				catch (RuntimeException ignored) {}
 			}
 		}
+	}
+
+	public void resetForceStop()
+	{
+		this.forceStop = false;
+	}
+
+	protected boolean isForceStop()
+	{
+		return this.forceStop;
+	}
+
+	@Override
+	public void endAll()
+	{
+		this.forceStop = true;
+		this.reset();
+		this.stop();
+	}
+
+	private void gc()
+	{
+		MiniHUD.debugLog("WorkerDaemonHandler: Executing Garbage collection");
+		System.gc();
 	}
 
 	@Override

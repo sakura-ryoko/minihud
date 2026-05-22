@@ -47,11 +47,13 @@ public class WorldLoadListener implements IWorldLoadListener
             // Quitting to main menu
             if (worldAfter == null)
             {
+                WorkerDaemonHandler.INSTANCE.endAll();
                 this.writeDataGlobal();
             }
         }
         if (worldAfter != null)
         {
+            WorkerDaemonHandler.INSTANCE.resetForceStop();
             DataStorage.getInstance().onWorldPre();
             HudDataManager.getInstance().onWorldPre();
             EntitiesDataManager.getInstance().onWorldPre();
@@ -77,6 +79,7 @@ public class WorldLoadListener implements IWorldLoadListener
             if (worldBefore == null)
             {
                 this.readStoredDataGlobal();
+                WorkerDaemonHandler.INSTANCE.start();
             }
 
             Configs.checkBaseLanguage();
@@ -87,7 +90,6 @@ public class WorldLoadListener implements IWorldLoadListener
             HudDataManager.getInstance().onWorldJoin();
             EntitiesDataManager.getInstance().onWorldJoin();
             DebugDataManager.getInstance().onWorldJoin();
-            WorkerDaemonHandler.INSTANCE.start();
         }
     }
 
