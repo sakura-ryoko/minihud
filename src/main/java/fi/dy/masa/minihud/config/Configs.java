@@ -432,7 +432,7 @@ public class Configs implements IConfigHandler
 
                 if (Reference.DEBUG_MODE)
                 {
-                    MiniHUD.debugLogError("loadFromFile(): Successfully loaded config file '{}'.", configFile.toAbsolutePath());
+                    MiniHUD.LOGGER.warn("loadFromFile(): Successfully loaded config file '{}'.", configFile.toAbsolutePath());
                 }
             }
             else
@@ -457,7 +457,7 @@ public class Configs implements IConfigHandler
 
             if (Reference.DEBUG_MODE)
             {
-                MiniHUD.debugLogError("saveToFile(): Creating directory '{}'.", dir.toAbsolutePath());
+                MiniHUD.LOGGER.warn("saveToFile(): Creating directory '{}'.", dir.toAbsolutePath());
             }
         }
 
