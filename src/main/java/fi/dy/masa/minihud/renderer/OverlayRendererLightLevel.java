@@ -33,6 +33,7 @@ import fi.dy.masa.malilib.config.IConfigDouble;
 import fi.dy.masa.malilib.config.options.ConfigColor;
 import fi.dy.masa.malilib.gui.Message;
 import fi.dy.masa.malilib.render.MaLiLibPipelines;
+import fi.dy.masa.malilib.render.texture.MaLiLibComplexBinding;
 import fi.dy.masa.malilib.util.InfoUtils;
 import fi.dy.masa.malilib.util.WorldUtils;
 import fi.dy.masa.malilib.util.data.Color4f;
@@ -168,7 +169,8 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
 
         try
         {
-            ctx.bindTexture(TEXTURE_NUMBERS, 0, 256, 256);
+//            ctx.bindTexture(TEXTURE_NUMBERS, 0, 256, 256);
+            ctx.prepareComplexTextures(List.of(new MaLiLibComplexBinding("Sampler0", TEXTURE_NUMBERS, () -> null)));
         }
         catch (Exception err)
         {
