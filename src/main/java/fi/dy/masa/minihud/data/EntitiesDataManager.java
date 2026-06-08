@@ -572,10 +572,18 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
                 }
             }
 
-            if (world instanceof ServerLevel)
+            if (world instanceof ServerLevel sl)
             {
-//                return this.refreshBlockEntityFromWorld(world, pos);
-                this.requestBlockEntityFromLocalServer(this.mc, world, pos);
+                if (Thread.currentThread().getName().contains("Server"))
+                {
+//                    MiniHUD.debugLog("requestBlockEntity: be at pos [{}] refresh from server world", pos.toShortString());
+                    return this.refreshBlockEntityFromWorld(sl, pos);
+                }
+                else
+                {
+//                    MiniHUD.debugLog("requestBlockEntity: be at pos [{}] refresh from local server", pos.toShortString());
+                    this.requestBlockEntityFromLocalServer(this.mc, world, pos);
+                }
             }
 
             return this.blockEntityCache.get(pos).getRight();
