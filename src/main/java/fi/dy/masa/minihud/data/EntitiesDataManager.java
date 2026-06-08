@@ -572,10 +572,18 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
                 }
             }
 
-            if (world instanceof ServerLevel)
+            if (world instanceof ServerLevel sl)
             {
-//                return this.refreshBlockEntityFromWorld(world, pos);
-                this.requestBlockEntityFromLocalServer(this.mc, world, pos);
+                if (Thread.currentThread().getName().contains("Server"))
+                {
+//                    MiniHUD.debugLog("requestBlockEntity: be at pos [{}] refresh from server world", pos.toShortString());
+                    return this.refreshBlockEntityFromWorld(sl, pos);
+                }
+                else
+                {
+//                    MiniHUD.debugLog("requestBlockEntity: be at pos [{}] refresh from local server", pos.toShortString());
+                    this.requestBlockEntityFromLocalServer(this.mc, world, pos);
+                }
             }
 
             return this.blockEntityCache.get(pos).getRight();
@@ -634,6 +642,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
     @Override
     public @Nullable Pair<Entity, CompoundData> requestEntity(Level world, int entityId)
     {
+//        MiniHUD.debugLog("requestEntity: Current Thread: {}", Thread.currentThread().getName());
         if (this.entityCache.containsKey(entityId))
         {
             // Refresh at 25%
@@ -649,11 +658,18 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
             }
 
             // Refresh from Server World
-            if (world instanceof ServerLevel)
+            if (world instanceof ServerLevel sl)
             {
-//                MiniHUD.debugLog("requestEntity: entity Id [{}] refresh from local server", entityId);
-//                return this.refreshEntityFromWorld(world, entityId);
-                this.requestEntityFromLocalServer(this.mc, world, entityId);
+                if (Thread.currentThread().getName().contains("Server"))
+                {
+//                    MiniHUD.debugLog("requestEntity: entity Id [{}] refresh from server world", entityId);
+                    return this.refreshEntityFromWorld(sl, entityId);
+                }
+                else
+                {
+//                    MiniHUD.debugLog("requestEntity: entity Id [{}] refresh from local server", entityId);
+                    this.requestEntityFromLocalServer(this.mc, world, entityId);
+                }
             }
 
 //            MiniHUD.debugLog("requestEntity: entity Id [{}] get from cache", entityId);
@@ -667,7 +683,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
             this.pendingEntitiesQueue.add(entityId);
         }
 
-//        MiniHUD.debugLog("requestEntity: entity Id [{}] refresh from world", entityId);
+//        MiniHUD.debugLog("requestEntity: entity Id [{}] refresh from client world", entityId);
         return this.refreshEntityFromWorld(this.getClientWorld(), entityId);
     }
 

@@ -28,6 +28,7 @@ import fi.dy.masa.malilib.util.position.Vec3d;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.RendererToggle;
+import fi.dy.masa.minihud.data.CachedTagManager;
 import fi.dy.masa.minihud.renderer.shapes.SideQuad;
 import fi.dy.masa.minihud.renderer.worker.BlockScanWorkerTask;
 import fi.dy.masa.minihud.renderer.worker.WorkerDaemonHandler;
@@ -128,7 +129,7 @@ public class OverlayRendererLightningRodRange extends OverlayRendererBase
 		}
 
 		Block block = newState.getBlock();
-		boolean isRod = this.isLightningRodBlock(block);
+		boolean isRod = CachedTagManager.isLightningRod(block);
 		boolean wasTracked = this.lightningRods.stream().anyMatch(e -> e.pos.equals(pos));
 
 		if (isRod && !wasTracked)
@@ -376,7 +377,7 @@ public class OverlayRendererLightningRodRange extends OverlayRendererBase
 					}
 
 					// Found first non-air block - check if it's a lightning rod
-					if (isLightningRodBlock(state.getBlock()))
+					if (CachedTagManager.isLightningRod(state.getBlock()))
 					{
 						// ASYNC: Create placeholder immediately, calculate sphere on worker thread
 						BlockPos immutablePos = pos.immutable();
@@ -436,17 +437,17 @@ public class OverlayRendererLightningRodRange extends OverlayRendererBase
 		return true;
 	}
 
-	private boolean isLightningRodBlock(Block block)
-	{
-		return  block == Blocks.LIGHTNING_ROD ||
-				block == Blocks.EXPOSED_LIGHTNING_ROD ||
-				block == Blocks.WEATHERED_LIGHTNING_ROD ||
-				block == Blocks.OXIDIZED_LIGHTNING_ROD ||
-				block == Blocks.WAXED_LIGHTNING_ROD ||
-				block == Blocks.WAXED_EXPOSED_LIGHTNING_ROD ||
-				block == Blocks.WAXED_WEATHERED_LIGHTNING_ROD ||
-				block == Blocks.WAXED_OXIDIZED_LIGHTNING_ROD;
-	}
+//	private boolean isLightningRodBlock(Block block)
+//	{
+//		return  block == Blocks.LIGHTNING_ROD ||
+//				block == Blocks.EXPOSED_LIGHTNING_ROD ||
+//				block == Blocks.WEATHERED_LIGHTNING_ROD ||
+//				block == Blocks.OXIDIZED_LIGHTNING_ROD ||
+//				block == Blocks.WAXED_LIGHTNING_ROD ||
+//				block == Blocks.WAXED_EXPOSED_LIGHTNING_ROD ||
+//				block == Blocks.WAXED_WEATHERED_LIGHTNING_ROD ||
+//				block == Blocks.WAXED_OXIDIZED_LIGHTNING_ROD;
+//	}
 
 	/**
 	 * Creates a position test for 3D spherical range calculation.
