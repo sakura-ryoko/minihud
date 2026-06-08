@@ -18,6 +18,7 @@ import fi.dy.masa.malilib.util.data.json.JsonUtils;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.Configs;
+import fi.dy.masa.minihud.data.CachedTagManager;
 import fi.dy.masa.minihud.data.DebugDataManager;
 import fi.dy.masa.minihud.data.EntitiesDataManager;
 import fi.dy.masa.minihud.data.HudDataManager;
@@ -80,6 +81,7 @@ public class WorldLoadListener implements IWorldLoadListener
             {
                 this.readStoredDataGlobal();
                 WorkerDaemonHandler.INSTANCE.start();
+                CachedTagManager.startCache();
             }
 
             Configs.checkBaseLanguage();

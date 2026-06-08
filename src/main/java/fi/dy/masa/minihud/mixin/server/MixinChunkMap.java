@@ -27,10 +27,10 @@ public abstract class MixinChunkMap implements IServerChunkLoading
 
 	// This replaces the now-removed vanilla functionality.
 	@Inject(method = "prepareTickingChunk", at = @At("RETURN"))
-	private void minihud_countTotalChunks(ChunkHolder holder, CallbackInfoReturnable<CompletableFuture<ChunkResult<LevelChunk>>> cir)
+	private void minihud_countTotalChunks(ChunkHolder chunk, CallbackInfoReturnable<CompletableFuture<ChunkResult<LevelChunk>>> cir)
 	{
 		cir.getReturnValue().handle(
-				(chunk, throwable) ->
+				(c, throwable) ->
 				{
 					this.totalLoadedCount.getAndIncrement();
 					return null;

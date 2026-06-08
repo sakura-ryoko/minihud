@@ -10,7 +10,7 @@ import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.info.InfoLine;
 import fi.dy.masa.minihud.info.InfoLineContext;
-import fi.dy.masa.minihud.mixin.world.IMixinServerWorld;
+import fi.dy.masa.minihud.mixin.world.IMixinServerLevel;
 import fi.dy.masa.minihud.util.IServerEntityManager;
 
 public class InfoLineEntitiesClientWorld extends InfoLine
@@ -50,7 +50,7 @@ public class InfoLineEntitiesClientWorld extends InfoLine
 	    if (this.mc().hasSingleplayerServer() &&
 		    world instanceof ServerLevel serverWorld)
 	    {
-		    IServerEntityManager manager = (IServerEntityManager) ((IMixinServerWorld) serverWorld).minihud_getEntityManager();
+		    IServerEntityManager manager = (IServerEntityManager) ((IMixinServerLevel) serverWorld).minihud_getEntityManager();
 		    int indexSize = manager.minihud$getIndexSize();
 
 		    list.add(this.translate(ENT_KEY+".server", countClient, indexSize));

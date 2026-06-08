@@ -2,18 +2,20 @@ package fi.dy.masa.minihud.renderer.shapes;
 
 import java.util.List;
 import java.util.function.Consumer;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.MeshData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.phys.Vec3;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.MeshData;
+
 import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.data.Color4f;
 import fi.dy.masa.malilib.util.position.PositionUtils;
+import fi.dy.masa.malilib.util.position.Vec3d;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.renderer.RenderObjectVbo;
@@ -37,7 +39,7 @@ public class ShapeSphereBlocky extends ShapeCircleBase
     }
 
     @Override
-    public void update(Vec3 cameraPos, Entity entity, Minecraft mc, ProfilerFiller profiler)
+    public void update(Vec3d cameraPos, Entity entity, Minecraft mc, ProfilerFiller profiler)
     {
         this.hasData = true;
         this.render(cameraPos, mc, profiler);
@@ -51,7 +53,7 @@ public class ShapeSphereBlocky extends ShapeCircleBase
     }
 
     @Override
-    public void render(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
+    public void render(Vec3d cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
         this.allocateBuffers(this.renderLines);
         this.renderQuads(cameraPos, mc, profiler);
@@ -62,7 +64,7 @@ public class ShapeSphereBlocky extends ShapeCircleBase
         }
     }
 
-    private void renderQuads(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
+    private void renderQuads(Vec3d cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
         if (mc.level == null || mc.player == null)
         {
@@ -72,7 +74,7 @@ public class ShapeSphereBlocky extends ShapeCircleBase
         profiler.push("sphere_blocky_quads");
 
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "minihud:sphere_blocky/quads", this.renderThroughShape ? MaLiLibPipelines.MINIHUD_SHAPE_NO_DEPTH_OFFSET : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL);
+        BufferBuilder builder = ctx.start(() -> "minihud:sphere_blocky/quads", this.renderThroughShape ? MaLiLibPipelines.MINIHUD_SHAPE_NO_DEPTH_OFFSET : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL, 0);
 
         this.renderSphereShapeQuads(cameraPos, builder);
 
@@ -86,7 +88,7 @@ public class ShapeSphereBlocky extends ShapeCircleBase
 
                 if (this.shouldResort)
                 {
-                    ctx.startResorting(meshData, ctx.createVertexSorter(cameraPos));
+                    ctx.startResorting(meshData, ctx.createVertexSorter(cameraPos.toVanilla()));
                 }
 
                 meshData.close();
@@ -100,7 +102,7 @@ public class ShapeSphereBlocky extends ShapeCircleBase
         profiler.pop();
     }
 
-    private void renderOutlines(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
+    private void renderOutlines(Vec3d cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
         if (mc.level == null || mc.player == null || !this.renderLines)
         {
@@ -110,7 +112,7 @@ public class ShapeSphereBlocky extends ShapeCircleBase
         profiler.push("sphere_blocky_outlines");
 
         RenderObjectVbo ctx = this.renderObjects.get(1);
-        BufferBuilder builder = ctx.start(() -> "minihud:sphere_blocky/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH);
+        BufferBuilder builder = ctx.start(() -> "minihud:sphere_blocky/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, 0);
 
         this.renderSphereShapeOutlines(cameraPos, this.glLineWidth, builder);
 
@@ -150,7 +152,7 @@ public class ShapeSphereBlocky extends ShapeCircleBase
         return this.getRadius();
     }
 
-    protected void renderSphereShapeQuads(Vec3 cameraPos, BufferBuilder builder)
+    protected void renderSphereShapeQuads(Vec3d cameraPos, BufferBuilder builder)
     {
         SphereUtils.RingPositionTest test = this.getPositionTest();
         LongOpenHashSet positions = new LongOpenHashSet();
@@ -173,7 +175,7 @@ public class ShapeSphereBlocky extends ShapeCircleBase
         }
     }
 
-    protected void renderSphereShapeOutlines(Vec3 cameraPos, float lineWidth, BufferBuilder builder)
+    protected void renderSphereShapeOutlines(Vec3d cameraPos, float lineWidth, BufferBuilder builder)
     {
         SphereUtils.RingPositionTest test = this.getPositionTest();
         LongOpenHashSet positions = new LongOpenHashSet();

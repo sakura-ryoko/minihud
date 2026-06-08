@@ -16,10 +16,10 @@ public class MixinServerLevel
 //    @Shadow private int spawnChunkRadius;
 
     @Inject(method = "setRespawnData", at = @At("TAIL"))
-    private void minihud_setSpawnPos(LevelData.RespawnData spawnPoint, CallbackInfo ci)
+    private void minihud_setSpawnPos(LevelData.RespawnData respawnData, CallbackInfo ci)
     {
 //		MiniHUD.LOGGER.error("minihud_checkSpawnPos() [ServerWorld] --> [{}]", spawnPoint.globalPos().toString());
-        HudDataManager.getInstance().setWorldSpawn(spawnPoint.globalPos());
+        HudDataManager.getInstance().setWorldSpawn(respawnData.globalPos());
 //        HudDataManager.getInstance().setSpawnChunkRadius(this.spawnChunkRadius - 1, true);
     }
 

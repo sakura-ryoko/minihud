@@ -2,6 +2,11 @@ package fi.dy.masa.minihud.renderer;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.joml.Matrix4f;
+
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.MeshData;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -11,6 +16,7 @@ import net.minecraft.tags.FluidTags;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
@@ -22,11 +28,7 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.lighting.LevelLightEngine;
 import net.minecraft.world.level.material.FluidState;
-import net.minecraft.world.phys.Vec3;
-import org.joml.Matrix4f;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.MeshData;
-import com.mojang.blaze3d.vertex.PoseStack;
+
 import fi.dy.masa.malilib.config.IConfigDouble;
 import fi.dy.masa.malilib.config.options.ConfigColor;
 import fi.dy.masa.malilib.gui.Message;
@@ -35,6 +37,7 @@ import fi.dy.masa.malilib.util.InfoUtils;
 import fi.dy.masa.malilib.util.WorldUtils;
 import fi.dy.masa.malilib.util.data.Color4f;
 import fi.dy.masa.malilib.util.position.PositionUtils;
+import fi.dy.masa.malilib.util.position.Vec3d;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.Configs;
@@ -94,7 +97,7 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
     }
 
     @Override
-    public void update(Vec3 cameraPos, Entity entity, Minecraft mc, ProfilerFiller profiler)
+    public void update(Vec3d cameraPos, Entity entity, Minecraft mc, ProfilerFiller profiler)
     {
         if (mc.level == null)
         {
@@ -131,20 +134,20 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
         // Don't reallocate it unless empty; using start() calls reset() anyways.
         if (this.renderObjects.isEmpty())
         {
-            this.renderObjects.add(new RenderObjectVbo(() -> this.getName() + " Quads", MaLiLibPipelines.POSITION_TEX_COLOR_MASA_LEQUAL_DEPTH_NO_CULL));
-            this.renderObjects.add(new RenderObjectVbo(() -> this.getName() + " Lines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH));
+            this.renderObjects.add(new RenderObjectVbo(() -> this.getName() + " Quads", MaLiLibPipelines.POSITION_TEX_COLOR_MASA_LEQUAL_DEPTH_NO_CULL, 0));
+            this.renderObjects.add(new RenderObjectVbo(() -> this.getName() + " Lines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, 0));
         }
     }
 
     @Override
-    public void render(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
+    public void render(Vec3d cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
         this.allocateBuffers();
         this.renderTexQuads(cameraPos, mc, profiler);
         this.renderOutlines(cameraPos, mc, profiler);
     }
 
-    private void renderTexQuads(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
+    private void renderTexQuads(Vec3d cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
         if (mc.level == null || mc.player == null)
         {
@@ -160,7 +163,7 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
 
         // this.renderThrough ? MaLiLibPipelines.POSITION_TEX_COLOR_SIMPLE : MaLiLibPipelines.POSITION_TEX_COLOR_LESSER_DEPTH
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "minihud:light_level/tex_quads", this.renderThrough ? MaLiLibPipelines.POSITION_TEX_COLOR_MASA_NO_DEPTH_NO_CULL : MaLiLibPipelines.POSITION_TEX_COLOR_MASA_LEQUAL_DEPTH_NO_CULL);
+        BufferBuilder builder = ctx.start(() -> "minihud:light_level/tex_quads", this.renderThrough ? MaLiLibPipelines.POSITION_TEX_COLOR_MASA_NO_DEPTH_NO_CULL : MaLiLibPipelines.POSITION_TEX_COLOR_MASA_LEQUAL_DEPTH_NO_CULL, 0);
         PoseStack matrices = new PoseStack();
 
         try
@@ -217,7 +220,7 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
         profiler.pop();
     }
 
-    private void renderOutlines(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
+    private void renderOutlines(Vec3d cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
         if (mc.level == null || mc.player == null)
         {
@@ -230,7 +233,7 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
         LightLevelMarkerMode markerMode = (LightLevelMarkerMode) Configs.Generic.LIGHT_LEVEL_MARKER_MODE.getOptionListValue();
 
         RenderObjectVbo ctx = this.renderObjects.get(1);
-        BufferBuilder builder = ctx.start(() -> "minihud:light_level/outlines", this.renderThrough ? MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_NO_DEPTH_NO_CULL : MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH);
+        BufferBuilder builder = ctx.start(() -> "minihud:light_level/outlines", this.renderThrough ? MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_NO_DEPTH_NO_CULL : MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, 0);
 
         if (markerMode == LightLevelMarkerMode.SQUARE)
         {
@@ -270,7 +273,7 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
         this.hasData = false;
     }
 
-    private void renderNumbers(Vec3 cameraPos,
+    private void renderNumbers(Vec3d cameraPos,
                                LightLevelNumberMode mode,
                                IConfigDouble cfgOffX,
                                IConfigDouble cfgOffZ,
@@ -317,7 +320,7 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
     }
 
     private void renderMarkers(IMarkerRenderer renderer,
-                               Vec3 cameraPos,
+                               Vec3d cameraPos,
                                int safeThreshold,
                                int dimThreshold,
 							   float lineWidth,
@@ -590,17 +593,17 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
         BlockState stateDown = chunk.getBlockState(this.mutablePos);
 
         if ((skipBlockCheck && stateDown.isAir() == false && (stateDown.getBlock() instanceof LiquidBlock) == false) ||
-            stateDown.isValidSpawn(world, this.mutablePos, EntityType.CREEPER))
+            stateDown.isValidSpawn(world, this.mutablePos, EntityTypes.CREEPER))
         {
             this.mutablePos.set(x, y, z);
             BlockState state = chunk.getBlockState(this.mutablePos);
 
-            if (this.isClearForSpawnWrapper(world, this.mutablePos, state, state.getFluidState(), EntityType.WITHER_SKELETON))
+            if (this.isClearForSpawnWrapper(world, this.mutablePos, state, state.getFluidState(), EntityTypes.WITHER_SKELETON))
             {
                 this.mutablePos.set(x, y + 1, z);
                 BlockState stateUp1 = chunk.getBlockState(this.mutablePos);
 
-                return this.isClearForSpawnWrapper(world, this.mutablePos, stateUp1, state.getFluidState(), EntityType.WITHER_SKELETON);
+                return this.isClearForSpawnWrapper(world, this.mutablePos, stateUp1, state.getFluidState(), EntityTypes.WITHER_SKELETON);
             }
 
             if (state.getFluidState().is(FluidTags.WATER))

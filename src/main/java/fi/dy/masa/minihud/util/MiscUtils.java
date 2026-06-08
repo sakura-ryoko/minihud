@@ -39,10 +39,10 @@ import net.minecraft.world.level.block.entity.BeehiveBlockEntity;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 
-import fi.dy.masa.malilib.util.IntBoundingBox;
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.malilib.util.data.DataBlockUtils;
 import fi.dy.masa.malilib.util.data.tag.CompoundData;
+import fi.dy.masa.malilib.util.position.IntBoundingBox;
 import fi.dy.masa.malilib.util.time.DurationFormat;
 import fi.dy.masa.malilib.util.time.TimeFormat;
 import fi.dy.masa.minihud.config.Configs;
@@ -140,7 +140,6 @@ public class MiscUtils
 
 //        MiniHUD.LOGGER.error("addAxolotlTooltip(): NBT: [{}]", nbt.toString());
         int variantId = variant.getId();
-//        AxolotlEntity.Variant variant = AxolotlEntity.Variant.byIndex(variantId);
         String variantName = variant.getName();
         MutableComponent labelText = Component.translatable("minihud.label.axolotl_tooltip.label");
         MutableComponent valueText = Component.translatable("minihud.label.axolotl_tooltip.value", variantName, variantId);
@@ -194,7 +193,6 @@ public class MiscUtils
                     babyCount++;
                 }
 
-                //beeName.ifPresent(text -> lines.accept(StringUtils.translateAsText("minihud.label.bee_tooltip.name", text.getString())));
                 beeName.ifPresent(text -> lines.accept(Component.translatable("minihud.label.bee_tooltip.name", text)));
             }
 

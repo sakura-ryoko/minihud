@@ -2,18 +2,20 @@ package fi.dy.masa.minihud.renderer;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.MeshData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.util.Mth;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.MeshData;
+
 import fi.dy.masa.malilib.render.MaLiLibPipelines;
+import fi.dy.masa.malilib.util.MathUtils;
 import fi.dy.masa.malilib.util.data.Color4f;
+import fi.dy.masa.malilib.util.position.Vec3d;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.RendererToggle;
@@ -67,7 +69,7 @@ public class OverlayRendererRegion extends OverlayRendererBase
     }
 
     @Override
-    public void update(Vec3 cameraPos, Entity entity, Minecraft mc, ProfilerFiller profiler)
+    public void update(Vec3d cameraPos, Entity entity, Minecraft mc, ProfilerFiller profiler)
     {
         this.calculateRegions(entity);
 
@@ -84,8 +86,8 @@ public class OverlayRendererRegion extends OverlayRendererBase
         Level world = entity.level();
         int minY = world != null ? world.getMinY() : -64;
         int maxY = world != null ? world.getMaxY() + 1 : 320;
-        int rx = Mth.floor(entity.getX()) & ~0x1FF;
-        int rz = Mth.floor(entity.getZ()) & ~0x1FF;
+        int rx = MathUtils.floor(entity.getX()) & ~0x1FF;
+        int rz = MathUtils.floor(entity.getZ()) & ~0x1FF;
         BlockPos pos1 = new BlockPos(rx,       minY, rz      );
         BlockPos pos2 = new BlockPos(rx + 511, maxY, rz + 511);
         this.boxes = RenderUtils.calculateBoxes(pos1, pos2);
@@ -99,14 +101,14 @@ public class OverlayRendererRegion extends OverlayRendererBase
     }
 
     @Override
-    public void render(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
+    public void render(Vec3d cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
         this.allocateBuffers();
         this.renderQuads(cameraPos, mc, profiler);
         this.renderOutlines(cameraPos, mc, profiler);
     }
 
-    private void renderQuads(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
+    private void renderQuads(Vec3d cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
         if (mc.level == null || mc.player == null)
         {
@@ -116,7 +118,7 @@ public class OverlayRendererRegion extends OverlayRendererBase
         profiler.push("region_quads");
         Color4f color = Configs.Colors.REGION_OVERLAY_COLOR.getColor();
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "minihud:region/quads", MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL);
+        BufferBuilder builder = ctx.start(() -> "minihud:region/quads", MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL, 0);
 
         for (AABB box : this.boxes)
         {
@@ -133,7 +135,7 @@ public class OverlayRendererRegion extends OverlayRendererBase
 
                 if (this.shouldResort)
                 {
-                    ctx.startResorting(meshData, ctx.createVertexSorter(cameraPos));
+                    ctx.startResorting(meshData, ctx.createVertexSorter(cameraPos.toVanilla()));
                 }
 
                 meshData.close();
@@ -147,7 +149,7 @@ public class OverlayRendererRegion extends OverlayRendererBase
         profiler.pop();
     }
 
-    private void renderOutlines(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
+    private void renderOutlines(Vec3d cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
         if (mc.level == null || mc.player == null)
         {
@@ -157,7 +159,7 @@ public class OverlayRendererRegion extends OverlayRendererBase
         profiler.push("region_outlines");
         final Color4f color = Color4f.fromColor(Configs.Colors.REGION_OVERLAY_COLOR.getColor(), 0xFF);
         RenderObjectVbo ctx = this.renderObjects.get(1);
-        BufferBuilder builder = ctx.start(() -> "minihud:region/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH);
+        BufferBuilder builder = ctx.start(() -> "minihud:region/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, 0);
 
         for (AABB box : this.boxes)
         {

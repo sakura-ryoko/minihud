@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.panda.Panda;
 import net.minecraft.world.level.Level;
 import org.apache.commons.lang3.tuple.Pair;
@@ -53,7 +54,7 @@ public class InfoLinePandaGene extends InfoLine
     {
         List<Entry> list = new ArrayList<>();
 
-        if (entityType.equals(EntityType.PANDA))
+        if (entityType.equals(EntityTypes.PANDA))
         {
             Pair<Panda.Gene, Panda.Gene> genes = DataEntityUtils.getPandaGenes(data);
 

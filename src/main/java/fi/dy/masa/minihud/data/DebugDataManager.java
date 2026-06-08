@@ -15,7 +15,7 @@ import net.minecraft.resources.Identifier;
 
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.RendererToggle;
-import fi.dy.masa.minihud.mixin.debug.IMixinClientPlayNetworkHandler;
+import fi.dy.masa.minihud.mixin.debug.IMixinClientPacketListener;
 import fi.dy.masa.minihud.util.DataStorage;
 import fi.dy.masa.minihud.util.DebugRenderType;
 
@@ -135,7 +135,7 @@ public class DebugDataManager
 		Collection<Identifier> list = profile.getCurrentlyEnabled();
 
 		return (profile.isOverlayVisible() || !this.checkVisibleEntries(list))
-				&& (!this.mc.options.hideGui || this.mc.screen != null);
+				&& (!this.mc.gui.hud.isHidden() || this.mc.gui.screen() != null);
 	}
 
 	private boolean checkVisibleEntries(Collection<Identifier> list)
@@ -143,7 +143,7 @@ public class DebugDataManager
 		if (list.isEmpty()) return true;
 		for (Identifier entry : list)
 		{
-			// Whitelist the Debug Renderer ones (see DebugHudEntries)
+			// Whitelist the Debug Renderer ones (see DebugScreenEntries)
 			switch (entry.getPath())
 			{
 				case "entity_hitboxes" -> { continue; }
@@ -246,11 +246,11 @@ public class DebugDataManager
 	{
 		if (this.mc.getConnection() != null)
 		{
-			((IMixinClientPlayNetworkHandler) this.mc.getConnection())
+			((IMixinClientPacketListener) this.mc.getConnection())
 					.minihud_getDebugManager().clear();
 		}
 
-		this.mc.levelRenderer.debugRenderer.refreshRendererList();
+		this.mc.levelExtractor.debugRenderer.refreshRendererList();
 	}
 
 	public void setIsServuxServer()
@@ -372,7 +372,7 @@ public class DebugDataManager
 
 	/**
 	 * Resync stored Types
-	 * @param list
+	 * @param list -
 	 */
 	private void resyncFromList(List<DebugRenderType> list)
 	{

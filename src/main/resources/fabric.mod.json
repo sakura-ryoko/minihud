@@ -36,10 +36,10 @@
     "accessWidener": "minihud.accesswidener",
 
 	"depends": {
-		"minecraft": "~26.1-",
-		"malilib": ">=0.28.6- <0.29.0-"
+		"minecraft": "26.2-pre.4",
+		"malilib": ">=0.28.99- <0.29.0-"
 	},
 	"breaks": {
-		"malilib": "<0.28.6-"
+		"malilib": "<0.28.99-"
 	}
 }

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Objects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.level.Level;
@@ -79,15 +80,15 @@ public class InfoLineHorseSpeed extends InfoLine
         List<Entry> list = new ArrayList<>();
         String horseType = entityType.getDescription().getString();
 
-        if (entityType.equals(EntityType.CAMEL) ||
-            entityType.equals(EntityType.CAMEL_HUSK) ||
-            entityType.equals(EntityType.DONKEY) ||
-            entityType.equals(EntityType.HORSE) ||
-            entityType.equals(EntityType.LLAMA) ||
-            entityType.equals(EntityType.MULE) ||
-            entityType.equals(EntityType.SKELETON_HORSE) ||
-            entityType.equals(EntityType.TRADER_LLAMA) ||
-            entityType.equals(EntityType.ZOMBIE_HORSE))
+        if (entityType.equals(EntityTypes.CAMEL) ||
+            entityType.equals(EntityTypes.CAMEL_HUSK) ||
+            entityType.equals(EntityTypes.DONKEY) ||
+            entityType.equals(EntityTypes.HORSE) ||
+            entityType.equals(EntityTypes.LLAMA) ||
+            entityType.equals(EntityTypes.MULE) ||
+            entityType.equals(EntityTypes.SKELETON_HORSE) ||
+            entityType.equals(EntityTypes.TRADER_LLAMA) ||
+            entityType.equals(EntityTypes.ZOMBIE_HORSE))
         {
             Pair<Double, Double> horsePair = DataEntityUtils.getSpeedAndJumpStrength(data);
             double speed = horsePair.getLeft();

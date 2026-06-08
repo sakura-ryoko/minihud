@@ -9,7 +9,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -18,6 +17,7 @@ import com.mojang.blaze3d.vertex.MeshData;
 import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.data.Color4f;
 import fi.dy.masa.malilib.util.position.PositionUtils;
+import fi.dy.masa.malilib.util.position.Vec3d;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.RendererToggle;
@@ -112,7 +112,7 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
     }
 
     @Override
-    public void update(Vec3 cameraPos, Entity entity, Minecraft mc, ProfilerFiller profiler)
+    public void update(Vec3d cameraPos, Entity entity, Minecraft mc, ProfilerFiller profiler)
     {
         if (mc.level == null || mc.player == null || !RenderSystem.isOnRenderThread())
         {
@@ -216,14 +216,14 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
     }
 
     @Override
-    public void render(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
+    public void render(Vec3d cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
         this.allocateBuffers();
         this.renderQuads(cameraPos, mc, profiler);
         this.renderOutlines(cameraPos, mc, profiler);
     }
 
-    private void renderQuads(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
+    private void renderQuads(Vec3d cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
         if (mc.level == null || mc.player == null)
         {
@@ -245,9 +245,9 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
 								   Configs.Colors.SPAWN_REAL_OUTER_OVERLAY_COLOR.getColor();
 
 		RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "minihud:spawn_chunk/quads", MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL);
+        BufferBuilder builder = ctx.start(() -> "minihud:spawn_chunk/quads", MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL, 0);
 
-        fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxSidesBatchedQuads(this.center, cameraPos, colorEntity, 0.001, builder);
+        fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxSidesBatchedQuads(this.center, cameraPos.toVanilla(), colorEntity, 0.001, builder);
 
 		if (this.isPlayerFollowing || HudDataManager.getInstance().isSpawnChunkRadiusKnown())
 		{
@@ -279,7 +279,7 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
 
                 if (this.shouldResort)
                 {
-                    ctx.startResorting(meshData, ctx.createVertexSorter(cameraPos));
+                    ctx.startResorting(meshData, ctx.createVertexSorter(cameraPos.toVanilla()));
                 }
 
                 meshData.close();
@@ -293,7 +293,7 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
         profiler.pop();
     }
 
-    private void renderOutlines(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
+    private void renderOutlines(Vec3d cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
         if (mc.level == null || mc.player == null)
         {
@@ -324,10 +324,10 @@ public class OverlayRendererSpawnChunks extends OverlayRendererBase implements A
 		this.glLineWidth = lineWidth;
 
 		RenderObjectVbo ctx = this.renderObjects.get(1);
-        BufferBuilder builder = ctx.start(() -> "minihud:spawn_chunk/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH);
+        BufferBuilder builder = ctx.start(() -> "minihud:spawn_chunk/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, 0);
 
         // The SpawnPos box looks better with white outlines.  You can't really see the `colorEntity` value
-        fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(this.center, cameraPos, Color4f.WHITE, 0.001, lineWidth, builder);
+        fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(this.center, cameraPos.toVanilla(), Color4f.WHITE, 0.001, lineWidth, builder);
 
 		if (this.isPlayerFollowing || HudDataManager.getInstance().isSpawnChunkRadiusKnown())
 		{

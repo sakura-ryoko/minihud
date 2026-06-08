@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.dolphin.Dolphin;
 import net.minecraft.world.level.Level;
 import org.apache.commons.lang3.tuple.Pair;
@@ -55,7 +56,7 @@ public class InfoLineDolphinTreasure extends InfoLine
         Pair<Integer, Boolean> dolphiPair = DataEntityUtils.getDolphinData(data);
         List<Entry> list = new ArrayList<>();
 
-        if (dolphiPair != null && entityType.equals(EntityType.DOLPHIN))
+        if (dolphiPair != null && entityType.equals(EntityTypes.DOLPHIN))
         {
             int dryTime = dolphiPair.getLeft();
 

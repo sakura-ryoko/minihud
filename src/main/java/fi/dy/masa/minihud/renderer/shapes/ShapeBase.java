@@ -10,7 +10,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
 
 import fi.dy.masa.malilib.interfaces.IRangeChangeListener;
-import fi.dy.masa.malilib.util.LayerRange;
+import fi.dy.masa.malilib.util.position.LayerRange;
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.malilib.util.data.Color4f;
 import fi.dy.masa.malilib.util.data.json.JsonUtils;

@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.MeshData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
@@ -13,11 +16,10 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.MeshData;
+
 import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.data.Color4f;
+import fi.dy.masa.malilib.util.position.Vec3d;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.RendererToggle;
@@ -107,7 +109,7 @@ public class OverlayRendererSpawnableColumnHeights extends OverlayRendererBase
     }
 
     @Override
-    public void update(Vec3 cameraPos, Entity entity, Minecraft mc, ProfilerFiller profiler)
+    public void update(Vec3d cameraPos, Entity entity, Minecraft mc, ProfilerFiller profiler)
     {
         this.calculateChunks(cameraPos, entity, mc);
         this.lastCheckTime = System.currentTimeMillis();
@@ -132,14 +134,14 @@ public class OverlayRendererSpawnableColumnHeights extends OverlayRendererBase
     }
 
     @Override
-    public void render(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
+    public void render(Vec3d cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
         this.allocateBuffers();
         this.renderQuads(cameraPos, mc, profiler);
         this.renderOutlines(cameraPos, mc, profiler);
     }
 
-    private void renderQuads(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
+    private void renderQuads(Vec3d cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
         if (mc.level == null || mc.player == null)
         {
@@ -150,7 +152,7 @@ public class OverlayRendererSpawnableColumnHeights extends OverlayRendererBase
 
         profiler.push("column_quads");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "minihud:spawnable_column/quads", MaLiLibPipelines.POSITION_COLOR_MASA_LEQUAL_DEPTH);
+        BufferBuilder builder = ctx.start(() -> "minihud:spawnable_column/quads", MaLiLibPipelines.POSITION_COLOR_MASA_LEQUAL_DEPTH, 0);
 
         for (AABB bb : this.boxes)
         {
@@ -168,7 +170,7 @@ public class OverlayRendererSpawnableColumnHeights extends OverlayRendererBase
 
                 if (this.shouldResort)
                 {
-                    ctx.startResorting(meshData, ctx.createVertexSorter(cameraPos));
+                    ctx.startResorting(meshData, ctx.createVertexSorter(cameraPos.toVanilla()));
                 }
 
                 meshData.close();
@@ -182,7 +184,7 @@ public class OverlayRendererSpawnableColumnHeights extends OverlayRendererBase
         profiler.pop();
     }
 
-    private void renderOutlines(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
+    private void renderOutlines(Vec3d cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
         if (mc.level == null || mc.player == null)
         {
@@ -192,7 +194,7 @@ public class OverlayRendererSpawnableColumnHeights extends OverlayRendererBase
         final Color4f color = Color4f.fromColor(Configs.Colors.SPAWNABLE_COLUMNS_OVERLAY_COLOR.getColor(), 0xFF);
         profiler.push("column_outlines");
         RenderObjectVbo ctx = this.renderObjects.get(1);
-        BufferBuilder builder = ctx.start(() -> "minihud:spawnable_column/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH);
+        BufferBuilder builder = ctx.start(() -> "minihud:spawnable_column/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, 0);
 
         for (AABB bb : this.boxes)
         {
@@ -217,7 +219,7 @@ public class OverlayRendererSpawnableColumnHeights extends OverlayRendererBase
         profiler.pop();
     }
 
-    private void calculateChunks(Vec3 cameraPos, Entity entity, Minecraft mc)
+    private void calculateChunks(Vec3d cameraPos, Entity entity, Minecraft mc)
     {
         if (mc.level == null) return;
 

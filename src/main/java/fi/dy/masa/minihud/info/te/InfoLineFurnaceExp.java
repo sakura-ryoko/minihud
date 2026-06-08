@@ -8,6 +8,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.BlockEntityTypes;
+
 import fi.dy.masa.malilib.util.data.DataBlockUtils;
 import fi.dy.masa.malilib.util.data.tag.CompoundData;
 import fi.dy.masa.minihud.Reference;
@@ -55,9 +57,9 @@ public class InfoLineFurnaceExp extends InfoLine
     {
         List<Entry> list = new ArrayList<>();
 
-        if (beType.equals(BlockEntityType.FURNACE) ||
-            beType.equals(BlockEntityType.BLAST_FURNACE) ||
-            beType.equals(BlockEntityType.SMOKER))
+        if (beType.equals(BlockEntityTypes.FURNACE) ||
+            beType.equals(BlockEntityTypes.BLAST_FURNACE) ||
+            beType.equals(BlockEntityTypes.SMOKER))
         {
             if (world instanceof ServerLevel serverWorld)
             {

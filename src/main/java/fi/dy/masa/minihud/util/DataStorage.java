@@ -783,10 +783,7 @@ public class DataStorage
                                 new BlockPos(data.getIntOr("spawnPosX", 0), data.getIntOr("spawnPosY", 0), data.getIntOr("spawnPosZ", 0)))
                 );
             }
-//            if (data.contains("spawnChunkRadius"))
-//            {
-//                HudDataManager.getInstance().setSpawnChunkRadius(data.getInt("spawnChunkRadius", 2), true);
-//            }
+
             if (data.contains("worldSeed"))
             {
                 HudDataManager.getInstance().setWorldSeed(data.getLongOr("worldSeed", -1L));

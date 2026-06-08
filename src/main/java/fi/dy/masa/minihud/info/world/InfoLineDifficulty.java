@@ -56,7 +56,7 @@ public class InfoLineDifficulty extends InfoLine
 
         if (serverChunk != null)
         {
-			MoonPhase moonPhase = this.mc().gameRenderer.getGameRenderState().levelRenderState.skyRenderState.moonPhase;
+			MoonPhase moonPhase = this.mc().gameRenderer.gameRenderState().levelRenderState.skyRenderState.moonPhase;
 	        moonPhaseFactor = DimensionType.MOON_BRIGHTNESS_PER_PHASE[moonPhase.index()];
 //            moonPhaseFactor = world.getMoonSize();
 	        // That was harder....

@@ -3,9 +3,10 @@ package fi.dy.masa.minihud.renderer;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import org.apache.commons.lang3.tuple.Pair;
 
-import fi.dy.masa.malilib.util.data.DataBlockUtils;
-import fi.dy.masa.malilib.util.data.tag.CompoundData;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.MeshData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -16,17 +17,17 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BeaconBeamOwner;
 import net.minecraft.world.level.block.entity.BeaconBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.phys.Vec3;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.MeshData;
+import net.minecraft.world.level.block.entity.BlockEntityTypes;
+
 import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.data.Color4f;
+import fi.dy.masa.malilib.util.data.DataBlockUtils;
+import fi.dy.masa.malilib.util.data.tag.CompoundData;
+import fi.dy.masa.malilib.util.position.Vec3d;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.RendererToggle;
 import fi.dy.masa.minihud.mixin.block.IMixinBeaconBlockEntity;
-import org.apache.commons.lang3.tuple.Pair;
 
 public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBlockEntity>
 {
@@ -36,7 +37,7 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
 
     public OverlayRendererBeaconRange()
     {
-        super(RendererToggle.OVERLAY_BEACON_RANGE, BlockEntityType.BEACON, BeaconBlockEntity.class);
+        super(RendererToggle.OVERLAY_BEACON_RANGE, BlockEntityTypes.BEACON, BeaconBlockEntity.class);
         this.useCulling = false;
         this.positions = new HashMap<>();
         this.useCulling = false;
@@ -51,7 +52,7 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
     }
 
     @Override
-    protected void updateBlockRange(Level world, BlockPos pos, BeaconBlockEntity be, Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
+    protected void updateBlockRange(Level world, BlockPos pos, BeaconBlockEntity be, Vec3d cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
         IMixinBeaconBlockEntity beaconBE = (IMixinBeaconBlockEntity) be;
 
@@ -70,13 +71,6 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
         final int level = be.minihud_getLevel();
         List<BeaconBeamOwner.Section> segments = be.minihud_getBeamEmitter();
         Holder<MobEffect> primary;
-//        Holder<MobEffect> primary = be.minihud_getPrimary();
-//        Holder<MobEffect> secondary = be.minihud_getSecondary();
-//        LOGGER.debug("beacon - pos [{}], level [{}], pri [{}], sec [{}], segment count: [{}]", pos, level,
-//                          primary != null ? primary.value().getDisplayName().getString() : "<NULL>",
-//                          secondary != null ? secondary.value().getDisplayName().getString() : "<NULL>",
-//                          segments.size()
-//        );
 
         if (level < 1 || level > 4 || segments.isEmpty())
         {
@@ -117,7 +111,7 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
     }
 
     @Override
-    protected void renderBlockRange(Level world, Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
+    protected void renderBlockRange(Level world, Vec3d cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
         this.renderThrough = false;
 
@@ -145,7 +139,7 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
         this.positions.clear();
     }
 
-    private void renderQuads(Level world, Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
+    private void renderQuads(Level world, Vec3d cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
         if (mc.level == null || mc.player == null)
         {
@@ -158,7 +152,7 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
 
         profiler.push("beacon_quads");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "minihud:beacon/quads", this.renderThrough ? MaLiLibPipelines.POSITION_COLOR_MASA_NO_DEPTH_NO_CULL : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL);
+        BufferBuilder builder = ctx.start(() -> "minihud:beacon/quads", this.renderThrough ? MaLiLibPipelines.POSITION_COLOR_MASA_NO_DEPTH_NO_CULL : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL, 0);
 
         this.positions.forEach(
                 (pos, level) ->
@@ -189,7 +183,7 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
 
                 if (this.shouldResort)
                 {
-                    ctx.startResorting(meshData, ctx.createVertexSorter(cameraPos));
+                    ctx.startResorting(meshData, ctx.createVertexSorter(cameraPos.toVanilla()));
                 }
 
                 meshData.close();
@@ -203,7 +197,7 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
         profiler.pop();
     }
 
-    private void renderOutlines(Level world, Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
+    private void renderOutlines(Level world, Vec3d cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
         if (mc.level == null || mc.player == null)
         {
@@ -216,7 +210,7 @@ public class OverlayRendererBeaconRange extends BaseBlockRangeOverlay<BeaconBloc
 
         profiler.push("beacon_outlines");
         RenderObjectVbo ctx = this.renderObjects.get(1);
-        BufferBuilder builder = ctx.start(() -> "minihud:beacon/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH);
+        BufferBuilder builder = ctx.start(() -> "minihud:beacon/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, 0);
 
         this.positions.forEach(
                 (pos, level) ->

@@ -7,7 +7,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(ServerLevel.class)
-public interface IMixinServerWorld
+public interface IMixinServerLevel
 {
     @Accessor("entityManager")
     PersistentEntitySectionManager<Entity> minihud_getEntityManager();

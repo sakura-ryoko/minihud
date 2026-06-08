@@ -11,7 +11,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
 
 import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.EntityUtils;
@@ -213,7 +212,7 @@ public class ShapeBox extends ShapeBase
     }
 
     @Override
-    public void update(Vec3 cameraPos, Entity entity, Minecraft mc, ProfilerFiller profiler)
+    public void update(Vec3d cameraPos, Entity entity, Minecraft mc, ProfilerFiller profiler)
     {
         this.renderBox = this.box.move(-cameraPos.x, -cameraPos.y, -cameraPos.z);
         this.hasData = true;
@@ -228,7 +227,7 @@ public class ShapeBox extends ShapeBase
     }
 
     @Override
-    public void render(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
+    public void render(Vec3d cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
         this.allocateBuffers(this.renderLines);
         this.renderBoxQuads(cameraPos, mc, profiler);
@@ -247,7 +246,7 @@ public class ShapeBox extends ShapeBase
         this.hasData = false;
     }
 
-    protected void renderBoxQuads(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
+    protected void renderBoxQuads(Vec3d cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
         if (mc.level == null || mc.player == null)
         {
@@ -256,7 +255,7 @@ public class ShapeBox extends ShapeBase
 
         profiler.push("box_quads");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "minihud:box/quads", this.renderThroughShape ? MaLiLibPipelines.MINIHUD_SHAPE_NO_DEPTH_OFFSET : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL);
+        BufferBuilder builder = ctx.start(() -> "minihud:box/quads", this.renderThroughShape ? MaLiLibPipelines.MINIHUD_SHAPE_NO_DEPTH_OFFSET : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL, 0);
         PoseStack matrices = new PoseStack();
 
         matrices.pushPose();
@@ -279,7 +278,7 @@ public class ShapeBox extends ShapeBase
 
                 if (this.shouldResort)
                 {
-                    ctx.startResorting(meshData, ctx.createVertexSorter(cameraPos));
+                    ctx.startResorting(meshData, ctx.createVertexSorter(cameraPos.toVanilla()));
                 }
 
                 meshData.close();
@@ -294,7 +293,7 @@ public class ShapeBox extends ShapeBase
         profiler.pop();
     }
 
-    protected void renderBoxOutlines(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
+    protected void renderBoxOutlines(Vec3d cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
         if (mc.level == null || mc.player == null || !this.renderLines)
         {
@@ -306,7 +305,7 @@ public class ShapeBox extends ShapeBase
 //        Color4f color = Configs.Colors.SHAPE_OUTLINES.getColor();
 
         RenderObjectVbo ctx = this.renderObjects.get(1);
-        BufferBuilder builder = ctx.start(() -> "minihud:box/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH);
+        BufferBuilder builder = ctx.start(() -> "minihud:box/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, 0);
         PoseStack matrices = new PoseStack();
 
         matrices.pushPose();

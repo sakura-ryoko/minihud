@@ -26,17 +26,18 @@ public abstract class MixinItemStack
     @Inject(method = "addToTooltip",
             at = @At(value = "HEAD"),
             cancellable = true)
-    private <T> void minihud_disableVanillaBeeTooltips(DataComponentType<T> componentType, Item.TooltipContext context, TooltipDisplay displayComponent, Consumer<Component> textConsumer, TooltipFlag type, CallbackInfo ci)
+    private <T> void minihud_disableVanillaBeeTooltips(DataComponentType<T> type, Item.TooltipContext context, TooltipDisplay display,
+                                                       Consumer<Component> consumer, TooltipFlag flag, CallbackInfo ci)
     {
         if (Configs.Generic.DISABLE_VANILLA_BEE_TOOLTIPS.getBooleanValue())
         {
             if (Configs.Generic.BEE_TOOLTIPS.getBooleanValue() &&
-                componentType == DataComponents.BEES)
+                type == DataComponents.BEES)
             {
                 ci.cancel();
             }
             else if (Configs.Generic.HONEY_TOOLTIPS.getBooleanValue() &&
-                     componentType == DataComponents.BLOCK_STATE &&
+                     type == DataComponents.BLOCK_STATE &&
                      this.getItem() instanceof BlockItem block &&
                      block.getBlock() instanceof BeehiveBlock)
             {

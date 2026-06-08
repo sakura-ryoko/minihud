@@ -18,7 +18,7 @@ public abstract class MixinChatScreen extends Screen
     }
 
     @Inject(method = "handleChatInput", at = @At("HEAD"), cancellable = true)
-    private void onSendChatMessage(String msg, boolean addToHistory, CallbackInfo ci)
+    private void onSendChatMessage(String msg, boolean addToRecent, CallbackInfo ci)
     {
         if (DataStorage.getInstance().onSendChatMessage(msg))
         {

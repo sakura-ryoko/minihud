@@ -13,10 +13,9 @@ import net.minecraft.world.entity.OwnableEntity;
 import fi.dy.masa.malilib.util.data.DataEntityUtils;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
-import fi.dy.masa.minihud.data.EntitiesDataManager;
 import fi.dy.masa.minihud.info.InfoLine;
 import fi.dy.masa.minihud.info.InfoLineContext;
-import fi.dy.masa.minihud.mixin.entity.IMixinPassiveEntity;
+import fi.dy.masa.minihud.mixin.entity.IMixinAgeableMob;
 import fi.dy.masa.minihud.util.MiscUtils;
 
 public class InfoLineLookingAtEntity extends InfoLine
@@ -76,7 +75,7 @@ public class InfoLineLookingAtEntity extends InfoLine
                     entityLine = entityLine + " - " + this.qt(LOOKING_KEY+".owner") + ": " + owner.getName().tryCollapseToString();
                 }
             }
-            if (!isAgeLocked && agePair.getLeft() < 0)
+            if (!isAgeLocked && agePair.getLeft() < -1)
             {
                 int untilGrown = agePair.getLeft() * (-1);
                 entityLine = entityLine+ " [" + MiscUtils.formatDuration(untilGrown * 50L) + " " + this.qt(REMAINING_KEY) + "]";
@@ -103,9 +102,9 @@ public class InfoLineLookingAtEntity extends InfoLine
             }
             if (living instanceof AgeableMob ageMob)
             {
-                if (ageMob.getAge() < 0 && !ageMob.isAgeLocked())
+                if (!ageMob.isAgeLocked() && ageMob.getAge() < -1)
                 {
-                    int untilGrown = ((IMixinPassiveEntity) ageMob).minihud_getRealBreedingAge() * (-1);
+                    int untilGrown = ((IMixinAgeableMob) ageMob).minihud_getRealBreedingAge() * (-1);
                     entityLine = entityLine+ " [" + MiscUtils.formatDuration(untilGrown * 50L) + " " + this.qt(REMAINING_KEY) + "]";
                 }
                 else if (ageMob.isAgeLocked())

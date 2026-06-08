@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.golem.CopperGolem;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.WeatheringCopper;
@@ -16,7 +17,7 @@ import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.info.InfoLine;
 import fi.dy.masa.minihud.info.InfoLineContext;
-import fi.dy.masa.minihud.mixin.entity.IMixinCopperGolemEntity;
+import fi.dy.masa.minihud.mixin.entity.IMixinCopperGolem;
 import fi.dy.masa.minihud.util.CopperAgingMode;
 import fi.dy.masa.minihud.util.MiscUtils;
 
@@ -58,7 +59,7 @@ public class InfoLineCopperAging extends InfoLine
     {
         List<Entry> list = new ArrayList<>();
 
-		if (entityType.equals(EntityType.COPPER_GOLEM))
+		if (entityType.equals(EntityTypes.COPPER_GOLEM))
 		{
 			Pair<WeatheringCopper.WeatherState, Long> pair = DataEntityUtils.getWeatheringData(data);
 			WeatheringCopper.WeatherState level = pair.getLeft();
@@ -109,7 +110,7 @@ public class InfoLineCopperAging extends InfoLine
         if (ent instanceof CopperGolem cge)
         {
 			WeatheringCopper.WeatherState level = cge.getWeatherState();
-			final long age = ((IMixinCopperGolemEntity) cge).minihud_getNextOxidationAge();
+			final long age = ((IMixinCopperGolem) cge).minihud_getNextOxidationAge();
 
 			// Waxed (-2L)
 			if (age == -2L)

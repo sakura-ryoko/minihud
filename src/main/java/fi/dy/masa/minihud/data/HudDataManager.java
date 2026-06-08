@@ -38,7 +38,7 @@ import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.InfoToggle;
-import fi.dy.masa.minihud.mixin.world.IMixinServerRecipeManager;
+import fi.dy.masa.minihud.mixin.world.IMixinRecipeManager;
 import fi.dy.masa.minihud.network.ServuxHudHandler;
 import fi.dy.masa.minihud.network.ServuxHudPacket;
 import fi.dy.masa.minihud.renderer.OverlayRendererSpawnChunks;
@@ -449,7 +449,7 @@ public class HudDataManager
     {
         if (DataStorage.getInstance().hasIntegratedServer() && this.getRecipeManager() != null)
         {
-            return ((IMixinServerRecipeManager) this.getRecipeManager()).minihud_getPreparedRecipes();
+            return ((IMixinRecipeManager) this.getRecipeManager()).minihud_getPreparedRecipes();
         }
         else if (this.hasRecipes())
         {

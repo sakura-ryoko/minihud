@@ -8,7 +8,7 @@ import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.info.InfoLine;
 import fi.dy.masa.minihud.info.InfoLineContext;
-import fi.dy.masa.minihud.mixin.render.IMixinWorldRenderer;
+import fi.dy.masa.minihud.mixin.render.IMixinLevelExtractor;
 
 public class InfoLineChunkSections extends InfoLine
 {
@@ -37,7 +37,7 @@ public class InfoLineChunkSections extends InfoLine
             return null;
         }
 
-        list.add(this.translate(CHUNKS_KEY, ((IMixinWorldRenderer) mc().levelRenderer).minihud_getRenderedChunksInvoker()));
+        list.add(this.translate(CHUNKS_KEY, ((IMixinLevelExtractor) mc().levelExtractor).minihud_getRenderedChunksInvoker()));
 
         return list;
     }

@@ -15,13 +15,12 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.BlockEntityTypes;
 import net.minecraft.world.level.block.entity.ConduitBlockEntity;
-import net.minecraft.world.phys.Vec3;
 
 import fi.dy.masa.malilib.render.MaLiLibPipelines;
-import fi.dy.masa.malilib.util.LayerRange;
 import fi.dy.masa.malilib.util.data.Color4f;
+import fi.dy.masa.malilib.util.position.LayerRange;
 import fi.dy.masa.malilib.util.position.PositionUtils;
 import fi.dy.masa.malilib.util.position.Vec3d;
 import fi.dy.masa.minihud.MiniHUD;
@@ -49,7 +48,7 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
 
     public OverlayRendererConduitRange()
     {
-        super(RendererToggle.OVERLAY_CONDUIT_RANGE, BlockEntityType.CONDUIT, ConduitBlockEntity.class);
+        super(RendererToggle.OVERLAY_CONDUIT_RANGE, BlockEntityTypes.CONDUIT, ConduitBlockEntity.class);
         this.quadAxis = Direction.UP.getAxis();
         this.renderType = ShapeRenderType.OUTER_EDGE;
         this.layerRange = new LayerRange(null);
@@ -65,7 +64,7 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
     }
 
     @Override
-    protected void updateBlockRange(Level world, BlockPos pos, ConduitBlockEntity be, Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
+    protected void updateBlockRange(Level world, BlockPos pos, ConduitBlockEntity be, Vec3d cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
         this.colorLines = Configs.Colors.CONDUIT_RANGE_OUTLINES.getColor();
         this.combineQuads = Configs.Generic.CONDUIT_RANGE_OVERLAY_COMBINE_QUADS.getBooleanValue();
@@ -158,7 +157,7 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
     }
 
     @Override
-    protected void renderBlockRange(Level world, Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
+    protected void renderBlockRange(Level world, Vec3d cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
         boolean outlines = Configs.Generic.CONDUIT_RANGE_OVERLAY_RENDER_OUTLINES.getBooleanValue();
 //        LOGGER.debug("renderBlockRange(): count [{}]", this.conduits.size());
@@ -201,7 +200,7 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
         }
     }
 
-    private void renderQuads(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
+    private void renderQuads(Vec3d cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
         if (mc.level == null || mc.player == null)
         {
@@ -212,7 +211,7 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
 
         profiler.push("conduit_quads");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "minihud:conduit/quads", this.renderThrough ? MaLiLibPipelines.MINIHUD_SHAPE_NO_DEPTH_OFFSET : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL);
+        BufferBuilder builder = ctx.start(() -> "minihud:conduit/quads", this.renderThrough ? MaLiLibPipelines.MINIHUD_SHAPE_NO_DEPTH_OFFSET : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL, 0);
 
         synchronized (this.conduits)
         {
@@ -245,7 +244,7 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
 
                 if (this.shouldResort)
                 {
-                    ctx.startResorting(meshData, ctx.createVertexSorter(cameraPos));
+                    ctx.startResorting(meshData, ctx.createVertexSorter(cameraPos.toVanilla()));
                 }
 
                 meshData.close();
@@ -259,7 +258,7 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
         profiler.pop();
     }
 
-    private void renderOutlines(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
+    private void renderOutlines(Vec3d cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
         if (mc.level == null || mc.player == null || !Configs.Generic.CONDUIT_RANGE_OVERLAY_RENDER_OUTLINES.getBooleanValue())
         {
@@ -268,7 +267,7 @@ public class OverlayRendererConduitRange extends BaseBlockRangeOverlay<ConduitBl
 
         profiler.push("conduit_outlines");
         RenderObjectVbo ctx = this.renderObjects.get(1);
-        BufferBuilder builder = ctx.start(() -> "minihud:conduit/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH);
+        BufferBuilder builder = ctx.start(() -> "minihud:conduit/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, 0);
 
         synchronized (this.conduits)
         {

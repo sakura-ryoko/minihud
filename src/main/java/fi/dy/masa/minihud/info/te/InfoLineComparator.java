@@ -6,6 +6,7 @@ import javax.annotation.Nonnull;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.BlockEntityTypes;
 import net.minecraft.world.level.block.entity.ComparatorBlockEntity;
 import fi.dy.masa.malilib.util.data.DataBlockUtils;
 import fi.dy.masa.malilib.util.data.tag.CompoundData;
@@ -53,7 +54,7 @@ public class InfoLineComparator extends InfoLine
     {
         List<Entry> list = new ArrayList<>();
 
-        if (beType.equals(BlockEntityType.COMPARATOR))
+        if (beType.equals(BlockEntityTypes.COMPARATOR))
         {
             int output = DataBlockUtils.getOutputSignal(data);
 

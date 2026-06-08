@@ -21,13 +21,13 @@ public enum DebugRenderType implements StringRepresentable
 	NEIGHBOR_UPDATES          ("neighbor_updates",      RendererToggle.DEBUG_NEIGHBOR_UPDATES),
 	REDSTONE_WIRE_UPDATE_ORDER("redstone_update_order", RendererToggle.DEBUG_REDSTONE_UPDATE_ORDER),
 	STRUCTURES                ("structures",            RendererToggle.DEBUG_STRUCTURES),
-	GAME_EVENT_LISTENERS      ("game_event_listeners",  RendererToggle.DEBUG_GAME_EVENT),
-	GOAL_SELECTOR             ("goal_selector",         RendererToggle.DEBUG_GOAL_SELECTOR),
 	VILLAGE_SECTIONS          ("village_sections",      RendererToggle.DEBUG_VILLAGE_SECTIONS),
 	BRAIN                     ("brain",                 RendererToggle.DEBUG_BRAIN),
 	POI                       ("poi",                   RendererToggle.DEBUG_POI),
 	BEES                      ("bees",                  RendererToggle.DEBUG_BEEDATA),
 	RAIDS                     ("raids",                 RendererToggle.DEBUG_RAID_CENTER),
+	GOAL_SELECTOR             ("goal_selector",         RendererToggle.DEBUG_GOAL_SELECTOR),
+	GAME_EVENT_LISTENERS      ("game_event_listeners",  RendererToggle.DEBUG_GAME_EVENT),
 	BREEZE                    ("breeze",                RendererToggle.DEBUG_BREEZE_JUMP),
 	ENTITY_BLOCK_INTERSECTION ("entity_block_intersect",RendererToggle.DEBUG_ENTITY_BLOCK_INTERSECTION),
 	// 1.21.10-Only
@@ -79,13 +79,13 @@ public enum DebugRenderType implements StringRepresentable
 			case "neighbor_updates" -> SharedConstants.DEBUG_NEIGHBORSUPDATE = toggle;
 			case "redstone_update_order" -> SharedConstants.DEBUG_EXPERIMENTAL_REDSTONEWIRE_UPDATE_ORDER = toggle;
 			case "structures" -> SharedConstants.DEBUG_STRUCTURES = toggle;
-			case "game_event_listeners" -> SharedConstants.DEBUG_GAME_EVENT_LISTENERS = toggle;
-			case "goal_selector" -> SharedConstants.DEBUG_GOAL_SELECTOR = toggle;
 			case "village_sections" -> SharedConstants.DEBUG_VILLAGE_SECTIONS = toggle;
 			case "brain" -> SharedConstants.DEBUG_BRAIN = toggle;
 			case "poi" -> SharedConstants.DEBUG_POI = toggle;
 			case "bees" -> SharedConstants.DEBUG_BEES = toggle;
 			case "raids" -> SharedConstants.DEBUG_RAIDS = toggle;
+			case "goal_selector" -> SharedConstants.DEBUG_GOAL_SELECTOR = toggle;
+			case "game_event_listeners" -> SharedConstants.DEBUG_GAME_EVENT_LISTENERS = toggle;
 			case "breeze" -> SharedConstants.DEBUG_BREEZE_MOB = toggle;
 			case "entity_block_intersect" -> SharedConstants.DEBUG_ENTITY_BLOCK_INTERSECTION = toggle;
 			// 1.21.10-Only

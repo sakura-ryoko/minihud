@@ -17,7 +17,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.phys.Vec3;
 
 import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.StringUtils;
@@ -44,7 +43,7 @@ public class ShapeCircle extends ShapeCircleBase
     }
 
     @Override
-    public void update(Vec3 cameraPos, Entity entity, Minecraft mc, ProfilerFiller profiler)
+    public void update(Vec3d cameraPos, Entity entity, Minecraft mc, ProfilerFiller profiler)
     {
         this.hasData = true;
         this.render(cameraPos, mc, profiler);
@@ -58,7 +57,7 @@ public class ShapeCircle extends ShapeCircleBase
     }
 
     @Override
-    public void render(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
+    public void render(Vec3d cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
         this.allocateBuffers(this.renderLines);
         this.renderQuads(cameraPos, mc, profiler);
@@ -69,7 +68,7 @@ public class ShapeCircle extends ShapeCircleBase
         }
     }
 
-    private void renderQuads(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
+    private void renderQuads(Vec3d cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
         if (mc.level == null || mc.player == null)
         {
@@ -78,7 +77,7 @@ public class ShapeCircle extends ShapeCircleBase
 
         profiler.push("circle_quads");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "minihud:circle/quads", this.renderThroughShape ? MaLiLibPipelines.MINIHUD_SHAPE_NO_DEPTH_OFFSET : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL);
+        BufferBuilder builder = ctx.start(() -> "minihud:circle/quads", this.renderThroughShape ? MaLiLibPipelines.MINIHUD_SHAPE_NO_DEPTH_OFFSET : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL, 0);
 
         this.renderCircleShapeQuads(cameraPos, builder);
 
@@ -92,7 +91,7 @@ public class ShapeCircle extends ShapeCircleBase
 
                 if (this.shouldResort)
                 {
-                    ctx.startResorting(meshData, ctx.createVertexSorter(cameraPos));
+                    ctx.startResorting(meshData, ctx.createVertexSorter(cameraPos.toVanilla()));
                 }
 
                 meshData.close();
@@ -107,7 +106,7 @@ public class ShapeCircle extends ShapeCircleBase
         profiler.pop();
     }
 
-    private void renderOutlines(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
+    private void renderOutlines(Vec3d cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
         if (mc.level == null || mc.player == null || !this.renderLines)
         {
@@ -116,7 +115,7 @@ public class ShapeCircle extends ShapeCircleBase
 
         profiler.push("circle_outlines");
         RenderObjectVbo ctx = this.renderObjects.get(1);
-        BufferBuilder builder = ctx.start(() -> "minihud:circle/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH);
+        BufferBuilder builder = ctx.start(() -> "minihud:circle/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, 0);
 
         this.renderCircleShapeOutlines(cameraPos, this.glLineWidth, builder);
 
@@ -156,7 +155,7 @@ public class ShapeCircle extends ShapeCircleBase
         this.setNeedsUpdate();
     }
 
-    protected void renderCircleShapeQuads(Vec3 cameraPos, BufferBuilder builder)
+    protected void renderCircleShapeQuads(Vec3d cameraPos, BufferBuilder builder)
     {
         LongOpenHashSet positions = new LongOpenHashSet();
         Consumer<BlockPos.MutableBlockPos> positionConsumer = this.getPositionCollector(positions);
@@ -214,7 +213,7 @@ public class ShapeCircle extends ShapeCircleBase
         }
     }
 
-    protected void renderCircleShapeOutlines(Vec3 cameraPos,
+    protected void renderCircleShapeOutlines(Vec3d cameraPos,
                                              float lineWidth,
                                              BufferBuilder builder)
     {

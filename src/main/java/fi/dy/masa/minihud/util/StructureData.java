@@ -13,7 +13,7 @@ import net.minecraft.world.level.levelgen.structure.StructurePiece;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraft.world.level.levelgen.structure.TerrainAdjustment;
 
-import fi.dy.masa.malilib.util.IntBoundingBox;
+import fi.dy.masa.malilib.util.position.IntBoundingBox;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
 
@@ -160,12 +160,6 @@ public class StructureData
 
             try
             {
-//                Structure structure = DataStorage.getInstance().getWorldRegistryManager().lookupOrThrow(Registries.STRUCTURE).getValue(Identifier.tryParse(id));
-//                Structure structure = WorldUtils.getBestWorld(Minecraft.getInstance()).registryAccess().lookupOrThrow(Registries.STRUCTURE).getValue(Identifier.tryParse(id));
-
-//                if (structure == null) return null;
-//			    final int ref = tag.getInt("references", 0);
-//			    ChunkPos pos = new ChunkPos(tag.getInt("ChunkX", 0), tag.getInt("ChunkZ", 0));
                 ImmutableList.Builder<@NotNull IntBoundingBox> builder = ImmutableList.builder();
                 ListTag pieces = tag.getListOrEmpty("Children");
                 boolean shouldExpandBox = tag.getBooleanOr("ExpandBox", false);
@@ -271,7 +265,7 @@ public class StructureData
 			// Vanilla says to expand it if != StructureTerrainAdaptation.NONE
 			if (expandBox)
 			{
-				bb.expand(expandBoxAmount);
+				bb = bb.expand(expandBoxAmount);
 			}
 
 			return bb;

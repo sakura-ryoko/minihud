@@ -5,7 +5,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(BiomeManager.class)
-public interface IMixinBiomeAccess
+public interface IMixinBiomeManager
 {
     @Accessor("biomeZoomSeed")
     long minihud_getSeed();

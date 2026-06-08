@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import fi.dy.masa.minihud.util.DataStorage;
 
 @Mixin(MultiPlayerGameMode.class)
-public abstract class MixinClientPlayerInteractionManager
+public abstract class MixinMultiPlayerGameMode
 {
     @Shadow @Final private Minecraft minecraft;
 

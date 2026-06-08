@@ -42,7 +42,7 @@ import fi.dy.masa.malilib.interfaces.IDataSyncer;
 import fi.dy.masa.malilib.mixin.entity.IMixinAbstractHorseEntity;
 import fi.dy.masa.malilib.mixin.entity.IMixinAbstractNautilus;
 import fi.dy.masa.malilib.mixin.entity.IMixinPiglinEntity;
-import fi.dy.masa.malilib.mixin.network.IMixinDataQueryHandler;
+import fi.dy.masa.malilib.mixin.network.IMixinDebugQueryHandler;
 import fi.dy.masa.malilib.network.ClientPlayHandler;
 import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
 import fi.dy.masa.malilib.util.InventoryUtils;
@@ -634,6 +634,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
     @Override
     public @Nullable Pair<Entity, CompoundData> requestEntity(Level world, int entityId)
     {
+//        MiniHUD.debugLog("requestEntity: Current Thread: {}", Thread.currentThread().getName());
         if (this.entityCache.containsKey(entityId))
         {
             // Refresh at 25%
@@ -649,11 +650,18 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
             }
 
             // Refresh from Server World
-            if (world instanceof ServerLevel)
+            if (world instanceof ServerLevel sl)
             {
-//                MiniHUD.debugLog("requestEntity: entity Id [{}] refresh from local server", entityId);
-//                return this.refreshEntityFromWorld(world, entityId);
-                this.requestEntityFromLocalServer(this.mc, world, entityId);
+                if (Thread.currentThread().getName().contains("Server"))
+                {
+//                    MiniHUD.debugLog("requestEntity: entity Id [{}] refresh from server world", entityId);
+                    return this.refreshEntityFromWorld(sl, entityId);
+                }
+                else
+                {
+//                    MiniHUD.debugLog("requestEntity: entity Id [{}] refresh from local server", entityId);
+                    this.requestEntityFromLocalServer(this.mc, world, entityId);
+                }
             }
 
 //            MiniHUD.debugLog("requestEntity: entity Id [{}] get from cache", entityId);
@@ -667,7 +675,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
             this.pendingEntitiesQueue.add(entityId);
         }
 
-//        MiniHUD.debugLog("requestEntity: entity Id [{}] refresh from world", entityId);
+//        MiniHUD.debugLog("requestEntity: entity Id [{}] refresh from client world", entityId);
         return this.refreshEntityFromWorld(this.getClientWorld(), entityId);
     }
 
@@ -854,7 +862,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
         {
             this.sentBackupPackets = true;
             handler.getDebugQueryHandler().queryBlockEntityTag(pos, nbtCompound -> handleBlockEntityData(pos, nbtCompound, null));
-            this.transactionToBlockPosOrEntityId.put(((IMixinDataQueryHandler) handler.getDebugQueryHandler()).malilib_currentTransactionId(), Either.left(pos));
+            this.transactionToBlockPosOrEntityId.put(((IMixinDebugQueryHandler) handler.getDebugQueryHandler()).malilib_currentTransactionId(), Either.left(pos));
         }
     }
 
@@ -871,7 +879,7 @@ public class EntitiesDataManager implements IClientTickHandler, IDataSyncer
         {
             this.sentBackupPackets = true;
             handler.getDebugQueryHandler().queryEntityTag(entityId, nbtCompound -> handleEntityData(entityId, nbtCompound));
-            this.transactionToBlockPosOrEntityId.put(((IMixinDataQueryHandler) handler.getDebugQueryHandler()).malilib_currentTransactionId(), Either.right(entityId));
+            this.transactionToBlockPosOrEntityId.put(((IMixinDebugQueryHandler) handler.getDebugQueryHandler()).malilib_currentTransactionId(), Either.right(entityId));
         }
     }
 

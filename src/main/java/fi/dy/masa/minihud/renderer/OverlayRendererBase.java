@@ -8,10 +8,10 @@ import com.google.gson.JsonObject;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraft.world.phys.Vec3;
 
 import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.WorldUtils;
+import fi.dy.masa.malilib.util.position.Vec3d;
 
 public abstract class OverlayRendererBase implements IOverlayRenderer
 {
@@ -20,7 +20,7 @@ public abstract class OverlayRendererBase implements IOverlayRenderer
     protected boolean useCulling;
     protected float glLineWidth;
     @Nullable protected BlockPos lastUpdatePos;
-    private Vec3 updateCameraPos;
+    private Vec3d updateCameraPos;
     protected boolean shouldResort;
 
     public OverlayRendererBase()
@@ -28,7 +28,7 @@ public abstract class OverlayRendererBase implements IOverlayRenderer
 //        this.glLineWidth = Configs.Generic.DEFAULT_GL_LINE_WIDTH.getFloatValue();
         this.glLineWidth = 1.6f;
         this.lastUpdatePos = BlockPos.ZERO;
-        this.updateCameraPos = Vec3.ZERO;
+        this.updateCameraPos = Vec3d.ZERO;
         this.renderThrough = false;
         this.useCulling = false;
         this.shouldResort = false;
@@ -51,11 +51,11 @@ public abstract class OverlayRendererBase implements IOverlayRenderer
     protected void allocateBuffers(boolean useOutlines)
     {
         this.clearBuffers();
-        this.renderObjects.add(new RenderObjectVbo(() -> this.getName()+"/Quads", MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL));
+        this.renderObjects.add(new RenderObjectVbo(() -> this.getName()+"/Quads", MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL, 0));
 
         if (useOutlines)
         {
-            this.renderObjects.add(new RenderObjectVbo(() -> this.getName() + "/Outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH));
+            this.renderObjects.add(new RenderObjectVbo(() -> this.getName() + "/Outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, 0));
         }
     }
 
@@ -65,13 +65,13 @@ public abstract class OverlayRendererBase implements IOverlayRenderer
     }
 
     @Override
-    public final Vec3 getUpdatePosition()
+    public final Vec3d getUpdatePosition()
     {
         return this.updateCameraPos;
     }
 
     @Override
-    public final void setUpdatePosition(Vec3 cameraPosition)
+    public final void setUpdatePosition(Vec3d cameraPosition)
     {
         this.updateCameraPos = cameraPosition;
     }
@@ -107,7 +107,7 @@ public abstract class OverlayRendererBase implements IOverlayRenderer
     }
 
     @Override
-    public void draw(Vec3 cameraPos)
+    public void draw(Vec3d cameraPos)
     {
         for (RenderObjectVbo obj : this.renderObjects)
         {
@@ -117,7 +117,7 @@ public abstract class OverlayRendererBase implements IOverlayRenderer
             // TODO (nvidia only?)
             if (this.shouldResort && obj.shouldResort())
             {
-                obj.resortTranslucent(obj.createVertexSorter(cameraPos));
+                obj.resortTranslucent(obj.createVertexSorter(cameraPos.toVanilla()));
             }
 
             obj.drawPost(null, false, false);
@@ -130,7 +130,7 @@ public abstract class OverlayRendererBase implements IOverlayRenderer
         this.resetBuffers();
         this.glLineWidth = 1.0f;
         this.lastUpdatePos = BlockPos.ZERO;
-        this.updateCameraPos = Vec3.ZERO;
+        this.updateCameraPos = Vec3d.ZERO;
     }
 
     public void setRenderThrough(boolean renderThrough)

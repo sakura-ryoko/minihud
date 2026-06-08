@@ -8,6 +8,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BeehiveBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.BlockEntityTypes;
+
 import org.apache.commons.lang3.tuple.Pair;
 import fi.dy.masa.malilib.util.data.DataBlockUtils;
 import fi.dy.masa.malilib.util.data.tag.CompoundData;
@@ -55,7 +57,7 @@ public class InfoLineBeeCount extends InfoLine
     {
         List<Entry> list = new ArrayList<>();
 
-        if (beType.equals(BlockEntityType.BEEHIVE))
+        if (beType.equals(BlockEntityTypes.BEEHIVE))
         {
             Pair<List<BeehiveBlockEntity.Occupant>, BlockPos> bees = DataBlockUtils.getBeesData(data);
 

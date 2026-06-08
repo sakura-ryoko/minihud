@@ -16,7 +16,7 @@ import fi.dy.masa.minihud.config.Configs;
 public class MixinBundleItem
 {
     @Inject(method = "getTooltipImage", at = @At("HEAD"), cancellable = true)
-    private void minihud_getTooltipData(ItemStack stack, CallbackInfoReturnable<Optional<TooltipComponent>> cir)
+    private void minihud_getTooltipData(ItemStack bundle, CallbackInfoReturnable<Optional<TooltipComponent>> cir)
     {
         if (Configs.Generic.BUNDLE_PREVIEW.getBooleanValue() &&
             Configs.Generic.BUNDLE_DISPLAY_REQUIRE_SHIFT.getBooleanValue() &&

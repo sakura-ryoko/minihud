@@ -15,14 +15,6 @@ public abstract class MixinMinecraftServer
 {
 	@Shadow public abstract LevelData.RespawnData getRespawnData();
 
-	// TODO really not needed
-//	@Inject(method = "tick", at = @At("TAIL"))
-//    public void minihud_onServerTickPost(BooleanSupplier supplier, CallbackInfo ci)
-//    {
-//        DebugInfoUtils.onServerTickEnd((MinecraftServer) (Object) this);
-//    }
-
-
 	@Inject(method = "prepareLevels",
 			at = @At(value = "INVOKE",
             target = "Lnet/minecraft/server/MinecraftServer;updateMobSpawningFlags()V"
@@ -33,6 +25,5 @@ public abstract class MixinMinecraftServer
     {
 //		MiniHUD.LOGGER.error("minihud_onPrepareStartRegion() [StartRegion] --> [{}]", this.getSpawnPos().toString());
 		HudDataManager.getInstance().setWorldSpawn(this.getRespawnData().globalPos());
-//        HudDataManager.getInstance().setSpawnChunkRadius(i, true);
     }
 }

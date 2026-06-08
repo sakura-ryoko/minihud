@@ -6,6 +6,7 @@ import java.util.UUID;
 import javax.annotation.Nonnull;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.monster.skeleton.Skeleton;
 import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.entity.monster.zombie.ZombieVillager;
@@ -17,9 +18,9 @@ import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.info.InfoLine;
 import fi.dy.masa.minihud.info.InfoLineContext;
-import fi.dy.masa.minihud.mixin.entity.IMixinSkeletonEntity;
-import fi.dy.masa.minihud.mixin.entity.IMixinZombieEntity;
-import fi.dy.masa.minihud.mixin.entity.IMixinZombieVillagerEntity;
+import fi.dy.masa.minihud.mixin.entity.IMixinSkeleton;
+import fi.dy.masa.minihud.mixin.entity.IMixinZombie;
+import fi.dy.masa.minihud.mixin.entity.IMixinZombieVillager;
 import fi.dy.masa.minihud.util.MiscUtils;
 
 public class InfoLineZombieConversion extends InfoLine
@@ -62,17 +63,17 @@ public class InfoLineZombieConversion extends InfoLine
         List<Entry> list = new ArrayList<>();
         int conversionTimer = -1;
 
-        if (entityType.equals(EntityType.ZOMBIE_VILLAGER))
+        if (entityType.equals(EntityTypes.ZOMBIE_VILLAGER))
         {
             Pair<Integer, UUID> zombieDoctor = DataEntityUtils.getZombieConversionTimer(data);
             conversionTimer = zombieDoctor.getLeft();
         }
-        else if (entityType.equals(EntityType.ZOMBIE))
+        else if (entityType.equals(EntityTypes.ZOMBIE))
         {
             Pair<Integer, Integer> zombieDoctor = DataEntityUtils.getDrownedConversionTimer(data);
             conversionTimer = zombieDoctor.getLeft();
         }
-        else if (entityType.equals(EntityType.SKELETON))
+        else if (entityType.equals(EntityTypes.SKELETON))
         {
             conversionTimer = DataEntityUtils.getStrayConversionTime(data);
         }
@@ -97,11 +98,11 @@ public class InfoLineZombieConversion extends InfoLine
         switch (ent)
         {
             case ZombieVillager zombie ->
-                    conversionTimer = ((IMixinZombieVillagerEntity) zombie).minihud_conversionTimer();
+                    conversionTimer = ((IMixinZombieVillager) zombie).minihud_conversionTimer();
             case Zombie zombert ->
-                    conversionTimer = ((IMixinZombieEntity) zombert).minihud_ticksUntilWaterConversion();
+                    conversionTimer = ((IMixinZombie) zombert).minihud_ticksUntilWaterConversion();
             case Skeleton skeleton ->
-                    conversionTimer = ((IMixinSkeletonEntity) skeleton).minihud_conversionTime();
+                    conversionTimer = ((IMixinSkeleton) skeleton).minihud_conversionTime();
             default ->
                     conversionTimer = -1;
         }

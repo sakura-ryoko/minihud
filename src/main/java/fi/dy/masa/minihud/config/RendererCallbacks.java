@@ -1,19 +1,20 @@
 package fi.dy.masa.minihud.config;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.GlobalPos;
+import net.minecraft.world.entity.Entity;
+
 import fi.dy.masa.malilib.config.IConfigBoolean;
 import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.util.EntityUtils;
 import fi.dy.masa.malilib.util.InfoUtils;
 import fi.dy.masa.malilib.util.StringUtils;
+import fi.dy.masa.malilib.util.position.Vec3d;
 import fi.dy.masa.minihud.data.DebugDataManager;
 import fi.dy.masa.minihud.data.HudDataManager;
 import fi.dy.masa.minihud.renderer.*;
 import fi.dy.masa.minihud.renderer.shapes.ShapeManager;
 import fi.dy.masa.minihud.util.DataStorage;
-import net.minecraft.client.Minecraft;
-import net.minecraft.core.GlobalPos;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.phys.Vec3;
 
 public class RendererCallbacks
 {
@@ -65,7 +66,7 @@ public class RendererCallbacks
 
         if (config.getBooleanValue() && entity != null)
         {
-            Vec3 pos = entity.position();
+            Vec3d pos = Vec3d.of(entity.position());
             OverlayRendererRandomTickableChunks.INSTANCE_FIXED.setNewPos(pos);
             String green = GuiBase.TXT_GREEN;
             String rst = GuiBase.TXT_RST;

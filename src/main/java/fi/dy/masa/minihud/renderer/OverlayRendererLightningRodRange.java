@@ -10,24 +10,23 @@ import com.mojang.blaze3d.vertex.MeshData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.util.Mth;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraft.world.phys.Vec3;
 
 import fi.dy.masa.malilib.render.MaLiLibPipelines;
-import fi.dy.masa.malilib.util.LayerRange;
+import fi.dy.masa.malilib.util.MathUtils;
 import fi.dy.masa.malilib.util.data.Color4f;
+import fi.dy.masa.malilib.util.position.LayerRange;
 import fi.dy.masa.malilib.util.position.PositionUtils;
 import fi.dy.masa.malilib.util.position.Vec3d;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.RendererToggle;
+import fi.dy.masa.minihud.data.CachedTagManager;
 import fi.dy.masa.minihud.renderer.shapes.SideQuad;
 import fi.dy.masa.minihud.renderer.worker.BlockScanWorkerTask;
 import fi.dy.masa.minihud.renderer.worker.WorkerDaemonHandler;
@@ -266,7 +265,7 @@ public class OverlayRendererLightningRodRange extends OverlayRendererBase
 	}
 
 	@Override
-	public void update(Vec3 cameraPos, Entity entity, Minecraft mc, ProfilerFiller profiler)
+	public void update(Vec3d cameraPos, Entity entity, Minecraft mc, ProfilerFiller profiler)
 	{
 		if (this.needsUpdate)
 		{
@@ -299,7 +298,7 @@ public class OverlayRendererLightningRodRange extends OverlayRendererBase
 		// Clean up rods that are too far away (beyond render distance + 2 chunks)
 		// This prevents unbounded memory growth as player explores
 		// Follows same pattern as BaseBlockRangeOverlay.updateBlockRanges()
-		final Vec3 entityPos = entity.position();
+		final Vec3d entityPos = Vec3d.of(entity.position());
 		final double maxDist = (mc.options.renderDistance().get() + 2) * 16;
 		final double maxDistSq = maxDist * maxDist;
 
@@ -324,8 +323,8 @@ public class OverlayRendererLightningRodRange extends OverlayRendererBase
 
 		if (!this.initialScanComplete)
 		{
-			final int centerChunkX = Mth.floor(entity.getX()) >> 4;
-			final int centerChunkZ = Mth.floor(entity.getZ()) >> 4;
+			final int centerChunkX = MathUtils.floor(entity.getX()) >> 4;
+			final int centerChunkZ = MathUtils.floor(entity.getZ()) >> 4;
 			int radius = Math.min(mc.options.renderDistance().get(), 8);
 
 			for (int xOff = -radius; xOff <= radius; xOff++)
@@ -438,14 +437,7 @@ public class OverlayRendererLightningRodRange extends OverlayRendererBase
 
 	private boolean isLightningRodBlock(Block block)
 	{
-		return  block == Blocks.LIGHTNING_ROD ||
-				block == Blocks.EXPOSED_LIGHTNING_ROD ||
-				block == Blocks.WEATHERED_LIGHTNING_ROD ||
-				block == Blocks.OXIDIZED_LIGHTNING_ROD ||
-				block == Blocks.WAXED_LIGHTNING_ROD ||
-				block == Blocks.WAXED_EXPOSED_LIGHTNING_ROD ||
-				block == Blocks.WAXED_WEATHERED_LIGHTNING_ROD ||
-				block == Blocks.WAXED_OXIDIZED_LIGHTNING_ROD;
+		return CachedTagManager.isLightningRod(block);
 	}
 
 	/**
@@ -602,7 +594,7 @@ public class OverlayRendererLightningRodRange extends OverlayRendererBase
 	}
 
 	@Override
-	public void render(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
+	public void render(Vec3d cameraPos, Minecraft mc, ProfilerFiller profiler)
 	{
 		Level world = mc.level;
 
@@ -622,7 +614,7 @@ public class OverlayRendererLightningRodRange extends OverlayRendererBase
 		{
 			// Mark ALL rods dirty (camera-relative vertices changed)
 			this.lightningRods.forEach(RodEntry::markDirty);
-			this.lastUpdatePos = BlockPos.containing(cameraPos);
+			this.lastUpdatePos = BlockPos.containing(cameraPos.toVanilla());
 		}
 
 		// Get colors once for all rods
@@ -642,7 +634,7 @@ public class OverlayRendererLightningRodRange extends OverlayRendererBase
 	}
 
 	@Override
-	public void draw(Vec3 cameraPos)
+	public void draw(Vec3d cameraPos)
 	{
 		// Draw all per-rod VBOs
 		for (RodEntry entry : this.lightningRods)
@@ -739,13 +731,13 @@ public class OverlayRendererLightningRodRange extends OverlayRendererBase
 			String name = "LightningRod@" + pos.toShortString();
 			this.attractionVbo = new RenderObjectVbo(
 					() -> name + "/Attraction",
-					MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL);
+					MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL, 0);
 			this.damageVbo = new RenderObjectVbo(
 					() -> name + "/Damage",
-					MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL);
+					MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL, 0);
 			this.outlineVbo = new RenderObjectVbo(
 					() -> name + "/Outline",
-					MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH);
+					MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, 0);
 		}
 
 		/**
@@ -760,7 +752,7 @@ public class OverlayRendererLightningRodRange extends OverlayRendererBase
 		 * @param damageColor     Color for damage zone
 		 * @param lineWidth       Line width for outlines
 		 */
-		public void buildVBOs(Vec3 cameraPos, boolean combineQuads, ShapeRenderType renderType,
+		public void buildVBOs(Vec3d cameraPos, boolean combineQuads, ShapeRenderType renderType,
 		                      LayerRange layerRange, Color4f attractionColor, Color4f damageColor,
 		                      float lineWidth)
 		{
@@ -783,7 +775,7 @@ public class OverlayRendererLightningRodRange extends OverlayRendererBase
 			if (!this.positions.isEmpty() && this.test != null)
 			{
 				BufferBuilder builder = this.attractionVbo.start(
-						() -> "attraction", MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL);
+						() -> "attraction", MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL, 0);
 
 				if (combineQuads)
 				{
@@ -818,7 +810,7 @@ public class OverlayRendererLightningRodRange extends OverlayRendererBase
 
 			// Build damage zone VBO (always - doesn't need sphere data)
 			BufferBuilder builder = this.damageVbo.start(
-					() -> "damage", MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL);
+					() -> "damage", MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL, 0);
 
 			fi.dy.masa.malilib.render.RenderUtils.drawBoxAllSidesBatchedQuads(
 					(float) (rodX - DAMAGE_ZONE_HORIZONTAL_RADIUS),
@@ -850,7 +842,7 @@ public class OverlayRendererLightningRodRange extends OverlayRendererBase
 
 			// Build outline VBO
 			builder = this.outlineVbo.start(
-					() -> "outline", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH);
+					() -> "outline", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, 0);
 
 			// Add sphere outlines only if data is ready
 			if (!this.positions.isEmpty() && this.test != null)
@@ -905,7 +897,7 @@ public class OverlayRendererLightningRodRange extends OverlayRendererBase
 		 * Draw this rod's VBOs.
 		 * Only draws if rod is eligible and VBOs have been uploaded.
 		 */
-		public void draw(Vec3 cameraPos)
+		public void draw(Vec3d cameraPos)
 		{
 			if (!this.isEligible)
 			{

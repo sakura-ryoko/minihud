@@ -65,16 +65,17 @@ public abstract class MixinConduitBlockEntity extends BlockEntity implements Con
     @Inject(method = "clientTick",
             at = @At(value = "INVOKE",
                     target = "Lnet/minecraft/world/level/block/entity/ConduitBlockEntity;updateHunting(Lnet/minecraft/world/level/block/entity/ConduitBlockEntity;Ljava/util/List;)V"))
-    private static void minihud_postActiveBlockScan(Level world, BlockPos pos, BlockState state,
-                                                    ConduitBlockEntity blockEntity, CallbackInfo ci)
+    private static void minihud_postActiveBlockScan(Level level, BlockPos pos, BlockState state,
+                                                    ConduitBlockEntity entity, CallbackInfo ci)
     {
         if (RendererToggle.OVERLAY_CONDUIT_RANGE.getBooleanValue())
         {
-            final int count = ((ConduitExtra) blockEntity).minihud$getCurrentActivatingBlockCount();
-            final int countBefore = ((ConduitExtra) blockEntity).minihud$getStoredActivatingBlockCount();
-            final boolean isActive = blockEntity.isActive();
-            final boolean wasActive = ((ConduitExtra) blockEntity).minihud$getStoredActiveStatus();
+            final int count = ((ConduitExtra) entity).minihud$getCurrentActivatingBlockCount();
+            final int countBefore = ((ConduitExtra) entity).minihud$getStoredActivatingBlockCount();
+            final boolean isActive = entity.isActive();
+            final boolean wasActive = ((ConduitExtra) entity).minihud$getStoredActiveStatus();
 
+            // For Debug
 //            if (wasActive != isActive)
 //            {
 //                System.out.printf("isActive: %s, wasActive: %s\n", isActive, wasActive);
@@ -87,8 +88,8 @@ public abstract class MixinConduitBlockEntity extends BlockEntity implements Con
             if (isActive != wasActive || count != countBefore)
             {
                 OverlayRendererConduitRange.INSTANCE.onBlockStatusChange(pos);
-                ((ConduitExtra) blockEntity).minihud$setActivatingBlockCount(count);
-                ((ConduitExtra) blockEntity).minihud$setWasActive(isActive);
+                ((ConduitExtra) entity).minihud$setActivatingBlockCount(count);
+                ((ConduitExtra) entity).minihud$setWasActive(isActive);
             }
         }
     }

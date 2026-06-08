@@ -71,11 +71,11 @@ public abstract class MixinBeaconBlockEntity extends BlockEntity
     }
 
     @Inject(method = "playSound", at = @At("HEAD"))
-    private static void minihud_onBeaconPlaySound(Level level, BlockPos blockPos, SoundEvent soundEvent, CallbackInfo ci)
+    private static void minihud_onBeaconPlaySound(Level level, BlockPos worldPosition, SoundEvent event, CallbackInfo ci)
     {
-        if (SoundEvents.BEACON_DEACTIVATE.equals(soundEvent) || SoundEvents.BEACON_ACTIVATE.equals(soundEvent))
+        if (SoundEvents.BEACON_DEACTIVATE.equals(event) || SoundEvents.BEACON_ACTIVATE.equals(event))
         {
-            OverlayRendererBeaconRange.INSTANCE.onBlockStatusChange(blockPos);
+            OverlayRendererBeaconRange.INSTANCE.onBlockStatusChange(worldPosition);
         }
     }
 }

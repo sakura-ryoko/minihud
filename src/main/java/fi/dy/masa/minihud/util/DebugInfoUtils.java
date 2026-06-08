@@ -107,7 +107,7 @@ public class DebugInfoUtils
 
     private static void debugWarn(String key, Object... args)
     {
-        Minecraft.getInstance().gui
+        Minecraft.getInstance().gui.hud
 		        .getChat()
 		        .addClientSystemMessage(Component.empty()
 		                                         .append(Component.translatable("debug.prefix").withStyle(ChatFormatting.YELLOW, ChatFormatting.BOLD))

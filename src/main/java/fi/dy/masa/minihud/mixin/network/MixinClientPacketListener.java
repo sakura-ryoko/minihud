@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.data.EntitiesDataManager;
 import fi.dy.masa.minihud.data.HudDataManager;
-import fi.dy.masa.minihud.mixin.world.IMixinChunkDeltaUpdateS2CPacket;
+import fi.dy.masa.minihud.mixin.world.IMixinClientboundSectionBlocksUpdatePacket;
 import fi.dy.masa.minihud.util.DataStorage;
 import fi.dy.masa.minihud.util.NotificationUtils;
 
@@ -32,7 +32,7 @@ public abstract class MixinClientPacketListener
     @Inject(method = "handleChunkBlocksUpdate", at = @At("RETURN"))
     private void minihud_markChunkChangedMultiBlockChange(ClientboundSectionBlocksUpdatePacket packet, CallbackInfo ci)
     {
-        net.minecraft.core.SectionPos pos = ((IMixinChunkDeltaUpdateS2CPacket) packet).minihud_getChunkSectionPos();
+        net.minecraft.core.SectionPos pos = ((IMixinClientboundSectionBlocksUpdatePacket) packet).minihud_getChunkSectionPos();
         NotificationUtils.onMultiBlockChange(pos, packet);
     }
 
@@ -43,14 +43,14 @@ public abstract class MixinClientPacketListener
     }
 
     @Inject(method = "handleTabListCustomisation", at = @At("RETURN"))
-    private void minihud_onHandlePlayerListHeaderFooter(ClientboundTabListPacket packetIn, CallbackInfo ci)
+    private void minihud_onHandlePlayerListHeaderFooter(ClientboundTabListPacket packet, CallbackInfo ci)
     {
-        DataStorage.getInstance().handleCarpetServerTPSData(packetIn.footer());
-        DataStorage.getInstance().getMobCapData().parsePlayerListFooterMobCapData(packetIn.footer());
+        DataStorage.getInstance().handleCarpetServerTPSData(packet.footer());
+        DataStorage.getInstance().getMobCapData().parsePlayerListFooterMobCapData(packet.footer());
     }
 
     @Inject(method = "handleSetTime", at = @At("RETURN"))
-    private void minihud_onTimeUpdate(ClientboundSetTimePacket clientboundSetTimePacket, CallbackInfo ci)
+    private void minihud_onTimeUpdate(ClientboundSetTimePacket packet, CallbackInfo ci)
     {
 //        DataStorage.getInstance().onServerTimeUpdate(packetIn.time());
     }

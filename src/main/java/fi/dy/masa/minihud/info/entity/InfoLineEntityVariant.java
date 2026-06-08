@@ -12,6 +12,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.axolotl.Axolotl;
 import net.minecraft.world.entity.animal.chicken.Chicken;
 import net.minecraft.world.entity.animal.chicken.ChickenVariant;
@@ -96,7 +97,7 @@ public class InfoLineEntityVariant extends InfoLine
     {
         List<Entry> list = new ArrayList<>();
 
-        if (entityType.equals(EntityType.AXOLOTL))
+        if (entityType.equals(EntityTypes.AXOLOTL))
         {
             Axolotl.Variant variant = DataEntityUtils.getAxolotlVariant(data);
 
@@ -105,7 +106,7 @@ public class InfoLineEntityVariant extends InfoLine
                 list.add(this.translate(VARIANT_KEY+".axolotl", variant.getName()));
             }
         }
-        else if (entityType.equals(EntityType.CAT))
+        else if (entityType.equals(EntityTypes.CAT))
         {
             Pair<ResourceKey<CatVariant>, DyeColor> catPair = DataEntityUtils.getCatVariant(data, world.registryAccess());
 
@@ -114,7 +115,7 @@ public class InfoLineEntityVariant extends InfoLine
                 list.add(this.translate(VARIANT_KEY+".cat", catPair.getLeft().identifier().getPath(), catPair.getRight().getName()));
             }
         }
-        else if (entityType.equals(EntityType.COW))
+        else if (entityType.equals(EntityTypes.COW))
         {
             ResourceKey<CowVariant> variant = DataEntityUtils.getCowVariant(data, world.registryAccess());
 
@@ -123,7 +124,7 @@ public class InfoLineEntityVariant extends InfoLine
                 list.add(this.translate(VARIANT_KEY+".cow", variant.identifier().getPath()));
             }
         }
-        else if (entityType.equals(EntityType.CHICKEN))
+        else if (entityType.equals(EntityTypes.CHICKEN))
         {
             ResourceKey<ChickenVariant> variant = DataEntityUtils.getChickenVariant(data, world.registryAccess());
 
@@ -132,7 +133,7 @@ public class InfoLineEntityVariant extends InfoLine
                 list.add(this.translate(VARIANT_KEY+".chicken", variant.identifier().getPath()));
             }
         }
-        else if (entityType.equals(EntityType.MOOSHROOM))
+        else if (entityType.equals(EntityTypes.MOOSHROOM))
         {
             MushroomCow.Variant mooType = DataEntityUtils.getMooshroomVariant(data);
 
@@ -141,7 +142,7 @@ public class InfoLineEntityVariant extends InfoLine
                 list.add(this.translate(VARIANT_KEY + ".mooshroom", mooType.getSerializedName()));
             }
         }
-        else if (entityType.equals(EntityType.FOX))
+        else if (entityType.equals(EntityTypes.FOX))
         {
             Fox.Variant foxType = DataEntityUtils.getFoxVariant(data);
 
@@ -150,7 +151,7 @@ public class InfoLineEntityVariant extends InfoLine
                 list.add(this.translate(VARIANT_KEY+".fox", foxType.getSerializedName()));
             }
         }
-        else if (entityType.equals(EntityType.FROG))
+        else if (entityType.equals(EntityTypes.FROG))
         {
             ResourceKey<FrogVariant> variant = DataEntityUtils.getFrogVariant(data, world.registryAccess());
 
@@ -159,7 +160,7 @@ public class InfoLineEntityVariant extends InfoLine
                 list.add(this.translate(VARIANT_KEY+".frog", variant.identifier().getPath()));
             }
         }
-        else if (entityType.equals(EntityType.HORSE))
+        else if (entityType.equals(EntityTypes.HORSE))
         {
             Pair<Variant, Markings> horsePair = DataEntityUtils.getHorseVariant(data);
 
@@ -168,7 +169,7 @@ public class InfoLineEntityVariant extends InfoLine
                 list.add(this.translate(VARIANT_KEY+".horse", horsePair.getLeft().getSerializedName(), horsePair.getRight().name().toLowerCase()));
             }
         }
-        else if (entityType.equals(EntityType.LLAMA) || entityType.equals(EntityType.TRADER_LLAMA))
+        else if (entityType.equals(EntityTypes.LLAMA) || entityType.equals(EntityTypes.TRADER_LLAMA))
         {
             Pair<Llama.Variant, Integer> llamaPair = DataEntityUtils.getLlamaType(data);
 
@@ -177,7 +178,7 @@ public class InfoLineEntityVariant extends InfoLine
                 list.add(this.translate(VARIANT_KEY+".llama", llamaPair.getLeft().getSerializedName(), llamaPair.getRight()));
             }
         }
-        else if (entityType.equals(EntityType.PAINTING))
+        else if (entityType.equals(EntityTypes.PAINTING))
         {
             Pair<Direction, PaintingVariant> paintingPair = DataEntityUtils.getPaintingData(data, world.registryAccess());
 
@@ -200,7 +201,7 @@ public class InfoLineEntityVariant extends InfoLine
                 }
             }
         }
-        else if (entityType.equals(EntityType.PARROT))
+        else if (entityType.equals(EntityTypes.PARROT))
         {
             Parrot.Variant variant = DataEntityUtils.getParrotVariant(data);
 
@@ -209,7 +210,7 @@ public class InfoLineEntityVariant extends InfoLine
                 list.add(this.translate(VARIANT_KEY+".parrot", variant.getSerializedName()));
             }
         }
-        else if (entityType.equals(EntityType.PIG))
+        else if (entityType.equals(EntityTypes.PIG))
         {
             ResourceKey<PigVariant> variant = DataEntityUtils.getPigVariant(data, world.registryAccess());
 
@@ -218,7 +219,7 @@ public class InfoLineEntityVariant extends InfoLine
                 list.add(this.translate(VARIANT_KEY+".pig", variant.identifier().getPath()));
             }
         }
-        else if (entityType.equals(EntityType.RABBIT))
+        else if (entityType.equals(EntityTypes.RABBIT))
         {
             Rabbit.Variant rabbitType = DataEntityUtils.getRabbitType(data);
 
@@ -227,7 +228,7 @@ public class InfoLineEntityVariant extends InfoLine
                 list.add(this.translate(VARIANT_KEY+".rabbit", rabbitType.getSerializedName()));
             }
         }
-        else if (entityType.equals(EntityType.SALMON))
+        else if (entityType.equals(EntityTypes.SALMON))
         {
             Salmon.Variant salmonVariant = DataEntityUtils.getSalmonVariant(data);
 
@@ -236,7 +237,7 @@ public class InfoLineEntityVariant extends InfoLine
                 list.add(this.translate(VARIANT_KEY+".salmon", salmonVariant.getSerializedName()));
             }
         }
-        else if (entityType.equals(EntityType.SHEEP))
+        else if (entityType.equals(EntityTypes.SHEEP))
         {
             DyeColor color = DataEntityUtils.getSheepColor(data);
 
@@ -245,7 +246,7 @@ public class InfoLineEntityVariant extends InfoLine
                 list.add(this.translate(VARIANT_KEY+".sheep", color.getName()));
             }
         }
-        else if (entityType.equals(EntityType.TROPICAL_FISH))
+        else if (entityType.equals(EntityTypes.TROPICAL_FISH))
         {
             TropicalFish.Variant variant = DataEntityUtils.getFishVariant(data);
 
@@ -254,7 +255,7 @@ public class InfoLineEntityVariant extends InfoLine
                 list.add(this.translate(VARIANT_KEY+".tropical_fish", variant.pattern().getSerializedName(), variant.baseColor().getSerializedName(), variant.patternColor().getSerializedName()));
             }
         }
-        else if (entityType.equals(EntityType.ZOMBIE_NAUTILUS))
+        else if (entityType.equals(EntityTypes.ZOMBIE_NAUTILUS))
         {
             ResourceKey<@NotNull ZombieNautilusVariant> variant = DataEntityUtils.getZombieNautilusVariantFromNbt(data, world.registryAccess());
 
@@ -263,7 +264,7 @@ public class InfoLineEntityVariant extends InfoLine
                 list.add(this.translate(VARIANT_KEY+".nautilus", variant.identifier().getPath()));
             }
         }
-        else if (entityType.equals(EntityType.WOLF))
+        else if (entityType.equals(EntityTypes.WOLF))
         {
             Pair<ResourceKey<WolfVariant>, DyeColor> wolfPair = DataEntityUtils.getWolfVariant(data, world.registryAccess());
             ResourceKey<WolfSoundVariant> soundType = DataEntityUtils.getWolfSoundType(data, world.registryAccess());

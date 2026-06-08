@@ -5,7 +5,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(CopperGolem.class)
-public interface IMixinCopperGolemEntity
+public interface IMixinCopperGolem
 {
 	@Accessor("nextWeatheringTick")
 	long minihud_getNextOxidationAge();

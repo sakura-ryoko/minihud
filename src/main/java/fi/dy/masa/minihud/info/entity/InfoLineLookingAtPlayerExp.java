@@ -6,6 +6,7 @@ import javax.annotation.Nonnull;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.level.Level;
 import org.apache.commons.lang3.tuple.Triple;
 import fi.dy.masa.malilib.util.data.DataEntityUtils;
@@ -53,7 +54,7 @@ public class InfoLineLookingAtPlayerExp extends InfoLine
     {
         List<Entry> list = new ArrayList<>();
 
-        if (entityType.equals(EntityType.PLAYER))
+        if (entityType.equals(EntityTypes.PLAYER))
         {
             Triple<Integer, Integer, Float> triple = DataEntityUtils.getPlayerExp(data);
 

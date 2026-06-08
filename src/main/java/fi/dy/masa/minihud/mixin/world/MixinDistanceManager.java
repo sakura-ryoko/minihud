@@ -11,14 +11,15 @@ import net.minecraft.server.level.DistanceManager;
 public class MixinDistanceManager
 {
     @Inject(method = "updateSimulationDistance", at = @At("TAIL"))
-    private void minihud_getSimulationDistance(int distance, CallbackInfo ci)
+    private void minihud_getSimulationDistance(int newDistance, CallbackInfo ci)
     {
-        if (distance > 0)
+        if (newDistance > 0)
         {
             final int simul = DataStorage.getInstance().getSimulationDistance();
-            if (simul != distance)
+
+            if (simul != newDistance)
             {
-                DataStorage.getInstance().setSimulationDistance(distance);
+                DataStorage.getInstance().setSimulationDistance(newDistance);
             }
         }
     }

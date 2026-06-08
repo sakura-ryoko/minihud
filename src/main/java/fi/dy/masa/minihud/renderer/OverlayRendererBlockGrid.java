@@ -2,23 +2,24 @@ package fi.dy.masa.minihud.renderer;
 
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.MeshData;
-import fi.dy.masa.malilib.render.MaLiLibPipelines;
-import fi.dy.masa.malilib.util.data.Color4f;
-import fi.dy.masa.malilib.util.position.PositionUtils;
-import fi.dy.masa.minihud.MiniHUD;
-import fi.dy.masa.minihud.config.Configs;
-import fi.dy.masa.minihud.config.RendererToggle;
-import fi.dy.masa.minihud.util.BlockGridMode;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.util.Mth;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.phys.Vec3;
+
+import fi.dy.masa.malilib.render.MaLiLibPipelines;
+import fi.dy.masa.malilib.util.MathUtils;
+import fi.dy.masa.malilib.util.data.Color4f;
+import fi.dy.masa.malilib.util.position.PositionUtils;
+import fi.dy.masa.malilib.util.position.Vec3d;
+import fi.dy.masa.minihud.MiniHUD;
+import fi.dy.masa.minihud.config.Configs;
+import fi.dy.masa.minihud.config.RendererToggle;
+import fi.dy.masa.minihud.util.BlockGridMode;
 
 public class OverlayRendererBlockGrid extends OverlayRendererBase
 {
@@ -62,7 +63,7 @@ public class OverlayRendererBlockGrid extends OverlayRendererBase
     }
 
     @Override
-    public void update(Vec3 cameraPos, Entity entity, Minecraft mc, ProfilerFiller profiler)
+    public void update(Vec3d cameraPos, Entity entity, Minecraft mc, ProfilerFiller profiler)
     {
         if (RendererToggle.OVERLAY_BLOCK_GRID.getBooleanValue())
         {
@@ -84,17 +85,17 @@ public class OverlayRendererBlockGrid extends OverlayRendererBase
     protected void allocateBuffers()
     {
         this.clearBuffers();
-        this.renderObjects.add(new RenderObjectVbo(() -> this.getName()+" Lines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH));
+        this.renderObjects.add(new RenderObjectVbo(() -> this.getName()+" Lines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, 0));
     }
 
     @Override
-    public void render(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
+    public void render(Vec3d cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
         this.allocateBuffers();
         this.renderOutlines(cameraPos, mc, profiler);
     }
 
-    private void renderOutlines(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
+    private void renderOutlines(Vec3d cameraPos, Minecraft mc, ProfilerFiller profiler)
     {
         if (mc.level == null || mc.player == null ||
             this.lastUpdatePos == null || this.cameraEntity == null)
@@ -108,7 +109,7 @@ public class OverlayRendererBlockGrid extends OverlayRendererBase
         Color4f color = Configs.Colors.BLOCK_GRID_OVERLAY_COLOR.getColor();
 
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "minihud:block_grid/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH);
+        BufferBuilder builder = ctx.start(() -> "minihud:block_grid/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, 0);
 
         switch (mode)
         {
@@ -149,16 +150,16 @@ public class OverlayRendererBlockGrid extends OverlayRendererBase
         this.hasData = false;
     }
 
-    protected void renderLinesAll(Vec3 cameraPos, BlockPos center, int radius, Color4f color,
+    protected void renderLinesAll(Vec3d cameraPos, BlockPos center, int radius, Color4f color,
 								  float lineWidth,
                                   BufferBuilder buffer)
     {
-        final int startX = center.getX() - radius - Mth.floor(cameraPos.x);
-        final int startY = center.getY() - radius - Mth.floor(cameraPos.y);
-        final int startZ = center.getZ() - radius - Mth.floor(cameraPos.z);
-        final int endX = center.getX() + radius - Mth.ceil(cameraPos.x);
-        final int endY = center.getY() + radius - Mth.ceil(cameraPos.y);
-        final int endZ = center.getZ() + radius - Mth.ceil(cameraPos.z);
+        final int startX = center.getX() - radius - MathUtils.floor(cameraPos.x);
+        final int startY = center.getY() - radius - MathUtils.floor(cameraPos.y);
+        final int startZ = center.getZ() - radius - MathUtils.floor(cameraPos.z);
+        final int endX = center.getX() + radius - MathUtils.ceil(cameraPos.x);
+        final int endY = center.getY() + radius - MathUtils.ceil(cameraPos.y);
+        final int endZ = center.getZ() + radius - MathUtils.ceil(cameraPos.z);
 
         for (int x = startX; x <= endX; x++)
         {
@@ -188,7 +189,7 @@ public class OverlayRendererBlockGrid extends OverlayRendererBase
         }
     }
 
-    protected void renderLinesNonAir(Vec3 cameraPos, Level world, BlockPos center, int radius, Color4f color,
+    protected void renderLinesNonAir(Vec3d cameraPos, Level world, BlockPos center, int radius, Color4f color,
                                      float lineWidth,
                                      BufferBuilder buffer)
     {
@@ -228,14 +229,14 @@ public class OverlayRendererBlockGrid extends OverlayRendererBase
 
                     if (!chunk.getBlockState(posMutable).isAir())
                     {
-                        fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(posMutable, cameraPos, color, 0.001, lineWidth, buffer);
+                        fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(posMutable, cameraPos.toVanilla(), color, 0.001, lineWidth, buffer);
                     }
                 }
             }
         }
     }
 
-    protected void renderLinesAdjacentToNonAir(Vec3 cameraPos, Level world, BlockPos center, int radius, Color4f color,
+    protected void renderLinesAdjacentToNonAir(Vec3d cameraPos, Level world, BlockPos center, int radius, Color4f color,
                                                float lineWidth,
                                                BufferBuilder buffer)
     {
@@ -280,7 +281,7 @@ public class OverlayRendererBlockGrid extends OverlayRendererBase
 
                             if (!chunk.getBlockState(posMutable2).isAir())
                             {
-                                fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(posMutable, cameraPos, color, 0.001, lineWidth, buffer);
+                                fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(posMutable, cameraPos.toVanilla(), color, 0.001, lineWidth, buffer);
                                 break;
                             }
                         }
@@ -294,7 +295,7 @@ public class OverlayRendererBlockGrid extends OverlayRendererBase
 
                             if (!world.isEmptyBlock(posMutable2))
                             {
-                                fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(posMutable, cameraPos, color, 0.001, lineWidth, buffer);
+                                fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(posMutable, cameraPos.toVanilla(), color, 0.001, lineWidth, buffer);
                                 break;
                             }
                         }
