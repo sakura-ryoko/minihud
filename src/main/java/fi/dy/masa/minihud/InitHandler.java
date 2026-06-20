@@ -8,7 +8,7 @@ import fi.dy.masa.malilib.util.data.ModInfo;
 import fi.dy.masa.malilib.util.i18n.i18nMode;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.data.DebugDataManager;
-import fi.dy.masa.minihud.data.EntitiesDataManager;
+import fi.dy.masa.minihud.data.EntityDataManager;
 import fi.dy.masa.minihud.data.HudDataManager;
 import fi.dy.masa.minihud.event.*;
 import fi.dy.masa.minihud.gui.GuiConfigs;
@@ -38,7 +38,7 @@ public class InitHandler implements IInitializationHandler
 
         DataStorage.getInstance().onGameInit();
         HudDataManager.getInstance().onGameInit();
-        EntitiesDataManager.getInstance().onGameInit();
+        EntityDataManager.getInstance().onGameInit();
         DebugDataManager.getInstance().onGameInit();
 
         InputEventHandler.getKeybindManager().registerKeybindProvider(InputHandler.getInstance());
@@ -58,7 +58,7 @@ public class InitHandler implements IInitializationHandler
         ServerHandler.getInstance().registerServerHandler(serverListener);
 
         TickHandler.getInstance().registerClientTickHandler(new ClientTickHandler());
-        TickHandler.getInstance().registerClientTickHandler(EntitiesDataManager.getInstance());
+        TickHandler.getInstance().registerClientTickHandler(EntityDataManager.getInstance());
         TickHandler.getInstance().registerClientTickHandler(OverlayRendererVillagerInfo.INSTANCE);
         TickHandler.getInstance().registerClientTickHandler(WorkerDaemonHandler.INSTANCE);
 

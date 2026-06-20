@@ -6,7 +6,6 @@ import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.tuple.Pair;
-import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
 import org.joml.Vector4f;
 
@@ -21,8 +20,6 @@ import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
@@ -64,7 +61,7 @@ import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.config.RendererToggle;
 import fi.dy.masa.minihud.data.DebugDataManager;
-import fi.dy.masa.minihud.data.EntitiesDataManager;
+import fi.dy.masa.minihud.data.EntityDataManager;
 import fi.dy.masa.minihud.data.HudDataManager;
 import fi.dy.masa.minihud.info.InfoLine;
 import fi.dy.masa.minihud.info.InfoLineChunkCache;
@@ -241,7 +238,7 @@ public class RenderHandler implements IRenderer
 
                 if (player != null)
                 {
-                    Pair<Entity, CompoundData> pair = EntitiesDataManager.getInstance().requestEntity(world, player.getId());
+                    Pair<Entity, CompoundData> pair = EntityDataManager.getInstance().requestEntity(world, player.getId());
                     PlayerEnderChestContainer inv;
 
                     if (pair != null && pair.getRight() != null && pair.getRight().contains(NbtKeys.ENDER_ITEMS, Constants.NBT.TAG_LIST))
@@ -1774,7 +1771,7 @@ public class RenderHandler implements IRenderer
             }
             else
             {
-                pair = EntitiesDataManager.getInstance().requestEntity(world, lookedEntity.getId());
+                pair = EntityDataManager.getInstance().requestEntity(world, lookedEntity.getId());
             }
 
             // Remember the last entity so the "refresh time" is smoothed over.
@@ -1821,7 +1818,7 @@ public class RenderHandler implements IRenderer
                 }
                 else
                 {
-                    pair = EntitiesDataManager.getInstance().requestBlockEntity(world, posLooking);
+                    pair = EntityDataManager.getInstance().requestBlockEntity(world, fi.dy.masa.malilib.util.position.BlockPos.of(posLooking));
                 }
 
                 // Remember the last entity so the "refresh time" is smoothed over.
@@ -1847,7 +1844,7 @@ public class RenderHandler implements IRenderer
     {
         if (!(world instanceof ServerLevel))
         {
-            Pair<BlockEntity, CompoundData> pair = EntitiesDataManager.getInstance().requestBlockEntity(world, pos);
+            Pair<BlockEntity, CompoundData> pair = EntityDataManager.getInstance().requestBlockEntity(world, fi.dy.masa.malilib.util.position.BlockPos.of(pos));
 
             BlockState state = world.getBlockState(pos);
 
@@ -1857,7 +1854,7 @@ public class RenderHandler implements IRenderer
 
                 if (type != ChestType.SINGLE)
                 {
-                    return EntitiesDataManager.getInstance().requestBlockEntity(world, pos.relative(ChestBlock.getConnectedDirection(state)));
+                    return EntityDataManager.getInstance().requestBlockEntity(world, fi.dy.masa.malilib.util.position.BlockPos.of(pos.relative(ChestBlock.getConnectedDirection(state))));
                 }
             }
 
