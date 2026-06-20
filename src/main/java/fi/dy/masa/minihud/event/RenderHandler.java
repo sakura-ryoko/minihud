@@ -6,6 +6,8 @@ import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.tuple.Pair;
+import org.joml.Matrix4fc;
+import org.joml.Vector4f;
 import org.joml.Matrix4f;
 
 import com.mojang.blaze3d.pipeline.RenderTarget;
@@ -16,8 +18,6 @@ import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
@@ -59,7 +59,7 @@ import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.config.RendererToggle;
 import fi.dy.masa.minihud.data.DebugDataManager;
-import fi.dy.masa.minihud.data.EntitiesDataManager;
+import fi.dy.masa.minihud.data.EntityDataManager;
 import fi.dy.masa.minihud.data.HudDataManager;
 import fi.dy.masa.minihud.info.InfoLine;
 import fi.dy.masa.minihud.info.InfoLineChunkCache;
@@ -78,9 +78,7 @@ public class RenderHandler implements IRenderer
     private final DataStorage data;
     private final HudDataManager hudData;
     private final Date date;
-//    private final Map<ChunkPos, CompletableFuture<OptionalChunk<Chunk>>> chunkFutures = new HashMap<>();
     private final Set<InfoToggle> addedTypes = new HashSet<>();
-//    @Nullable private WorldChunk cachedClientChunk;
     private long infoUpdateTime;
 
     private final List<StringHolder> lineWrappers = new ArrayList<>();
@@ -129,13 +127,11 @@ public class RenderHandler implements IRenderer
     {
         if (Configs.Generic.MAIN_RENDERING_TOGGLE.getBooleanValue() == false)
         {
-//            this.resetCachedChunks();
             InfoLineChunkCache.INSTANCE.onReset();
             return;
         }
 
 		if (DebugDataManager.getInstance().shouldShowDebugHudFix() == false &&
-//        if (mc.getDebugHud().shouldShowDebugHud() == false &&
             mc.player != null && mc.options.hideGui == false &&
             (Configs.Generic.REQUIRE_SNEAK.getBooleanValue() == false || mc.player.isShiftKeyDown()) &&
             Configs.Generic.REQUIRED_KEY.getKeybind().isKeybindHeld())
@@ -232,7 +228,7 @@ public class RenderHandler implements IRenderer
 
                 if (player != null)
                 {
-                    Pair<Entity, CompoundData> pair = EntitiesDataManager.getInstance().requestEntity(world, player.getId());
+                    Pair<Entity, CompoundData> pair = EntityDataManager.getInstance().requestEntity(world, player.getId());
                     PlayerEnderChestContainer inv;
 
                     if (pair != null && pair.getRight() != null && pair.getRight().contains(NbtKeys.ENDER_ITEMS, Constants.NBT.TAG_LIST))
@@ -311,8 +307,6 @@ public class RenderHandler implements IRenderer
         }
 
         if (Configs.Generic.BEE_TOOLTIPS.getBooleanValue() &&
-            //stack.getItem() instanceof BlockItem blockItem &&
-            //blockItem.getBlock() instanceof BeehiveBlock)
             stack.has(DataComponents.BEES))
         {
             MiscUtils.addBeeTooltip(stack, list);
@@ -1761,7 +1755,7 @@ public class RenderHandler implements IRenderer
             }
             else
             {
-                pair = EntitiesDataManager.getInstance().requestEntity(world, lookedEntity.getId());
+                pair = EntityDataManager.getInstance().requestEntity(world, lookedEntity.getId());
             }
 
             // Remember the last entity so the "refresh time" is smoothed over.
@@ -1808,7 +1802,7 @@ public class RenderHandler implements IRenderer
                 }
                 else
                 {
-                    pair = EntitiesDataManager.getInstance().requestBlockEntity(world, posLooking);
+                    pair = EntityDataManager.getInstance().requestBlockEntity(world, fi.dy.masa.malilib.util.position.BlockPos.of(posLooking));
                 }
 
                 // Remember the last entity so the "refresh time" is smoothed over.
@@ -1834,7 +1828,7 @@ public class RenderHandler implements IRenderer
     {
         if (!(world instanceof ServerLevel))
         {
-            Pair<BlockEntity, CompoundData> pair = EntitiesDataManager.getInstance().requestBlockEntity(world, pos);
+            Pair<BlockEntity, CompoundData> pair = EntityDataManager.getInstance().requestBlockEntity(world, fi.dy.masa.malilib.util.position.BlockPos.of(pos));
 
             BlockState state = world.getBlockState(pos);
 
@@ -1844,7 +1838,7 @@ public class RenderHandler implements IRenderer
 
                 if (type != ChestType.SINGLE)
                 {
-                    return EntitiesDataManager.getInstance().requestBlockEntity(world, pos.relative(ChestBlock.getConnectedDirection(state)));
+                    return EntityDataManager.getInstance().requestBlockEntity(world, fi.dy.masa.malilib.util.position.BlockPos.of(pos.relative(ChestBlock.getConnectedDirection(state))));
                 }
             }
 
@@ -1882,78 +1876,6 @@ public class RenderHandler implements IRenderer
             }
         }
     }
-
-    // # Moved to InfoLineChunkCache
-//    @Nullable
-//    private WorldChunk getChunk(ChunkPos chunkPos)
-//    {
-//        CompletableFuture<OptionalChunk<Chunk>> future = this.chunkFutures.get(chunkPos);
-//
-//        if (future == null)
-//        {
-//            future = this.setupChunkFuture(chunkPos);
-//        }
-//
-//        OptionalChunk<Chunk> chunkResult = future.getNow(null);
-//        if (chunkResult == null)
-//        {
-//            return null;
-//        }
-//        else
-//        {
-//            Chunk chunk = chunkResult.orElse(null);
-//            if (chunk instanceof WorldChunk)
-//            {
-//                return (WorldChunk) chunk;
-//            }
-//            else
-//            {
-//                return null;
-//            }
-//        }
-//    }
-
-//    private CompletableFuture<OptionalChunk<Chunk>> setupChunkFuture(ChunkPos chunkPos)
-//    {
-//        IntegratedServer server = this.getDataStorage().getIntegratedServer();
-//        CompletableFuture<OptionalChunk<Chunk>> future = null;
-//
-//        if (server != null)
-//        {
-//            ServerWorld world = server.getWorld(this.mc.world.getRegistryKey());
-//
-//            if (world != null)
-//            {
-//                future = world.getChunkManager().getChunkFutureSyncOnMainThread(chunkPos.x, chunkPos.z, ChunkStatus.FULL, false)
-//                        .thenApply((either) -> either.map((chunk) -> (WorldChunk) chunk) );
-//            }
-//        }
-//
-//        if (future == null)
-//        {
-//            future = CompletableFuture.completedFuture(OptionalChunk.of(this.getClientChunk(chunkPos)));
-//        }
-//
-//        this.chunkFutures.put(chunkPos, future);
-//
-//        return future;
-//    }
-
-//    private WorldChunk getClientChunk(ChunkPos chunkPos)
-//    {
-//        if (this.cachedClientChunk == null || this.cachedClientChunk.getPos().equals(chunkPos) == false)
-//        {
-//            this.cachedClientChunk = this.mc.world.getChunk(chunkPos.x, chunkPos.z);
-//        }
-//
-//        return this.cachedClientChunk;
-//    }
-
-//    private void resetCachedChunks()
-//    {
-//        this.chunkFutures.clear();
-//        this.cachedClientChunk = null;
-//    }
 
     private class StringHolder implements Comparable<StringHolder>
     {

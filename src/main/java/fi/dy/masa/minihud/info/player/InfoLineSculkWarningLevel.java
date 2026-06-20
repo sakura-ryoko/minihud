@@ -4,7 +4,7 @@ import fi.dy.masa.malilib.util.data.Constants;
 import fi.dy.masa.malilib.util.data.tag.CompoundData;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
-import fi.dy.masa.minihud.data.EntitiesDataManager;
+import fi.dy.masa.minihud.data.EntityDataManager;
 import fi.dy.masa.minihud.info.InfoLine;
 import fi.dy.masa.minihud.info.InfoLineContext;
 import net.minecraft.server.level.ServerLevel;
@@ -61,7 +61,7 @@ public class InfoLineSculkWarningLevel extends InfoLine
         }
         else
         {
-            Pair<Entity, CompoundData> pair = EntitiesDataManager.getInstance().requestEntity(world, ent.getId());
+            Pair<Entity, CompoundData> pair = EntityDataManager.getInstance().requestEntity(world, ent.getId());
 
             if (pair != null)
             {

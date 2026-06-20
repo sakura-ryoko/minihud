@@ -42,8 +42,8 @@ import fi.dy.masa.malilib.util.position.Vec3d;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.RendererToggle;
-import fi.dy.masa.minihud.data.EntitiesDataManager;
-import fi.dy.masa.minihud.mixin.entity.IMixinZombieVillagerEntity;
+import fi.dy.masa.minihud.data.EntityDataManager;
+import fi.dy.masa.minihud.mixin.entity.IMixinZombieVillager;
 import fi.dy.masa.minihud.util.EntityUtils;
 
 public class OverlayRendererVillagerInfo extends OverlayRendererBase implements IClientTickHandler
@@ -116,7 +116,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
 
     private long getCacheTimeout()
     {
-        return EntitiesDataManager.getInstance().getCacheTimeout();
+        return EntityDataManager.getInstance().getCacheTimeout();
     }
 
     private void tickCache(long now)
@@ -157,7 +157,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
 
     private @Nullable Pair<Entity, CompoundData> getVillagerData(Level world, int entityId)
     {
-        Pair<Entity, CompoundData> pair = EntitiesDataManager.getInstance().requestEntity(world, entityId);
+        Pair<Entity, CompoundData> pair = EntityDataManager.getInstance().requestEntity(world, entityId);
 
         if (pair != null &&
             pair.getRight() != null &&

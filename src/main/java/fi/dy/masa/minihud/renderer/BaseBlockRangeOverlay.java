@@ -1,10 +1,9 @@
 package fi.dy.masa.minihud.renderer;
 
-import fi.dy.masa.malilib.util.WorldUtils;
-import fi.dy.masa.malilib.util.data.tag.CompoundData;
-import fi.dy.masa.minihud.data.EntitiesDataManager;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import org.apache.commons.lang3.tuple.Pair;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientChunkCache;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -19,8 +18,12 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.phys.Vec3;
+
 import fi.dy.masa.malilib.config.IConfigBoolean;
-import org.apache.commons.lang3.tuple.Pair;
+import fi.dy.masa.malilib.util.WorldUtils;
+import fi.dy.masa.malilib.util.data.tag.CompoundData;
+import fi.dy.masa.malilib.util.position.Vec3d;
+import fi.dy.masa.minihud.data.EntityDataManager;
 
 public abstract class BaseBlockRangeOverlay<T extends BlockEntity> extends OverlayRendererBase
 {
@@ -261,7 +264,7 @@ public abstract class BaseBlockRangeOverlay<T extends BlockEntity> extends Overl
 
         if (state.getBlock() instanceof EntityBlock)
         {
-            pair = EntitiesDataManager.getInstance().requestBlockEntity(this.world, pos);
+            pair = EntityDataManager.getInstance().requestBlockEntity(this.world, fi.dy.masa.malilib.util.position.BlockPos.of(pos));
 
             if (pair != null && (pair.getLeft() == null || !this.blockEntityClass.isAssignableFrom(pair.getLeft().getClass())))
             {

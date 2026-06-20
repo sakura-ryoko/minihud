@@ -19,7 +19,7 @@ import fi.dy.masa.malilib.network.IClientPayloadData;
 import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
 import fi.dy.masa.malilib.network.PacketSplitter;
 import fi.dy.masa.minihud.MiniHUD;
-import fi.dy.masa.minihud.data.EntitiesDataManager;
+import fi.dy.masa.minihud.data.EntityDataManager;
 
 @Environment(EnvType.CLIENT)
 public abstract class ServuxEntitiesHandler<T extends CustomPacketPayload> implements IPluginClientPlayHandler<T>
@@ -27,7 +27,7 @@ public abstract class ServuxEntitiesHandler<T extends CustomPacketPayload> imple
     private final static ServuxEntitiesHandler<ServuxEntitiesPacket.Payload> INSTANCE = new ServuxEntitiesHandler<>()
     {
         @Override
-        public void receive(ServuxEntitiesPacket.Payload payload, ClientPlayNetworking.@NonNull Context context)
+        public void receive(ServuxEntitiesPacket.@NonNull Payload payload, ClientPlayNetworking.@NonNull Context context)
         {
             ServuxEntitiesHandler.INSTANCE.receivePlayPayload(payload, context);
         }
@@ -78,13 +78,13 @@ public abstract class ServuxEntitiesHandler<T extends CustomPacketPayload> imple
         {
             case PACKET_S2C_METADATA ->
             {
-                if (EntitiesDataManager.getInstance().receiveServuxMetadata(packet.getCompound()))
+                if (EntityDataManager.getInstance().receiveServuxMetadata(packet.getCompound()))
                 {
                     this.servuxRegistered = true;
                 }
             }
-            case PACKET_S2C_BLOCK_NBT_RESPONSE_SIMPLE -> EntitiesDataManager.getInstance().handleBlockEntityData(packet.getPos(), packet.getCompound(), null);
-            case PACKET_S2C_ENTITY_NBT_RESPONSE_SIMPLE -> EntitiesDataManager.getInstance().handleEntityData(packet.getEntityId(), packet.getCompound());
+            case PACKET_S2C_BLOCK_NBT_RESPONSE_SIMPLE -> EntityDataManager.getInstance().handleBlockEntityData(packet.getPos(), packet.getCompound());
+            case PACKET_S2C_ENTITY_NBT_RESPONSE_SIMPLE -> EntityDataManager.getInstance().handleEntityData(packet.getEntityId(), packet.getCompound());
             case PACKET_S2C_NBT_RESPONSE_DATA ->
             {
                 if (this.readingSessionKey == -1)
@@ -100,7 +100,7 @@ public abstract class ServuxEntitiesHandler<T extends CustomPacketPayload> imple
                     try
                     {
                         this.readingSessionKey = -1;
-                        EntitiesDataManager.getInstance().handleBulkEntityData(fullPacket.readVarInt(), (CompoundTag) fullPacket.readNbt(NbtAccounter.unlimitedHeap()));
+                        EntityDataManager.getInstance().handleBulkEntityData(fullPacket.readVarInt(), (CompoundTag) fullPacket.readNbt(NbtAccounter.unlimitedHeap()));
                     }
                     catch (Exception e)
                     {
@@ -166,7 +166,7 @@ public abstract class ServuxEntitiesHandler<T extends CustomPacketPayload> imple
                 MiniHUD.debugLog("ServuxEntitiesHandler#encodeClientData(): encountered [{}] sendPayload failures, cancelling any Servux join attempt(s)", MAX_FAILURES);
                 this.servuxRegistered = false;
                 ServuxEntitiesHandler.INSTANCE.unregisterPlayReceiver();
-                EntitiesDataManager.getInstance().onPacketFailure();
+                EntityDataManager.getInstance().onPacketFailure();
             }
             else
             {
