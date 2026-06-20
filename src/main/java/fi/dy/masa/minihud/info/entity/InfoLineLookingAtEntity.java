@@ -13,7 +13,6 @@ import net.minecraft.world.entity.OwnableEntity;
 import fi.dy.masa.malilib.util.data.DataEntityUtils;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
-import fi.dy.masa.minihud.data.EntitiesDataManager;
 import fi.dy.masa.minihud.info.InfoLine;
 import fi.dy.masa.minihud.info.InfoLineContext;
 import fi.dy.masa.minihud.mixin.entity.IMixinPassiveEntity;
