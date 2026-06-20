@@ -20,7 +20,7 @@ import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.data.CachedTagManager;
 import fi.dy.masa.minihud.data.DebugDataManager;
-import fi.dy.masa.minihud.data.EntitiesDataManager;
+import fi.dy.masa.minihud.data.EntityDataManager;
 import fi.dy.masa.minihud.data.HudDataManager;
 import fi.dy.masa.minihud.renderer.OverlayRenderer;
 import fi.dy.masa.minihud.renderer.OverlayRendererVillagerInfo;
@@ -57,7 +57,7 @@ public class WorldLoadListener implements IWorldLoadListener
             WorkerDaemonHandler.INSTANCE.resetForceStop();
             DataStorage.getInstance().onWorldPre();
             HudDataManager.getInstance().onWorldPre();
-            EntitiesDataManager.getInstance().onWorldPre();
+            EntityDataManager.getInstance().onWorldPre();
             DebugDataManager.getInstance().onWorldPre();
         }
     }
@@ -68,7 +68,7 @@ public class WorldLoadListener implements IWorldLoadListener
         // Clear the cached data
         DataStorage.getInstance().reset(worldAfter == null);
         HudDataManager.getInstance().reset(worldAfter == null);
-        EntitiesDataManager.getInstance().reset(worldAfter == null);
+        EntityDataManager.getInstance().reset(worldAfter == null);
         OverlayRendererVillagerInfo.INSTANCE.reset(worldAfter == null);
         DebugDataManager.getInstance().reset(worldAfter == null);
         OverlayRenderer.reset();
@@ -90,7 +90,7 @@ public class WorldLoadListener implements IWorldLoadListener
             DataStorage.getInstance().onWorldJoin();
 //            DataStorage.getInstance().setWorldRegistryManager(worldAfter.registryAccess());
             HudDataManager.getInstance().onWorldJoin();
-            EntitiesDataManager.getInstance().onWorldJoin();
+            EntityDataManager.getInstance().onWorldJoin();
             DebugDataManager.getInstance().onWorldJoin();
         }
     }

@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import fi.dy.masa.minihud.config.Configs;
-import fi.dy.masa.minihud.data.EntitiesDataManager;
+import fi.dy.masa.minihud.data.EntityDataManager;
 import fi.dy.masa.minihud.data.HudDataManager;
 import fi.dy.masa.minihud.mixin.world.IMixinClientboundSectionBlocksUpdatePacket;
 import fi.dy.masa.minihud.util.DataStorage;
@@ -73,7 +73,7 @@ public abstract class MixinClientPacketListener
     {
         if (Configs.Generic.ENTITY_DATA_SYNC_BACKUP.getBooleanValue())
         {
-            EntitiesDataManager.getInstance().handleVanillaQueryNbt(packet.getTransactionId(), packet.getTag());
+            EntityDataManager.getInstance().handleVanillaQueryNbt(packet.getTransactionId(), packet.getTag());
         }
     }
 
@@ -83,7 +83,7 @@ public abstract class MixinClientPacketListener
         if (Configs.Generic.ENTITY_DATA_SYNC_BACKUP.getBooleanValue())
         {
             // when the player becomes OP, the server sends the command tree to the client
-            EntitiesDataManager.getInstance().resetOpCheck();
+            EntityDataManager.getInstance().resetOpCheck();
         }
     }
 }

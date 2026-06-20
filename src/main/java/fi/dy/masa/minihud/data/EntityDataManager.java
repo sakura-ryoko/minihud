@@ -1,0 +1,511 @@
+package fi.dy.masa.minihud.data;
+
+import java.util.HashMap;
+import java.util.Map;
+import javax.annotation.Nullable;
+
+import com.mojang.datafixers.util.Either;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.Mth;
+import net.minecraft.world.level.Level;
+
+import fi.dy.masa.malilib.config.options.ConfigBoolean;
+import fi.dy.masa.malilib.interfaces.IClientTickHandler;
+import fi.dy.masa.malilib.interfaces.IDataSyncer;
+import fi.dy.masa.malilib.mixin.network.IMixinDebugQueryHandler;
+import fi.dy.masa.malilib.network.ClientPlayHandler;
+import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
+import fi.dy.masa.malilib.registry.Registry;
+import fi.dy.masa.malilib.util.MathUtils;
+import fi.dy.masa.malilib.util.WorldUtils;
+import fi.dy.masa.malilib.util.data.tag.CompoundData;
+import fi.dy.masa.malilib.util.data.tag.converter.DataConverterNbt;
+import fi.dy.masa.malilib.util.data_syncer.EntityDataCache;
+import fi.dy.masa.malilib.util.data_syncer.EntityDataRequestTracker;
+import fi.dy.masa.malilib.util.position.BlockPos;
+import fi.dy.masa.minihud.MiniHUD;
+import fi.dy.masa.minihud.Reference;
+import fi.dy.masa.minihud.config.Configs;
+import fi.dy.masa.minihud.network.ServuxEntitiesHandler;
+import fi.dy.masa.minihud.network.ServuxEntitiesPacket;
+import fi.dy.masa.minihud.util.DataStorage;
+
+public class EntityDataManager implements IClientTickHandler, IDataSyncer
+{
+    private static final EntityDataManager INSTANCE = new EntityDataManager();
+    public static EntityDataManager getInstance() { return INSTANCE; }
+
+    private final static ServuxEntitiesHandler<ServuxEntitiesPacket.Payload> HANDLER = ServuxEntitiesHandler.getInstance();
+    private final Minecraft mc;
+    private ClientLevel clientWorld;
+    private boolean servuxServer = false;
+    private boolean hasInValidServux = false;
+    private String servuxVersion;
+    private boolean checkOpStatus = true;
+    private boolean hasOpStatus = false;
+    private long lastOpCheck;
+    private boolean sentBackupPackets = false;
+    private boolean receivedBackupPackets = false;
+
+    private final EntityDataCache cache;
+    private final EntityDataRequestTracker requestTracker;
+    private final Map<Integer, Either<BlockPos, Integer>> transactionToBlockPosOrEntityId = new HashMap<>();
+    private long lastTickTime;
+
+    @Nullable
+    @Override
+    public Level getBestWorld()
+    {
+        return WorldUtils.getBestWorld(this.mc);
+    }
+
+    @Override
+    public ClientLevel getClientWorld()
+    {
+        if (this.clientWorld == null)
+        {
+            this.clientWorld = this.mc.level;
+        }
+
+        return clientWorld;
+    }
+
+    private EntityDataManager()
+    {
+        this.mc = Minecraft.getInstance();
+        this.cache = new EntityDataCache(Reference.MOD_ID, this.getCacheTimeout());
+        this.requestTracker = new EntityDataRequestTracker();
+        this.lastTickTime = System.currentTimeMillis();
+        this.lastOpCheck = 0L;
+        Registry.ENTITY_DATA_REGISTRY.registerEntityDataCache(this.cache);
+    }
+
+    @Override
+    public void onClientTick(Minecraft mc)
+    {
+        final long now = System.currentTimeMillis();
+
+        if ((now - this.lastTickTime) > 50)
+        {
+            // In this block, we do something every server tick
+            if (!Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue())
+            {
+                this.lastTickTime = now;
+
+                if (!DataStorage.getInstance().hasIntegratedServer() && this.hasServuxServer())
+                {
+                    this.servuxServer = false;
+                    HANDLER.unregisterPlayReceiver();
+                }
+
+                if (!Configs.Generic.ENTITY_DATA_SYNC_BACKUP.getBooleanValue())
+                {
+                    this.requestTracker.clearAll();
+                    return;
+                }
+            }
+            else if (!DataStorage.getInstance().hasIntegratedServer() &&
+                    !this.hasServuxServer() &&
+                    !this.hasInValidServux &&
+                    this.getBestWorld() != null)
+            {
+                // Make sure we're Play Registered, and request Metadata
+                HANDLER.registerPlayReceiver(ServuxEntitiesPacket.Payload.ID, HANDLER::receivePlayPayload);
+                this.requestMetadata();
+            }
+
+            if (this.cache.getTimeout() != this.getCacheTimeout())
+            {
+                this.cache.setTimeout(this.getCacheTimeout());
+            }
+
+            // Expire cached NBT
+            this.cache.tickCache(now);
+
+            // 5 queries / server tick
+            final int limit = Configs.Generic.SERVER_NBT_REQUEST_RATE.getIntegerValue();
+
+            for (int i = 0; i < limit; i++)
+            {
+                BlockPos nextPos = this.requestTracker.pollNextBlockEntity();
+                Integer nextId = this.requestTracker.pollNextEntity();
+
+                if (nextPos == null && nextId == null) { break; }
+
+                if (nextPos != null)
+                {
+                    if (this.hasServuxServer())
+                    {
+                        this.requestServuxBlockEntityData(nextPos);
+                    }
+                    else if (this.shouldUseQuery())
+                    {
+                        // Only check once if we have OP
+                        this.requestQueryBlockEntity(nextPos);
+                    }
+                }
+
+                if (nextId != null)
+                {
+                    if (this.hasServuxServer())
+                    {
+                        this.requestServuxEntityData(nextId);
+                    }
+                    else if (this.shouldUseQuery())
+                    {
+                        // Only check once if we have OP
+                        this.requestQueryEntityData(nextId);
+                    }
+                }
+            }
+
+            this.lastTickTime = now;
+        }
+    }
+
+    public Identifier getNetworkChannel()
+    {
+        return ServuxEntitiesHandler.CHANNEL_ID;
+    }
+
+    private ClientPacketListener getVanillaHandler()
+    {
+        if (this.mc.player != null)
+        {
+            return this.mc.player.connection;
+        }
+
+        return null;
+    }
+
+    public IPluginClientPlayHandler<ServuxEntitiesPacket.Payload> getNetworkHandler()
+    {
+        return HANDLER;
+    }
+
+    @Override
+    public void reset(boolean isLogout)
+    {
+        if (isLogout)
+        {
+            MiniHUD.debugLog("EntitiesDataStorage#reset() - log-out");
+            HANDLER.reset(this.getNetworkChannel());
+            HANDLER.resetFailures(this.getNetworkChannel());
+            this.servuxServer = false;
+            this.hasInValidServux = false;
+            this.sentBackupPackets = false;
+            this.receivedBackupPackets = false;
+            this.checkOpStatus = false;
+            this.hasOpStatus = false;
+            this.lastOpCheck = 0L;
+        }
+        else
+        {
+            MiniHUD.debugLog("EntitiesDataStorage#reset() - dimension change or log-in");
+            long now = System.currentTimeMillis();
+            this.lastTickTime = now - (this.getCacheTimeout() + 5000L);
+            this.cache.tickCache(now);
+            this.lastTickTime = now;
+            this.clientWorld = this.mc.level;
+            this.checkOpStatus = true;
+            this.lastOpCheck = now;
+        }
+
+        // Clear data
+        this.clearAll();
+    }
+
+    private boolean shouldUseQuery()
+    {
+        if (this.hasOpStatus) { return true; }
+        if (this.checkOpStatus)
+        {
+            // Check for 15 minutes after login, or changing dimensions
+            if ((System.currentTimeMillis() - this.lastOpCheck) < 900000L) { return true; }
+            this.checkOpStatus = false;
+        }
+
+        return false;
+    }
+
+    public void resetOpCheck()
+    {
+        this.hasOpStatus = false;
+        this.checkOpStatus = true;
+        this.lastOpCheck = System.currentTimeMillis();
+    }
+
+    @Override
+    public EntityDataCache getCache()
+    {
+        return this.cache;
+    }
+
+    @Override
+    public EntityDataRequestTracker getRequestTracker()
+    {
+        return this.requestTracker;
+    }
+
+    @Override
+    public boolean isEnabled()
+    {
+        return Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue();
+    }
+
+    @Override
+    public boolean isBackupEnabled()
+    {
+        return Configs.Generic.ENTITY_DATA_SYNC_BACKUP.getBooleanValue();
+    }
+
+    @Override
+    public boolean loadContainerBlockEntities()
+    {
+        return true;
+    }
+
+    @Override
+    public long getRefreshTime()
+    {
+        long result = (long) (Mth.clamp(Configs.Generic.ENTITY_DATA_SYNC_CACHE_REFRESH.getFloatValue(), 0.05f, 1.0f) * 1000L);
+        long clamp = (this.getCacheTimeout() / 2);
+        return MathUtils.min(result, clamp);
+    }
+
+    @Override
+    public long getCacheTimeout()
+    {
+        // Increase cache timeout when in Backup Mode.
+        int modifier = Configs.Generic.ENTITY_DATA_SYNC_BACKUP.getBooleanValue() ? 5 : 1;
+        return (long) (MathUtils.clamp((Configs.Generic.ENTITY_DATA_SYNC_CACHE_TIMEOUT.getFloatValue() * modifier), 1.0f, 50.0f) * 1000L);
+    }
+
+	public void setIsServuxServer()
+    {
+        this.servuxServer = true;
+        this.hasInValidServux = false;
+    }
+
+    public boolean hasServuxServer()
+    {
+        return this.servuxServer;
+    }
+
+    public boolean hasBackupStatus()
+    {
+        return Configs.Generic.ENTITY_DATA_SYNC_BACKUP.getBooleanValue() && this.hasOpStatus;
+    }
+
+    public boolean hasOperatorStatus()
+    {
+        return this.hasOpStatus;
+    }
+
+    public void setServuxVersion(String ver)
+    {
+        if (ver != null && !ver.isEmpty())
+        {
+            this.servuxVersion = ver;
+            MiniHUD.LOGGER.info("entityDataChannel: joining Servux version {}", ver);
+        }
+        else
+        {
+            this.servuxVersion = "unknown";
+        }
+    }
+
+    public String getServuxVersion()
+    {
+        return servuxVersion;
+    }
+
+    public int getPendingBlockEntitiesCount()
+    {
+        return this.requestTracker.getPendingBlockEntityCount();
+    }
+
+    public int getPendingEntitiesCount()
+    {
+        return this.requestTracker.getPendingEntityCount();
+    }
+
+    public int getBlockEntityCacheCount()
+    {
+        return this.cache.blockEntityCount();
+    }
+
+    public int getEntityCacheCount()
+    {
+        return this.cache.entityCount();
+    }
+
+    public boolean getIfReceivedBackupPackets()
+    {
+        if (Configs.Generic.ENTITY_DATA_SYNC_BACKUP.getBooleanValue())
+        {
+            return this.sentBackupPackets & this.receivedBackupPackets;
+        }
+
+        return false;
+    }
+
+    @Override
+    public void onGameInit()
+    {
+        ClientPlayHandler.getInstance().registerClientPlayHandler(HANDLER);
+        HANDLER.registerPlayPayload(ServuxEntitiesPacket.Payload.ID, ServuxEntitiesPacket.Payload.CODEC, IPluginClientPlayHandler.BOTH_CLIENT);
+    }
+
+    @Override
+    public void onWorldPre()
+    {
+        if (!DataStorage.getInstance().hasIntegratedServer())
+        {
+            HANDLER.registerPlayReceiver(ServuxEntitiesPacket.Payload.ID, HANDLER::receivePlayPayload);
+        }
+    }
+
+    @Override
+    public void onWorldJoin()
+    {
+        // NO-OP
+    }
+
+    public void requestMetadata()
+    {
+        if (!DataStorage.getInstance().hasIntegratedServer() &&
+            Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue())
+        {
+            CompoundTag nbt = new CompoundTag();
+            nbt.putString("version", Reference.MOD_STRING);
+
+            HANDLER.encodeClientData(ServuxEntitiesPacket.MetadataRequest(nbt));
+        }
+    }
+
+    public boolean receiveServuxMetadata(CompoundTag data)
+    {
+        if (!DataStorage.getInstance().hasIntegratedServer())
+        {
+            MiniHUD.debugLog("entityDataChannel: received METADATA from Servux");
+
+            if (Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue())
+            {
+                if (data.getIntOr("version", -1) != ServuxEntitiesPacket.PROTOCOL_VERSION)
+                {
+                    MiniHUD.LOGGER.warn("entityDataChannel: Mis-matched protocol version!");
+                }
+
+                this.setServuxVersion(data.getStringOr("servux", "?"));
+                this.setIsServuxServer();
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public void onPacketFailure()
+    {
+        this.servuxServer = false;
+        this.hasInValidServux = true;
+    }
+
+    public void onEntityDataSyncToggled(ConfigBoolean config)
+    {
+        if (this.hasInValidServux)
+        {
+            this.reset(true);
+        }
+
+        // Do something?
+    }
+
+	private void requestQueryBlockEntity(BlockPos pos)
+    {
+        if (!Configs.Generic.ENTITY_DATA_SYNC_BACKUP.getBooleanValue())
+        {
+            return;
+        }
+
+        ClientPacketListener handler = this.getVanillaHandler();
+
+        if (handler != null)
+        {
+            this.sentBackupPackets = true;
+            handler.getDebugQueryHandler().queryBlockEntityTag(pos, nbtCompound -> this.handleBlockEntityData(pos, nbtCompound));
+            this.transactionToBlockPosOrEntityId.put(((IMixinDebugQueryHandler) handler.getDebugQueryHandler()).malilib_currentTransactionId(), Either.left(pos));
+        }
+    }
+
+    private void requestQueryEntityData(int entityId)
+    {
+        if (!Configs.Generic.ENTITY_DATA_SYNC_BACKUP.getBooleanValue())
+        {
+            return;
+        }
+
+        ClientPacketListener handler = this.getVanillaHandler();
+
+        if (handler != null)
+        {
+            this.sentBackupPackets = true;
+            handler.getDebugQueryHandler().queryEntityTag(entityId, nbtCompound -> this.handleEntityData(entityId, nbtCompound));
+            this.transactionToBlockPosOrEntityId.put(((IMixinDebugQueryHandler) handler.getDebugQueryHandler()).malilib_currentTransactionId(), Either.right(entityId));
+        }
+    }
+
+    private void requestServuxBlockEntityData(BlockPos pos)
+    {
+        if (Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue())
+        {
+            HANDLER.encodeClientData(ServuxEntitiesPacket.BlockEntityRequest(pos));
+        }
+    }
+
+    private void requestServuxEntityData(int entityId)
+    {
+        if (Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue())
+        {
+            HANDLER.encodeClientData(ServuxEntitiesPacket.EntityRequest(entityId));
+        }
+    }
+
+	@Override
+	public void handleBulkEntityData(int transactionId, CompoundData data)
+	{
+		this.handleBulkEntityData(transactionId, DataConverterNbt.toVanillaCompound(data));
+	}
+
+	@Override
+    public void handleBulkEntityData(int transactionId, CompoundTag nbt)
+    {
+        // todo
+    }
+
+    @Override
+    public void handleVanillaQueryNbt(int transactionId, CompoundTag nbt)
+    {
+        if (this.checkOpStatus)
+        {
+            this.hasOpStatus = true;
+            this.checkOpStatus = false;
+            this.lastOpCheck = System.currentTimeMillis();
+        }
+
+        Either<BlockPos, Integer> either = this.transactionToBlockPosOrEntityId.remove(transactionId);
+
+        if (either != null)
+        {
+            this.receivedBackupPackets = true;
+            either.ifLeft(pos -> this.handleBlockEntityData(pos, nbt))
+                  .ifRight(entityId -> this.handleEntityData(entityId, nbt));
+        }
+    }
+}

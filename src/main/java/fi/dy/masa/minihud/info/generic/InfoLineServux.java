@@ -81,7 +81,7 @@ public class InfoLineServux extends InfoLine
                 list.add(this.translate(SERVUX_KEY + ".entity_sync.not_enabled"));
             }
             else if (Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue() &&
-                     !this.getHudData().hasServuxServer())
+                     !this.getEntData().hasServuxServer())
             {
                 list.add(this.translate(SERVUX_KEY + ".entity_sync.not_connected"));
             }
@@ -136,12 +136,12 @@ public class InfoLineServux extends InfoLine
                                     : this.qt(NO_KEY)
             ));
 
-//            list.add(this.translate(SERVUX_KEY+".entity_sync.integrated",
-//                                    this.getEntData().getBlockEntityCacheCount(),
-//                                    this.getEntData().getPendingBlockEntitiesCount(),
-//                                    this.getEntData().getEntityCacheCount(),
-//                                    this.getEntData().getPendingEntitiesCount()
-//            ));
+            list.add(this.translate(SERVUX_KEY+".entity_sync.integrated",
+                                    this.getEntData().getBlockEntityCacheCount(),
+                                    this.getEntData().getPendingBlockEntitiesCount(),
+                                    this.getEntData().getEntityCacheCount(),
+                                    this.getEntData().getPendingEntitiesCount()
+            ));
 
             if (RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue())
             {

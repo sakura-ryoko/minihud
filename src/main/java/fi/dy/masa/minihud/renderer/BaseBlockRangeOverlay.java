@@ -22,7 +22,7 @@ import fi.dy.masa.malilib.config.IConfigBoolean;
 import fi.dy.masa.malilib.util.WorldUtils;
 import fi.dy.masa.malilib.util.data.tag.CompoundData;
 import fi.dy.masa.malilib.util.position.Vec3d;
-import fi.dy.masa.minihud.data.EntitiesDataManager;
+import fi.dy.masa.minihud.data.EntityDataManager;
 
 public abstract class BaseBlockRangeOverlay<T extends BlockEntity> extends OverlayRendererBase
 {
@@ -263,7 +263,7 @@ public abstract class BaseBlockRangeOverlay<T extends BlockEntity> extends Overl
 
         if (state.getBlock() instanceof EntityBlock)
         {
-            pair = EntitiesDataManager.getInstance().requestBlockEntity(this.world, pos);
+            pair = EntityDataManager.getInstance().requestBlockEntity(this.world, fi.dy.masa.malilib.util.position.BlockPos.of(pos));
 
             if (pair != null && (pair.getLeft() == null || !this.blockEntityClass.isAssignableFrom(pair.getLeft().getClass())))
             {

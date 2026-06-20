@@ -3,29 +3,8 @@ package fi.dy.masa.minihud.renderer;
 import java.util.Optional;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.Nullable;
-import fi.dy.masa.malilib.interfaces.IDataSyncer;
-import fi.dy.masa.malilib.interfaces.IInventoryOverlayHandler;
-import fi.dy.masa.malilib.mixin.entity.IMixinAbstractHorseEntity;
-import fi.dy.masa.malilib.mixin.entity.IMixinAbstractNautilus;
-import fi.dy.masa.malilib.mixin.entity.IMixinPiglinEntity;
-import fi.dy.masa.malilib.render.*;
-import fi.dy.masa.malilib.util.EntityUtils;
-import fi.dy.masa.malilib.util.InventoryUtils;
-import fi.dy.masa.malilib.util.WorldUtils;
-import fi.dy.masa.malilib.util.data.Constants;
-import fi.dy.masa.malilib.util.data.DataBlockUtils;
-import fi.dy.masa.malilib.util.data.DataEntityUtils;
-import fi.dy.masa.malilib.util.data.tag.CompoundData;
-import fi.dy.masa.malilib.util.data.tag.ListData;
-import fi.dy.masa.malilib.util.data.tag.converter.DataConverterNbt;
-import fi.dy.masa.malilib.util.game.RayTraceUtils;
-import fi.dy.masa.malilib.util.nbt.NbtInventory;
-import fi.dy.masa.malilib.util.nbt.NbtKeys;
-import fi.dy.masa.minihud.Reference;
-import fi.dy.masa.minihud.config.Configs;
-import fi.dy.masa.minihud.data.EntitiesDataManager;
+
 import net.minecraft.client.Minecraft;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -52,6 +31,28 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
+
+import fi.dy.masa.malilib.interfaces.IDataSyncer;
+import fi.dy.masa.malilib.interfaces.IInventoryOverlayHandler;
+import fi.dy.masa.malilib.mixin.entity.IMixinAbstractHorseEntity;
+import fi.dy.masa.malilib.mixin.entity.IMixinAbstractNautilus;
+import fi.dy.masa.malilib.mixin.entity.IMixinPiglinEntity;
+import fi.dy.masa.malilib.render.*;
+import fi.dy.masa.malilib.util.EntityUtils;
+import fi.dy.masa.malilib.util.InventoryUtils;
+import fi.dy.masa.malilib.util.WorldUtils;
+import fi.dy.masa.malilib.util.data.Constants;
+import fi.dy.masa.malilib.util.data.DataBlockUtils;
+import fi.dy.masa.malilib.util.data.DataEntityUtils;
+import fi.dy.masa.malilib.util.data.tag.CompoundData;
+import fi.dy.masa.malilib.util.data.tag.converter.DataConverterNbt;
+import fi.dy.masa.malilib.util.game.RayTraceUtils;
+import fi.dy.masa.malilib.util.nbt.NbtInventory;
+import fi.dy.masa.malilib.util.nbt.NbtKeys;
+import fi.dy.masa.malilib.util.position.BlockPos;
+import fi.dy.masa.minihud.Reference;
+import fi.dy.masa.minihud.config.Configs;
+import fi.dy.masa.minihud.data.EntityDataManager;
 
 public class InventoryOverlayHandler implements IInventoryOverlayHandler
 {
@@ -85,7 +86,7 @@ public class InventoryOverlayHandler implements IInventoryOverlayHandler
     {
         if (this.syncer == null)
         {
-            this.syncer = EntitiesDataManager.getInstance();
+            this.syncer = EntityDataManager.getInstance();
         }
 
         return this.syncer;
@@ -187,7 +188,7 @@ public class InventoryOverlayHandler implements IInventoryOverlayHandler
 
         if (trace.getType() == HitResult.Type.BLOCK)
         {
-            BlockPos pos = ((BlockHitResult) trace).getBlockPos();
+            BlockPos pos = BlockPos.of(((BlockHitResult) trace).getBlockPos());
             BlockState state = world.getBlockState(pos);
             Block blockTmp = state.getBlock();
             BlockEntity be = null;
@@ -196,14 +197,14 @@ public class InventoryOverlayHandler implements IInventoryOverlayHandler
 
             if (blockTmp instanceof EntityBlock)
             {
-                Optional<NbtInventory> combinedInv = this.getCombinedInventory(world, pos);
-                ListData list = null;
-
-                if (combinedInv.isPresent())
-                {
-                    NbtInventory inventory = combinedInv.get();
-                    list = inventory.sorted().toDataList(world.registryAccess());
-                }
+//                Optional<NbtInventory> combinedInv = this.getCombinedInventory(world, pos);
+//                ListData list = null;
+//
+//                if (combinedInv.isPresent())
+//                {
+//                    NbtInventory inventory = combinedInv.get();
+//                    list = inventory.sorted().toDataList(world.registryAccess());
+//                }
 
                 if (world instanceof ServerLevel)
                 {
@@ -213,11 +214,11 @@ public class InventoryOverlayHandler implements IInventoryOverlayHandler
                     {
 	                    data = DataConverterNbt.fromVanillaCompound(be.saveWithFullMetadata(world.registryAccess()));
 
-                        if (list != null && !list.isEmpty())
-                        {
-                            data.remove(NbtKeys.ITEMS);
-                            data.put(NbtKeys.ITEMS, list);
-                        }
+//                        if (list != null && !list.isEmpty())
+//                        {
+//                            data.remove(NbtKeys.ITEMS);
+//                            data.put(NbtKeys.ITEMS, list);
+//                        }
                     }
                 }
                 else
@@ -228,11 +229,11 @@ public class InventoryOverlayHandler implements IInventoryOverlayHandler
                     {
 	                    data = pair.getRight();
 
-                        if (list != null && !list.isEmpty())
-                        {
-                            data.remove(NbtKeys.ITEMS);
-                            data.put(NbtKeys.ITEMS, list);
-                        }
+//                        if (list != null && !list.isEmpty())
+//                        {
+//                            data.remove(NbtKeys.ITEMS);
+//                            data.put(NbtKeys.ITEMS, list);
+//                        }
                     }
                 }
 
@@ -622,8 +623,9 @@ public class InventoryOverlayHandler implements IInventoryOverlayHandler
             // Refresh data
             if (data.be() != null)
             {
-                InventoryOverlayHandler.getInstance().requestBlockEntityAt(world, data.be().getBlockPos());
-                data = InventoryOverlayHandler.getInstance().getTargetInventoryFromBlock(data.be().getLevel(), data.be().getBlockPos(), data.be(), data.data());
+                BlockPos pos = BlockPos.of(data.be().getBlockPos());
+                InventoryOverlayHandler.getInstance().requestBlockEntityAt(world, pos);
+                data = InventoryOverlayHandler.getInstance().getTargetInventoryFromBlock(data.be().getLevel(), pos, data.be(), data.data());
             }
             else if (data.entity() != null)
             {

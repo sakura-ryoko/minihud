@@ -20,7 +20,7 @@ import fi.dy.masa.malilib.util.WorldUtils;
 import fi.dy.masa.malilib.util.data.tag.CompoundData;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
-import fi.dy.masa.minihud.data.EntitiesDataManager;
+import fi.dy.masa.minihud.data.EntityDataManager;
 import fi.dy.masa.minihud.data.HudDataManager;
 import fi.dy.masa.minihud.util.DataStorage;
 
@@ -42,7 +42,7 @@ public abstract class InfoLine
 
     public HudDataManager getHudData() { return HudDataManager.getInstance(); }
 
-    public EntitiesDataManager getEntData() { return EntitiesDataManager.getInstance(); }
+    public EntityDataManager getEntData() { return EntityDataManager.getInstance(); }
 
     public DataStorage getData() { return DataStorage.getInstance(); }
 
