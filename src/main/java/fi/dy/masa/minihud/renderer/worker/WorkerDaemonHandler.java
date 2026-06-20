@@ -224,12 +224,14 @@ public class WorkerDaemonHandler implements IThreadDaemonHandler<AbstractWorkerT
 		}
 	}
 
+	@Override
 	public void resetForceStop()
 	{
 		this.forceStop = false;
 	}
 
-	protected boolean isForceStop()
+	@Override
+	public boolean isForceStop()
 	{
 		return this.forceStop;
 	}
@@ -240,12 +242,6 @@ public class WorkerDaemonHandler implements IThreadDaemonHandler<AbstractWorkerT
 		this.forceStop = true;
 		this.reset();
 		this.stop();
-	}
-
-	private void gc()
-	{
-		MiniHUD.debugLog("WorkerDaemonHandler: Executing Garbage collection");
-		System.gc();
 	}
 
 	@Override
