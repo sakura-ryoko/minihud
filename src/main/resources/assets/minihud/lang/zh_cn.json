@@ -1023,6 +1023,7 @@
     "minihud.info_line.servux": "Servux版本：%s",
     "minihud.info_line.servux.entity_sync": "实体同步：cB: %02d, pB: %02d, cE: %02d, pE: %02d",
     "minihud.info_line.servux.entity_sync.backup": "实体同步(备份方案)：cB: %02d, pB: %02d, cE: %02d, pE: %02d",
+    "minihud.info_line.servux.entity_sync.integrated": "实体同步(服务器集成)：cB: %02d, pB: %02d, cE: %02d, pE: %02d",
     "minihud.info_line.servux.entity_sync.not_connected": "实体同步：§e未连接§r",
     "minihud.info_line.servux.entity_sync.not_enabled": "实体同步：§c未启用§r",
     "minihud.info_line.servux.entity_sync.not_operator": "实体同步：§d非管理员§r",

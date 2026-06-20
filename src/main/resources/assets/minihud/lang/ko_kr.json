@@ -1023,6 +1023,7 @@
     "minihud.info_line.servux": "Servux 버전: %s",
     "minihud.info_line.servux.entity_sync": "엔티티 동기화: cB: %02d, pB: %02d, cE: %02d, pE: %02d",
     "minihud.info_line.servux.entity_sync.backup": "엔티티 동기화 (백업): cB: %02d, pB: %02d, cE: %02d, pE: %02d",
+    "minihud.info_line.servux.entity_sync.integrated": "엔티티 동기화 (통합 서버): cB: %02d, pB: %02d, cE: %02d, pE: %02d",
     "minihud.info_line.servux.entity_sync.not_connected": "엔티티 동기화: §e연결_안됨§r",
     "minihud.info_line.servux.entity_sync.not_enabled": "엔티티 동기화: §c활성화_안됨§r",
     "minihud.info_line.servux.entity_sync.not_operator": "엔티티 동기화: §d관리자_아님§r",

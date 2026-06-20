@@ -1023,6 +1023,7 @@
     "minihud.info_line.servux": "Servux 版本: %s",
     "minihud.info_line.servux.entity_sync": "EntitySync: cB: %02d, pB: %02d, cE: %02d, pE: %02d",
     "minihud.info_line.servux.entity_sync.backup": "EntitySync (Backup): cB: %02d, pB: %02d, cE: %02d, pE: %02d",
+    "minihud.info_line.servux.entity_sync.integrated": "EntitySync (Integrated Server): cB: %02d, pB: %02d, cE: %02d, pE: %02d",
     "minihud.info_line.servux.entity_sync.not_connected": "EntitySync: §enot_connected§r",
     "minihud.info_line.servux.entity_sync.not_enabled": "EntitySync: §cnot_enabled§r",
     "minihud.info_line.servux.entity_sync.not_operator": "EntitySync: §dnot_operator§r",
