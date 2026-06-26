@@ -264,7 +264,7 @@ public abstract class BaseBlockRangeOverlay<T extends BlockEntity> extends Overl
 
         if (state.getBlock() instanceof EntityBlock)
         {
-            pair = EntityDataManager.getInstance().requestBlockEntity(this.world, fi.dy.masa.malilib.util.position.BlockPos.of(pos));
+            pair = EntityDataManager.getInstance().requestBlockEntity(this.world, pos);
 
             if (pair != null && (pair.getLeft() == null || !this.blockEntityClass.isAssignableFrom(pair.getLeft().getClass())))
             {
