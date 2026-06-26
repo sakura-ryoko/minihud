@@ -9,7 +9,6 @@
         "block.IMixinBeaconBlockEntity",
         "block.MixinBeaconBlockEntity",
         "block.MixinConduitBlockEntity",
-        "client.MixinLanguage",
         "entity.IMixinCopperGolemEntity",
         "entity.IMixinEntity",
         "entity.IMixinPassiveEntity",
