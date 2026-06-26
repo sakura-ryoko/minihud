@@ -1819,7 +1819,7 @@ public class RenderHandler implements IRenderer
                 }
                 else
                 {
-                    pair = EntityDataManager.getInstance().requestBlockEntity(world, fi.dy.masa.malilib.util.position.BlockPos.of(posLooking));
+                    pair = EntityDataManager.getInstance().requestBlockEntity(world, posLooking);
                 }
 
                 // Remember the last entity so the "refresh time" is smoothed over.
@@ -1845,7 +1845,7 @@ public class RenderHandler implements IRenderer
     {
         if (!(world instanceof ServerLevel))
         {
-            Pair<BlockEntity, CompoundData> pair = EntityDataManager.getInstance().requestBlockEntity(world, fi.dy.masa.malilib.util.position.BlockPos.of(pos));
+            Pair<BlockEntity, CompoundData> pair = EntityDataManager.getInstance().requestBlockEntity(world, pos);
 
             BlockState state = world.getBlockState(pos);
 
@@ -1855,7 +1855,7 @@ public class RenderHandler implements IRenderer
 
                 if (type != ChestType.SINGLE)
                 {
-                    return EntityDataManager.getInstance().requestBlockEntity(world, fi.dy.masa.malilib.util.position.BlockPos.of(pos.relative(ChestBlock.getConnectedDirection(state))));
+                    return EntityDataManager.getInstance().requestBlockEntity(world, pos.relative(ChestBlock.getConnectedDirection(state)));
                 }
             }
 

@@ -15,10 +15,7 @@ import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.MeshData;
 import net.minecraft.client.Minecraft;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
+import net.minecraft.core.*;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -32,9 +29,8 @@ import net.minecraft.world.level.chunk.status.ChunkStatus;
 import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.MathUtils;
 import fi.dy.masa.malilib.util.data.Color4f;
-import fi.dy.masa.malilib.util.position.ChunkSectionPos;
+import fi.dy.masa.malilib.util.position.SubChunkPos;
 import fi.dy.masa.malilib.util.position.Vec3d;
-import fi.dy.masa.malilib.util.position.Vec3i;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.RendererToggle;
@@ -45,10 +41,10 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
 {
     public static final OverlayRendererBiomeBorders INSTANCE = new OverlayRendererBiomeBorders();
 
-    private final Object2ObjectOpenHashMap<ChunkSectionPos, List<ColoredQuad>> quads = new Object2ObjectOpenHashMap<>();
+    private final Object2ObjectOpenHashMap<SubChunkPos, List<ColoredQuad>> quads = new Object2ObjectOpenHashMap<>();
     private final Object2IntOpenHashMap<Biome> biomeMapping = new Object2IntOpenHashMap<>();
     private final Int2ObjectOpenHashMap<Color4f> biomeColorsMap = new Int2ObjectOpenHashMap<>();
-    private final ObjectOpenHashSet<ChunkSectionPos> scheduledChunks = new ObjectOpenHashSet<>();
+    private final ObjectOpenHashSet<SubChunkPos> scheduledChunks = new ObjectOpenHashSet<>();
     private final Color4f fixedColor = Color4f.fromColor(0x30F030, 0.25f);
     private Color4f[] biomeColorsArray = new Color4f[0];
     private IntFunction<Color4f> colorRetriever = (id) -> this.biomeColorsArray[id];
@@ -124,7 +120,7 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
     @Override
     public void update(Vec3d cameraPos, Entity entity, Minecraft mc, ProfilerFiller profiler)
     {
-        List<ChunkSectionPos> chunks = this.getSubChunksWithinRange(mc.getCameraEntity(), mc);
+        List<SubChunkPos> chunks = this.getSubChunksWithinRange(mc.getCameraEntity(), mc);
         BlockPos cameraBlockPos = BlockPos.containing(cameraPos.toVanilla());
         this.scheduleTasksForMissingChunks(chunks, cameraBlockPos, mc.level);
 
@@ -237,7 +233,7 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
         this.hasData = false;
     }
 
-    protected List<ChunkSectionPos> getSubChunksWithinRange(Entity cameraEntity, Minecraft mc)
+    protected List<SubChunkPos> getSubChunksWithinRange(Entity cameraEntity, Minecraft mc)
     {
         if (mc.level == null) return new ArrayList<>();
 
@@ -250,7 +246,7 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
         int chunkZ = MathUtils.floor(cameraEntity.getZ()) >> 4;
         int minCY = Math.max(world.getMinY() >> 4, chunkY - viewDistanceVertical);
         int maxCY = Math.min((world.getMaxY()) >> 4, chunkY + viewDistanceVertical);
-        List<ChunkSectionPos> chunks = new ArrayList<>();
+        List<SubChunkPos> chunks = new ArrayList<>();
 
         for (int cz = chunkZ - viewDistance; cz <= chunkZ + viewDistance; ++cz)
         {
@@ -258,7 +254,7 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
             {
                 for (int cy = minCY; cy <= maxCY; ++cy)
                 {
-                    chunks.add(new ChunkSectionPos(cx, cy, cz));
+                    chunks.add(new SubChunkPos(cx, cy, cz));
                 }
             }
         }
@@ -267,14 +263,14 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
         return chunks;
     }
 
-    protected List<ColoredQuad> getQuadsToRender(List<ChunkSectionPos> chunks)
+    protected List<ColoredQuad> getQuadsToRender(List<SubChunkPos> chunks)
     {
         //long pre = System.nanoTime();
         List<ColoredQuad> quads = new ArrayList<>();
 
         synchronized (this.quads)
         {
-            for (ChunkSectionPos pos : chunks)
+            for (SubChunkPos pos : chunks)
             {
                 List<ColoredQuad> tmp = this.quads.get(pos);
 
@@ -289,7 +285,7 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
         return quads;
     }
 
-    protected void scheduleTasksForMissingChunks(List<ChunkSectionPos> chunks, BlockPos cameraBlockPos, Level world)
+    protected void scheduleTasksForMissingChunks(List<SubChunkPos> chunks, BlockPos cameraBlockPos, Level world)
     {
         //long pre = System.nanoTime(); int count = 0;
         synchronized (this.quads)
@@ -309,7 +305,7 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
             chunks.removeAll(this.quads.keySet());
         }
 
-        for (ChunkSectionPos pos : chunks)
+        for (SubChunkPos pos : chunks)
         {
             LevelChunk chunk = (LevelChunk) world.getChunk(pos.getX(), pos.getZ(), ChunkStatus.FULL, false);
 
@@ -343,7 +339,7 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
     }
 
     private static int readBiomesAndFindEdges(LevelChunk chunk,
-                                              ChunkSectionPos subChunkPos,
+                                              SubChunkPos subChunkPos,
                                               List<ColoredQuad> quadsOut,
                                               Object2IntOpenHashMap<Biome> biomeMapping)
     {

@@ -122,7 +122,7 @@ public abstract class ShapeBlocky extends ShapeBase
 
         Consumer<BlockPos.MutableBlockPos> positionCollector = (pos) ->
         {
-            if (box.contains(fi.dy.masa.malilib.util.position.BlockPos.of(pos)))
+            if (box.contains(pos))
             {
                 positionsOut.add(pos.asLong());
             }
