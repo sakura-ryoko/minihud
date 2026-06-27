@@ -134,8 +134,17 @@ public class DebugDataManager
 		DebugScreenEntryList profile = this.mc.debugEntries;
 		Collection<Identifier> list = profile.getCurrentlyEnabled();
 
-		return (profile.isOverlayVisible() || !this.checkVisibleEntries(list))
-				&& (!this.mc.gui.hud.isHidden() || this.mc.gui.screen() != null);
+		boolean result = (profile.isOverlayVisible() || !this.checkVisibleEntries(list));
+
+//		if (!result)
+//		{
+//			System.out.printf("DebugFix // profileVisible: %s, visibleEntries: %s\n",
+//			                  profile.isOverlayVisible(),
+//			                  !this.checkVisibleEntries(list)
+//			);
+//		}
+
+		return result;
 	}
 
 	private boolean checkVisibleEntries(Collection<Identifier> list)

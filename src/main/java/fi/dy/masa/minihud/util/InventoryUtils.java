@@ -14,18 +14,6 @@ import fi.dy.masa.minihud.event.RenderHandler;
 
 public class InventoryUtils
 {
-    public static Container getInventory(Level world, BlockPos pos)
-    {
-        Container inv = fi.dy.masa.malilib.util.InventoryUtils.getInventory(world, pos);
-
-        if ((inv == null || inv.isEmpty()) && !DataStorage.getInstance().hasIntegratedServer())
-        {
-            RenderHandler.getInstance().requestBlockEntityAt(world, pos);
-        }
-
-        return inv;
-    }
-
     public static int recalculateBundleSize(BundleContents bundle, int maxCount)
     {
         Iterator<ItemStack> iter = bundle.itemCopyStream().iterator();

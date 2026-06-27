@@ -14,6 +14,7 @@ import com.mojang.blaze3d.pipeline.RenderTarget;
 import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.RenderBuffers;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
@@ -134,8 +135,8 @@ public class RenderHandler implements IRenderer
         }
 
 		if (DebugDataManager.getInstance().shouldShowDebugHudFix() == false &&
-            this.mc.player != null && mc.gui.hud.isHidden() == false &&
-            this.mc.gui.screen() == null &&
+            this.mc.player != null && this.mc.gui.hud.isHidden() == false &&
+            (this.checkIfScreenGuiBase() == false) &&
             (Configs.Generic.REQUIRE_SNEAK.getBooleanValue() == false || this.mc.player.isShiftKeyDown()) &&
             Configs.Generic.REQUIRED_KEY.getKeybind().isKeybindHeld())
         {
@@ -162,11 +163,22 @@ public class RenderHandler implements IRenderer
                                    this.lines);
         }
 
+//        System.out.printf("HUD // Screen: %s, isHidden: %s, debugFix: %s\n",
+//                          this.checkIfScreenGuiBase() == false,
+//                          this.mc.gui.hud.isHidden() == false,
+//                          DebugDataManager.getInstance().shouldShowDebugHudFix() == false);
+
         if (Configs.Generic.INVENTORY_PREVIEW_ENABLED.getBooleanValue() &&
             Configs.Generic.INVENTORY_PREVIEW.getKeybind().isKeybindHeld())
         {
             InventoryOverlayHandler.getInstance().getRenderContext(ctx, profiler);
         }
+    }
+
+    private boolean checkIfScreenGuiBase()
+    {
+        Screen screen = this.mc.gui.screen();
+        return (screen != null && screen instanceof GuiBase);
     }
 
 //    @Override
@@ -1841,6 +1853,7 @@ public class RenderHandler implements IRenderer
     }
 
     @Nullable
+    @Deprecated(forRemoval = true)
     public Pair<BlockEntity, CompoundData> requestBlockEntityAt(Level world, BlockPos pos)
     {
         if (!(world instanceof ServerLevel))
