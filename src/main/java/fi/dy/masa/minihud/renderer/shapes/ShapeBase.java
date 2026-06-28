@@ -34,6 +34,7 @@ public abstract class ShapeBase extends OverlayRendererBase implements IRangeCha
     protected boolean needsUpdate;
     protected boolean renderLines;
     protected boolean renderThroughShape;
+    protected boolean renderCenterBlock;
 
     public ShapeBase(ShapeType type, Color4f color)
     {
@@ -47,6 +48,7 @@ public abstract class ShapeBase extends OverlayRendererBase implements IRangeCha
         this.needsUpdate = true;
         this.renderLines = false;
         this.renderThroughShape = false;
+        this.renderCenterBlock = false;
         this.useCulling = false;
     }
 
@@ -167,6 +169,17 @@ public abstract class ShapeBase extends OverlayRendererBase implements IRangeCha
         return this.renderThroughShape;
     }
 
+    public void toggleRenderCenterBlock()
+    {
+        this.renderCenterBlock = !this.renderCenterBlock;
+        this.setNeedsUpdate();
+    }
+
+    public boolean shouldRenderCenterBlock()
+    {
+        return this.renderCenterBlock;
+    }
+
     public void setNeedsUpdate()
     {
         this.needsUpdate = true;
@@ -231,6 +244,7 @@ public abstract class ShapeBase extends OverlayRendererBase implements IRangeCha
         obj.add("color_lines", new JsonPrimitive(this.colorLines.intValue));
         obj.add("enabled", new JsonPrimitive(this.enabled));
         obj.add("display_name", new JsonPrimitive(this.displayName));
+        obj.add("render_center_box", new JsonPrimitive(this.renderCenterBlock));
         obj.add("render_lines", new JsonPrimitive(this.renderLines));
         obj.add("render_through", new JsonPrimitive(this.renderThroughShape));
         obj.add("render_type", new JsonPrimitive(this.renderType.getStringValue()));
@@ -257,6 +271,11 @@ public abstract class ShapeBase extends OverlayRendererBase implements IRangeCha
         if (JsonUtils.hasObject(obj, "layers"))
         {
             this.layerRange.fromJson(JsonUtils.getNestedObject(obj, "layers", false));
+        }
+
+        if (JsonUtils.hasBoolean(obj, "render_center_box"))
+        {
+            this.renderCenterBlock = JsonUtils.getBoolean(obj, "render_center_box");
         }
 
         if (JsonUtils.hasBoolean(obj, "render_lines"))
