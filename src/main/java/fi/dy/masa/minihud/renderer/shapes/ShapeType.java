@@ -13,11 +13,16 @@ public enum ShapeType
     BLOCK_LINE              ("block_line",              "minihud.label.shapes.block_line",              ShapeLineBlock::new),
     SPHERE_BLOCKY           ("sphere_blocky",           "minihud.label.shapes.sphere_blocky",           ShapeSphereBlocky::new),
     ADJUSTABLE_SPAWN_SPHERE ("adjustable_spawn_sphere", "minihud.label.shapes.adjustable_spawn_sphere", ShapeSpawnSphere::new),
-    ELLIPSOID_SPAWN         ("ellipsoid_spawn",         "minihud.label.shapes.ellipsoid_spawn",         ShapeEllipsoidSpawn::new),
     CAN_SPAWN_SPHERE        ("can_spawn_sphere",        "minihud.label.shapes.can_spawn_sphere",        ShapeCanSpawnSphere::new),
     CAN_DESPAWN_SPHERE      ("can_despawn_sphere",      "minihud.label.shapes.can_despawn_sphere",      ShapeCanDespawnSphere::new),
     DESPAWN_SPHERE          ("despawn_sphere",          "minihud.label.shapes.despawn_sphere",          ShapeDespawnSphere::new),
-    CLIPPED_SPAWN_SPHERE_Y  ("clipped_spawn_sphere_y",  "minihud.label.shapes.clipped_spawn_sphere_y",  ShapeSpawnSphereClippedY::new);
+    CLIPPED_SPAWN_SPHERE_Y  ("clipped_spawn_sphere_y",  "minihud.label.shapes.clipped_spawn_sphere_y",  ShapeSpawnSphereClippedY::new),
+    ELLIPSOID_SPAWN         ("ellipsoid_spawn",         "minihud.label.shapes.ellipsoid_spawn",         ShapeEllipsoidSpawn::new),
+    CONE                    ("cone",                    "minihud.label.shapes.cone",                    ShapeCone::new),
+    PYRAMID                 ("pyramid",                 "minihud.label.shapes.pyramid",                 ShapePyramid::new),
+    DIAMOND_PYRAMID         ("diamond_pyramid",         "minihud.label.shapes.diamond_pyramid",         ShapeDiamondPyramid::new),
+    OCTAGON_PYRAMID         ("octagon_pyramid",         "minihud.label.shapes.octagon_pyramid",         ShapeOctagonPyramid::new),
+    ;
 
     public static final ImmutableList<ShapeType> VALUES = ImmutableList.copyOf(values());
 

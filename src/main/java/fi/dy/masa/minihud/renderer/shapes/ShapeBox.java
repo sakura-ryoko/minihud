@@ -2,6 +2,7 @@ package fi.dy.masa.minihud.renderer.shapes;
 
 import java.util.List;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -39,6 +40,7 @@ public class ShapeBox extends ShapeBase
     protected Vec3 gridEndOffset;
 
     private AABB renderBox;
+    protected BlockPos centerPos;
     private boolean hasData;
 
     public ShapeBox()
@@ -70,6 +72,7 @@ public class ShapeBox extends ShapeBase
         this.gridStartOffset = Vec3.ZERO;
         this.gridEndOffset = Vec3.ZERO;
         this.renderBox = null;
+        this.centerPos = BlockPos.ZERO;
         this.hasData = false;
         this.useCulling = false;
     }
@@ -202,6 +205,17 @@ public class ShapeBox extends ShapeBase
         this.setNeedsUpdate();
     }
 
+    public Vec3d getCenter()
+    {
+        return Vec3d.of(this.getBox().getCenter());
+    }
+
+    public BlockPos getCenterPos()
+    {
+        final Vec3d center = this.getCenter();
+        return BlockPos.containing(center.x(), center.y(), center.z());
+    }
+
     @Override
     public boolean shouldRender(Minecraft mc)
     {
@@ -214,6 +228,12 @@ public class ShapeBox extends ShapeBase
     {
         this.renderBox = this.box.move(-cameraPos.x, -cameraPos.y, -cameraPos.z);
         this.hasData = true;
+
+        if (this.shouldRenderCenterBlock())
+        {
+            this.centerPos = this.getCenterPos();
+        }
+
         this.render(cameraPos, mc, profiler);
         this.needsUpdate = false;
     }
@@ -257,6 +277,11 @@ public class ShapeBox extends ShapeBase
         PoseStack matrices = new PoseStack();
 
         matrices.pushPose();
+
+        if (this.shouldRenderCenterBlock())
+        {
+            fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxSidesBatchedQuads(this.centerPos, cameraPos.toVanilla(), this.color, 0.001, builder);
+        }
 
         for (Direction side : PositionUtils.ALL_DIRECTIONS)
         {
@@ -308,6 +333,11 @@ public class ShapeBox extends ShapeBase
 
         matrices.pushPose();
         PoseStack.Pose e = matrices.last();
+
+        if (this.shouldRenderCenterBlock())
+        {
+            fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(this.centerPos, cameraPos.toVanilla(), this.colorLines, 0.001, this.glLineWidth, builder);
+        }
 
         this.renderBoxEnabledEdgeLines(this.renderBox, this.colorLines, this.enabledSidesMask, builder, e, this.glLineWidth);
 

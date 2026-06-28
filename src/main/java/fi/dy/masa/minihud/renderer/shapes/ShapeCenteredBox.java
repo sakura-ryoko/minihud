@@ -63,10 +63,11 @@ public class ShapeCenteredBox extends ShapeBox
         this.setBoxFromDimension();
     }
 
+    @Override
     public Vec3 getCenter()
 	{
-        return this.center;
-    }
+		return this.center;
+	}
 
     public double getWidth()
 	{

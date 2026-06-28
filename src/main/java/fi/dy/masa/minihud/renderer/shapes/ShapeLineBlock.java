@@ -32,6 +32,7 @@ public class ShapeLineBlock extends ShapeBlocky
     protected Vec3 effectiveStartPos = Vec3.ZERO;
     protected Vec3 effectiveEndPos = Vec3.ZERO;
 	protected Vec3 initialSize = new Vec3(16.0D, 16.0D, 16.0D);
+    protected BlockPos midpoint = BlockPos.ZERO;
 
     private boolean hasData;
 
@@ -102,6 +103,23 @@ public class ShapeLineBlock extends ShapeBlocky
         this.updateEffectivePositions();
     }
 
+    protected void calcMidpoint()
+    {
+        Vec3d p1 = this.startPos;
+        Vec3d p2 = this.endPos;
+
+        double mx = (p1.x + p2.x) / 2.0;
+        double my = (p1.y + p2.y) / 2.0;
+        double mz = (p1.z + p2.z) / 2.0;
+
+        this.midpoint = BlockPos.containing(mx, my, mz);
+    }
+
+    protected BlockPos getMidpoint()
+    {
+        return this.midpoint;
+    }
+
     @Override
     public void update(Vec3 cameraPos, Entity entity, Minecraft mc, ProfilerFiller profiler)
     {
@@ -138,9 +156,7 @@ public class ShapeLineBlock extends ShapeBlocky
         profiler.push("line_block_quads");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
         BufferBuilder builder = ctx.start(() -> "minihud:line_block/quads", this.renderThroughShape ? MaLiLibPipelines.MINIHUD_SHAPE_NO_DEPTH_OFFSET : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL);
-//        MatrixStack matrices = new MatrixStack();
 
-//        matrices.push();
         this.renderLineShapeQuads(cameraPos, builder);
 
         try
@@ -164,7 +180,6 @@ public class ShapeLineBlock extends ShapeBlocky
             MiniHUD.LOGGER.error("ShapeLineBlock#renderQuads(): Exception; {}", err.getMessage());
         }
 
-//        matrices.pop();
         profiler.pop();
     }
 
@@ -273,6 +288,7 @@ public class ShapeLineBlock extends ShapeBlocky
         this.effectiveStartPos = this.getBlockSnappedPosition(this.startPos);
         this.effectiveEndPos = this.getBlockSnappedPosition(this.endPos);
         this.updateRenderPerimeter();
+        this.calcMidpoint();
         this.setNeedsUpdate();
     }
 
@@ -288,6 +304,11 @@ public class ShapeLineBlock extends ShapeBlocky
         LongOpenHashSet positions = new LongOpenHashSet();
         RayTracer tracer = new RayTracer(this.effectiveStartPos, this.effectiveEndPos);
         double expand = 0;
+
+        if (this.shouldRenderCenterBlock())
+        {
+            fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxSidesBatchedQuads(this.getMidpoint(), cameraPos.toVanilla(), this.color, 0.001, builder);
+        }
 
         tracer.iterateAllPositions(this.getLinePositionCollector(positions));
 
@@ -316,6 +337,11 @@ public class ShapeLineBlock extends ShapeBlocky
         LongOpenHashSet positions = new LongOpenHashSet();
         RayTracer tracer = new RayTracer(this.effectiveStartPos, this.effectiveEndPos);
         double expand = 0;
+
+        if (this.shouldRenderCenterBlock())
+        {
+            fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(this.getMidpoint(), cameraPos.toVanilla(), this.colorLines, 0.001, lineWidth, builder);
+        }
 
         tracer.iterateAllPositions(this.getLinePositionCollector(positions));
 

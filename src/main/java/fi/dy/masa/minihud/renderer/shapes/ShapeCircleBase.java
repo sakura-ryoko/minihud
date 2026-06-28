@@ -20,6 +20,7 @@ public abstract class ShapeCircleBase extends ShapeBlocky
     private double radiusSq;
     private Vec3 center = Vec3.ZERO;
     private Vec3 effectiveCenter = Vec3.ZERO;
+    protected BlockPos centerPos = BlockPos.ZERO;
 
     public ShapeCircleBase(ShapeType type, Color4f color, double radius)
     {
