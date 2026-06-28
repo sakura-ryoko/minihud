@@ -334,8 +334,12 @@ public class Configs implements IConfigHandler
         public static final ConfigColor SHAPE_CAN_DESPAWN_SPHERE                = new ConfigColor("shapeCanDespawnSphere",              "#60A04050").apply(COLORS_KEY);
         public static final ConfigColor SHAPE_CAN_SPAWN_SPHERE                  = new ConfigColor("shapeCanSpawnSphere",                "#60A04050").apply(COLORS_KEY);
         public static final ConfigColor SHAPE_CIRCLE                            = new ConfigColor("shapeCircle",                        "#6030B0B0").apply(COLORS_KEY);
+        public static final ConfigColor SHAPE_CONE                              = new ConfigColor("shapeCone",                          "#60FFAA00").apply(COLORS_KEY);
         public static final ConfigColor SHAPE_DESPAWN_SPHERE                    = new ConfigColor("shapeDespawnSphere",                 "#60A04050").apply(COLORS_KEY);
         public static final ConfigColor SHAPE_LINE_BLOCKY                       = new ConfigColor("shapeLineBlocky",                    "#6030F0B0").apply(COLORS_KEY);
+        public static final ConfigColor SHAPE_PYRAMID                           = new ConfigColor("shapePyramid",                       "#6040FF40").apply(COLORS_KEY);
+        public static final ConfigColor SHAPE_DIAMOND_PYRAMID                   = new ConfigColor("shapeDiamondPyramid",                "#60B030B0").apply(COLORS_KEY);
+        public static final ConfigColor SHAPE_OCTAGON_PYRAMID                   = new ConfigColor("shapeOctagonPyramid",                "#60FF5050").apply(COLORS_KEY);
         public static final ConfigColor SHAPE_SPHERE_BLOCKY                     = new ConfigColor("shapeSphereBlocky",                  "#6030B0B0").apply(COLORS_KEY);
         public static final ConfigColor SLIME_CHUNKS_OVERLAY_COLOR              = new ConfigColor("slimeChunksOverlayColor",            "#3020F020").apply(COLORS_KEY);
         public static final ConfigColor SPAWN_PLAYER_ENTITY_OVERLAY_COLOR       = new ConfigColor("spawnPlayerEntityOverlayColor",      "#302050D0").apply(COLORS_KEY);
@@ -378,8 +382,12 @@ public class Configs implements IConfigHandler
                 SHAPE_CAN_DESPAWN_SPHERE,
                 SHAPE_CAN_SPAWN_SPHERE,
                 SHAPE_CIRCLE,
+                SHAPE_CONE,
                 SHAPE_DESPAWN_SPHERE,
                 SHAPE_LINE_BLOCKY,
+                SHAPE_PYRAMID,
+                SHAPE_DIAMOND_PYRAMID,
+                SHAPE_OCTAGON_PYRAMID,
                 SHAPE_SPHERE_BLOCKY,
                 SLIME_CHUNKS_OVERLAY_COLOR,
                 SPAWN_PLAYER_ENTITY_OVERLAY_COLOR,
