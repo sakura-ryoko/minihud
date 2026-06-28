@@ -3,6 +3,7 @@ package fi.dy.masa.minihud.renderer.shapes;
 import com.google.gson.JsonObject;
 import fi.dy.masa.malilib.util.EntityUtils;
 import fi.dy.masa.malilib.util.JsonUtils;
+import fi.dy.masa.malilib.util.position.Vec3d;
 import fi.dy.masa.minihud.config.Configs;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
@@ -63,8 +64,8 @@ public class ShapeCenteredBox extends ShapeBox
         this.setBoxFromDimension();
     }
 
-    @Override
-    public Vec3 getCenter()
+	@Override
+	public Vec3 getCenter()
 	{
 		return this.center;
 	}

@@ -20,6 +20,7 @@ import fi.dy.masa.malilib.interfaces.ICoordinateValueModifier;
 import fi.dy.masa.malilib.util.*;
 import fi.dy.masa.malilib.util.position.PositionUtils;
 import fi.dy.masa.malilib.util.position.PositionUtils.CoordinateType;
+import fi.dy.masa.malilib.util.position.Vec3d;
 import fi.dy.masa.minihud.gui.GuiConfigs.ConfigGuiTab;
 import fi.dy.masa.minihud.renderer.shapes.*;
 import fi.dy.masa.minihud.util.ShapeRenderType;
@@ -400,7 +401,7 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         this.addLabel(x, y, -1, 14, 0xFFFFFFFF, StringUtils.translate("minihud.gui.label.center_colon"));
         y += 14;
 
-        GuiUtils.createVec3dInputsVertical(x, y, 120, Vec3d.of(shape.getOrigin()), new BlockPosEditor(shape::getOrigin, shape::setOrigin, this), true, this);
+        GuiUtils.createVec3dInputsVertical(x, y, 120, new Vec3(shape.getOrigin()), new BlockPosEditor(shape::getOrigin, shape::setOrigin, this), true, this);
         y += 54;
 
         ButtonGeneric button = new ButtonGeneric(x + 11, y, -1, 20, StringUtils.translate("minihud.gui.button.render_layers_gui.set_to_player"));

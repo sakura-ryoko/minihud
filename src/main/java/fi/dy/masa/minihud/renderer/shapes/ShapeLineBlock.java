@@ -105,8 +105,8 @@ public class ShapeLineBlock extends ShapeBlocky
 
     protected void calcMidpoint()
     {
-        Vec3d p1 = this.startPos;
-        Vec3d p2 = this.endPos;
+        Vec3 p1 = this.startPos;
+        Vec3 p2 = this.endPos;
 
         double mx = (p1.x + p2.x) / 2.0;
         double my = (p1.y + p2.y) / 2.0;
@@ -307,7 +307,7 @@ public class ShapeLineBlock extends ShapeBlocky
 
         if (this.shouldRenderCenterBlock())
         {
-            fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxSidesBatchedQuads(this.getMidpoint(), cameraPos.toVanilla(), this.color, 0.001, builder);
+            fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxSidesBatchedQuads(this.getMidpoint(), cameraPos, this.color, 0.001, builder);
         }
 
         tracer.iterateAllPositions(this.getLinePositionCollector(positions));
@@ -340,7 +340,7 @@ public class ShapeLineBlock extends ShapeBlocky
 
         if (this.shouldRenderCenterBlock())
         {
-            fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(this.getMidpoint(), cameraPos.toVanilla(), this.colorLines, 0.001, lineWidth, builder);
+            fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(this.getMidpoint(), cameraPos, this.colorLines, 0.001, lineWidth, builder);
         }
 
         tracer.iterateAllPositions(this.getLinePositionCollector(positions));

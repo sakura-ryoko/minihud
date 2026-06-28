@@ -19,6 +19,7 @@ import fi.dy.masa.malilib.util.JsonUtils;
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.malilib.util.data.Color4f;
 import fi.dy.masa.malilib.util.position.PositionUtils;
+import fi.dy.masa.malilib.util.position.Vec3d;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.renderer.RenderObjectVbo;
@@ -205,14 +206,14 @@ public class ShapeBox extends ShapeBase
         this.setNeedsUpdate();
     }
 
-    public Vec3d getCenter()
+    public Vec3 getCenter()
     {
-        return Vec3d.of(this.getBox().getCenter());
+        return this.getBox().getCenter();
     }
 
     public BlockPos getCenterPos()
     {
-        final Vec3d center = this.getCenter();
+        final Vec3 center = this.getCenter();
         return BlockPos.containing(center.x(), center.y(), center.z());
     }
 
@@ -280,7 +281,7 @@ public class ShapeBox extends ShapeBase
 
         if (this.shouldRenderCenterBlock())
         {
-            fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxSidesBatchedQuads(this.centerPos, cameraPos.toVanilla(), this.color, 0.001, builder);
+            fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxSidesBatchedQuads(this.centerPos, cameraPos, this.color, 0.001, builder);
         }
 
         for (Direction side : PositionUtils.ALL_DIRECTIONS)
@@ -336,7 +337,7 @@ public class ShapeBox extends ShapeBase
 
         if (this.shouldRenderCenterBlock())
         {
-            fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(this.centerPos, cameraPos.toVanilla(), this.colorLines, 0.001, this.glLineWidth, builder);
+            fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(this.centerPos, cameraPos, this.colorLines, 0.001, this.glLineWidth, builder);
         }
 
         this.renderBoxEnabledEdgeLines(this.renderBox, this.colorLines, this.enabledSidesMask, builder, e, this.glLineWidth);

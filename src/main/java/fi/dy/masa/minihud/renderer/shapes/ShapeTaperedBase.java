@@ -14,6 +14,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.Vec3;
 
 import fi.dy.masa.malilib.render.MaLiLibPipelines;
 import fi.dy.masa.malilib.util.EntityUtils;
@@ -128,12 +129,12 @@ public abstract class ShapeTaperedBase extends ShapeBase
 
 		if (cameraEntity != null && this.origin == BlockPos.ZERO)
 		{
-			this.moveToPosition(Vec3d.of(cameraEntity.position()));
+			this.moveToPosition(cameraEntity.position());
 		}
 	}
 
 	@Override
-	public void moveToPosition(Vec3d pos)
+	public void moveToPosition(Vec3 pos)
 	{
 		this.setOrigin(BlockPos.containing(pos.x, pos.y, pos.z));
 
@@ -197,7 +198,7 @@ public abstract class ShapeTaperedBase extends ShapeBase
 	}
 
 	@Override
-	public void update(Vec3d cameraPos, Entity entity, Minecraft mc, ProfilerFiller profiler)
+	public void update(Vec3 cameraPos, Entity entity, Minecraft mc, ProfilerFiller profiler)
 	{
 		this.hasData = true;
 		this.render(cameraPos, mc, profiler);
@@ -211,7 +212,7 @@ public abstract class ShapeTaperedBase extends ShapeBase
 	}
 
 	@Override
-	public void render(Vec3d cameraPos, Minecraft mc, ProfilerFiller profiler)
+	public void render(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
 	{
 		this.allocateBuffers(this.renderLines);
 		this.renderQuads(cameraPos, mc, profiler);
@@ -222,18 +223,18 @@ public abstract class ShapeTaperedBase extends ShapeBase
 		}
 	}
 
-	private void renderQuads(Vec3d cameraPos, Minecraft mc, ProfilerFiller profiler)
+	private void renderQuads(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
 	{
 		if (mc.level == null || mc.player == null) return;
 
 		String shapeName = this.type.name().toLowerCase();
 		profiler.push(shapeName + "_quads");
 		RenderObjectVbo ctx = this.renderObjects.getFirst();
-		BufferBuilder builder = ctx.start(() -> Reference.MOD_ID+":"+shapeName+"/quads", this.renderThroughShape ? MaLiLibPipelines.MINIHUD_SHAPE_NO_DEPTH_OFFSET : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL, 0);
+		BufferBuilder builder = ctx.start(() -> Reference.MOD_ID+":"+shapeName+"/quads", this.renderThroughShape ? MaLiLibPipelines.MINIHUD_SHAPE_NO_DEPTH_OFFSET : MaLiLibPipelines.MINIHUD_SHAPE_OFFSET_NO_CULL);
 
 		if (this.shouldRenderCenterBlock())
 		{
-			fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxSidesBatchedQuads(this.origin, cameraPos.toVanilla(), this.color, 0.001, builder);
+			fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxSidesBatchedQuads(this.origin, cameraPos, this.color, 0.001, builder);
 		}
 
 		this.renderShapeGeometry(cameraPos, builder, false);
@@ -247,7 +248,7 @@ public abstract class ShapeTaperedBase extends ShapeBase
 				ctx.upload(meshData, this.shouldResort);
 				if (this.shouldResort)
 				{
-					ctx.startResorting(meshData, ctx.createVertexSorter(cameraPos.toVanilla()));
+					ctx.startResorting(meshData, ctx.createVertexSorter(cameraPos));
 				}
 				meshData.close();
 			}
@@ -260,18 +261,18 @@ public abstract class ShapeTaperedBase extends ShapeBase
 		profiler.pop();
 	}
 
-	private void renderOutlines(Vec3d cameraPos, Minecraft mc, ProfilerFiller profiler)
+	private void renderOutlines(Vec3 cameraPos, Minecraft mc, ProfilerFiller profiler)
 	{
 		if (mc.level == null || mc.player == null || !this.renderLines) return;
 
 		String shapeName = this.type.name().toLowerCase();
 		profiler.push(shapeName + "_outlines");
 		RenderObjectVbo ctx = this.renderObjects.get(1);
-		BufferBuilder builder = ctx.start(() -> Reference.MOD_ID+":"+shapeName+"/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH, 0);
+		BufferBuilder builder = ctx.start(() -> Reference.MOD_ID+":"+shapeName+"/outlines", MaLiLibPipelines.DEBUG_LINES_MASA_SIMPLE_LEQUAL_DEPTH);
 
 		if (this.shouldRenderCenterBlock())
 		{
-			fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(this.origin, cameraPos.toVanilla(), this.colorLines, 0.001, this.glLineWidth, builder);
+			fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(this.origin, cameraPos, this.colorLines, 0.001, this.glLineWidth, builder);
 		}
 
 		this.renderShapeGeometry(cameraPos, builder, true);
@@ -293,7 +294,7 @@ public abstract class ShapeTaperedBase extends ShapeBase
 		profiler.pop();
 	}
 
-	private void renderShapeGeometry(Vec3d cameraPos, BufferBuilder builder, boolean isOutline)
+	private void renderShapeGeometry(Vec3 cameraPos, BufferBuilder builder, boolean isOutline)
 	{
 		List<BlockPos> blocks = this.generateShapeBlocks();
 		LongOpenHashSet positions = new LongOpenHashSet(blocks.size());
