@@ -283,7 +283,7 @@ public class ShapeBox extends ShapeBase
 
         if (this.shouldRenderCenterBlock())
         {
-            fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxSidesBatchedQuads(this.centerPos, cameraPos.toVanilla(), this.color, 0.001, builder);
+            fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxSidesBatchedQuads(this.centerPos, cameraPos, this.color, 0.001, builder);
         }
 
         for (Direction side : PositionUtils.ALL_DIRECTIONS)
@@ -339,7 +339,7 @@ public class ShapeBox extends ShapeBase
 
         if (this.shouldRenderCenterBlock())
         {
-            fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(this.centerPos, cameraPos.toVanilla(), this.colorLines, 0.001, this.glLineWidth, builder);
+            fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(this.centerPos, cameraPos, this.colorLines, 0.001, this.glLineWidth, builder);
         }
 
         this.renderBoxEnabledEdgeLines(this.renderBox, this.colorLines, this.enabledSidesMask, builder, e, this.glLineWidth);

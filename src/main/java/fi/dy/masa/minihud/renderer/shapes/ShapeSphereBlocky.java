@@ -162,7 +162,7 @@ public class ShapeSphereBlocky extends ShapeCircleBase
 
         if (this.shouldRenderCenterBlock())
         {
-            fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxSidesBatchedQuads(centerPos, cameraPos.toVanilla(), this.color, 0.001, builder);
+            fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxSidesBatchedQuads(centerPos, cameraPos, this.color, 0.001, builder);
         }
 
         if (this.getCombineQuads())
@@ -190,7 +190,7 @@ public class ShapeSphereBlocky extends ShapeCircleBase
 
         if (this.shouldRenderCenterBlock())
         {
-            fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(centerPos, cameraPos.toVanilla(), this.colorLines, 0.001, lineWidth, builder);
+            fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(centerPos, cameraPos, this.colorLines, 0.001, lineWidth, builder);
         }
 
         if (this.getCombineQuads())

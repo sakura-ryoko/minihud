@@ -311,7 +311,7 @@ public class ShapeLineBlock extends ShapeBlocky
 
         if (this.shouldRenderCenterBlock())
         {
-            fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxSidesBatchedQuads(this.getMidpoint(), cameraPos.toVanilla(), this.color, 0.001, builder);
+            fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxSidesBatchedQuads(this.getMidpoint(), cameraPos, this.color, 0.001, builder);
         }
 
         tracer.iterateAllPositions(this.getLinePositionCollector(positions));
@@ -344,7 +344,7 @@ public class ShapeLineBlock extends ShapeBlocky
 
         if (this.shouldRenderCenterBlock())
         {
-            fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(this.getMidpoint(), cameraPos.toVanilla(), this.colorLines, 0.001, lineWidth, builder);
+            fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(this.getMidpoint(), cameraPos, this.colorLines, 0.001, lineWidth, builder);
         }
 
         tracer.iterateAllPositions(this.getLinePositionCollector(positions));

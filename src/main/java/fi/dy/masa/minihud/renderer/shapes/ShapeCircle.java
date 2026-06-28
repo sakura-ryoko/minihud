@@ -82,7 +82,7 @@ public class ShapeCircle extends ShapeCircleBase
 
         if (this.shouldRenderCenterBlock())
         {
-            fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxSidesBatchedQuads(this.getCenterBlock(), cameraPos.toVanilla(), this.color, 0.001, builder);
+            fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxSidesBatchedQuads(this.getCenterBlock(), cameraPos, this.color, 0.001, builder);
         }
 
         this.renderCircleShapeQuads(cameraPos, builder);
@@ -124,7 +124,7 @@ public class ShapeCircle extends ShapeCircleBase
 
         if (this.shouldRenderCenterBlock())
         {
-            fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(this.getCenterBlock(), cameraPos.toVanilla(), this.colorLines, 0.001, this.glLineWidth, builder);
+            fi.dy.masa.malilib.render.RenderUtils.drawBlockBoundingBoxOutlinesBatchedLines(this.getCenterBlock(), cameraPos, this.colorLines, 0.001, this.glLineWidth, builder);
         }
 
         this.renderCircleShapeOutlines(cameraPos, this.glLineWidth, builder);
