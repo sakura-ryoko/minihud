@@ -14,7 +14,9 @@ import com.mojang.blaze3d.pipeline.RenderTarget;
 import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.options.OptionsScreen;
 import net.minecraft.client.renderer.RenderBuffers;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
@@ -45,6 +47,7 @@ import fi.dy.masa.malilib.config.HudAlignment;
 import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.interfaces.IRenderer;
 import fi.dy.masa.malilib.render.GuiContext;
+import fi.dy.masa.malilib.render.InventoryOverlayScreen;
 import fi.dy.masa.malilib.render.RenderUtils;
 import fi.dy.masa.malilib.util.InventoryUtils;
 import fi.dy.masa.malilib.util.StringUtils;
@@ -136,7 +139,7 @@ public class RenderHandler implements IRenderer
 
 		if (DebugDataManager.getInstance().shouldShowDebugHudFix() == false &&
             this.mc.player != null && this.mc.gui.hud.isHidden() == false &&
-            (this.checkIfScreenGuiBase() == false) &&
+            (this.checkScreenWhiteList() == false) &&
             (Configs.Generic.REQUIRE_SNEAK.getBooleanValue() == false || this.mc.player.isShiftKeyDown()) &&
             Configs.Generic.REQUIRED_KEY.getKeybind().isKeybindHeld())
         {
@@ -164,7 +167,7 @@ public class RenderHandler implements IRenderer
         }
 
 //        System.out.printf("HUD // Screen: %s, isHidden: %s, debugFix: %s\n",
-//                          this.checkIfScreenGuiBase() == false,
+//                          this.checkScreenBlackList() == false,
 //                          this.mc.gui.hud.isHidden() == false,
 //                          DebugDataManager.getInstance().shouldShowDebugHudFix() == false);
 
@@ -175,10 +178,18 @@ public class RenderHandler implements IRenderer
         }
     }
 
-    private boolean checkIfScreenGuiBase()
+    private boolean checkScreenWhiteList()
     {
         Screen screen = this.mc.gui.screen();
-        return (screen != null && screen instanceof GuiBase);
+
+        if (screen != null)
+        {
+            if (screen instanceof ChatScreen) { return false; }
+            else if (screen instanceof InventoryOverlayScreen) { return false; }
+            return true;
+        }
+
+        return false;
     }
 
 //    @Override
