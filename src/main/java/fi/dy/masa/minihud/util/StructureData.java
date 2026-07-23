@@ -6,13 +6,14 @@ import javax.annotation.Nullable;
 import com.google.common.collect.ImmutableList;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructurePiece;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraft.world.level.levelgen.structure.TerrainAdjustment;
 
+import fi.dy.masa.malilib.util.data.Constants;
+import fi.dy.masa.malilib.util.data.tag.CompoundData;
+import fi.dy.masa.malilib.util.data.tag.ListData;
 import fi.dy.masa.malilib.util.IntBoundingBox;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.config.Configs;
@@ -145,12 +146,12 @@ public class StructureData
     }
 
     @Nullable
-    public static StructureData fromStructureStartTag(CompoundTag tag, long currentTime)
+    public static StructureData fromStructureStartTag(CompoundData tag, long currentTime)
     {
-        if (tag.contains("id") &&
-            tag.contains("Children"))
+        if (tag.contains("id", Constants.NBT.TAG_STRING) &&
+            tag.containsList("Children", Constants.NBT.TAG_COMPOUND))
         {
-            String id = tag.getStringOr("id", "?");
+            String id = tag.getStringOrDefault("id", "?");
             StructureType type = StructureType.fromStructureId(id);
 
             if (type == StructureType.UNKNOWN && Configs.Generic.DEBUG_MESSAGES.getBooleanValue())
@@ -160,21 +161,15 @@ public class StructureData
 
             try
             {
-//                Structure structure = DataStorage.getInstance().getWorldRegistryManager().lookupOrThrow(Registries.STRUCTURE).getValue(Identifier.tryParse(id));
-//                Structure structure = WorldUtils.getBestWorld(Minecraft.getInstance()).registryAccess().lookupOrThrow(Registries.STRUCTURE).getValue(Identifier.tryParse(id));
-
-//                if (structure == null) return null;
-//			    final int ref = tag.getInt("references", 0);
-//			    ChunkPos pos = new ChunkPos(tag.getInt("ChunkX", 0), tag.getInt("ChunkZ", 0));
                 ImmutableList.Builder<@NotNull IntBoundingBox> builder = ImmutableList.builder();
-                ListTag pieces = tag.getListOrEmpty("Children");
-                boolean shouldExpandBox = tag.getBooleanOr("ExpandBox", false);
+                ListData pieces = tag.getListOrDefault("Children", Constants.NBT.TAG_COMPOUND, new ListData());
+                boolean shouldExpandBox = tag.getBooleanOrDefault("ExpandBox", false);
                 final int count = pieces.size();
 
                 for (int i = 0; i < count; ++i)
                 {
-                    CompoundTag pieceTag = pieces.getCompoundOrEmpty(i);
-                    builder.add(IntBoundingBox.fromArray(pieceTag.getIntArray("BB").orElseThrow()));
+                    CompoundData pieceTag = pieces.getCompoundAt(i);
+                    builder.add(IntBoundingBox.fromArray(pieceTag.getIntArray("BB")));
                 }
 
                 return new StructureData(type, builder.build(), currentTime, shouldExpandBox);

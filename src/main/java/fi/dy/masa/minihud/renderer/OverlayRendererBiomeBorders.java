@@ -232,6 +232,8 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
     {
         super.reset();
         this.renderQuads.clear();
+        this.scheduledChunks.clear();
+        this.biomeMapping.clear();
         this.hasData = false;
     }
 

@@ -5,6 +5,7 @@ import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.util.EntityUtils;
 import fi.dy.masa.malilib.util.InfoUtils;
 import fi.dy.masa.malilib.util.StringUtils;
+import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.data.DebugDataManager;
 import fi.dy.masa.minihud.data.HudDataManager;
 import fi.dy.masa.minihud.renderer.*;
@@ -174,24 +175,30 @@ public class RendererCallbacks
 
     public static void onStructuresToggled(IConfigBoolean config)
     {
-        Minecraft mc = Minecraft.getInstance();
-
-        if (mc != null && mc.player != null)
+        if (Minecraft.getInstance().player != null)
         {
-            if (mc.hasSingleplayerServer() == false && DataStorage.getInstance().hasIntegratedServer() == false)
+            if (DataStorage.getInstance().hasInvalidServux())
             {
-                if (config.getBooleanValue())
+                DataStorage.getInstance().reset(false);
+            }
+
+            if (config.getBooleanValue())
+            {
+                if (!DataStorage.getInstance().hasIntegratedServer())
                 {
+                    if (DataStorage.getInstance().hasServuxServer())
+                    {
+                        DataStorage.getInstance().unregisterStructureChannel();
+                    }
+
                     DataStorage.getInstance().registerStructureChannel();
                 }
-                else
-                {
-                    DataStorage.getInstance().unregisterStructureChannel();
-                }
+
+                DataStorage.getInstance().setStructuresNeedUpdating();
             }
             else
             {
-                DataStorage.getInstance().setStructuresNeedUpdating();
+                DataStorage.getInstance().unregisterStructureChannel();
             }
         }
     }
