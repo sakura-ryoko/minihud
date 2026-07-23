@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nonnull;
 
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.world.level.Level;
+
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.info.InfoLine;
@@ -13,6 +16,7 @@ import fi.dy.masa.minihud.util.MiscUtils;
 public class InfoLineWeather extends InfoLine
 {
     private static final String WEATHER_KEY = Reference.MOD_ID+".info_line.weather";
+    private static final String WEATHER_OW_KEY = Reference.MOD_ID+".info_line.weather.in_overworld";
     private static final String REMAIN_KEY = Reference.MOD_ID+".info_line.remaining";
 
     public InfoLineWeather(InfoToggle type)
@@ -38,6 +42,9 @@ public class InfoLineWeather extends InfoLine
 
         if (this.getHudData().hasValidWeatherCycle())
         {
+            ClientLevel level = this.mc().level;
+            final boolean inOw = level == null || level.dimension() != Level.OVERWORLD;
+
             if (this.getHudData().isWeatherThunder() && this.getHudData().isWeatherRain())
             {
                 weatherType = "thundering";
@@ -56,14 +63,14 @@ public class InfoLineWeather extends InfoLine
 
             if (weatherTime < 1)
             {
-                list.add(this.translate(WEATHER_KEY,
+                list.add(this.translate(inOw ? WEATHER_OW_KEY : WEATHER_KEY,
                                         this.qt(WEATHER_KEY + "." + weatherType), ""
                 ));
             }
             else
             {
                 // 50 = 1000 (ms/s) / 20 (ticks/s)
-                list.add(this.translate(WEATHER_KEY,
+                list.add(this.translate(inOw ? WEATHER_OW_KEY : WEATHER_KEY,
                                         this.qt(WEATHER_KEY + "." + weatherType),
                                         ", " + MiscUtils.formatDuration(weatherTime * 50L)
                                                 + " " + this.qt(REMAIN_KEY)
