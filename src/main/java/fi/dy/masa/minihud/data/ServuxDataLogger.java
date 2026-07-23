@@ -1,17 +1,16 @@
 package fi.dy.masa.minihud.data;
 
-import com.google.common.collect.ImmutableList;
-import com.mojang.serialization.Codec;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import net.minecraft.nbt.CompoundTag;
+import com.google.common.collect.ImmutableList;
+
+import com.mojang.serialization.Codec;
 import net.minecraft.util.StringRepresentable;
 
 public enum ServuxDataLogger implements StringRepresentable
 {
-    TPS             ("tps",             CompoundTag.CODEC),
-    MOB_CAPS        ("mob_caps",        CompoundTag.CODEC)
+    TPS             ("tps",             ServuxTickData.CODEC),
+    MOB_CAPS        ("mob_caps",        MobCapData.CODEC)
     ;
 
     public static final EnumCodec<ServuxDataLogger> CODEC = StringRepresentable.fromEnum(ServuxDataLogger::values);

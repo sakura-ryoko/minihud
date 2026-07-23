@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.debug.DebugRenderer;
 
-import fi.dy.masa.minihud.renderer.LavaDebugRenderer;
+import fi.dy.masa.minihud.renderer.debug.LavaDebugRenderer;
 
 @Mixin(DebugRenderer.class)
 public abstract class MixinDebugRenderer

@@ -1,33 +1,16 @@
 package fi.dy.masa.minihud.data;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import javax.annotation.Nullable;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+
 import com.mojang.datafixers.util.Pair;
-import fi.dy.masa.malilib.config.options.ConfigBoolean;
-import fi.dy.masa.malilib.gui.GuiBase;
-import fi.dy.masa.malilib.network.ClientPlayHandler;
-import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
-import fi.dy.masa.malilib.util.InfoUtils;
-import fi.dy.masa.malilib.util.JsonUtils;
-import fi.dy.masa.malilib.util.StringUtils;
-import fi.dy.masa.malilib.util.time.TickUtils;
-import fi.dy.masa.minihud.MiniHUD;
-import fi.dy.masa.minihud.Reference;
-import fi.dy.masa.minihud.config.Configs;
-import fi.dy.masa.minihud.config.InfoToggle;
-import fi.dy.masa.minihud.mixin.world.IMixinServerRecipeManager;
-import fi.dy.masa.minihud.network.ServuxHudHandler;
-import fi.dy.masa.minihud.network.ServuxHudPacket;
-import fi.dy.masa.minihud.renderer.OverlayRendererSpawnChunks;
-import fi.dy.masa.minihud.util.DataStorage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
@@ -38,9 +21,29 @@ import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeMap;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gamerules.GameRules;
-import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collection;
+
+import fi.dy.masa.malilib.config.options.ConfigBoolean;
+import fi.dy.masa.malilib.gui.GuiBase;
+import fi.dy.masa.malilib.network.ClientPlayHandler;
+import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
+import fi.dy.masa.malilib.util.InfoUtils;
+import fi.dy.masa.malilib.util.StringUtils;
+import fi.dy.masa.malilib.util.data.Constants;
+import fi.dy.masa.malilib.util.data.json.JsonUtils;
+import fi.dy.masa.malilib.util.data.tag.BaseData;
+import fi.dy.masa.malilib.util.data.tag.CompoundData;
+import fi.dy.masa.malilib.util.data.tag.ListData;
+import fi.dy.masa.malilib.util.data.tag.util.DataOps;
+import fi.dy.masa.malilib.util.time.TickUtils;
+import fi.dy.masa.minihud.MiniHUD;
+import fi.dy.masa.minihud.Reference;
+import fi.dy.masa.minihud.config.Configs;
+import fi.dy.masa.minihud.config.InfoToggle;
+import fi.dy.masa.minihud.mixin.world.IMixinServerRecipeManager;
+import fi.dy.masa.minihud.network.ServuxHudHandler;
+import fi.dy.masa.minihud.network.ServuxHudPacket;
+import fi.dy.masa.minihud.renderer.OverlayRendererSpawnChunks;
+import fi.dy.masa.minihud.util.DataStorage;
 
 public class HudDataManager
 {
@@ -100,6 +103,11 @@ public class HudDataManager
         HANDLER.registerPlayPayload(ServuxHudPacket.Payload.ID, ServuxHudPacket.Payload.CODEC, IPluginClientPlayHandler.BOTH_CLIENT);
     }
 
+    public boolean isEnabled()
+    {
+        return Configs.Generic.HUD_DATA_SYNC.getBooleanValue();
+    }
+
     public Identifier getNetworkChannel() { return ServuxHudHandler.CHANNEL_ID; }
 
     public IPluginClientPlayHandler<ServuxHudPacket.Payload> getNetworkHandler() { return HANDLER; }
@@ -125,6 +133,12 @@ public class HudDataManager
         else
         {
             MiniHUD.debugLog("HudDataStorage#reset() - dimension change or log-in");
+        }
+
+        if (this.hasServuxServer())
+        {
+            this.requestSpawnMetadata();
+            this.refreshDataLoggers();
         }
 
         this.resetWeatherData();
@@ -157,11 +171,17 @@ public class HudDataManager
     {
         MiniHUD.debugLog("HudDataStorage#onWorldJoin()");
 
-        if (DataStorage.getInstance().hasIntegratedServer() == false)
+        if (!DataStorage.getInstance().hasIntegratedServer())
         {
             if (Configs.Generic.HUD_DATA_SYNC.getBooleanValue())
             {
-                this.requestMetadata();
+                if (this.hasServuxServer())
+                {
+                    this.unregisterChannel();
+                }
+
+                this.shouldRegister = true;
+                this.registerChannel();
             }
             else
             {
@@ -172,7 +192,8 @@ public class HudDataManager
 
     public void onPacketFailure()
     {
-        // Define how to handle multiple sendPayload failures
+        Configs.Generic.HUD_DATA_SYNC.setBooleanValue(false);
+        this.shouldRegister = false;
         this.servuxServer = false;
         this.hasInValidServux = true;
     }
@@ -464,13 +485,13 @@ public class HudDataManager
 
     public @Nullable RecipeAccess getRecipeManager()
     {
-        if (DataStorage.getInstance().hasIntegratedServer() && mc.getSingleplayerServer() != null)
+        if (DataStorage.getInstance().hasIntegratedServer() && this.mc.getSingleplayerServer() != null)
         {
-            return mc.getSingleplayerServer().getRecipeManager();
+            return this.mc.getSingleplayerServer().getRecipeManager();
         }
-        else if (mc.level != null)
+        else if (this.mc.level != null)
         {
-            return mc.level.recipeAccess();
+            return this.mc.level.recipeAccess();
         }
 
         return null;
@@ -544,9 +565,8 @@ public class HudDataManager
             if (Configs.Generic.HUD_DATA_SYNC.getBooleanValue() &&
                 HANDLER.isPlayRegistered(HANDLER.getPayloadChannel()))
             {
-                CompoundTag nbt = new CompoundTag();
-                nbt.putString("version", Reference.MOD_STRING);
-
+                CompoundData nbt = new CompoundData();
+                nbt.putInt("version", ServuxHudPacket.PROTOCOL_VERSION);
                 HANDLER.encodeClientData(ServuxHudPacket.MetadataRequest(nbt));
             }
         }
@@ -562,30 +582,43 @@ public class HudDataManager
         };
     }
 
-    public boolean receiveMetadata(CompoundTag data)
+    public boolean receiveMetadata(CompoundData data)
     {
         if (!this.servuxServer && !DataStorage.getInstance().hasIntegratedServer() &&
             this.shouldRegister)
         {
-            final int ver = data.getIntOr("version", -1);
+            final int version = data.getIntOrDefault("version", -1);
+            final String servux = data.getStringOrDefault("servux", "?");
             MiniHUD.debugLog("HudDataStorage#receiveMetadata(): received METADATA from Servux");
 
-            if (ver != ServuxHudPacket.PROTOCOL_VERSION)
+            if (version != ServuxHudPacket.PROTOCOL_VERSION || !servux.startsWith("servux-"+Reference.MOD_TYPE+"-"+Reference.MC_VERSION))
             {
-                MiniHUD.LOGGER.warn("hudDataChannel: Mis-matched protocol version!");
+                MiniHUD.LOGGER.warn("hudDataChannel: Mis-matched protocol version! (Expected: {} but got {} running on: {})", ServuxHudPacket.PROTOCOL_VERSION, version, servux);
+
+                if (version >= ServuxHudPacket.PROTOCOL_VERSION)
+                {
+                    HANDLER.encodeClientData(ServuxHudPacket.UnregisterReply(new CompoundData()));
+                }
+
+                HANDLER.unregisterPlayReceiver();
+                HANDLER.reset(this.getNetworkChannel());
+                Configs.Generic.HUD_DATA_SYNC.setBooleanValue(false);
+
+                return false;
             }
 
-            this.setServuxVersion(data.getStringOr("servux", "?"), ver);
+            MiniHUD.debugLog("hudDataChannel: Connected to: {}", servux);
+            this.setServuxVersion(servux, version);
             this.setWorldSpawn(
                     new GlobalPos(
-                            this.getWorldType(data.getString("spawnDimension").orElse(Level.OVERWORLD.identifier().toString())),
-                            new BlockPos(data.getIntOr("spawnPosX", 0), data.getIntOr("spawnPosY", 0), data.getIntOr("spawnPosZ", 0)))
+                            this.getWorldType(data.getStringOrDefault("spawnDimension", Level.OVERWORLD.identifier().toString())),
+                            new BlockPos(data.getIntOrDefault("spawnPosX", 0), data.getIntOrDefault("spawnPosY", 0), data.getIntOrDefault("spawnPosZ", 0)))
             );
 //            this.setSpawnChunkRadius(data.getInt("spawnChunkRadius", 2), true);
 
-            if (data.contains("worldSeed"))
+            if (data.contains("worldSeed", Constants.NBT.TAG_LONG))
             {
-                this.setWorldSeed(data.getLongOr("worldSeed", -1L));
+                this.setWorldSeed(data.getLongOrDefault("worldSeed", -1L));
             }
 
             this.setIsServuxServer();
@@ -593,8 +626,15 @@ public class HudDataManager
             if (Configs.Generic.HUD_DATA_SYNC.getBooleanValue())
             {
                 //this.registerChannel();
-                this.requestRecipeManager();
+
+                if (!this.hasRecipes())
+                {
+                    this.requestRecipeManager();
+                }
+
+                this.requestSpawnMetadata();
                 this.refreshDataLoggers();
+
                 return true;
             }
             else
@@ -615,7 +655,7 @@ public class HudDataManager
             if (!this.hasInValidServux)
             {
                 MiniHUD.debugLog("HudDataManager#unregisterChannel(): for {}", this.servuxVersion != null ? this.servuxVersion : "<unknown>");
-
+                HANDLER.encodeClientData(ServuxHudPacket.UnregisterReply(new CompoundData()));
                 HANDLER.unregisterPlayReceiver();
                 HANDLER.reset(HANDLER.getPayloadChannel());
             }
@@ -628,44 +668,27 @@ public class HudDataManager
     {
         if (!DataStorage.getInstance().hasIntegratedServer() && this.hasServuxServer())
         {
-            CompoundTag nbt = new CompoundTag();
-            nbt.putString("version", Reference.MOD_STRING);
-
+            CompoundData nbt = new CompoundData();
+            nbt.putInt("version", ServuxHudPacket.PROTOCOL_VERSION);
             HANDLER.encodeClientData(ServuxHudPacket.SpawnRequest(nbt));
         }
     }
 
-    public void receiveSpawnMetadata(CompoundTag data)
+    public void receiveSpawnMetadata(CompoundData data)
     {
-        if (!DataStorage.getInstance().hasIntegratedServer())
+        if (!DataStorage.getInstance().hasIntegratedServer() && this.hasServuxServer())
         {
-            final int ver = data.getIntOr("version", -1);
-            MiniHUD.debugLog("HudDataStorage#receiveSpawnMetadata(): from Servux");
-
-            this.setServuxVersion(data.getStringOr("servux", "?"), ver);
+//            MiniHUD.debugLog("HudDataStorage#receiveSpawnMetadata(): from Servux");
             this.setWorldSpawn(
                     new GlobalPos(
-                            this.getWorldType(data.getString("spawnDimension").orElse(Level.OVERWORLD.identifier().toString())),
-                            new BlockPos(data.getIntOr("spawnPosX", 0), data.getIntOr("spawnPosY", 0), data.getIntOr("spawnPosZ", 0)))
+                            this.getWorldType(data.getStringOrDefault("spawnDimension", Level.OVERWORLD.identifier().toString())),
+                            new BlockPos(data.getIntOrDefault("spawnPosX", 0), data.getIntOrDefault("spawnPosY", 0), data.getIntOrDefault("spawnPosZ", 0)))
             );
 //            this.setSpawnChunkRadius(data.getInt("spawnChunkRadius", 2), true);
 
-            if (data.contains("worldSeed"))
+            if (data.contains("worldSeed", Constants.NBT.TAG_LONG))
             {
-                this.setWorldSeed(data.getLongOr("worldSeed", -1L));
-            }
-
-            if (Configs.Generic.HUD_DATA_SYNC.getBooleanValue())
-            {
-                if (!this.hasServuxServer())
-                {
-                    this.registerChannel();
-                }
-            }
-            else
-            {
-                this.unregisterChannel();
-                this.shouldRegister = false;
+                this.setWorldSeed(data.getLongOrDefault("worldSeed", -1L));
             }
         }
     }
@@ -676,9 +699,10 @@ public class HudDataManager
         {
             if (this.servuxProtocolVersion >= ServuxHudPacket.PROTOCOL_VERSION)
             {
-                CompoundTag nbt = new CompoundTag();
+                CompoundData nbt = new CompoundData();
 
-                MiniHUD.debugLog("refreshDataLoggers: TPS: [{}] / MobCaps: [{}]", InfoToggle.SERVER_TPS.getBooleanValue(), InfoToggle.MOB_CAPS.getBooleanValue());
+//                MiniHUD.debugLog("refreshDataLoggers: TPS: [{}] / MobCaps: [{}]", InfoToggle.SERVER_TPS.getBooleanValue(), InfoToggle.MOB_CAPS.getBooleanValue());
+                nbt.putInt("version", ServuxHudPacket.PROTOCOL_VERSION);
                 nbt.putBoolean(ServuxDataLogger.TPS.name(), InfoToggle.SERVER_TPS.getBooleanValue());
                 nbt.putBoolean(ServuxDataLogger.MOB_CAPS.name(), InfoToggle.MOB_CAPS.getBooleanValue());
 
@@ -691,22 +715,22 @@ public class HudDataManager
         }
     }
 
-    public void receiveDataLogger(CompoundTag nbt)
+    public void receiveDataLogger(CompoundData nbt)
     {
         if (this.hasServuxServer() && nbt != null && !nbt.isEmpty())
         {
             Minecraft mc = Minecraft.getInstance();
             if (mc.level == null) return;
 
-            for (String key : nbt.keySet())
+            for (String key : nbt.getKeys())
             {
                 ServuxDataLogger type = ServuxDataLogger.fromStringStatic(key);
 
                 if (type != null)
                 {
-                    CompoundTag entry = (CompoundTag) nbt.read(key, type.codec()).orElse(null);
+                    CompoundData entry = nbt.getCompoundOrDefault(key, new CompoundData());
 
-                    if (entry != null)
+                    if (!entry.isEmpty())
                     {
                         switch (type)
                         {
@@ -714,15 +738,15 @@ public class HudDataManager
                             {
                                 try
                                 {
-                                    ServuxTickData data = ServuxTickData.CODEC.decode(mc.level.registryAccess().createSerializationContext(NbtOps.INSTANCE), entry).getOrThrow().getFirst();
-
-//                                    MiniHUD.LOGGER.warn("Servux TPS: [{}], MSPT: [{}]",
-//                                                        String.format(Locale.ROOT, "%.1f", data.tps()),
-//                                                        String.format(Locale.ROOT, "%.1f", data.mspt())
-//                                                       );
+                                    ServuxTickData data = ServuxTickData.CODEC.parse(mc.level.registryAccess().createSerializationContext(DataOps.INSTANCE), entry).getOrThrow();
 
                                     if (data != null)
                                     {
+//                                        MiniHUD.LOGGER.warn("Servux TPS: [{}], MSPT: [{}]",
+//                                                            String.format(Locale.ROOT, "%.1f", data.tps()),
+//                                                            String.format(Locale.ROOT, "%.1f", data.mspt())
+//                                        );
+
                                         if (!TickUtils.getInstance().isUsingDirectServerData())
                                         {
                                             TickUtils.getInstance().toggleUseDirectServerData(true);
@@ -746,17 +770,17 @@ public class HudDataManager
                             {
                                 String dimKey = mc.level.dimension().identifier().toString();
 
-                                if (entry.contains(dimKey))
+                                if (entry.contains(dimKey, Constants.NBT.TAG_COMPOUND))
                                 {
                                     // We are receiving MobCap Data for every dimension that is loaded;
                                     // but we only care about the one that we are in.
-                                    CompoundTag nbtEntry = entry.getCompoundOrEmpty(dimKey);
+                                    CompoundData nbtEntry = entry.getCompoundOrDefault(dimKey, new CompoundData());
 
                                     try
                                     {
-                                        long worldTick = nbtEntry.getLongOr("WorldTick", mc.level.getGameTime());
+                                        long worldTick = nbtEntry.getLongOrDefault("WorldTick", mc.level.getGameTime());
                                         nbtEntry.remove("WorldTick");       // Not to confuse the Deserializer
-                                        MobCapData serverData = MobCapData.CODEC.decode(mc.level.registryAccess().createSerializationContext(NbtOps.INSTANCE), nbtEntry).getOrThrow().getFirst();
+                                        MobCapData serverData = MobCapData.CODEC.parse(mc.level.registryAccess().createSerializationContext(DataOps.INSTANCE), nbtEntry).getOrThrow();
 
                                         if (serverData != null)
                                         {
@@ -776,51 +800,30 @@ public class HudDataManager
         }
     }
 
-    public void receiveWeatherData(CompoundTag data)
+    public void receiveWeatherData(CompoundData data)
     {
-        if (!DataStorage.getInstance().hasIntegratedServer())
+        if (!DataStorage.getInstance().hasIntegratedServer() && this.hasServuxServer())
         {
-            //MiniHUD.printDebug("HudDataStorage#receiveWeatherData(): from Servux");
-
-            if (data.contains("SetRaining"))
+//            MiniHUD.debugLog("HudDataStorage#receiveWeatherData(): from Servux");
+            if (data.contains("SetRaining", Constants.NBT.TAG_INT))
             {
-                this.rainWeatherTimer = data.getIntOr("SetRaining", -1);
+                this.rainWeatherTimer = data.getIntOrDefault("SetRaining", -1);
             }
-            if (data.contains("isRaining"))
+            if (data.contains("isRaining", Constants.NBT.TAG_BYTE))
             {
-                this.isRaining = data.getBooleanOr("isRaining", false);
+                this.isRaining = data.getBooleanOrDefault("isRaining", false);
             }
-            if (data.contains("SetThundering"))
+            if (data.contains("SetThundering", Constants.NBT.TAG_INT))
             {
-                this.thunderWeatherTimer = data.getIntOr("SetThundering", -1);
+                this.thunderWeatherTimer = data.getIntOrDefault("SetThundering", -1);
             }
-            if (data.contains("isThundering"))
+            if (data.contains("isThundering", Constants.NBT.TAG_BYTE))
             {
-                this.isThundering = data.getBooleanOr("isThundering", false);
+                this.isThundering = data.getBooleanOrDefault("isThundering", false);
             }
-            if (data.contains("SetClear"))
+            if (data.contains("SetClear", Constants.NBT.TAG_INT))
             {
-                this.clearWeatherTimer = data.getIntOr("SetClear", -1);
-            }
-
-            if (!this.hasServuxServer() && DataStorage.getInstance().hasServuxServer())
-            {
-                // Backwards compat, the best effort.
-                this.isThundering = this.thunderWeatherTimer > 0 && !this.isThundering;
-                this.isRaining = this.rainWeatherTimer > 0 && !this.isRaining;
-            }
-
-            if (Configs.Generic.HUD_DATA_SYNC.getBooleanValue())
-            {
-                if (!this.hasServuxServer())
-                {
-                    this.registerChannel();
-                }
-            }
-            else
-            {
-                this.unregisterChannel();
-                this.shouldRegister = false;
+                this.clearWeatherTimer = data.getIntOrDefault("SetClear", -1);
             }
         }
     }
@@ -829,19 +832,19 @@ public class HudDataManager
     {
         if (!DataStorage.getInstance().hasIntegratedServer() && this.hasServuxServer())
         {
-            CompoundTag nbt = new CompoundTag();
-            nbt.putString("version", Reference.MOD_STRING);
-
+            CompoundData nbt = new CompoundData();
+            nbt.putInt("version", ServuxHudPacket.PROTOCOL_VERSION);
             HANDLER.encodeClientData(ServuxHudPacket.RecipeManagerRequest(nbt));
         }
     }
 
-    public void receiveRecipeManager(CompoundTag data)
+    public void receiveRecipeManager(CompoundData data)
     {
-        if (!DataStorage.getInstance().hasIntegratedServer() && data.contains("RecipeManager"))
+        if (!DataStorage.getInstance().hasIntegratedServer() && this.hasServuxServer() &&
+            data.containsList("RecipeManager", Constants.NBT.TAG_COMPOUND))
         {
             Collection<RecipeHolder<?>> recipes = new ArrayList<>();
-            ListTag list = data.getListOrEmpty("RecipeManager");
+            ListData list = data.getListOrDefault("RecipeManager", Constants.NBT.TAG_COMPOUND, new ListData());
             int count = 0;
 
             this.preparedRecipes = RecipeMap.EMPTY;
@@ -849,9 +852,9 @@ public class HudDataManager
 
             for (int i = 0; i < list.size(); i++)
             {
-                CompoundTag item = list.getCompoundOrEmpty(i);
-                Identifier idReg = Identifier.tryParse(item.getStringOr("id_reg", ""));
-                Identifier idValue = Identifier.tryParse(item.getStringOr("id_value", ""));
+                CompoundData item = list.getCompoundAt(i);
+                Identifier idReg = Identifier.tryParse(item.getStringOrDefault("id_reg", ""));
+                Identifier idValue = Identifier.tryParse(item.getStringOrDefault("id_value", ""));
 
                 if (idReg == null || idValue == null)
                 {
@@ -861,7 +864,7 @@ public class HudDataManager
                 try
                 {
                     ResourceKey<Recipe<?>> key = ResourceKey.create(ResourceKey.createRegistryKey(idReg), idValue);
-                    Pair<Recipe<?>, Tag> pair = Recipe.CODEC.decode(DataStorage.getInstance().getWorldRegistryManager().createSerializationContext(NbtOps.INSTANCE), item.getCompoundOrEmpty("recipe")).getOrThrow();
+                    Pair<Recipe<?>, BaseData> pair = Recipe.CODEC.decode(DataStorage.getInstance().getWorldRegistryManager().createSerializationContext(DataOps.INSTANCE), item.getCompound("recipe")).getOrThrow();
                     RecipeHolder<?> entry = new RecipeHolder<>(key, pair.getFirst());
                     recipes.add(entry);
                     count++;

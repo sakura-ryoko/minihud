@@ -1,4 +1,4 @@
-package fi.dy.masa.minihud.renderer;
+package fi.dy.masa.minihud.renderer.debug;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -47,8 +47,8 @@ public class LavaDebugRenderer
     private static void emitFluidHeightCuboids(Level level, BlockPos playerPos)
     {
         for (BlockPos pos : BlockPos.betweenClosed(
-                playerPos.offset(-SCAN_RADIUS, -SCAN_RADIUS, -SCAN_RADIUS),
-                playerPos.offset(SCAN_RADIUS, SCAN_RADIUS, SCAN_RADIUS)))
+             playerPos.offset(-SCAN_RADIUS, -SCAN_RADIUS, -SCAN_RADIUS),
+             playerPos.offset(SCAN_RADIUS, SCAN_RADIUS, SCAN_RADIUS)))
         {
             FluidState fluidState = level.getFluidState(pos);
 
@@ -70,8 +70,8 @@ public class LavaDebugRenderer
     private static void emitFluidAmountLabels(Level level, BlockPos playerPos)
     {
         for (BlockPos pos : BlockPos.betweenClosed(
-                playerPos.offset(-SCAN_RADIUS, -SCAN_RADIUS, -SCAN_RADIUS),
-                playerPos.offset(SCAN_RADIUS, SCAN_RADIUS, SCAN_RADIUS)))
+             playerPos.offset(-SCAN_RADIUS, -SCAN_RADIUS, -SCAN_RADIUS),
+             playerPos.offset(SCAN_RADIUS, SCAN_RADIUS, SCAN_RADIUS)))
         {
             FluidState fluidState = level.getFluidState(pos);
 

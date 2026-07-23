@@ -100,6 +100,7 @@ public class EntityDataManager implements IClientTickHandler, IDataSyncer
                 {
                     this.servuxServer = false;
                     HANDLER.unregisterPlayReceiver();
+                    HANDLER.reset(this.getNetworkChannel());
                 }
 
                 if (!Configs.Generic.ENTITY_DATA_SYNC_BACKUP.getBooleanValue())
@@ -108,7 +109,8 @@ public class EntityDataManager implements IClientTickHandler, IDataSyncer
                     return;
                 }
             }
-            else if (!DataStorage.getInstance().hasIntegratedServer() &&
+            else if (Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue() &&
+                    !DataStorage.getInstance().hasIntegratedServer() &&
                     !this.hasServuxServer() &&
                     !this.hasInValidServux &&
                     this.getBestWorld() != null)
@@ -381,14 +383,19 @@ public class EntityDataManager implements IClientTickHandler, IDataSyncer
         if (!DataStorage.getInstance().hasIntegratedServer() &&
             Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue())
         {
-            CompoundTag nbt = new CompoundTag();
-            nbt.putString("version", Reference.MOD_STRING);
-
+            CompoundData nbt = new CompoundData();
+            nbt.putInt("version", ServuxEntitiesPacket.PROTOCOL_VERSION);
             HANDLER.encodeClientData(ServuxEntitiesPacket.MetadataRequest(nbt));
         }
     }
 
+    @Deprecated(forRemoval = true)
     public boolean receiveServuxMetadata(CompoundTag data)
+    {
+        return this.receiveServuxMetadata(DataConverterNbt.fromVanillaCompound(data));
+    }
+
+    public boolean receiveServuxMetadata(CompoundData nbt)
     {
         if (!DataStorage.getInstance().hasIntegratedServer())
         {
@@ -396,12 +403,26 @@ public class EntityDataManager implements IClientTickHandler, IDataSyncer
 
             if (Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue())
             {
-                if (data.getIntOr("version", -1) != ServuxEntitiesPacket.PROTOCOL_VERSION)
+                final int version = nbt.getIntOrDefault("version", -1);
+                final String servux = nbt.getStringOrDefault("servux", "?");
+
+                if (version != ServuxEntitiesPacket.PROTOCOL_VERSION || !servux.startsWith("servux-"+Reference.MOD_TYPE+"-"+Reference.MC_VERSION))
                 {
-                    MiniHUD.LOGGER.warn("entityDataChannel: Mis-matched protocol version!");
+                    MiniHUD.LOGGER.warn("entityDataChannel: Mis-matched protocol version! (Expected: {} but got {} running on: {})", ServuxEntitiesPacket.PROTOCOL_VERSION, version, servux);
+
+                    if (version >= ServuxEntitiesPacket.PROTOCOL_VERSION)
+                    {
+                        HANDLER.encodeClientData(ServuxEntitiesPacket.UnregisterReply(new CompoundData()));
+                    }
+
+                    HANDLER.unregisterPlayReceiver();
+                    HANDLER.reset(this.getNetworkChannel());
+                    Configs.Generic.ENTITY_DATA_SYNC.setBooleanValue(false);
+                    return false;
                 }
 
-                this.setServuxVersion(data.getStringOr("servux", "?"));
+                MiniHUD.debugLog("entityDataChannel: Connected to: {}", servux);
+                this.setServuxVersion(servux);
                 this.setIsServuxServer();
 
                 return true;
@@ -413,6 +434,7 @@ public class EntityDataManager implements IClientTickHandler, IDataSyncer
 
     public void onPacketFailure()
     {
+        Configs.Generic.ENTITY_DATA_SYNC.setBooleanValue(false);
         this.servuxServer = false;
         this.hasInValidServux = true;
     }
@@ -475,18 +497,6 @@ public class EntityDataManager implements IClientTickHandler, IDataSyncer
         {
             HANDLER.encodeClientData(ServuxEntitiesPacket.EntityRequest(entityId));
         }
-    }
-
-	@Override
-	public void handleBulkEntityData(int transactionId, CompoundData data)
-	{
-		this.handleBulkEntityData(transactionId, DataConverterNbt.toVanillaCompound(data));
-	}
-
-	@Override
-    public void handleBulkEntityData(int transactionId, CompoundTag nbt)
-    {
-        // todo
     }
 
     @Override
