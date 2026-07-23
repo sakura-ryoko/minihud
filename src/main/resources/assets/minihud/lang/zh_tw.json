@@ -1095,6 +1095,7 @@
     "minihud.info_line.time_world_formatted.moon_7": "盈凸月",
     "minihud.info_line.weather": "天氣： %s%s",
     "minihud.info_line.weather.clear": "晴天",
+    "minihud.info_line.weather.in_overworld": "Weather (Overworld): %s%s",
     "minihud.info_line.weather.invalid": "§cDisabled, or unknown§r",
     "minihud.info_line.weather.raining": "降雨",
     "minihud.info_line.weather.thundering": "雷暴",
