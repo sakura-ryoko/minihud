@@ -1095,6 +1095,7 @@
     "minihud.info_line.time_world_formatted.moon_7": "상현망",
     "minihud.info_line.weather": "날씨: %s%s",
     "minihud.info_line.weather.clear": "맑음",
+    "minihud.info_line.weather.in_overworld": "날씨 (오버월드): %s%s",
     "minihud.info_line.weather.invalid": "§c비활성화, 또는 미확인§r",
     "minihud.info_line.weather.raining": "비",
     "minihud.info_line.weather.thundering": "뇌우",
