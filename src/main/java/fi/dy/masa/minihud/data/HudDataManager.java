@@ -193,6 +193,7 @@ public class HudDataManager
     public void onPacketFailure()
     {
         Configs.Generic.HUD_DATA_SYNC.setBooleanValue(false);
+        this.shouldRegister = false;
         this.servuxServer = false;
         this.hasInValidServux = true;
     }
@@ -593,9 +594,16 @@ public class HudDataManager
             if (version != ServuxHudPacket.PROTOCOL_VERSION || !servux.startsWith("servux-"+Reference.MOD_TYPE+"-"+Reference.MC_VERSION))
             {
                 MiniHUD.LOGGER.warn("hudDataChannel: Mis-matched protocol version! (Expected: {} but got {} running on: {})", ServuxHudPacket.PROTOCOL_VERSION, version, servux);
-                HANDLER.encodeClientData(ServuxHudPacket.UnregisterReply(new CompoundData()));
+
+                if (version >= ServuxHudPacket.PROTOCOL_VERSION)
+                {
+                    HANDLER.encodeClientData(ServuxHudPacket.UnregisterReply(new CompoundData()));
+                }
+
                 HANDLER.unregisterPlayReceiver();
+                HANDLER.reset(this.getNetworkChannel());
                 Configs.Generic.HUD_DATA_SYNC.setBooleanValue(false);
+
                 return false;
             }
 
@@ -647,7 +655,7 @@ public class HudDataManager
             if (!this.hasInValidServux)
             {
                 MiniHUD.debugLog("HudDataManager#unregisterChannel(): for {}", this.servuxVersion != null ? this.servuxVersion : "<unknown>");
-
+                HANDLER.encodeClientData(ServuxHudPacket.UnregisterReply(new CompoundData()));
                 HANDLER.unregisterPlayReceiver();
                 HANDLER.reset(HANDLER.getPayloadChannel());
             }

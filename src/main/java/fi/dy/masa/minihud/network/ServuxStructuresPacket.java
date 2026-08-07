@@ -1,18 +1,18 @@
 package fi.dy.masa.minihud.network;
 
-import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import io.netty.buffer.Unpooled;
+import org.jspecify.annotations.NonNull;
 
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 
 import fi.dy.masa.malilib.network.IClientPayloadData;
-import fi.dy.masa.malilib.util.data.tag.BaseData;
 import fi.dy.masa.malilib.util.data.tag.CompoundData;
-import fi.dy.masa.malilib.util.data.tag.util.DataByteBufUtils;
+import fi.dy.masa.malilib.util.data.tag.converter.DataConverterNbt;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.util.DataStorage;
 
@@ -122,6 +122,28 @@ public class ServuxStructuresPacket implements IClientPayloadData
 		return this.nbt;
 	}
 
+	@Deprecated
+	private static CompoundData fromVanilla(CompoundTag nbt)
+	{
+		if (nbt != null && !nbt.isEmpty())
+		{
+			return DataConverterNbt.fromVanillaCompound(nbt);
+		}
+
+		return new CompoundData();
+	}
+
+	@Deprecated
+	private CompoundTag toVanilla()
+	{
+		if (this.nbt != null && !this.nbt.isEmpty())
+		{
+			return DataConverterNbt.toVanillaCompound(this.nbt);
+		}
+
+		return new CompoundTag();
+	}
+
 	public FriendlyByteBuf getBuffer()
 	{
 		return this.buffer;
@@ -140,7 +162,7 @@ public class ServuxStructuresPacket implements IClientPayloadData
 	@Override
 	public void toPacket(FriendlyByteBuf output)
 	{
-		output.writeVarInt(this.getPacketType());
+		output.writeVarInt(this.packetType.get());
 
 		switch (this.packetType)
 		{
@@ -160,8 +182,8 @@ public class ServuxStructuresPacket implements IClientPayloadData
 				// Write NBT
 				try
 				{
-//                    output.writeNbt(this.nbt);
-					DataByteBufUtils.toByteBuf(output, this.nbt, "");
+                    output.writeNbt(this.toVanilla());
+//					DataByteBufUtils.toByteBuf(output, this.nbt, "");
 				}
 				catch (Exception e)
 				{
@@ -203,12 +225,12 @@ public class ServuxStructuresPacket implements IClientPayloadData
 				{
 					try
 					{
-						Optional<BaseData> opt = DataByteBufUtils.fromByteBuf(input);
-
-						if (opt.isPresent())
-						{
-							return ServuxStructuresPacket.MetadataReply((CompoundData) opt.get());
-						}
+//						Optional<BaseData> opt = DataByteBufUtils.fromByteBuf(input);
+						return ServuxStructuresPacket.MetadataReply(fromVanilla(input.readNbt()));
+//						if (opt.isPresent())
+//						{
+//							return ServuxStructuresPacket.MetadataReply((CompoundData) opt.get());
+//						}
 					}
 					catch (Exception e)
 					{
@@ -219,12 +241,12 @@ public class ServuxStructuresPacket implements IClientPayloadData
 				{
 					try
 					{
-						Optional<BaseData> opt = DataByteBufUtils.fromByteBuf(input);
-
-						if (opt.isPresent())
-						{
-							return ServuxStructuresPacket.StructuresRegister((CompoundData) opt.get());
-						}
+//						Optional<BaseData> opt = DataByteBufUtils.fromByteBuf(input);
+						return ServuxStructuresPacket.StructuresRegister(fromVanilla(input.readNbt()));
+//						if (opt.isPresent())
+//						{
+//							return ServuxStructuresPacket.StructuresRegister((CompoundData) opt.get());
+//						}
 					}
 					catch (Exception e)
 					{
@@ -235,12 +257,12 @@ public class ServuxStructuresPacket implements IClientPayloadData
 				{
 					try
 					{
-						Optional<BaseData> opt = DataByteBufUtils.fromByteBuf(input);
-
-						if (opt.isPresent())
-						{
-							return ServuxStructuresPacket.StructuresUnregister((CompoundData) opt.get());
-						}
+//						Optional<BaseData> opt = DataByteBufUtils.fromByteBuf(input);
+						return ServuxStructuresPacket.StructuresUnregister(fromVanilla(input.readNbt()));
+//						if (opt.isPresent())
+//						{
+//							return ServuxStructuresPacket.StructuresUnregister((CompoundData) opt.get());
+//						}
 					}
 					catch (Exception e)
 					{
@@ -276,12 +298,13 @@ public class ServuxStructuresPacket implements IClientPayloadData
 		{
 			this.nbt = new CompoundData();
 		}
-		if (this.buffer != null && this.buffer.readableBytes() > 0)
-		{
-			this.buffer.clear();
-			this.buffer = new FriendlyByteBuf(Unpooled.buffer());
-		}
+//		if (this.buffer != null && this.buffer.readableBytes() > 0)
+//		{
+//			this.buffer.clear();
+//			this.buffer = new FriendlyByteBuf(Unpooled.buffer());
+//		}
 
+		this.clearPacket();
 		this.packetType = null;
 	}
 
@@ -334,7 +357,7 @@ public class ServuxStructuresPacket implements IClientPayloadData
 		}
 
 		@Override
-		public @Nonnull CustomPacketPayload.Type<Payload> type()
+		public CustomPacketPayload.@NonNull Type<Payload> type()
 		{
 			return ID;
 		}

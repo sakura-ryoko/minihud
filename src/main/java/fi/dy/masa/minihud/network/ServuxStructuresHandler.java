@@ -93,37 +93,40 @@ public abstract class ServuxStructuresHandler<T extends CustomPacketPayload> imp
 				}
 				case PACKET_S2C_STRUCTURE_DATA ->
 				{
-					if (this.readingSessionKey == -1)
+					if (this.servuxRegistered)
 					{
-						this.readingSessionKey = RandomSource.create(Util.getMillis()).nextLong();
-					}
-
-					MiniHUD.debugLog("ServuxStructuresHandler#decodeClientData(): received Structures Data Packet Slice of size {} (in bytes) // reading session key [{}]", packet.getTotalSize(), this.readingSessionKey);
-					FriendlyByteBuf fullPacket = PacketSplitter.receive(this, this.readingSessionKey, packet.getBuffer());
-
-					if (fullPacket != null)
-					{
-						try
+						if (this.readingSessionKey == -1)
 						{
-							final int packetSize = fullPacket.readableBytes();
-							this.readingSessionKey = -1;
-							Optional<BaseData> opt = DataByteBufUtils.fromByteBuf(fullPacket);
-
-							if (opt.isPresent())
-							{
-								CompoundData received = (CompoundData) opt.get();
-								ListData structures = received.getListOrDefault("Structures", Constants.NBT.TAG_COMPOUND, new ListData());
-								MiniHUD.debugLog("ServuxStructuresHandler#decodeClientData(): received Structures Data of size {}/{} (in bytes) // structures [{}]", packetSize, received.sizeInBytes(), structures.size());
-								DataStorage.getInstance().addOrUpdateStructuresFromServer(structures, this.servuxRegistered);
-							}
-							else
-							{
-								MiniHUD.LOGGER.warn("ServuxStructuresHandler#decodeClientData(): Structures Data: error reading fullBuffer NBT is NULL");
-							}
+							this.readingSessionKey = RandomSource.create(Util.getMillis()).nextLong();
 						}
-						catch (Exception e)
+
+						MiniHUD.debugLog("ServuxStructuresHandler#decodeClientData(): received Structures Data Packet Slice of size {} (in bytes) // reading session key [{}]", packet.getTotalSize(), this.readingSessionKey);
+						FriendlyByteBuf fullPacket = PacketSplitter.receive(this, this.readingSessionKey, packet.getBuffer());
+
+						if (fullPacket != null)
 						{
-							MiniHUD.LOGGER.error("ServuxStructuresHandler#decodeClientData(): Structures Data: error reading fullBuffer [{}]", e.getLocalizedMessage());
+							try
+							{
+								final int packetSize = fullPacket.readableBytes();
+								this.readingSessionKey = -1;
+								Optional<BaseData> opt = DataByteBufUtils.fromByteBuf(fullPacket);
+
+								if (opt.isPresent())
+								{
+									CompoundData received = (CompoundData) opt.get();
+									ListData structures = received.getListOrDefault("Structures", Constants.NBT.TAG_COMPOUND, new ListData());
+									MiniHUD.debugLog("ServuxStructuresHandler#decodeClientData(): received Structures Data of size {}/{} (in bytes) // structures [{}]", packetSize, received.sizeInBytes(), structures.size());
+									DataStorage.getInstance().addOrUpdateStructuresFromServer(structures, this.servuxRegistered);
+								}
+								else
+								{
+									MiniHUD.LOGGER.warn("ServuxStructuresHandler#decodeClientData(): Structures Data: error reading fullBuffer NBT is NULL");
+								}
+							}
+							catch (Exception e)
+							{
+								MiniHUD.LOGGER.error("ServuxStructuresHandler#decodeClientData(): Structures Data: error reading fullBuffer [{}]", e.getLocalizedMessage());
+							}
 						}
 					}
 				}
@@ -164,13 +167,14 @@ public abstract class ServuxStructuresHandler<T extends CustomPacketPayload> imp
 	@Override
 	public void encodeWithSplitter(FriendlyByteBuf buffer, ClientPacketListener handler)
 	{
-		// NO-OP
+		ServuxStructuresHandler.INSTANCE.sendPlayPayload(new ServuxStructuresPacket.Payload(ServuxStructuresPacket.StructuresS2CData(buffer)));
 	}
 
 	@Override
 	public <P extends IClientPayloadData> void encodeClientData(P data)
 	{
-		if (!DataStorage.getInstance().isEnabled() || !this.checkFailures())
+		// !DataStorage.getInstance().isEnabled() ||
+		if (!this.checkFailures())
 		{
 			return;
 		}

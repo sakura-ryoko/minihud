@@ -5,6 +5,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import io.netty.buffer.Unpooled;
 
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -12,6 +13,7 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import fi.dy.masa.malilib.network.IClientPayloadData;
 import fi.dy.masa.malilib.util.data.tag.BaseData;
 import fi.dy.masa.malilib.util.data.tag.CompoundData;
+import fi.dy.masa.malilib.util.data.tag.converter.DataConverterNbt;
 import fi.dy.masa.malilib.util.data.tag.util.DataByteBufUtils;
 import fi.dy.masa.minihud.MiniHUD;
 
@@ -183,6 +185,28 @@ public class ServuxHudPacket implements IClientPayloadData
 		return this.nbt;
 	}
 
+	@Deprecated
+	private static CompoundData fromVanilla(CompoundTag nbt)
+	{
+		if (nbt != null && !nbt.isEmpty())
+		{
+			return DataConverterNbt.fromVanillaCompound(nbt);
+		}
+
+		return new CompoundData();
+	}
+
+	@Deprecated
+	private CompoundTag toVanilla()
+	{
+		if (this.nbt != null && !this.nbt.isEmpty())
+		{
+			return DataConverterNbt.toVanillaCompound(this.nbt);
+		}
+
+		return new CompoundTag();
+	}
+
 	public FriendlyByteBuf getBuffer()
 	{
 		return this.buffer;
@@ -217,7 +241,20 @@ public class ServuxHudPacket implements IClientPayloadData
 					MiniHUD.LOGGER.error("ServuxHudPacket#toPacket: error writing buffer data to packet: [{}]", e.getLocalizedMessage());
 				}
 			}
-			case PACKET_C2S_METADATA_REQUEST, PACKET_S2C_METADATA, PACKET_C2S_SPAWN_DATA_REQUEST, PACKET_S2C_SPAWN_DATA, PACKET_S2C_WEATHER_TICK, PACKET_C2S_RECIPE_MANAGER_REQUEST, PACKET_C2S_DATA_LOGGER_REQUEST, PACKET_S2C_DATA_LOGGER_TICK, PACKET_C2S_UNREGISTER_REPLY ->
+			case PACKET_C2S_METADATA_REQUEST, PACKET_S2C_METADATA ->
+			{
+				// Write NBT
+				try
+				{
+					output.writeNbt(this.toVanilla());
+//					DataByteBufUtils.toByteBuf(output, this.nbt, "");
+				}
+				catch (Exception e)
+				{
+					MiniHUD.LOGGER.error("ServuxHudPacket#toPacket: error writing NBT to packet: [{}]", e.getLocalizedMessage());
+				}
+			}
+			case PACKET_C2S_SPAWN_DATA_REQUEST, PACKET_S2C_SPAWN_DATA, PACKET_S2C_WEATHER_TICK, PACKET_C2S_RECIPE_MANAGER_REQUEST, PACKET_S2C_DATA_LOGGER_TICK, PACKET_C2S_DATA_LOGGER_REQUEST, PACKET_C2S_UNREGISTER_REPLY ->
 			{
 				// Write NBT
 				try
@@ -227,7 +264,7 @@ public class ServuxHudPacket implements IClientPayloadData
 				}
 				catch (Exception e)
 				{
-					MiniHUD.LOGGER.error("ServuxHudPacket#toPacket: error writing NBT to packet: [{}]", e.getLocalizedMessage());
+					MiniHUD.LOGGER.error("ServuxHudPacket#toPacket: error writing Data to packet: [{}]", e.getLocalizedMessage());
 				}
 			}
 			default -> MiniHUD.LOGGER.error("ServuxHudPacket#toPacket: Unknown packet type!");
@@ -265,12 +302,12 @@ public class ServuxHudPacket implements IClientPayloadData
 				// Read Nbt
 				try
 				{
-					Optional<BaseData> opt = DataByteBufUtils.fromByteBuf(input);
-//                    return ServuxHudPacket.MetadataRequest(input.readNbt());
-					if (opt.isPresent())
-					{
-						return ServuxHudPacket.MetadataRequest((CompoundData) opt.get());
-					}
+//					Optional<BaseData> opt = DataByteBufUtils.fromByteBuf(input);
+					return ServuxHudPacket.MetadataRequest(fromVanilla(input.readNbt()));
+//					if (opt.isPresent())
+//					{
+//						return ServuxHudPacket.MetadataRequest((CompoundData) opt.get());
+//					}
 				}
 				catch (Exception e)
 				{
@@ -282,12 +319,12 @@ public class ServuxHudPacket implements IClientPayloadData
 				// Read Nbt
 				try
 				{
-					Optional<BaseData> opt = DataByteBufUtils.fromByteBuf(input);
-//                    return ServuxHudPacket.MetadataResponse(input.readNbt());
-					if (opt.isPresent())
-					{
-						return ServuxHudPacket.MetadataResponse((CompoundData) opt.get());
-					}
+//					Optional<BaseData> opt = DataByteBufUtils.fromByteBuf(input);
+					return ServuxHudPacket.MetadataResponse(fromVanilla(input.readNbt()));
+//					if (opt.isPresent())
+//					{
+//						return ServuxHudPacket.MetadataResponse((CompoundData) opt.get());
+//					}
 				}
 				catch (Exception e)
 				{

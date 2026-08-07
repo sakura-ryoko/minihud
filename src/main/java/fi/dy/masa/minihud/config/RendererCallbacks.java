@@ -10,6 +10,7 @@ import fi.dy.masa.malilib.util.EntityUtils;
 import fi.dy.masa.malilib.util.InfoUtils;
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.malilib.util.position.Vec3d;
+import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.data.DebugDataManager;
 import fi.dy.masa.minihud.data.HudDataManager;
 import fi.dy.masa.minihud.renderer.*;
@@ -175,24 +176,36 @@ public class RendererCallbacks
 
     public static void onStructuresToggled(IConfigBoolean config)
     {
-        Minecraft mc = Minecraft.getInstance();
-
-        if (mc != null && mc.player != null)
+        if (Minecraft.getInstance().player != null)
         {
-            if (mc.hasSingleplayerServer() == false && DataStorage.getInstance().hasIntegratedServer() == false)
+            MiniHUD.LOGGER.error("onStructuresToggled(): {}", config.getBooleanValue() ? "enabled" : "disabled");
+
+            if (DataStorage.getInstance().hasInvalidServux())
             {
-                if (config.getBooleanValue())
+                DataStorage.getInstance().reset(false);
+            }
+
+            if (config.getBooleanValue())
+            {
+                if (!DataStorage.getInstance().hasIntegratedServer())
                 {
+                    if (DataStorage.getInstance().hasServuxServer())
+                    {
+                        MiniHUD.LOGGER.error("onStructuresToggled(): unregister A");
+                        DataStorage.getInstance().unregisterStructureChannel();
+                    }
+
+                    MiniHUD.LOGGER.error("onStructuresToggled(): register");
                     DataStorage.getInstance().registerStructureChannel();
                 }
-                else
-                {
-                    DataStorage.getInstance().unregisterStructureChannel();
-                }
+
+                MiniHUD.LOGGER.error("onStructuresToggled(): update");
+                DataStorage.getInstance().setStructuresNeedUpdating();
             }
             else
             {
-                DataStorage.getInstance().setStructuresNeedUpdating();
+                MiniHUD.LOGGER.error("onStructuresToggled(): unregister B");
+                DataStorage.getInstance().unregisterStructureChannel();
             }
         }
     }

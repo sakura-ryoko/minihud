@@ -89,32 +89,52 @@ public abstract class ServuxHudHandler<T extends CustomPacketPayload> implements
 						this.servuxRegistered = true;
 					}
 				}
-				case PACKET_S2C_SPAWN_DATA -> HudDataManager.getInstance().receiveSpawnMetadata(packet.getCompound());
-				case PACKET_S2C_WEATHER_TICK -> HudDataManager.getInstance().receiveWeatherData(packet.getCompound());
+				case PACKET_S2C_SPAWN_DATA ->
+				{
+					if (this.servuxRegistered)
+					{
+						HudDataManager.getInstance().receiveSpawnMetadata(packet.getCompound());
+					}
+				}
+				case PACKET_S2C_WEATHER_TICK ->
+				{
+					if (this.servuxRegistered)
+					{
+						HudDataManager.getInstance().receiveWeatherData(packet.getCompound());
+					}
+				}
 				case PACKET_S2C_DATA_LOGGER_TICK ->
+				{
+					if (this.servuxRegistered)
+					{
 						HudDataManager.getInstance().receiveDataLogger(packet.getCompound());
+					}
+				}
 				case PACKET_S2C_NBT_RESPONSE_DATA ->
 				{
-					if (this.readingSessionKey == -1)
+					if (this.servuxRegistered)
 					{
-						this.readingSessionKey = RandomSource.create(Util.getMillis()).nextLong();
-					}
-
-					MiniHUD.debugLog("ServuxHudHandler#decodeClientData(): received Hud Data Packet Slice of size {} (in bytes) // reading session key [{}]", packet.getTotalSize(), this.readingSessionKey);
-					FriendlyByteBuf fullPacket = PacketSplitter.receive(this, this.readingSessionKey, packet.getBuffer());
-
-					if (fullPacket != null)
-					{
-						try
+						if (this.readingSessionKey == -1)
 						{
-							this.readingSessionKey = -1;
-							Optional<BaseData> opt = DataByteBufUtils.fromByteBuf(fullPacket);
-							opt.ifPresent(baseData -> HudDataManager.getInstance().receiveRecipeManager((CompoundData) baseData));
-//							HudDataManager.getInstance().receiveRecipeManager((CompoundTag) fullPacket.readNbt(NbtAccounter.unlimitedHeap()));
+							this.readingSessionKey = RandomSource.create(Util.getMillis()).nextLong();
 						}
-						catch (Exception e)
+
+						MiniHUD.debugLog("ServuxHudHandler#decodeClientData(): received Hud Data Packet Slice of size {} (in bytes) // reading session key [{}]", packet.getTotalSize(), this.readingSessionKey);
+						FriendlyByteBuf fullPacket = PacketSplitter.receive(this, this.readingSessionKey, packet.getBuffer());
+
+						if (fullPacket != null)
 						{
-							MiniHUD.LOGGER.error("ServuxHudHandler#decodeClientData(): Hud Data: error reading fullBuffer [{}]", e.getLocalizedMessage());
+							try
+							{
+								this.readingSessionKey = -1;
+								Optional<BaseData> opt = DataByteBufUtils.fromByteBuf(fullPacket);
+								opt.ifPresent(baseData -> HudDataManager.getInstance().receiveRecipeManager((CompoundData) baseData));
+//								HudDataManager.getInstance().receiveRecipeManager((CompoundTag) fullPacket.readNbt(NbtAccounter.unlimitedHeap()));
+							}
+							catch (Exception e)
+							{
+								MiniHUD.LOGGER.error("ServuxHudHandler#decodeClientData(): Hud Data: error reading fullBuffer [{}]", e.getLocalizedMessage());
+							}
 						}
 					}
 				}

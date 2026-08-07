@@ -82,9 +82,19 @@ public abstract class ServuxEntitiesHandler<T extends CustomPacketPayload> imple
 					}
 				}
 				case PACKET_S2C_BLOCK_NBT_RESPONSE_SIMPLE ->
+				{
+					if (this.servuxRegistered)
+					{
 						EntityDataManager.getInstance().handleBlockEntityData(packet.getPos(), packet.getCompound());
+					}
+				}
 				case PACKET_S2C_ENTITY_NBT_RESPONSE_SIMPLE ->
+				{
+					if (this.servuxRegistered)
+					{
 						EntityDataManager.getInstance().handleEntityData(packet.getEntityId(), packet.getCompound());
+					}
+				}
 				default ->
 						MiniHUD.LOGGER.warn("ServuxEntitiesHandler#decodeClientData(): received unhandled packetType {} of size {} bytes.", packet.getPacketType(), packet.getTotalSize());
 			}

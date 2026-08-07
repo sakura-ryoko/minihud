@@ -100,6 +100,7 @@ public class EntityDataManager implements IClientTickHandler, IDataSyncer
                 {
                     this.servuxServer = false;
                     HANDLER.unregisterPlayReceiver();
+                    HANDLER.reset(this.getNetworkChannel());
                 }
 
                 if (!Configs.Generic.ENTITY_DATA_SYNC_BACKUP.getBooleanValue())
@@ -408,8 +409,14 @@ public class EntityDataManager implements IClientTickHandler, IDataSyncer
                 if (version != ServuxEntitiesPacket.PROTOCOL_VERSION || !servux.startsWith("servux-"+Reference.MOD_TYPE+"-"+Reference.MC_VERSION))
                 {
                     MiniHUD.LOGGER.warn("entityDataChannel: Mis-matched protocol version! (Expected: {} but got {} running on: {})", ServuxEntitiesPacket.PROTOCOL_VERSION, version, servux);
-                    HANDLER.encodeClientData(ServuxEntitiesPacket.UnregisterReply(new CompoundData()));
+
+                    if (version >= ServuxEntitiesPacket.PROTOCOL_VERSION)
+                    {
+                        HANDLER.encodeClientData(ServuxEntitiesPacket.UnregisterReply(new CompoundData()));
+                    }
+
                     HANDLER.unregisterPlayReceiver();
+                    HANDLER.reset(this.getNetworkChannel());
                     Configs.Generic.ENTITY_DATA_SYNC.setBooleanValue(false);
                     return false;
                 }

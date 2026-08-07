@@ -23,6 +23,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.contents.PlainTextContents;
 import net.minecraft.network.chat.contents.TranslatableContents;
+import net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
@@ -50,11 +51,13 @@ import fi.dy.masa.malilib.util.position.Vec3d;
 import fi.dy.masa.malilib.util.time.TickUtils;
 import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.Reference;
+import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.RendererToggle;
 import fi.dy.masa.minihud.data.HudDataManager;
 import fi.dy.masa.minihud.data.MobCapDataHandler;
 import fi.dy.masa.minihud.mixin.client.IMixinOptions;
 import fi.dy.masa.minihud.mixin.server.IMixinMinecraftServer;
+import fi.dy.masa.minihud.network.ServuxEntitiesPacket;
 import fi.dy.masa.minihud.network.ServuxHudPacket;
 import fi.dy.masa.minihud.network.ServuxStructuresHandler;
 import fi.dy.masa.minihud.network.ServuxStructuresPacket;
@@ -202,6 +205,7 @@ public class DataStorage
     public void setIsServuxServer()
     {
         this.servuxServer = true;
+
         if (this.hasInValidServux)
         {
             this.hasInValidServux = false;
@@ -275,6 +279,12 @@ public class DataStorage
             // so we must send either a register or unregister packet to be sure.
             if (RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue())
             {
+                if (this.servuxServer)
+                {
+                    this.unregisterStructureChannel();
+                }
+
+                this.shouldRegisterStructureChannel = true;
                 this.registerStructureChannel();
                 this.structuresNeedUpdating = true;
             }
@@ -283,6 +293,14 @@ public class DataStorage
                 this.unregisterStructureChannel();
             }
         }
+    }
+
+    public void onPacketFailure()
+    {
+        RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.setBooleanValue(false);
+        this.shouldRegisterStructureChannel = false;
+        this.servuxServer = false;
+        this.hasInValidServux = true;
     }
 
     /**
@@ -358,6 +376,8 @@ public class DataStorage
     }
 
     public boolean hasServuxServer() { return this.servuxServer; }
+
+    public boolean hasInvalidServux() { return this.hasInValidServux; }
 
     public double getServerTPS()
     {
@@ -792,13 +812,8 @@ public class DataStorage
 
         if (this.servuxServer == false && this.hasIntegratedServer == false && this.hasInValidServux == false)
         {
-            if (HANDLER.isPlayRegistered(this.getNetworkChannel()))
-            {
-                MiniHUD.debugLog("DataStorage#registerStructureChannel(): sending STRUCTURES_REGISTER to Servux");
-                CompoundData nbt = new CompoundData();
-                nbt.putInt("version", ServuxStructuresPacket.PROTOCOL_VERSION);
-                HANDLER.encodeClientData(ServuxStructuresPacket.StructuresRegister(nbt));
-            }
+            this.onWorldPre();
+            this.requestMetadata();
         }
         else
         {
@@ -806,6 +821,21 @@ public class DataStorage
         }
         // QuickCarpet doesn't exist for 1.20.5+,
         // Will re-add if they update it -- maybe?
+    }
+
+    public void requestMetadata()
+    {
+        if (this.hasIntegratedServer == false)
+        {
+            if (RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue() &&
+                HANDLER.isPlayRegistered(HANDLER.getPayloadChannel()))
+            {
+                MiniHUD.debugLog("DataStorage#registerStructureChannel(): sending STRUCTURES_REGISTER to Servux");
+                CompoundData nbt = new CompoundData();
+                nbt.putInt("version", ServuxStructuresPacket.PROTOCOL_VERSION);
+                HANDLER.encodeClientData(ServuxStructuresPacket.StructuresRegister(nbt));
+            }
+        }
     }
 
     public boolean receiveServuxStrucutresMetadata(CompoundData data)
@@ -820,9 +850,16 @@ public class DataStorage
             if (version != ServuxStructuresPacket.PROTOCOL_VERSION || !servux.startsWith("servux-"+Reference.MOD_TYPE+"-"+Reference.MC_VERSION))
             {
                 MiniHUD.LOGGER.warn("structureChannel: Mis-matched protocol version! (Expected: {} but got {} running on: {})", ServuxStructuresPacket.PROTOCOL_VERSION, version, servux);
-                HANDLER.encodeClientData(ServuxStructuresPacket.StructuresUnregister(new CompoundData()));
+
+                if (version >= ServuxStructuresPacket.PROTOCOL_VERSION)
+                {
+                    HANDLER.encodeClientData(ServuxStructuresPacket.StructuresUnregister(new CompoundData()));
+                }
+
                 HANDLER.unregisterPlayReceiver();
+                HANDLER.reset(this.getNetworkChannel());
                 RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.setBooleanValue(false);
+
                 return false;
             }
 
@@ -832,7 +869,7 @@ public class DataStorage
 
             if (RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue())
             {
-                this.registerStructureChannel();
+//                this.registerStructureChannel();
                 return true;
             }
             else
@@ -849,23 +886,17 @@ public class DataStorage
         if (this.servuxServer || RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue() == false)
         {
             this.servuxServer = false;
+
             if (this.hasInValidServux == false)
             {
                 MiniHUD.debugLog("DataStorage#unregisterStructureChannel(): for {}", this.servuxVersion != null ? this.servuxVersion : "<unknown>");
                 HANDLER.encodeClientData(ServuxStructuresPacket.StructuresUnregister(new CompoundData()));
+//                HANDLER.unregisterPlayReceiver();
                 HANDLER.reset(HANDLER.getPayloadChannel());
             }
         }
 
         this.shouldRegisterStructureChannel = false;
-    }
-
-    public void onPacketFailure()
-    {
-        RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.setBooleanValue(false);
-        this.shouldRegisterStructureChannel = false;
-        this.servuxServer = false;
-        this.hasInValidServux = true;
     }
 
     private boolean structuresNeedUpdating(BlockPos playerPos, final int hysteresis)
@@ -949,7 +980,6 @@ public class DataStorage
             }
 
             MiniHUD.debugLog("addOrUpdateStructuresFromServer: received {} structures // total size {} -> {}", count, oldCount, this.structures.size());
-
             this.structureRendererNeedsUpdate = true;
             this.hasStructureDataFromServer = true;
         }
