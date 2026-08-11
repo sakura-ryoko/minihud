@@ -10,7 +10,6 @@ import fi.dy.masa.malilib.util.EntityUtils;
 import fi.dy.masa.malilib.util.InfoUtils;
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.malilib.util.position.Vec3d;
-import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.data.DebugDataManager;
 import fi.dy.masa.minihud.data.HudDataManager;
 import fi.dy.masa.minihud.renderer.*;
@@ -178,8 +177,6 @@ public class RendererCallbacks
     {
         if (Minecraft.getInstance().player != null)
         {
-            MiniHUD.LOGGER.error("onStructuresToggled(): {}", config.getBooleanValue() ? "enabled" : "disabled");
-
             if (DataStorage.getInstance().hasInvalidServux())
             {
                 DataStorage.getInstance().reset(false);
@@ -191,20 +188,16 @@ public class RendererCallbacks
                 {
                     if (DataStorage.getInstance().hasServuxServer())
                     {
-                        MiniHUD.LOGGER.error("onStructuresToggled(): unregister A");
                         DataStorage.getInstance().unregisterStructureChannel();
                     }
 
-                    MiniHUD.LOGGER.error("onStructuresToggled(): register");
                     DataStorage.getInstance().registerStructureChannel();
                 }
 
-                MiniHUD.LOGGER.error("onStructuresToggled(): update");
                 DataStorage.getInstance().setStructuresNeedUpdating();
             }
             else
             {
-                MiniHUD.LOGGER.error("onStructuresToggled(): unregister B");
                 DataStorage.getInstance().unregisterStructureChannel();
             }
         }
