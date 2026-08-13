@@ -38,7 +38,11 @@ public class InfoLineSprinting extends InfoLine
 
 		if (this.mc().player.isSprinting())
 		{
-			list.add(this.translate(SPRINT_KEY));
+			list.add(this.translate(
+                    this.mc().options.toggleSprint().get()
+                    ? SPRINT_KEY+".toggled"
+                    : SPRINT_KEY
+            ));
 		}
 
         return list;
