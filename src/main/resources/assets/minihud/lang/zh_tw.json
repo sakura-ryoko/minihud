@@ -1078,6 +1078,7 @@
     "minihud.info_line.speed_mph": "Speed: %.3f mph",
     "minihud.info_line.speed_mps": "Speed: %.3f m/s",
     "minihud.info_line.sprinting": "§6奔跑中",
+    "minihud.info_line.sprinting.toggled": "§6Sprinting §7[§dToggled§7]§r",
     "minihud.info_line.tile_entities": "Client world TE - L: ?, T: ? - TODO 1.17",
     "minihud.info_line.time.exception": "日期格式化失敗 - 格式化字串可能無效",
     "minihud.info_line.time_day_modulo": "白天時間 %% %d: %5d",
