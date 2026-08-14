@@ -1078,7 +1078,7 @@
     "minihud.info_line.speed_mph": "속도: %.3f mph",
     "minihud.info_line.speed_mps": "속도: %.3f m/s",
     "minihud.info_line.sprinting": "§6달리기",
-    "minihud.info_line.sprinting.toggled": "§6Sprinting §7[§dToggled§7]§r",
+    "minihud.info_line.sprinting.toggled": "§6달리기 §7[§d토글됨§7]§r",
     "minihud.info_line.tile_entities": "클라이언트 월드 TE - L: ?, T: ? - TODO 1.17",
     "minihud.info_line.time.exception": "날짜 형식 지정에 실패했습니다. 날짜 형식 문자열이 잘못되었습니다.",
     "minihud.info_line.time_day_modulo": "일일 시간 %% %d: %5d",
