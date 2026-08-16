@@ -1,18 +1,21 @@
 package fi.dy.masa.minihud.renderer.shapes;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
+import com.google.gson.*;
 
 import fi.dy.masa.malilib.util.data.json.JsonUtils;
+import fi.dy.masa.minihud.MiniHUD;
 import fi.dy.masa.minihud.renderer.RenderContainer;
 
 public class ShapeManager
 {
+    public static final String SHAPE_FILE_EXT = ".shape";
+    public static final String SHAPE_FILE_DIR = "shapes";
     public static final ShapeManager INSTANCE = new ShapeManager();
 
     private final List<ShapeBase> shapes = new ArrayList<>();
@@ -48,6 +51,102 @@ public class ShapeManager
         this.shapes.add(shape);
 
         RenderContainer.INSTANCE.addRenderer(shape);
+    }
+
+    @Nullable
+    public static ShapeBase loadShapeFromFile(Path file)
+    {
+        try
+        {
+	        String contents = Files.readString(file);
+            JsonElement element = JsonParser.parseString(contents);
+
+            if (element.isJsonObject())
+            {
+                JsonObject o = element.getAsJsonObject();
+
+                if (JsonUtils.hasString(o, "type"))
+                {
+                    ShapeType type = ShapeType.fromString(JsonUtils.getString(o, "type"));
+
+                    if (type != null)
+                    {
+                        ShapeBase shape = type.createShape();
+                        shape.fromJson(o);
+                        return shape;
+                    }
+                }
+            }
+        }
+        catch (IOException e)
+        {
+	        MiniHUD.LOGGER.error("ShapeManager#loadShapeFromFile: Exception reading file '{}'; {}", file.toString(), e.getLocalizedMessage());
+        }
+
+        return null;
+    }
+
+    public JsonElement exportShapeToJson(ShapeBase shape)
+    {
+        if (shape == null)
+        {
+            return new JsonObject();
+        }
+
+        return shape.toJson();
+    }
+
+    public boolean exportShapeToFile(ShapeBase shape, Path file, boolean overwrite)
+    {
+        boolean exists = Files.exists(file);
+
+        if (exists && overwrite)
+        {
+            try
+            {
+                Files.delete(file);
+            }
+            catch (IOException e)
+            {
+                MiniHUD.LOGGER.error("ShapeManager#exportShapeToFile: Failed to delete file '{}'; {}", file.getFileName().toString(), e.getLocalizedMessage());
+                return false;
+            }
+        }
+        else if (exists)
+        {
+            MiniHUD.LOGGER.error("ShapeManager#exportShapeToFile: Failed; file '{}' already exists", file.getFileName().toString());
+            return false;
+        }
+
+        JsonElement ele = this.exportShapeToJson(shape);
+
+        if (ele.isJsonObject())
+        {
+            JsonObject o = ele.getAsJsonObject();
+
+            if (o.isEmpty())
+            {
+                MiniHUD.LOGGER.error("ShapeManager#exportShapeToFile: Failed to export selected shape '{}' to JSON", shape.getDisplayName());
+                return false;
+            }
+
+            try
+            {
+                Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                String json = gson.toJson(o);
+
+                Files.writeString(file, json);
+                MiniHUD.LOGGER.info("ShapeManager#exportShapeToFile: Exported '{}' shape to '{}'", shape.getDisplayName(), file.toString());
+                return true;
+            }
+            catch (IOException e)
+            {
+                MiniHUD.LOGGER.error("ShapeManager#exportShapeToFile: Failed to write JSON file '{}': {}", file, e.getMessage());
+                return false;
+            }
+        }
+
+        return false;
     }
 
     public void removeShape(ShapeBase shape)
