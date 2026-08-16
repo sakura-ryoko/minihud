@@ -13,6 +13,7 @@ import fi.dy.masa.malilib.render.RenderUtils;
 import fi.dy.masa.malilib.util.GuiUtils;
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.minihud.gui.GuiShapeEditor;
+import fi.dy.masa.minihud.gui.GuiShapesExport;
 import fi.dy.masa.minihud.renderer.shapes.ShapeBase;
 import fi.dy.masa.minihud.renderer.shapes.ShapeManager;
 
@@ -38,6 +39,7 @@ public class WidgetShapeEntry extends WidgetListEntryBase<ShapeBase>
         int posX = x + width - 2;
 
         posX -= this.addButton(posX, y, ButtonListener.Type.REMOVE);
+	    posX -= this.addButton(posX, y, ButtonListener.Type.EXPORT);
         posX -= this.createButtonOnOff(posX, y, this.shape.isEnabled(), ButtonListener.Type.ENABLED);
         posX -= this.addButton(posX, y, ButtonListener.Type.CONFIGURE);
 
@@ -124,6 +126,12 @@ public class WidgetShapeEntry extends WidgetListEntryBase<ShapeBase>
 				this.widget.shape.toggleEnabled();
 				this.widget.parent.refreshEntries();
 			}
+			else if (this.type == Type.EXPORT)
+			{
+				GuiShapesExport gui = new GuiShapesExport(this.widget().shape);
+				gui.setParent(GuiUtils.getCurrentScreen());
+				GuiBase.openGui(gui);
+			}
 			else if (this.type == Type.REMOVE)
 			{
 				ShapeManager.INSTANCE.removeShape(this.widget.shape);
@@ -133,9 +141,10 @@ public class WidgetShapeEntry extends WidgetListEntryBase<ShapeBase>
 
 		public enum Type
 		{
-			CONFIGURE("minihud.gui.button.configure"),
-			ENABLED("minihud.gui.button.shape_entry.enabled"),
-			REMOVE("minihud.gui.button.remove");
+			CONFIGURE   ("minihud.gui.button.configure"),
+			ENABLED     ("minihud.gui.button.shape_entry.enabled"),
+			EXPORT      ("minihud.gui.button.export"),
+			REMOVE      ("minihud.gui.button.remove");
 
 			private final String translationKey;
 

@@ -64,6 +64,7 @@ public class Configs implements IConfigHandler
         public static final ConfigBoolean       CONDUIT_RANGE_OVERLAY_COMBINE_QUADS  = new ConfigBoolean("conduitRangeOverlayCombineQuads", true).apply(GENERIC_KEY);
         public static final ConfigBoolean       CONDUIT_RANGE_OVERLAY_RENDER_OUTLINES= new ConfigBoolean("conduitRangeOverlayOutlines", false).apply(GENERIC_KEY);
         public static final ConfigBoolean       CONDUIT_RANGE_OVERLAY_RENDER_THROUGH = new ConfigBoolean("conduitRangeOverlayThrough", false).apply(GENERIC_KEY);
+        public static final ConfigBoolean       DISPLAY_FILE_OPS_FEEDBACK           = new ConfigBoolean("displayFileOpsFeedback", false).apply(GENERIC_KEY);
         public static final ConfigBoolean       LIGHTNING_ROD_RANGE_OVERLAY_COMBINE_QUADS = new ConfigBoolean("lightningRodRangeOverlayCombineQuads", true).apply(GENERIC_KEY);
         public static final ConfigString        COORDINATE_FORMAT_STRING            = new ConfigString("coordinateFormat", "x: %.1f y: %.1f z: %.1f").apply(GENERIC_KEY);
 		public static final ConfigOptionList    COPPER_AGING_MODE                   = new ConfigOptionList("copperAgingMode", CopperAgingMode.MC_TIME).apply(GENERIC_KEY);
@@ -224,6 +225,7 @@ public class Configs implements IConfigHandler
                 STRUCTURES_RENDER_THROUGH,
                 STRUCTURES_RENDER_OUTLINES,
                 STRUCTURES_RENDER_OUTLINES_WHITE,
+                DISPLAY_FILE_OPS_FEEDBACK,
                 TRANSLATION_LANGUAGE,
                 TRANSLATION_MODE,
                 USE_CUSTOMIZED_COORDINATES,

@@ -86,16 +86,23 @@ public class GuiShapeManager extends GuiListBase<ShapeBase, WidgetShapeEntry, Wi
             x += this.createTabButton(x, y, width, tab);
         }
 
-        String name = StringUtils.translate("minihud.gui.button.add_shape");
-        ButtonGeneric addShapeButton = new ButtonGeneric(this.getScreenWidth() - 10, y, -1, true, name);
+        int xOff = this.getScreenWidth() - 10;
+
+        String name = StringUtils.translate("minihud.gui.button.import");
+        ButtonGeneric importShapeButton = new ButtonGeneric(xOff, y, -1, true, name);
+        xOff -= (importShapeButton.getWidth() + 4);
+
+        name = StringUtils.translate("minihud.gui.button.add_shape");
+        ButtonGeneric addShapeButton = new ButtonGeneric(xOff, y, -1, true, name);
 
         // Check if there is enough space to put the dropdown widget and
         // the button at the end of the last tab button row
-        if (rows < 2 || (this.getScreenWidth() - 10 - x < (addShapeButton.getWidth() + this.widgetDropDown.getWidth() + 4)))
+        if (rows < 2 || (this.getScreenWidth() - 10 - x < (importShapeButton.getWidth() + addShapeButton.getWidth() + this.widgetDropDown.getWidth() + 8)))
         {
             y += 22;
         }
 
+        importShapeButton.setY(y);
         addShapeButton.setY(y);
 
         this.setListPosition(this.getListX(), y + 20);
@@ -107,7 +114,14 @@ public class GuiShapeManager extends GuiListBase<ShapeBase, WidgetShapeEntry, Wi
         this.widgetDropDown.setPosition(addShapeButton.getX() - this.widgetDropDown.getWidth() - 4, y + 1);
 
         this.addWidget(this.widgetDropDown);
-        this.addButton(addShapeButton, (btn, mbtn) -> {
+        this.addButton(importShapeButton, (b, mb) ->
+        {
+            GuiShapesImport gui = new GuiShapesImport();
+            gui.setParent(this);
+            GuiBase.openGui(gui);
+        });
+        this.addButton(addShapeButton, (btn, mbtn) ->
+        {
             ShapeType shape = this.widgetDropDown.getSelectedEntry();
 
             if (shape != null)
