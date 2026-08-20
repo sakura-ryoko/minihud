@@ -71,7 +71,7 @@ public class EntityDataManager implements IClientTickHandler, IDataSyncer
             this.clientWorld = this.mc.level;
         }
 
-        return clientWorld;
+        return this.clientWorld;
     }
 
     private EntityDataManager()
@@ -91,14 +91,21 @@ public class EntityDataManager implements IClientTickHandler, IDataSyncer
 
         if ((now - this.lastTickTime) > 50)
         {
+            if (this.mc.level == null || this.mc.player == null)
+            {
+                this.getCache().clearAll();
+                this.getRequestTracker().clearAll();
+                this.lastTickTime = now;
+                return;
+            }
+
             // In this block, we do something every server tick
             if (!Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue())
             {
-                this.lastTickTime = now;
-
                 if (!DataStorage.getInstance().hasIntegratedServer() && this.hasServuxServer())
                 {
                     this.servuxServer = false;
+                    HANDLER.encodeClientData(ServuxEntitiesPacket.UnregisterReply(new CompoundData()));
                     HANDLER.unregisterPlayReceiver();
                     HANDLER.reset(this.getNetworkChannel());
                 }
@@ -106,7 +113,8 @@ public class EntityDataManager implements IClientTickHandler, IDataSyncer
                 if (!Configs.Generic.ENTITY_DATA_SYNC_BACKUP.getBooleanValue())
                 {
                     this.requestTracker.clearAll();
-                    return;
+//                    this.lastTickTime = now;
+//                    return;
                 }
             }
             else if (Configs.Generic.ENTITY_DATA_SYNC.getBooleanValue() &&
@@ -283,8 +291,21 @@ public class EntityDataManager implements IClientTickHandler, IDataSyncer
     public long getCacheTimeout()
     {
         // Increase cache timeout when in Backup Mode.
-        int modifier = Configs.Generic.ENTITY_DATA_SYNC_BACKUP.getBooleanValue() ? 5 : 1;
-        return (long) (MathUtils.clamp((Configs.Generic.ENTITY_DATA_SYNC_CACHE_TIMEOUT.getFloatValue() * modifier), 1.0f, 50.0f) * 1000L);
+        int modifier = 1;
+
+        if (!this.hasServuxServer())
+        {
+            if (!this.hasBackupStatus())
+            {
+                modifier = 10;
+            }
+            else
+            {
+                modifier = 5;
+            }
+        }
+
+        return (long) (MathUtils.clamp((Configs.Generic.ENTITY_DATA_SYNC_CACHE_TIMEOUT.getFloatValue() * modifier), 1.0f, 500.0f) * 1000L);
     }
 
 	public void setIsServuxServer()
