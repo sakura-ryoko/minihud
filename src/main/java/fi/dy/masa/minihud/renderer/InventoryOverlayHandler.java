@@ -1,6 +1,5 @@
 package fi.dy.masa.minihud.renderer;
 
-import java.util.Optional;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.Nullable;
 
@@ -192,19 +191,10 @@ public class InventoryOverlayHandler implements IInventoryOverlayHandler
             Block blockTmp = state.getBlock();
             BlockEntity be = null;
 
-            //MiniHUD.LOGGER.warn("getTarget():1: pos [{}], state [{}]", pos.toShortString(), state.toString());
+//            MiniHUD.LOGGER.warn("getTarget():1: pos [{}], state [{}]", pos.toShortString(), state.toString());
 
             if (blockTmp instanceof EntityBlock)
             {
-//                Optional<NbtInventory> combinedInv = this.getCombinedInventory(world, pos);
-//                ListData list = null;
-//
-//                if (combinedInv.isPresent())
-//                {
-//                    NbtInventory inventory = combinedInv.get();
-//                    list = inventory.sorted().toDataList(world.registryAccess());
-//                }
-
                 if (world instanceof ServerLevel)
                 {
                     be = world.getChunkAt(pos).getBlockEntity(pos);
@@ -212,12 +202,6 @@ public class InventoryOverlayHandler implements IInventoryOverlayHandler
                     if (be != null)
                     {
 	                    data = DataConverterNbt.fromVanillaCompound(be.saveWithFullMetadata(world.registryAccess()));
-
-//                        if (list != null && !list.isEmpty())
-//                        {
-//                            data.remove(NbtKeys.ITEMS);
-//                            data.put(NbtKeys.ITEMS, list);
-//                        }
                     }
                 }
                 else
@@ -227,29 +211,12 @@ public class InventoryOverlayHandler implements IInventoryOverlayHandler
                     if (pair != null)
                     {
 	                    data = pair.getRight();
-
-//                        if (list != null && !list.isEmpty())
-//                        {
-//                            data.remove(NbtKeys.ITEMS);
-//                            data.put(NbtKeys.ITEMS, list);
-//                        }
                     }
                 }
 
-//                if (be == null)
-//                {
-//                    if (this.lastBlockEntityContext != null && this.lastBlockEntityContext.getLeft().equals(pos))
-//                    {
-//                        this.context = this.lastBlockEntityContext.getRight();
-//                        return this.context;
-//                    }
-//
-//                    return null;
-//                }
-
-                //MiniHUD.LOGGER.warn("getTarget():2: pos [{}], be [{}], nbt [{}]", pos.toShortString(), be != null, nbt != null);
-                InventoryOverlayContext ctx = getTargetInventoryFromBlock(world, pos, be, data);
-                //dumpContext(ctx);
+//                MiniHUD.LOGGER.warn("getTarget():2: pos [{}], be [{}], nbt [{}]", pos.toShortString(), be != null, data != null);
+                InventoryOverlayContext ctx = this.getTargetInventoryFromBlock(world, pos, be, data);
+//                dumpContext(ctx);
 
                 if (this.lastBlockEntityContext != null && !this.lastBlockEntityContext.getLeft().equals(pos))
                 {
@@ -324,9 +291,9 @@ public class InventoryOverlayHandler implements IInventoryOverlayHandler
                 return null;
             }
 
-            //MiniHUD.LOGGER.error("getTarget(): Entity [{}] raw NBT [{}]", entity.getId(), nbt.toString());
-            InventoryOverlayContext ctx = getTargetInventoryFromEntity(entity, data);
-            //dumpContext(ctx);
+//            MiniHUD.LOGGER.error("getTarget(): Entity [{}] raw DATA [{}]", entity.getId(), data.toString());
+            InventoryOverlayContext ctx = this.getTargetInventoryFromEntity(entity, data);
+//            dumpContext(ctx);
 
             if (this.lastEntityContext != null && this.lastEntityContext.getLeft() != entity.getId())
             {
@@ -385,9 +352,8 @@ public class InventoryOverlayHandler implements IInventoryOverlayHandler
     @Override
     public @Nullable InventoryOverlayContext getTargetInventoryFromBlock(Level world, BlockPos pos, @Nullable BlockEntity be, CompoundData data)
     {
+        if (world == null) { return null; }
         Container inv;
-
-        if (world == null) return null;
 
         if (be != null)
         {
@@ -411,11 +377,11 @@ public class InventoryOverlayHandler implements IInventoryOverlayHandler
                 }
             }
 
-            inv = this.getDataSyncer().getBlockInventory(world, pos, false);
+            inv = this.getDataSyncer().getBlockInventory(world, pos, true);
         }
 
 	    BlockEntityType<?> beType = data != null ? DataBlockUtils.getBlockEntityType(data) : null;
-        //MiniHUD.LOGGER.warn("getTargetInventoryFromBlock() beType: [{}], inv [{}]", beType != null ? beType.toString() : "<null>", inv != null ? inv.size() : "<null>");
+//        MiniHUD.LOGGER.warn("getTargetInventoryFromBlock() beType: [{}], inv [{}]", beType != null ? beType.getClass().getSimpleName() : "<null>", inv != null ? inv.getContainerSize() : "<null>");
 
         if ((beType != null && beType.equals(BlockEntityType.ENDER_CHEST)) ||
              be instanceof EnderChestBlockEntity)
@@ -443,53 +409,74 @@ public class InventoryOverlayHandler implements IInventoryOverlayHandler
                     {
                         inv = enderItems;
                     }
+
+//                    MiniHUD.LOGGER.error("getTargetFromBlock: EnderItems [{}]", enderItems != null ? enderItems.getContainerSize() : "<NULL>");
                 }
             }
         }
 
         if (data != null && !data.isEmpty())
         {
-            //MiniHUD.LOGGER.warn("getTargetInventoryFromBlock(): rawNbt: [{}]", nbt.toString());
+//            MiniHUD.LOGGER.warn("getTargetInventoryFromBlock(): rawNbt: [{}]", data.toString());
             Container inv2 = InventoryUtils.getDataInventory(data, inv != null ? inv.getContainerSize() : -1, world.registryAccess());
 
-            if (inv == null)
+            if (inv == null || inv.isEmpty())
             {
                 inv = inv2;
             }
         }
 
-        //MiniHUD.LOGGER.warn("getTarget():3: pos [{}], inv [{}], be [{}], nbt [{}]", pos.toShortString(), inv != null, be != null, nbt != null ? nbt.getString("id") : new NbtCompound());
+//        MiniHUD.LOGGER.warn("getTarget():3: pos [{}], inv [{}], be [{}], nbt [{}]", pos.toShortString(), inv != null, be != null, data != null ? data.getString("id") : new CompoundData());
 
-        if (inv == null || data == null)
+        if (be == null)
         {
-            return null;
+            be = world.getBlockEntity(pos);
+
+            if (inv == null || inv.isEmpty())
+            {
+                if (be instanceof Container cc)
+                {
+                    inv = cc;
+                }
+            }
         }
 
-        this.context = new InventoryOverlayContext(InventoryOverlay.getBestInventoryType(inv, data), inv, be != null ? be : world.getBlockEntity(pos), null, data, this.getRefreshHandler());
+        if (data == null)
+        {
+            data = new CompoundData();
+        }
+        if (inv == null)
+        {
+            inv = new SimpleContainer(1);
+        }
+
+        this.context = new InventoryOverlayContext(InventoryOverlay.getBestInventoryType(inv, data), inv,
+                                                   be != null ? be : world.getBlockEntity(pos), null,
+                                                   data, this.getRefreshHandler());
 
         return this.context;
     }
 
-    public Optional<NbtInventory> getCombinedInventory(Level world, BlockPos pos)
-    {
-        Container inv;
-
-        if (world instanceof ServerLevel)
-        {
-            inv = fi.dy.masa.malilib.util.InventoryUtils.getInventory(world, pos);
-        }
-        else
-        {
-            inv = this.getDataSyncer().getBlockInventory(world, pos, false);
-        }
-
-        if (inv != null && inv.getContainerSize() >= NbtInventory.DEFAULT_SIZE)
-        {
-            return Optional.of(NbtInventory.fromInventory(inv));
-        }
-
-        return Optional.empty();
-    }
+//    public Optional<NbtInventory> getCombinedInventory(Level world, BlockPos pos)
+//    {
+//        Container inv;
+//
+//        if (world instanceof ServerLevel)
+//        {
+//            inv = fi.dy.masa.malilib.util.InventoryUtils.getInventory(world, pos);
+//        }
+//        else
+//        {
+//            inv = this.getDataSyncer().getBlockInventory(world, pos, false);
+//        }
+//
+//        if (inv != null && inv.getContainerSize() >= NbtInventory.DEFAULT_SIZE)
+//        {
+//            return Optional.of(NbtInventory.fromInventory(inv));
+//        }
+//
+//        return Optional.empty();
+//    }
 
     @Override
     public @Nullable InventoryOverlayContext getTargetInventoryFromEntity(Entity entity, CompoundData data)
@@ -587,8 +574,10 @@ public class InventoryOverlayHandler implements IInventoryOverlayHandler
             return null;
         }
 
-        this.context = new InventoryOverlayContext(inv != null ? InventoryOverlay.getBestInventoryType(inv, data) : InventoryOverlay.getInventoryType(data),
-                                                    inv, null, entityLivingBase, data, this.getRefreshHandler());
+        this.context = new InventoryOverlayContext(inv != null
+                                                   ? InventoryOverlay.getBestInventoryType(inv, data)
+                                                   : InventoryOverlay.getInventoryType(data),
+                                                   inv, null, entityLivingBase, data, this.getRefreshHandler());
 
         return this.context;
     }
