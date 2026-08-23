@@ -6,6 +6,8 @@ import java.util.List;
 import javax.annotation.Nonnull;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.debug.DebugEntryCategory;
+import net.minecraft.client.gui.components.debug.DebugScreenEntries;
 import net.minecraft.client.gui.components.debug.DebugScreenEntryList;
 import net.minecraft.client.gui.components.debug.DebugScreenEntryStatus;
 import net.minecraft.nbt.ListTag;
@@ -132,9 +134,8 @@ public class DebugDataManager
 	public boolean shouldShowDebugHudFix()
 	{
 		DebugScreenEntryList profile = this.mc.debugEntries;
-		Collection<Identifier> list = profile.getCurrentlyEnabled();
 
-		boolean result = (profile.isOverlayVisible() || !this.checkVisibleEntries(list));
+		boolean result = !(!profile.isOverlayVisible() && DebugScreenEntries.allEntries().entrySet().stream().noneMatch(entry -> entry.getValue().category().equals(DebugEntryCategory.SCREEN_TEXT) && profile.getStatus(entry.getKey()).equals(DebugScreenEntryStatus.ALWAYS_ON)));
 
 //		if (!result)
 //		{
