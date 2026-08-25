@@ -3,11 +3,11 @@ package fi.dy.masa.minihud.data;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nonnull;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.components.debug.DebugScreenEntryList;
-import net.minecraft.client.gui.components.debug.DebugScreenEntryStatus;
+import net.minecraft.client.gui.components.debug.*;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
@@ -144,13 +144,35 @@ public class DebugDataManager
 	 */
 	public boolean shouldShowDebugHudFix()
 	{
+		if (!this.mc.isGameLoadFinished()) { return false; }
 		DebugScreenEntryList profile = this.mc.debugEntries;
+		if (profile == null || profile.isOverlayVisible()) { return false; }
+		Map<Identifier, DebugScreenEntry> map = DebugScreenEntries.allEntries();
 		Collection<Identifier> list = profile.getCurrentlyEnabled();
+		boolean result = true;
 
-		return (profile.isOverlayVisible() || !this.checkVisibleEntries(list))
-				&& (!this.mc.options.hideGui || this.mc.screen != null);
+		for (Map.Entry<Identifier, DebugScreenEntry> entry : map.entrySet())
+		{
+			if (list.contains(entry.getKey()) && entry.getValue().category() == DebugEntryCategory.SCREEN_TEXT)
+			{
+				result = false;
+			}
+		}
+
+//		boolean result = (profile.isOverlayVisible() || !this.checkVisibleEntries(list));
+
+//		if (!result)
+//		{
+//			System.out.printf("DebugFix // profileVisible: %s, visibleEntries: %s\n",
+//			                  profile.isOverlayVisible(),
+//			                  !this.checkVisibleEntries(list)
+//			);
+//		}
+
+		return result;
 	}
 
+	// Fallback
 	private boolean checkVisibleEntries(Collection<Identifier> list)
 	{
 		if (list.isEmpty()) return true;

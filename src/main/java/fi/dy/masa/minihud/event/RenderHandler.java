@@ -13,6 +13,8 @@ import org.joml.Matrix4f;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.ChatScreen;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.RenderBuffers;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.core.BlockPos;
@@ -41,7 +43,9 @@ import net.minecraft.world.phys.HitResult;
 import fi.dy.masa.malilib.config.HudAlignment;
 import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.interfaces.IRenderer;
+import fi.dy.masa.malilib.registry.Registry;
 import fi.dy.masa.malilib.render.GuiContext;
+import fi.dy.masa.malilib.render.InventoryOverlayScreen;
 import fi.dy.masa.malilib.render.RenderUtils;
 import fi.dy.masa.malilib.util.InventoryUtils;
 import fi.dy.masa.malilib.util.StringUtils;
@@ -131,9 +135,10 @@ public class RenderHandler implements IRenderer
             return;
         }
 
-		if (DebugDataManager.getInstance().shouldShowDebugHudFix() == false &&
-            mc.player != null && mc.options.hideGui == false &&
-            (Configs.Generic.REQUIRE_SNEAK.getBooleanValue() == false || mc.player.isShiftKeyDown()) &&
+		if (DebugDataManager.getInstance().shouldShowDebugHudFix() &&
+            this.mc.player != null && mc.options.hideGui == false &&
+            (this.checkScreenWhiteList() == false) &&
+            (Configs.Generic.REQUIRE_SNEAK.getBooleanValue() == false || this.mc.player.isShiftKeyDown()) &&
             Configs.Generic.REQUIRED_KEY.getKeybind().isKeybindHeld())
         {
 
@@ -159,6 +164,11 @@ public class RenderHandler implements IRenderer
                                    this.lines);
         }
 
+//        System.out.printf("HUD // Screen: %s, isHidden: %s, debugFix: %s\n",
+//                          this.checkScreenBlackList() == false,
+//                          this.mc.gui.hud.isHidden() == false,
+//                          DebugDataManager.getInstance().shouldShowDebugHudFix() == false);
+
         if (Configs.Generic.INVENTORY_PREVIEW_ENABLED.getBooleanValue() &&
             Configs.Generic.INVENTORY_PREVIEW.getKeybind().isKeybindHeld())
         {
@@ -178,15 +188,39 @@ public class RenderHandler implements IRenderer
         }
     }
 
-    @Override
-    public void onRenderWorldPreWeather(RenderTarget fb, Matrix4f posMatrix, Matrix4f projMatrix, Frustum frustum, Camera camera, RenderBuffers buffers, ProfilerFiller profiler)
+    private boolean checkScreenWhiteList()
     {
+        Screen screen = this.mc.screen;
+
+        if (screen != null)
+        {
+            if (screen instanceof ChatScreen) { return false; }
+            else if (screen instanceof InventoryOverlayScreen) { return false; }
+            return true;
+        }
+
+        return false;
+    }
+
+//    @Override
+//    public void onExtractWorldPreWeather(DeltaTracker deltaTracker, Camera camera, float ticks, ProfilerFiller profiler)
+//    {
+//        if (Configs.Generic.MAIN_RENDERING_TOGGLE.getBooleanValue() &&
+//            this.mc.level != null && this.mc.player != null && this.mc.options.hideGui == false)
+//        {
+//            OverlayRenderer.extractOverlays(this.mc, deltaTracker, camera, ticks, profiler);
+//        }
+//    }
+//
+//    @Override
+//    public void onRenderWorldPreWeather(RenderTarget fb, Matrix4fc modelViewMatrix, CameraRenderState cameraState, Frustum culling, RenderBuffers buffers, GpuBufferSlice terrainFog, Vector4f fogColor, ProfilerFiller profiler)
+//    {
 //        if (Configs.Generic.MAIN_RENDERING_TOGGLE.getBooleanValue() &&
 //            this.mc.world != null && this.mc.player != null && this.mc.options.hudHidden == false)
 //        {
 //            OverlayRenderer.renderOverlays(posMatrix, projMatrix, this.mc, frustum, camera, fog, profiler);
 //        }
-    }
+//    }
 
     @Override
     public void onRenderWorldLastAdvanced(RenderTarget fb, Matrix4f posMatrix, Matrix4f projMatrix, Frustum frustum, Camera camera, RenderBuffers buffers, ProfilerFiller profiler)
@@ -229,6 +263,7 @@ public class RenderHandler implements IRenderer
                 if (player != null)
                 {
                     Pair<Entity, CompoundData> pair = EntityDataManager.getInstance().requestEntity(world, player.getId());
+                    NbtInventory enderCache = Registry.ENTITY_DATA_REGISTRY.chestTracker().getEnderCache();
                     PlayerEnderChestContainer inv;
 
                     if (pair != null && pair.getRight() != null && pair.getRight().contains(NbtKeys.ENDER_ITEMS, Constants.NBT.TAG_LIST))
@@ -250,7 +285,15 @@ public class RenderHandler implements IRenderer
                         inv = player.getEnderChestInventory();
                     }
 
-                    if (inv != null)
+                    if (enderCache != null && !enderCache.isEmpty())
+                    {
+                        CompoundData data = new CompoundData();
+                        ListData list = enderCache.toDataList(world.registryAccess());
+
+                        data.put(NbtKeys.ENDER_ITEMS, list);
+                        fi.dy.masa.malilib.render.RenderUtils.renderDataItemsPreview(ctx, stack, data, x, y, false);
+                    }
+                    else if (inv != null)
                     {
                         try (NbtInventory nbtInv = NbtInventory.fromInventory(inv))
                         {
@@ -317,6 +360,12 @@ public class RenderHandler implements IRenderer
         {
             MiscUtils.addCustomModelTooltip(stack, list);
         }
+
+//        if (Configs.Generic.ITEM_MODEL_TOOLTIPS.getBooleanValue() &&
+//            stack.has(DataComponents.ITEM_MODEL))
+//        {
+//            MiscUtils.addItemModelTooltip(stack, list);
+//        }
 
         if (Configs.Generic.FOOD_TOOLTIPS.getBooleanValue() &&
             stack.has(DataComponents.FOOD))
