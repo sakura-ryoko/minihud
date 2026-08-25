@@ -212,6 +212,7 @@ public class InventoryOverlayHandler implements IInventoryOverlayHandler
                     if (pair != null)
                     {
 	                    data = pair.getRight();
+                        be = pair.getLeft();
                     }
                 }
 
@@ -356,30 +357,30 @@ public class InventoryOverlayHandler implements IInventoryOverlayHandler
         if (world == null) { return null; }
         Container inv;
 
-        if (be != null)
-        {
-            if (data.isEmpty())
-            {
-	            data = DataConverterNbt.fromVanillaCompound(be.saveWithFullMetadata(world.registryAccess()));
-            }
-
-            inv = InventoryUtils.getInventory(world, pos);
-        }
-        else
-        {
-            if (data.isEmpty())
-            {
-                Pair<BlockEntity, CompoundData> pair = this.requestBlockEntityAt(world, pos);
-
-                if (pair != null)
-                {
-                    data = pair.getRight();
-                    be = pair.getLeft();
-                }
-            }
+//        if (be != null)
+//        {
+//            if (data.isEmpty())
+//            {
+//	            data = DataConverterNbt.fromVanillaCompound(be.saveWithFullMetadata(world.registryAccess()));
+//            }
+//
+//            inv = InventoryUtils.getInventory(world, pos);
+//        }
+//        else
+//        {
+//            if (data.isEmpty())
+//            {
+//                Pair<BlockEntity, CompoundData> pair = this.requestBlockEntityAt(world, pos);
+//
+//                if (pair != null)
+//                {
+//                    data = pair.getRight();
+//                    be = pair.getLeft();
+//                }
+//            }
 
             inv = this.getDataSyncer().getBlockInventory(world, pos, true);
-        }
+//        }
 
 	    BlockEntityType<?> beType = data != null ? DataBlockUtils.getBlockEntityType(data) : null;
 //        MiniHUD.LOGGER.warn("getTargetInventoryFromBlock() beType: [{}], inv [{}]", beType != null ? beType.getClass().getSimpleName() : "<null>", inv != null ? inv.getContainerSize() : "<null>");
