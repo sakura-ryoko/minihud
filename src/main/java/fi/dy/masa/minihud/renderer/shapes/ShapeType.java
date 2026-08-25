@@ -10,6 +10,8 @@ public enum ShapeType
     BOX                     ("box",                     "minihud.label.shapes.box",                     ShapeBox::new),
     CENTERED_BOX            ("centered_box",            "minihud.label.shapes.centered_box",   			ShapeCenteredBox::new),
     CIRCLE                  ("circle",                  "minihud.label.shapes.circle",                  ShapeCircle::new),
+    SQUARE                  ("square",                  "minihud.label.shapes.square",                  ShapeSquare::new),
+    RHOMBUS                 ("rhombus",                 "minihud.label.shapes.rhombus",                 ShapeRhombus::new),
     BLOCK_LINE              ("block_line",              "minihud.label.shapes.block_line",              ShapeLineBlock::new),
     SPHERE_BLOCKY           ("sphere_blocky",           "minihud.label.shapes.sphere_blocky",           ShapeSphereBlocky::new),
     ADJUSTABLE_SPAWN_SPHERE ("adjustable_spawn_sphere", "minihud.label.shapes.adjustable_spawn_sphere", ShapeSpawnSphere::new),
