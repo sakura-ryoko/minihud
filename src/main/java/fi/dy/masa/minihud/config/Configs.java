@@ -336,6 +336,8 @@ public class Configs implements IConfigHandler
         public static final ConfigColor SHAPE_CAN_DESPAWN_SPHERE                = new ConfigColor("shapeCanDespawnSphere",              "#60A04050").apply(COLORS_KEY);
         public static final ConfigColor SHAPE_CAN_SPAWN_SPHERE                  = new ConfigColor("shapeCanSpawnSphere",                "#60A04050").apply(COLORS_KEY);
         public static final ConfigColor SHAPE_CIRCLE                            = new ConfigColor("shapeCircle",                        "#6030B0B0").apply(COLORS_KEY);
+        public static final ConfigColor SHAPE_SQUARE                            = new ConfigColor("shapeSquare",                        "#6030B0B0").apply(COLORS_KEY);
+        public static final ConfigColor SHAPE_RHOMBUS                           = new ConfigColor("shapeRhombus",                       "#60B030B0").apply(COLORS_KEY);
         public static final ConfigColor SHAPE_CONE                              = new ConfigColor("shapeCone",                          "#60FFAA00").apply(COLORS_KEY);
         public static final ConfigColor SHAPE_DESPAWN_SPHERE                    = new ConfigColor("shapeDespawnSphere",                 "#60A04050").apply(COLORS_KEY);
         public static final ConfigColor SHAPE_LINE_BLOCKY                       = new ConfigColor("shapeLineBlocky",                    "#6030F0B0").apply(COLORS_KEY);
@@ -384,6 +386,8 @@ public class Configs implements IConfigHandler
                 SHAPE_CAN_DESPAWN_SPHERE,
                 SHAPE_CAN_SPAWN_SPHERE,
                 SHAPE_CIRCLE,
+                SHAPE_SQUARE,
+                SHAPE_RHOMBUS,
                 SHAPE_CONE,
                 SHAPE_DESPAWN_SPHERE,
                 SHAPE_LINE_BLOCKY,

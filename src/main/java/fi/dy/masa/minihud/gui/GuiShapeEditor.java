@@ -160,7 +160,26 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
                 this.createShapeEditorElementIntField(x + 150, y + 36, shape::getHeight, shape::setHeight, "minihud.gui.label.height_colon", true);
                 this.createDirectionButton(x + 230, y + 36, shape::getMainAxis, shape::setMainAxis, "minihud.gui.label.shape.circle.main_axis_colon");
                 this.createRenderTypeButton(renderTypeX, renderTypeY, this.shape::getRenderType, this.shape::setRenderType, "minihud.gui.label.shape.render_type_colon");
-//                this.createLayerEditControls(146, 162, this.getLayerRange());
+                break;
+            }
+
+            case SQUARE:
+            {
+                ShapeSquare shape = (ShapeSquare) this.shape;
+                this.createShapeEditorElementsSphereBase(x, y, true);
+                this.createShapeEditorElementIntField(x + 150, y + 36, shape::getHeight, shape::setHeight, "minihud.gui.label.height_colon", true);
+                this.createDirectionButton(x + 230, y + 36, shape::getMainAxis, shape::setMainAxis, "minihud.gui.label.shape.circle.main_axis_colon");
+                this.createRenderTypeButton(renderTypeX, renderTypeY, this.shape::getRenderType, this.shape::setRenderType, "minihud.gui.label.shape.render_type_colon");
+                break;
+            }
+
+            case RHOMBUS:
+            {
+                ShapeRhombus shape = (ShapeRhombus) this.shape;
+                this.createShapeEditorElementsSphereBase(x, y, true);
+                this.createShapeEditorElementIntField(x + 150, y + 36, shape::getHeight, shape::setHeight, "minihud.gui.label.height_colon", true);
+                this.createDirectionButton(x + 230, y + 36, shape::getMainAxis, shape::setMainAxis, "minihud.gui.label.shape.circle.main_axis_colon");
+                this.createRenderTypeButton(renderTypeX, renderTypeY, this.shape::getRenderType, this.shape::setRenderType, "minihud.gui.label.shape.render_type_colon");
                 break;
             }
 
@@ -215,7 +234,8 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         y += 12;
         GuiUtils.createVec3dInputsVertical(x, y, 120, shape.getEffectiveCenter().toVanilla(), new Vec3dEditor(shape::getEffectiveCenter, shape::setCenter, this), true, this);
         x += 11;
-        y += 54;
+//        y += 54;
+        y += 60;
 
         int btnX = x;
         ButtonGeneric button = new ButtonGeneric(btnX, y, -1, false, "minihud.gui.button.render_layers_gui.set_to_player");

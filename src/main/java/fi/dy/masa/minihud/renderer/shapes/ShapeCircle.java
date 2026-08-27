@@ -314,6 +314,7 @@ public class ShapeCircle extends ShapeCircleBase
         List<SideQuad> quads = new ArrayList<>();
         Long2ByteOpenHashMap handledPositions = new Long2ByteOpenHashMap();
         final Direction.Axis mainAxis = mainAxisDirection.getAxis();
+        final boolean isNegativeAxisDirection = mainAxisDirection.getAxisDirection() == Direction.AxisDirection.NEGATIVE;
 
         for (SideQuad strip : strips.values())
         {
@@ -325,10 +326,43 @@ public class ShapeCircle extends ShapeCircleBase
                 continue;
             }
 
-            final long startPos = side == mainAxisDirection ? SphereUtils.offsetPos(pos, mainAxisDirection, circleHeight - 1) : pos;
-            final int height = side.getAxis() != mainAxis ? circleHeight : strip.height();
+            final Direction.Axis sideAxis = side.getAxis();
+            final boolean isSideQuad = sideAxis != mainAxis;
+            final long startPos = (side == mainAxisDirection || (isSideQuad && isNegativeAxisDirection))
+                                  ? SphereUtils.offsetPos(pos, mainAxisDirection, circleHeight - 1)
+                                  : pos;
 
-            quads.add(new SideQuad(startPos, strip.width(), height, side));
+//            final long startPos = side == mainAxisDirection ? SphereUtils.offsetPos(pos, mainAxisDirection, circleHeight - 1) : pos;
+//            final int height = side.getAxis() != mainAxis ? circleHeight : strip.height();
+//            quads.add(new SideQuad(startPos, strip.width(), height, side));
+
+            int quadWidth;
+            int quadHeight;
+
+            if (isSideQuad)
+            {
+                Direction.Axis stripAxis = SphereUtils.getThirdAxis(mainAxis, sideAxis);
+                Direction.Axis expectedWidthAxis = (sideAxis == Direction.Axis.X) ? Direction.Axis.Z : Direction.Axis.X;
+
+                // Swap dimensions if the measured strip direction differs from expected quad width
+                if (stripAxis != expectedWidthAxis)
+                {
+                    quadWidth = circleHeight;
+                    quadHeight = strip.width();
+                }
+                else
+                {
+                    quadWidth = strip.width();
+                    quadHeight = circleHeight;
+                }
+            }
+            else
+            {
+                quadWidth = strip.width();
+                quadHeight = strip.height();
+            }
+
+            quads.add(new SideQuad(startPos, quadWidth, quadHeight, side));
         }
 
         return quads;
