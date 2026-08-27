@@ -138,7 +138,7 @@ public class RenderHandler implements IRenderer
             return;
         }
 
-		if (DebugDataManager.getInstance().shouldShowDebugHudFix() == false &&
+		if (DebugDataManager.getInstance().shouldShowDebugHudFix() &&
             this.mc.player != null && this.mc.gui.hud.isHidden() == false &&
             (this.checkScreenWhiteList() == false) &&
             (Configs.Generic.REQUIRE_SNEAK.getBooleanValue() == false || this.mc.player.isShiftKeyDown()) &&
