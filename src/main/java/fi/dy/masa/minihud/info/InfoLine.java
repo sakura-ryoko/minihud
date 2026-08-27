@@ -19,6 +19,7 @@ import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.malilib.util.WorldUtils;
 import fi.dy.masa.malilib.util.data.tag.CompoundData;
 import fi.dy.masa.minihud.Reference;
+import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.data.EntityDataManager;
 import fi.dy.masa.minihud.data.HudDataManager;
@@ -60,7 +61,7 @@ public abstract class InfoLine
         return this.mc().level;
     }
 
-    // Always return the Overworld time clock
+    // Always return the Overworld time clock ?
     public long dayTime(Level level)
     {
         if (level != null)
@@ -68,7 +69,9 @@ public abstract class InfoLine
             ResourceKey<Level> dimKey = level.dimension();
 
 	        return !dimKey.equals(Level.OVERWORLD)
-	                      ? (dimKey.equals(Level.END) ? level.getDefaultClockTime() : level.getOverworldClockTime())
+	                      ? (dimKey.equals(Level.END) && Configs.Generic.DISPLAY_END_CLOCK.getBooleanValue()
+                             ? level.getDefaultClockTime()
+                             : level.getOverworldClockTime())
 	                      : level.getOverworldClockTime();
         }
 

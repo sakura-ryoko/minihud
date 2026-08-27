@@ -64,13 +64,14 @@ public class Configs implements IConfigHandler
         public static final ConfigBoolean       CONDUIT_RANGE_OVERLAY_COMBINE_QUADS  = new ConfigBoolean("conduitRangeOverlayCombineQuads", true).apply(GENERIC_KEY);
         public static final ConfigBoolean       CONDUIT_RANGE_OVERLAY_RENDER_OUTLINES= new ConfigBoolean("conduitRangeOverlayOutlines", false).apply(GENERIC_KEY);
         public static final ConfigBoolean       CONDUIT_RANGE_OVERLAY_RENDER_THROUGH = new ConfigBoolean("conduitRangeOverlayThrough", false).apply(GENERIC_KEY);
-        public static final ConfigBoolean       DISPLAY_FILE_OPS_FEEDBACK           = new ConfigBoolean("displayFileOpsFeedback", false).apply(GENERIC_KEY);
         public static final ConfigBoolean       LIGHTNING_ROD_RANGE_OVERLAY_COMBINE_QUADS = new ConfigBoolean("lightningRodRangeOverlayCombineQuads", true).apply(GENERIC_KEY);
         public static final ConfigString        COORDINATE_FORMAT_STRING            = new ConfigString("coordinateFormat", "x: %.1f y: %.1f z: %.1f").apply(GENERIC_KEY);
 		public static final ConfigOptionList    COPPER_AGING_MODE                   = new ConfigOptionList("copperAgingMode", CopperAgingMode.MC_TIME).apply(GENERIC_KEY);
         public static final ConfigOptionList    DATE_FORMAT_TYPE                    = new ConfigOptionList("dateFormatType", TimeFormat.REGULAR).apply(GENERIC_KEY);
         public static final ConfigString        DATE_FORMAT_STRING                  = new ConfigString("dateFormatString", "yyyy-MM-dd HH:mm:ss").apply(GENERIC_KEY);
         public static final ConfigString        DATE_FORMAT_MINECRAFT               = new ConfigString("dateFormatMinecraft", "MC time: (day {DAY}) {HOUR}:{MIN}:xx").apply(GENERIC_KEY);
+        public static final ConfigBoolean       DISPLAY_FILE_OPS_FEEDBACK           = new ConfigBoolean("displayFileOpsFeedback", false).apply(GENERIC_KEY);
+        public static final ConfigBoolean       DISPLAY_END_CLOCK                   = new ConfigBoolean("displayEndClock", false).apply(GENERIC_KEY);
         public static final ConfigOptionList    DURATION_FORMAT_TYPE                = new ConfigOptionList("durationFormatType", DurationFormat.PRETTY).apply(GENERIC_KEY);
         public static final ConfigString        DURATION_FORMAT_STRING              = new ConfigString("durationFormatString", "HH:mm:ss.SSS").apply(GENERIC_KEY);
         public static final ConfigBoolean       DEBUG_MESSAGES                      = new ConfigBoolean("debugMessages", false).apply(GENERIC_KEY);
@@ -258,6 +259,7 @@ public class Configs implements IConfigHandler
                 DATE_FORMAT_TYPE,
                 DATE_FORMAT_STRING,
                 DATE_FORMAT_MINECRAFT,
+                DISPLAY_END_CLOCK,
                 DURATION_FORMAT_TYPE,
                 DURATION_FORMAT_STRING,
                 FONT_SCALE,
