@@ -124,7 +124,7 @@ public class Configs implements IConfigHandler
         public static final ConfigHotkey        OPEN_CONFIG_GUI                     = new ConfigHotkey("openConfigGui", "H,C").apply(GENERIC_KEY);
         public static final ConfigBoolean       REQUIRE_SNEAK                       = new ConfigBoolean("requireSneak", false).apply(GENERIC_KEY);
         public static final ConfigHotkey        REQUIRED_KEY                        = new ConfigHotkey("requiredKey", "", KeybindSettings.MODIFIER_INGAME_EMPTY).apply(GENERIC_KEY);
-        public static final ConfigInteger       SERVER_NBT_REQUEST_RATE             = new ConfigInteger("serverNbtRequestRate", 2).apply(GENERIC_KEY);
+        public static final ConfigInteger       SERVER_NBT_REQUEST_RATE             = new ConfigInteger("serverNbtRequestRate", 2, 1, 8).apply(GENERIC_KEY);
         public static final ConfigHotkey        SET_DISTANCE_REFERENCE_POINT        = new ConfigHotkey("setDistanceReferencePoint", "").apply(GENERIC_KEY);
         public static final ConfigHotkey        SHAPE_EDITOR                        = new ConfigHotkey("shapeEditor", "").apply(GENERIC_KEY);
         public static final ConfigBoolean       SHULKER_BOX_PREVIEW                 = new ConfigBoolean("shulkerBoxPreview", false).apply(GENERIC_KEY);
