@@ -22,6 +22,7 @@ import net.minecraft.world.item.crafting.RecipeMap;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gamerules.GameRules;
 
+import fi.dy.masa.malilib.MaLiLibReference;
 import fi.dy.masa.malilib.config.options.ConfigBoolean;
 import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.network.ClientPlayHandler;
@@ -591,7 +592,7 @@ public class HudDataManager
             final String servux = data.getStringOrDefault("servux", "?");
             MiniHUD.debugLog("HudDataStorage#receiveMetadata(): received METADATA from Servux");
 
-            if (version != ServuxHudPacket.PROTOCOL_VERSION || !servux.startsWith("servux-"+Reference.MOD_TYPE+"-"+Reference.MC_VERSION))
+            if (version != ServuxHudPacket.PROTOCOL_VERSION || !servux.startsWith("servux-"+Reference.MOD_TYPE+"-"+MaLiLibReference.MC_VERSION))
             {
                 MiniHUD.LOGGER.warn("hudDataChannel: Mis-matched protocol version! (Expected: {} but got {} running on: {})", ServuxHudPacket.PROTOCOL_VERSION, version, servux);
 

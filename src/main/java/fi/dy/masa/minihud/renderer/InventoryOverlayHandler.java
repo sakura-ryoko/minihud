@@ -43,9 +43,7 @@ import fi.dy.masa.malilib.util.InventoryUtils;
 import fi.dy.masa.malilib.util.WorldUtils;
 import fi.dy.masa.malilib.util.data.Constants;
 import fi.dy.masa.malilib.util.data.DataBlockUtils;
-import fi.dy.masa.malilib.util.data.DataEntityUtils;
 import fi.dy.masa.malilib.util.data.tag.CompoundData;
-import fi.dy.masa.malilib.util.data.tag.converter.DataConverterNbt;
 import fi.dy.masa.malilib.util.game.RayTraceUtils;
 import fi.dy.masa.malilib.util.nbt.NbtInventory;
 import fi.dy.masa.malilib.util.nbt.NbtKeys;
@@ -196,25 +194,26 @@ public class InventoryOverlayHandler implements IInventoryOverlayHandler
 
             if (blockTmp instanceof EntityBlock)
             {
-                if (world instanceof ServerLevel)
-                {
-                    be = world.getChunkAt(pos).getBlockEntity(pos);
-
-                    if (be != null)
-                    {
-	                    data = DataConverterNbt.fromVanillaCompound(be.saveWithFullMetadata(world.registryAccess()));
-                    }
-                }
-                else
-                {
-                    Pair<BlockEntity, CompoundData> pair = this.requestBlockEntityAt(world, pos);
+                // Redundant code.  IDataSyncer manages this.
+//                if (world instanceof ServerLevel)
+//                {
+//                    be = world.getChunkAt(pos).getBlockEntity(pos);
+//
+//                    if (be != null)
+//                    {
+//	                    data = DataConverterNbt.fromVanillaCompound(be.saveWithFullMetadata(world.registryAccess()));
+//                    }
+//                }
+//                else
+//                {
+                    Pair<BlockEntity, CompoundData> pair = this.getDataSyncer().requestBlockEntity(world, pos);
 
                     if (pair != null)
                     {
 	                    data = pair.getRight();
                         be = pair.getLeft();
                     }
-                }
+//                }
 
 //                MiniHUD.LOGGER.warn("getTarget():2: pos [{}], be [{}], nbt [{}]", pos.toShortString(), be != null, data != null);
                 InventoryOverlayContext ctx = this.getTargetInventoryFromBlock(world, pos, be, data);
@@ -249,21 +248,22 @@ public class InventoryOverlayHandler implements IInventoryOverlayHandler
                 return null;
             }
 
-            if (world instanceof ServerLevel)
-            {
-                entity = world.getEntity(entity.getId());
-
-                if (entity != null)
-                {
-	                data = DataEntityUtils.invokeEntityDataTagNoPassengers(entity, entity.getId());
-                }
-                else
-                {
-                    return null;
-                }
-            }
-            else
-            {
+            // Redundant code.  IDataSyncer manages this.
+//            if (world instanceof ServerLevel)
+//            {
+//                entity = world.getEntity(entity.getId());
+//
+//                if (entity != null)
+//                {
+//	                data = DataEntityUtils.invokeEntityDataTagNoPassengers(entity, entity.getId());
+//                }
+//                else
+//                {
+//                    return null;
+//                }
+//            }
+//            else
+//            {
                 Pair<Entity, CompoundData> pair = this.getDataSyncer().requestEntity(world, entity.getId());
 
                 if (pair != null)
@@ -271,7 +271,7 @@ public class InventoryOverlayHandler implements IInventoryOverlayHandler
 	                data = pair.getRight();
                     entity = pair.getLeft() != null ? pair.getLeft() : entity;
                 }
-            }
+//            }
 
             if (entity != null)
             {
@@ -357,6 +357,7 @@ public class InventoryOverlayHandler implements IInventoryOverlayHandler
         if (world == null) { return null; }
         Container inv;
 
+        // Redundant code.  IDataSyncer manages this.
 //        if (be != null)
 //        {
 //            if (data.isEmpty())
@@ -465,27 +466,6 @@ public class InventoryOverlayHandler implements IInventoryOverlayHandler
 
         return this.context;
     }
-
-//    public Optional<NbtInventory> getCombinedInventory(Level world, BlockPos pos)
-//    {
-//        Container inv;
-//
-//        if (world instanceof ServerLevel)
-//        {
-//            inv = fi.dy.masa.malilib.util.InventoryUtils.getInventory(world, pos);
-//        }
-//        else
-//        {
-//            inv = this.getDataSyncer().getBlockInventory(world, pos, false);
-//        }
-//
-//        if (inv != null && inv.getContainerSize() >= NbtInventory.DEFAULT_SIZE)
-//        {
-//            return Optional.of(NbtInventory.fromInventory(inv));
-//        }
-//
-//        return Optional.empty();
-//    }
 
     @Override
     public @Nullable InventoryOverlayContext getTargetInventoryFromEntity(Entity entity, CompoundData data)

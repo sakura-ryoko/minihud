@@ -34,6 +34,7 @@ import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraft.world.phys.Vec3;
 
+import fi.dy.masa.malilib.MaLiLibReference;
 import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.network.ClientPlayHandler;
 import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
@@ -839,7 +840,7 @@ public class DataStorage
             final String servux = data.getStringOrDefault("servux", "?");
             MiniHUD.debugLog("DataStorage#receiveServuxStrucutresMetadata(): received METADATA from Servux");
 
-            if (version != ServuxStructuresPacket.PROTOCOL_VERSION || !servux.startsWith("servux-"+Reference.MOD_TYPE+"-"+Reference.MC_VERSION))
+            if (version != ServuxStructuresPacket.PROTOCOL_VERSION || !servux.startsWith("servux-"+Reference.MOD_TYPE+"-"+MaLiLibReference.MC_VERSION))
             {
                 MiniHUD.LOGGER.warn("structureChannel: Mis-matched protocol version! (Expected: {} but got {} running on: {})", ServuxStructuresPacket.PROTOCOL_VERSION, version, servux);
 

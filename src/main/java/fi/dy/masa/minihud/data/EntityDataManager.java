@@ -14,6 +14,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 
+import fi.dy.masa.malilib.MaLiLibReference;
 import fi.dy.masa.malilib.config.options.ConfigBoolean;
 import fi.dy.masa.malilib.interfaces.IClientTickHandler;
 import fi.dy.masa.malilib.interfaces.IDataSyncer;
@@ -427,7 +428,7 @@ public class EntityDataManager implements IClientTickHandler, IDataSyncer
                 final int version = nbt.getIntOrDefault("version", -1);
                 final String servux = nbt.getStringOrDefault("servux", "?");
 
-                if (version != ServuxEntitiesPacket.PROTOCOL_VERSION || !servux.startsWith("servux-"+Reference.MOD_TYPE+"-"+Reference.MC_VERSION))
+                if (version != ServuxEntitiesPacket.PROTOCOL_VERSION || !servux.startsWith("servux-"+Reference.MOD_TYPE+"-"+MaLiLibReference.MC_VERSION))
                 {
                     MiniHUD.LOGGER.warn("entityDataChannel: Mis-matched protocol version! (Expected: {} but got {} running on: {})", ServuxEntitiesPacket.PROTOCOL_VERSION, version, servux);
 
