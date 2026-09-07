@@ -1038,6 +1038,7 @@ public class DataStorage
                     StructureStart start = entry.getValue();
                     Identifier id = world.registryAccess().lookupOrThrow(Registries.STRUCTURE).getKey(structure);
                     StructureType type = StructureType.fromStructureId(id != null ? id.toString() : "?");
+//                    MiniHUD.LOGGER.error("addStructureDataFromGenerator(): id: [{}]", id.toString());
 
                     if (type.isEnabled() &&
                         start.isValid() &&
