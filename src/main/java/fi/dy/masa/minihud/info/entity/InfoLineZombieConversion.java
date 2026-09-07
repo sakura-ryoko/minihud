@@ -18,6 +18,7 @@ import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.info.InfoLine;
 import fi.dy.masa.minihud.info.InfoLineContext;
+import fi.dy.masa.minihud.mixin.entity.IMixinConversionTracker;
 import fi.dy.masa.minihud.mixin.entity.IMixinSkeleton;
 import fi.dy.masa.minihud.mixin.entity.IMixinZombie;
 import fi.dy.masa.minihud.mixin.entity.IMixinZombieVillager;
@@ -100,9 +101,9 @@ public class InfoLineZombieConversion extends InfoLine
             case ZombieVillager zombie ->
                     conversionTimer = ((IMixinZombieVillager) zombie).minihud_conversionTimer();
             case Zombie zombert ->
-                    conversionTimer = ((IMixinZombie) zombert).minihud_ticksUntilWaterConversion();
+                    conversionTimer = ((IMixinConversionTracker) ((IMixinZombie) zombert).minihud_drowningTracker()).minihud_getConversionTime();
             case Skeleton skeleton ->
-                    conversionTimer = ((IMixinSkeleton) skeleton).minihud_conversionTime();
+                    conversionTimer = ((IMixinConversionTracker) ((IMixinSkeleton) skeleton).minihud_freezingTracker()).minihud_getConversionTime();
             default ->
                     conversionTimer = -1;
         }

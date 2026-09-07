@@ -1,7 +1,5 @@
 package fi.dy.masa.minihud.renderer;
 
-import org.joml.Matrix4fc;
-
 import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -51,11 +49,11 @@ public class OverlayRenderer
         RenderContainer.INSTANCE.extract(entity, mc, deltaTracker, camera, ticks, profiler);
     }
 
-    public static void renderOverlays(Matrix4fc modelViewMatrix, Minecraft mc, Frustum frustum, CameraRenderState camera, ProfilerFiller profiler)
+    public static void renderOverlays(Minecraft mc, Frustum frustum, CameraRenderState camera, ProfilerFiller profiler)
     {
         if (canRender)
         {
-            RenderContainer.INSTANCE.render(modelViewMatrix, mc, frustum, camera, profiler);
+            RenderContainer.INSTANCE.render(mc, frustum, camera, profiler);
         }
     }
 

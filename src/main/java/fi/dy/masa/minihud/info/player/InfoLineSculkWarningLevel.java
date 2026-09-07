@@ -10,6 +10,7 @@ import fi.dy.masa.minihud.info.InfoLineContext;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.monster.warden.WardenSpawnTracker;
 import net.minecraft.world.level.Level;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -52,12 +53,9 @@ public class InfoLineSculkWarningLevel extends InfoLine
             {
                 return null;
             }
-            
-            return players
-                .getFirst()
-                .getWardenSpawnTracker()
-                .map(it -> this.generateEntry(it.getWarningLevel()))
-                .orElse(null);
+
+            WardenSpawnTracker tracker = players.getFirst().getWardenSpawnTracker();
+            return this.generateEntry(tracker.getWarningLevel());
         }
         else
         {

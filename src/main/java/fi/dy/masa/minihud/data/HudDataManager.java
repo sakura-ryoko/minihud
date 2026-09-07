@@ -3,6 +3,8 @@ package fi.dy.masa.minihud.data;
 import java.util.ArrayList;
 import java.util.Collection;
 import javax.annotation.Nullable;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
@@ -15,10 +17,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.item.crafting.Recipe;
-import net.minecraft.world.item.crafting.RecipeAccess;
-import net.minecraft.world.item.crafting.RecipeHolder;
-import net.minecraft.world.item.crafting.RecipeMap;
+import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gamerules.GameRules;
 
@@ -865,7 +864,7 @@ public class HudDataManager
                 try
                 {
                     ResourceKey<Recipe<?>> key = ResourceKey.create(ResourceKey.createRegistryKey(idReg), idValue);
-                    Pair<Recipe<?>, BaseData> pair = Recipe.CODEC.decode(DataStorage.getInstance().getWorldRegistryManager().createSerializationContext(DataOps.INSTANCE), item.getCompound("recipe")).getOrThrow();
+                    Pair<Recipe<?>, BaseData> pair = Recipe.DIRECT_CODEC.decode(DataStorage.getInstance().getWorldRegistryManager().createSerializationContext(DataOps.INSTANCE), item.getCompound("recipe")).getOrThrow();
                     RecipeHolder<?> entry = new RecipeHolder<>(key, pair.getFirst());
                     recipes.add(entry);
                     count++;
@@ -876,9 +875,19 @@ public class HudDataManager
                 }
             }
 
+            // Build the ServerRecipeMap.
             if (!recipes.isEmpty())
             {
-                this.preparedRecipes = RecipeMap.create(recipes);
+                ImmutableMultimap.Builder<RecipeType<?>, RecipeHolder<?>> byType = ImmutableMultimap.builder();
+                ImmutableMap.Builder<ResourceKey<Recipe<?>>, RecipeHolder<?>> byKey = ImmutableMap.builder();
+
+                for (RecipeHolder<?> entry : recipes)
+                {
+                    byType.put(entry.value().getType(), entry);
+                    byKey.put(entry.id(), entry);
+                }
+
+                this.preparedRecipes = new RecipeMap(byType.build(), byKey.build());
                 this.recipeCount = count;
                 MiniHUD.debugLog("HudDataStorage#receiveRecipeManager(): finished loading Recipe Manager: Read [{}] Recipes from Servux", count);
             }

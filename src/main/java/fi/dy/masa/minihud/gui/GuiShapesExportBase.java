@@ -14,8 +14,8 @@ import fi.dy.masa.malilib.gui.interfaces.ISelectionListener;
 import fi.dy.masa.malilib.gui.widgets.WidgetFileBrowserBase;
 import fi.dy.masa.malilib.render.GuiContext;
 import fi.dy.masa.malilib.util.FileNameUtils;
-import fi.dy.masa.malilib.util.KeyCodes;
 import fi.dy.masa.malilib.util.StringUtils;
+import fi.dy.masa.malilib.util.input.ScanCodes;
 import fi.dy.masa.minihud.gui.widgets.WidgetShapesBrowser;
 import fi.dy.masa.minihud.renderer.shapes.ShapeBase;
 import fi.dy.masa.minihud.renderer.shapes.ShapeManager;
@@ -155,7 +155,7 @@ public abstract class GuiShapesExportBase extends GuiShapesBrowserBase implement
 			this.getListWidget().clearSelection();
 			return true;
 		}
-		else if (input.key() == KeyCodes.KEY_TAB)
+		else if (input.key() == ScanCodes.SCAN_TAB)
 		{
 			this.textField.setFocusedWrapper(! this.textField.isFocusedWrapper());
 			return true;

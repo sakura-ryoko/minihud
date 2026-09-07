@@ -8,6 +8,7 @@ import fi.dy.masa.malilib.hotkeys.*;
 import fi.dy.masa.malilib.render.InventoryOverlayScreen;
 import fi.dy.masa.malilib.util.position.Vec3d;
 import fi.dy.masa.minihud.config.Configs;
+import fi.dy.masa.minihud.config.Hotkeys;
 import fi.dy.masa.minihud.config.RendererCallbacks;
 import fi.dy.masa.minihud.config.RendererToggle;
 import fi.dy.masa.minihud.data.EntityDataManager;
@@ -28,11 +29,11 @@ public class KeyCallbacks
     {
         Callbacks callback = new Callbacks();
 
-        Configs.Generic.SET_DISTANCE_REFERENCE_POINT.getKeybind().setCallback(callback);
-        Configs.Generic.MOVE_SHAPE_TO_PLAYER.getKeybind().setCallback(callback);
-        Configs.Generic.OPEN_CONFIG_GUI.getKeybind().setCallback(callback);
-        Configs.Generic.SHAPE_EDITOR.getKeybind().setCallback(callback);
-        Configs.Generic.INVENTORY_PREVIEW_TOGGLE_SCREEN.getKeybind().setCallback(callback);
+        Hotkeys.SET_DISTANCE_REFERENCE_POINT.getKeybind().setCallback(callback);
+        Hotkeys.MOVE_SHAPE_TO_PLAYER.getKeybind().setCallback(callback);
+        Hotkeys.OPEN_CONFIG_GUI.getKeybind().setCallback(callback);
+        Hotkeys.SHAPE_EDITOR.getKeybind().setCallback(callback);
+        Hotkeys.INVENTORY_PREVIEW_TOGGLE_SCREEN.getKeybind().setCallback(callback);
         Configs.Generic.ENTITY_DATA_SYNC.setValueChangeCallback((config) -> EntityDataManager.getInstance().onEntityDataSyncToggled(config));
         Configs.Generic.HUD_DATA_SYNC.setValueChangeCallback((config) -> HudDataManager.getInstance().onHudDataSyncToggled(config));
 
@@ -151,11 +152,11 @@ public class KeyCallbacks
                 return false;
             }
 
-            if (key == Configs.Generic.OPEN_CONFIG_GUI.getKeybind())
+            if (key == Hotkeys.OPEN_CONFIG_GUI.getKeybind())
             {
                 GuiBase.openGui(new GuiConfigs());
             }
-            else if (key == Configs.Generic.MOVE_SHAPE_TO_PLAYER.getKeybind())
+            else if (key == Hotkeys.MOVE_SHAPE_TO_PLAYER.getKeybind())
             {
                 Entity entity = mc.getCameraEntity() != null ? mc.getCameraEntity() : mc.player;
                 ShapeBase shape = ShapeManager.INSTANCE.getSelectedShape();
@@ -165,12 +166,12 @@ public class KeyCallbacks
                     shape.moveToPosition(Vec3d.of(entity.position()));
                 }
             }
-            else if (key == Configs.Generic.SET_DISTANCE_REFERENCE_POINT.getKeybind())
+            else if (key == Hotkeys.SET_DISTANCE_REFERENCE_POINT.getKeybind())
             {
                 Entity entity = mc.getCameraEntity() != null ? mc.getCameraEntity() : mc.player;
                 DataStorage.getInstance().setDistanceReferencePoint(Vec3d.of(entity.position()));
             }
-            else if (key == Configs.Generic.SHAPE_EDITOR.getKeybind())
+            else if (key == Hotkeys.SHAPE_EDITOR.getKeybind())
             {
                 ShapeBase shape = ShapeManager.INSTANCE.getSelectedShape();
 
@@ -184,14 +185,14 @@ public class KeyCallbacks
                     GuiBase.openGui(new GuiShapeManager());
                 }
             }
-            else if (key == Configs.Generic.INVENTORY_PREVIEW_TOGGLE_SCREEN.getKeybind())
+            else if (key == Hotkeys.INVENTORY_PREVIEW_TOGGLE_SCREEN.getKeybind())
             {
                 if (mc.gui.screen() instanceof InventoryOverlayScreen)
                 {
                     mc.gui.setScreen(null);
                 }
                 else if (Configs.Generic.INVENTORY_PREVIEW_ENABLED.getBooleanValue() &&
-                        Configs.Generic.INVENTORY_PREVIEW.getKeybind().isKeybindHeld())
+                         Hotkeys.INVENTORY_PREVIEW.getKeybind().isKeybindHeld())
                 {
                     InventoryOverlayHandler.getInstance().refreshInventoryOverlay(mc, Configs.Generic.SHULKER_DISPLAY_BACKGROUND_COLOR.getBooleanValue());
                 }

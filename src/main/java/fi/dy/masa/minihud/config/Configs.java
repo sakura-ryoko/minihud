@@ -12,7 +12,6 @@ import com.google.gson.JsonPrimitive;
 import fi.dy.masa.malilib.config.*;
 import fi.dy.masa.malilib.config.options.*;
 import fi.dy.masa.malilib.hotkeys.IHotkey;
-import fi.dy.masa.malilib.hotkeys.KeyAction;
 import fi.dy.masa.malilib.hotkeys.KeybindSettings;
 import fi.dy.masa.malilib.registry.Registry;
 import fi.dy.masa.malilib.util.FileUtils;
@@ -91,9 +90,7 @@ public class Configs implements IConfigHandler
         public static final ConfigBooleanHotkeyed HUD_DATA_SYNC                     = new ConfigBooleanHotkeyed("hudDataSync", false, "").apply(GENERIC_KEY);
         public static final ConfigBooleanHotkeyed HUD_STATUS_EFFECTS_SHIFT          = new ConfigBooleanHotkeyed("hudStatusEffectsShift",true, "").apply(GENERIC_KEY);
 //        public static final ConfigBoolean       INFO_LINES_USES_NBT                 = new ConfigBoolean("infoLinesUsesNbt", true).apply(GENERIC_KEY);
-        public static final ConfigHotkey        INVENTORY_PREVIEW                   = new ConfigHotkey("inventoryPreview", "LEFT_ALT", KeybindSettings.PRESS_ALLOWEXTRA).apply(GENERIC_KEY);
         public static final ConfigBoolean       INVENTORY_PREVIEW_ENABLED           = new ConfigBoolean("inventoryPreviewEnabled", false).apply(GENERIC_KEY);
-        public static final ConfigHotkey        INVENTORY_PREVIEW_TOGGLE_SCREEN     = new ConfigHotkey("inventoryPreviewToggleScreen", "BUTTON_3", KeybindSettings.create(KeybindSettings.Context.ANY, KeyAction.PRESS, true, true, false, true)).apply(GENERIC_KEY);
         public static final ConfigBoolean       INVENTORY_PREVIEW_VILLAGER_BG_COLOR = new ConfigBoolean("inventoryPreviewVillagerBGColor", false).apply(GENERIC_KEY);
         public static final ConfigBoolean       LIGHT_LEVEL_AUTO_HEIGHT             = new ConfigBoolean("lightLevelAutoHeight", false).apply(GENERIC_KEY);
         public static final ConfigBoolean       LIGHT_LEVEL_COLORED_NUMBERS         = new ConfigBoolean("lightLevelColoredNumbers", true).apply(GENERIC_KEY);
@@ -119,14 +116,9 @@ public class Configs implements IConfigHandler
         public static final ConfigBoolean       MAP_PREVIEW                         = new ConfigBoolean("mapPreview", false).apply(GENERIC_KEY);
         public static final ConfigBoolean       MAP_PREVIEW_REQUIRE_SHIFT           = new ConfigBoolean("mapPreviewRequireShift", true).apply(GENERIC_KEY);
         public static final ConfigInteger       MAP_PREVIEW_SIZE                    = new ConfigInteger("mapPreviewSize", 160, 16, 512).apply(GENERIC_KEY);
-        public static final ConfigHotkey        MOVE_SHAPE_TO_PLAYER                = new ConfigHotkey("moveShapeToPlayer", "").apply(GENERIC_KEY);
         public static final ConfigBoolean       OFFSET_SUBTITLE_HUD                 = new ConfigBoolean("offsetSubtitleHud", true).apply(GENERIC_KEY);
-        public static final ConfigHotkey        OPEN_CONFIG_GUI                     = new ConfigHotkey("openConfigGui", "H,C").apply(GENERIC_KEY);
         public static final ConfigBoolean       REQUIRE_SNEAK                       = new ConfigBoolean("requireSneak", false).apply(GENERIC_KEY);
-        public static final ConfigHotkey        REQUIRED_KEY                        = new ConfigHotkey("requiredKey", "", KeybindSettings.MODIFIER_INGAME_EMPTY).apply(GENERIC_KEY);
         public static final ConfigInteger       SERVER_NBT_REQUEST_RATE             = new ConfigInteger("serverNbtRequestRate", 2, 1, 8).apply(GENERIC_KEY);
-        public static final ConfigHotkey        SET_DISTANCE_REFERENCE_POINT        = new ConfigHotkey("setDistanceReferencePoint", "").apply(GENERIC_KEY);
-        public static final ConfigHotkey        SHAPE_EDITOR                        = new ConfigHotkey("shapeEditor", "").apply(GENERIC_KEY);
         public static final ConfigBoolean       SHULKER_BOX_PREVIEW                 = new ConfigBoolean("shulkerBoxPreview", false).apply(GENERIC_KEY);
         public static final ConfigBoolean       SHULKER_DISPLAY_BACKGROUND_COLOR    = new ConfigBoolean("shulkerDisplayBgColor", true).apply(GENERIC_KEY);
         public static final ConfigBoolean       SHULKER_DISPLAY_ENDER_CHEST         = new ConfigBoolean("shulkerDisplayEnderChest", false).apply(GENERIC_KEY);
@@ -235,12 +227,7 @@ public class Configs implements IConfigHandler
 //                WORKER_THREAD_PROFILE,
 
                 MAIN_RENDERING_TOGGLE,
-                MOVE_SHAPE_TO_PLAYER,
-                OPEN_CONFIG_GUI,
-                REQUIRED_KEY,
                 SERVER_NBT_REQUEST_RATE,
-                SET_DISTANCE_REFERENCE_POINT,
-                SHAPE_EDITOR,
 
                 BLOCK_GRID_OVERLAY_MODE,
                 LIGHT_LEVEL_MARKER_CONDITION,
@@ -280,9 +267,7 @@ public class Configs implements IConfigHandler
                 TEXT_POS_Y,
                 TIME_DAY_DIVISOR,
                 TIME_TOTAL_DIVISOR,
-                INVENTORY_PREVIEW,
                 INVENTORY_PREVIEW_ENABLED,
-                INVENTORY_PREVIEW_TOGGLE_SCREEN,
                 INVENTORY_PREVIEW_VILLAGER_BG_COLOR,
                 VILLAGER_CONVERSION_TICKS,
                 VILLAGER_OFFER_ENCHANTMENT_BOOKS,
@@ -297,14 +282,7 @@ public class Configs implements IConfigHandler
                 MAIN_RENDERING_TOGGLE,
                 HUD_DATA_SYNC,
                 HUD_STATUS_EFFECTS_SHIFT,
-                ENTITY_DATA_SYNC,
-                MOVE_SHAPE_TO_PLAYER,
-                OPEN_CONFIG_GUI,
-                REQUIRED_KEY,
-                SET_DISTANCE_REFERENCE_POINT,
-                SHAPE_EDITOR,
-                INVENTORY_PREVIEW,
-                INVENTORY_PREVIEW_TOGGLE_SCREEN
+                ENTITY_DATA_SYNC
         );
     }
 
@@ -427,6 +405,7 @@ public class Configs implements IConfigHandler
 
                 ConfigUtils.readConfigBase(root, "Colors", Configs.Colors.OPTIONS);
                 ConfigUtils.readConfigBase(root, "Generic", Configs.Generic.OPTIONS);
+                ConfigUtils.readConfigBase(root, "GenericHotkeys", Hotkeys.HOTKEY_LIST);
                 ConfigUtils.readHotkeyToggleOptions(root, "InfoHotkeys", "InfoTypeToggles", InfoToggle.VALUES);
                 ConfigUtils.readHotkeyToggleOptions(root, "RendererHotkeys", "RendererToggles", RendererToggle.VALUES);
                 ConfigUtils.readConfigBase(root, "StructureColors", StructureToggle.COLOR_CONFIGS);
@@ -484,6 +463,7 @@ public class Configs implements IConfigHandler
 
             ConfigUtils.writeConfigBase(root, "Colors", Configs.Colors.OPTIONS);
             ConfigUtils.writeConfigBase(root, "Generic", Configs.Generic.OPTIONS);
+            ConfigUtils.writeConfigBase(root, "GenericHotkeys", Hotkeys.HOTKEY_LIST);
             ConfigUtils.writeHotkeyToggleOptions(root, "InfoHotkeys", "InfoTypeToggles", InfoToggle.VALUES);
             ConfigUtils.writeHotkeyToggleOptions(root, "RendererHotkeys", "RendererToggles", RendererToggle.VALUES);
             ConfigUtils.writeConfigBase(root, "StructureColors", StructureToggle.COLOR_CONFIGS);

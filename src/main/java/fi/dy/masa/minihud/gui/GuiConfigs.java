@@ -16,10 +16,7 @@ import fi.dy.masa.malilib.gui.button.IButtonActionListener;
 import fi.dy.masa.malilib.gui.interfaces.IConfigGuiAllTab;
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.minihud.Reference;
-import fi.dy.masa.minihud.config.Configs;
-import fi.dy.masa.minihud.config.InfoToggle;
-import fi.dy.masa.minihud.config.RendererToggle;
-import fi.dy.masa.minihud.config.StructureToggle;
+import fi.dy.masa.minihud.config.*;
 
 public class GuiConfigs extends GuiConfigsBase implements IConfigGuiAllTab
 {
@@ -163,6 +160,10 @@ public class GuiConfigs extends GuiConfigsBase implements IConfigGuiAllTab
             list.addAll(RENDERER_LIST.stream().map(this::wrapConfig).toList());
             return ConfigOptionWrapper.createFor(list);
         }
+        else if (tab == ConfigGuiTab.GENERIC_HOTKEYS)
+        {
+            return ConfigOptionWrapper.createFor(Hotkeys.HOTKEY_LIST);
+        }
 
         return Collections.emptyList();
     }
@@ -193,6 +194,7 @@ public class GuiConfigs extends GuiConfigsBase implements IConfigGuiAllTab
         // Overlay Renderers
         list.addAll(RENDERER_LIST.stream().map(this::wrapConfig).toList());
         configs.addAll(ConfigOptionWrapper.createFor(list));
+        configs.addAll(ConfigOptionWrapper.createFor(Hotkeys.HOTKEY_LIST));
 
         return configs;
     }
@@ -243,6 +245,7 @@ public class GuiConfigs extends GuiConfigsBase implements IConfigGuiAllTab
         INFO_LINES          ("minihud.gui.button.config_gui.info_lines"),
         STRUCTURES          ("minihud.gui.button.config_gui.structures"),
         RENDERERS           ("minihud.gui.button.config_gui.renderers"),
+        GENERIC_HOTKEYS     ("minihud.gui.button.config_gui.generic_hotkeys"),
         SHAPES              ("minihud.gui.button.config_gui.shapes");
 
         private final String translationKey;

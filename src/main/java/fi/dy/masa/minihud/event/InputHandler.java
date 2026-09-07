@@ -9,6 +9,7 @@ import fi.dy.masa.malilib.hotkeys.KeyCallbackAdjustable;
 import fi.dy.masa.malilib.util.GuiUtils;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.Configs;
+import fi.dy.masa.minihud.config.Hotkeys;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.config.RendererToggle;
 import fi.dy.masa.minihud.renderer.OverlayRendererSlimeChunks;
@@ -30,6 +31,11 @@ public class InputHandler implements IKeybindProvider, IMouseInputHandler
     @Override
     public void addKeysToMap(IKeybindManager manager)
     {
+        for (IHotkey hotkey : Hotkeys.HOTKEY_LIST)
+        {
+            manager.addKeybindToMap(hotkey.getKeybind());
+        }
+
         for (InfoToggle toggle : InfoToggle.VALUES)
         {
             manager.addKeybindToMap(toggle.getKeybind());
@@ -49,7 +55,8 @@ public class InputHandler implements IKeybindProvider, IMouseInputHandler
     @Override
     public void addHotkeys(IKeybindManager manager)
     {
-        manager.addHotkeysForCategory(Reference.MOD_NAME, "minihud.hotkeys.category.generic_hotkeys", Configs.Generic.HOTKEY_LIST);
+        manager.addHotkeysForCategory(Reference.MOD_NAME, "minihud.hotkeys.category.generic_hotkeys", Hotkeys.HOTKEY_LIST);
+        manager.addHotkeysForCategory(Reference.MOD_NAME, "minihud.hotkeys.category.generic_config_hotkeys", Configs.Generic.HOTKEY_LIST);
         manager.addHotkeysForCategory(Reference.MOD_NAME, "minihud.hotkeys.category.info_toggle_hotkeys", ImmutableList.copyOf(InfoToggle.VALUES));
         manager.addHotkeysForCategory(Reference.MOD_NAME, "minihud.hotkeys.category.renderer_toggle_hotkeys", ImmutableList.copyOf(RendererToggle.VALUES));
     }

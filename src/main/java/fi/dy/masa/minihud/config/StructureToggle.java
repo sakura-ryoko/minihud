@@ -14,6 +14,7 @@ import fi.dy.masa.minihud.util.DataStorage;
 
 public enum StructureToggle
 {
+    OVERLAY_STRUCTURE_ABANDONED_CAMP    ("Abandoned Camp",  "", "#360088FF", "#360088FF", "abandoned_camp"),
     OVERLAY_STRUCTURE_ANCIENT_CITY      ("Ancient City",    "", "#30D10AE6", "#30D506C9", "ancient_city"),
     OVERLAY_STRUCTURE_BASTION_REMNANT   ("Bastion Remnant", "", "#302171F5", "#302171F5", "bastion_remnant"),
     OVERLAY_STRUCTURE_BURIED_TREASURE   ("Buried Treasure", "", "#302298E6", "#302298E6", "buried_treasure"),

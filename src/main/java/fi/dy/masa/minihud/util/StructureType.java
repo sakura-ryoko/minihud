@@ -7,6 +7,7 @@ import fi.dy.masa.minihud.config.StructureToggle;
 
 public enum StructureType
 {
+    ABANDONED_CAMP      (StructureToggle.OVERLAY_STRUCTURE_ABANDONED_CAMP,      "minecraft:abandoned_camp_bamboo_jungle", "minecraft:abandoned_camp_birch_forest", "minecraft:abandoned_camp_cherry_grove", "minecraft:abandoned_camp_dappled_forest", "minecraft:abandoned_camp_flower_forest", "minecraft:abandoned_camp_forest", "minecraft:abandoned_camp_meadow", "minecraft:abandoned_camp_old_growth_birch_forest", "minecraft:abandoned_camp_old_growth_pine_taiga", "minecraft:abandoned_camp_old_growth_spruce_taiga", "minecraft:abandoned_camp_pale_garden", "minecraft:abandoned_camp_savanna", "minecraft:abandoned_camp_snowy_taiga", "minecraft:abandoned_camp_sparse_jungle", "minecraft:abandoned_camp_swamp", "minecraft:abandoned_camp_taiga", "minecraft:abandoned_camp_windswept_forest", "minecraft:abandoned_camp_wooded_badlands"),
     ANCIENT_CITY        (StructureToggle.OVERLAY_STRUCTURE_ANCIENT_CITY,        "minecraft:ancient_city"),
     BURIED_TREASURE     (StructureToggle.OVERLAY_STRUCTURE_BURIED_TREASURE,     "minecraft:buried_treasure"),
     DESERT_PYRAMID      (StructureToggle.OVERLAY_STRUCTURE_DESERT_PYRAMID,      "minecraft:desert_pyramid"),

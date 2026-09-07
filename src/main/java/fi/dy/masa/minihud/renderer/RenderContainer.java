@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import com.google.gson.JsonObject;
 import org.joml.Matrix4fStack;
-import org.joml.Matrix4fc;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Camera;
@@ -92,7 +91,7 @@ public class RenderContainer
         }
     }
 
-    public void render(Matrix4fc modelViewMatrix, Minecraft mc, Frustum frustum, CameraRenderState camera, ProfilerFiller profiler)
+    public void render(Minecraft mc, Frustum frustum, CameraRenderState camera, ProfilerFiller profiler)
     {
         profiler.push("render_container");
         this.draw(camera, profiler);

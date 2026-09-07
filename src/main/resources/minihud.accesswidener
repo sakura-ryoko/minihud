@@ -14,3 +14,6 @@ mutable field net/minecraft/SharedConstants DEBUG_RAIDS Z
 mutable field net/minecraft/SharedConstants DEBUG_BREEZE_MOB Z
 mutable field net/minecraft/SharedConstants DEBUG_ENTITY_BLOCK_INTERSECTION Z
 accessible field net/minecraft/world/level/NaturalSpawner MAGIC_NUMBER I
+accessible field net/minecraft/world/item/crafting/RecipeMap byType Lcom/google/common/collect/Multimap;
+accessible field net/minecraft/world/item/crafting/RecipeMap byKey Ljava/util/Map;
+accessible method net/minecraft/world/item/crafting/RecipeMap <init> (Lcom/google/common/collect/Multimap;Ljava/util/Map;)V

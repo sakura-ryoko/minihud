@@ -9,8 +9,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.joml.Matrix4fc;
 import org.joml.Vector4f;
 
-import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.RenderTarget;
+import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
 import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -63,6 +63,7 @@ import fi.dy.masa.malilib.util.nbt.NbtInventory;
 import fi.dy.masa.malilib.util.nbt.NbtKeys;
 import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.Configs;
+import fi.dy.masa.minihud.config.Hotkeys;
 import fi.dy.masa.minihud.config.InfoToggle;
 import fi.dy.masa.minihud.config.RendererToggle;
 import fi.dy.masa.minihud.data.DebugDataManager;
@@ -142,7 +143,7 @@ public class RenderHandler implements IRenderer
             this.mc.player != null && this.mc.gui.hud.isHidden() == false &&
             (this.checkScreenWhiteList() == false) &&
             (Configs.Generic.REQUIRE_SNEAK.getBooleanValue() == false || this.mc.player.isShiftKeyDown()) &&
-            Configs.Generic.REQUIRED_KEY.getKeybind().isKeybindHeld())
+             Hotkeys.REQUIRED_KEY.getKeybind().isKeybindHeld())
         {
 
             long currentTime = System.nanoTime();
@@ -173,7 +174,7 @@ public class RenderHandler implements IRenderer
 //                          DebugDataManager.getInstance().shouldShowDebugHudFix() == false);
 
         if (Configs.Generic.INVENTORY_PREVIEW_ENABLED.getBooleanValue() &&
-            Configs.Generic.INVENTORY_PREVIEW.getKeybind().isKeybindHeld())
+            Hotkeys.INVENTORY_PREVIEW.getKeybind().isKeybindHeld())
         {
             InventoryOverlayHandler.getInstance().getRenderContext(ctx, profiler);
         }
@@ -224,12 +225,12 @@ public class RenderHandler implements IRenderer
     }
 
     @Override
-    public void onRenderWorldLast(RenderTarget fb, Matrix4fc modelViewMatrix, CameraRenderState cameraState, Frustum culling, RenderBuffers buffers, GpuBufferSlice terrainFog, Vector4f fogColor, ProfilerFiller profiler)
+    public void onRenderWorldLast(RenderTarget fb, CameraRenderState cameraState, Frustum culling, RenderBuffers buffers, GpuBufferSlice terrainFog, Vector4f fogColor, ProfilerFiller profiler)
     {
         if (Configs.Generic.MAIN_RENDERING_TOGGLE.getBooleanValue() &&
             this.mc.level != null && this.mc.player != null && this.mc.gui.hud.isHidden() == false)
         {
-            OverlayRenderer.renderOverlays(modelViewMatrix, this.mc, culling, cameraState, profiler);
+            OverlayRenderer.renderOverlays(this.mc, culling, cameraState, profiler);
         }
     }
 

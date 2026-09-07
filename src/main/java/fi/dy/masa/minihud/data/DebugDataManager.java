@@ -22,7 +22,6 @@ import fi.dy.masa.minihud.util.DebugRenderType;
 public class DebugDataManager
 {
     private static final DebugDataManager INSTANCE = new DebugDataManager();
-//    private final static ServuxDebugHandler<ServuxDebugPacket.Payload> HANDLER = ServuxDebugHandler.getInstance();
 
 	private final Minecraft mc;
     private boolean servuxServer;
@@ -145,16 +144,6 @@ public class DebugDataManager
 				result = false;
 			}
 		}
-
-//		boolean result = (profile.isOverlayVisible() || !this.checkVisibleEntries(list));
-
-//		if (!result)
-//		{
-//			System.out.printf("DebugFix // profileVisible: %s, visibleEntries: %s\n",
-//			                  profile.isOverlayVisible(),
-//			                  !this.checkVisibleEntries(list)
-//			);
-//		}
 
 		return result;
 	}

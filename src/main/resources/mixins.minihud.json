@@ -10,6 +10,7 @@
         "block.MixinBeaconBlockEntity",
         "block.MixinConduitBlockEntity",
         "entity.IMixinAgeableMob",
+        "entity.IMixinConversionTracker",
         "entity.IMixinCopperGolem",
         "entity.IMixinEntity",
         "entity.IMixinSkeleton",

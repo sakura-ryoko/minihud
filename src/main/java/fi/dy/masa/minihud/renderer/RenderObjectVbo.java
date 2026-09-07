@@ -8,18 +8,22 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
-import com.mojang.blaze3d.IndexType;
-import com.mojang.blaze3d.PrimitiveTopology;
-import com.mojang.blaze3d.buffers.GpuBuffer;
-import com.mojang.blaze3d.buffers.GpuBufferSlice;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.*;
-import com.mojang.blaze3d.textures.FilterMode;
-import com.mojang.blaze3d.textures.GpuSampler;
-import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.*;
+import com.mojang.renderpearl.api.buffers.GpuBuffer;
+import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
+import com.mojang.renderpearl.api.commands.CommandEncoder;
+import com.mojang.renderpearl.api.commands.RenderPass;
+import com.mojang.renderpearl.api.device.GpuDevice;
+import com.mojang.renderpearl.api.pipeline.IndexType;
+import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
+import com.mojang.renderpearl.api.textures.FilterMode;
+import com.mojang.renderpearl.api.textures.GpuSampler;
+import com.mojang.renderpearl.api.textures.GpuTextureView;
+import com.mojang.renderpearl.api.vertex.VertexFormat;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.*;
@@ -140,7 +144,7 @@ public class RenderObjectVbo
 		return this.format;
 	}
 
-	public VertexFormat[] getShaderFormats()
+	public List<VertexFormat> getShaderFormats()
 	{
 		return this.pipeline.getVertexFormatBindings();
 	}
@@ -760,12 +764,12 @@ public class RenderObjectVbo
             if (otherTarget != null)
             {
                 texture1 = otherTarget.getColorTextureView();
-                texture2 = otherTarget.useDepth ? otherTarget.getDepthTextureView() : null;
+                texture2 = otherTarget.hasDepth() ? otherTarget.getDepthTextureView() : null;
             }
             else
             {
                 texture1 = mainTarget.getColorTextureView();
-                texture2 = mainTarget.useDepth ? mainTarget.getDepthTextureView() : null;
+                texture2 = mainTarget.hasDepth() ? mainTarget.getDepthTextureView() : null;
             }
 
             //MiniHUD.LOGGER.warn("RenderObjectVbo#drawInternal() [{}] --> new renderPass", this.name.get());
@@ -778,12 +782,12 @@ public class RenderObjectVbo
                                                           texMatrix);
 
             try (RenderPass pass = device.createCommandEncoder()
-                     .createRenderPass(this.name,
+                                         .createRenderPass(this.name,
                                        texture1, Optional.empty(),
                                        texture2, OptionalDouble.empty()))
             {
                 //MiniHUD.LOGGER.warn("RenderObjectVbo#drawInternal() [{}] renderPass --> setPipeline() [{}]", this.name.get(), this.shader.getLocation().toString());
-                pass.setPipeline(this.pipeline);
+                pass.setPipeline(RenderSystem.getCompiledPipeline(this.pipeline));
 
                 ScissorState scissorState = RenderSystem.getScissorStateForRenderTypeDraws();
 
@@ -811,7 +815,7 @@ public class RenderObjectVbo
 	            {
 		            for (MaLiLibComplexTexture entry : this.complexTextures)
 		            {
-			            pass.bindTexture(entry.name(), entry.texture(), entry.sampler());
+			            pass.setUniform(entry.name(), entry.texture(), entry.sampler());
 		            }
 	            }
 	            else if (!this.simpleTextures.isEmpty())
@@ -824,7 +828,7 @@ public class RenderObjectVbo
 
 				            if (tex != null)
 				            {
-					            pass.bindTexture("Sampler"+i, tex.getTextureView(), tex.getSampler());
+					            pass.setUniform("Sampler"+i, tex.getTextureView(), tex.getSampler());
 				            }
 			            }
 		            }

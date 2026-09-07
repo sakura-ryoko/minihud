@@ -1,6 +1,7 @@
 package fi.dy.masa.minihud.mixin.network;
 
 import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.core.SectionPos;
 import net.minecraft.network.protocol.game.*;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -26,13 +27,13 @@ public abstract class MixinClientPacketListener
     @Inject(method = "handleLevelChunkWithLight", at = @At("RETURN"))
     private void minihud_markChunkChangedFullChunk(ClientboundLevelChunkWithLightPacket packet, CallbackInfo ci)
     {
-        NotificationUtils.onChunkData(packet.getX(), packet.getZ(), packet.getChunkData());
+        NotificationUtils.onChunkData(packet.x(), packet.z(), packet.chunkData());
     }
 
     @Inject(method = "handleChunkBlocksUpdate", at = @At("RETURN"))
     private void minihud_markChunkChangedMultiBlockChange(ClientboundSectionBlocksUpdatePacket packet, CallbackInfo ci)
     {
-        net.minecraft.core.SectionPos pos = ((IMixinClientboundSectionBlocksUpdatePacket) packet).minihud_getChunkSectionPos();
+        SectionPos pos = ((IMixinClientboundSectionBlocksUpdatePacket) packet).minihud_getChunkSectionPos();
         NotificationUtils.onMultiBlockChange(pos, packet);
     }
 
