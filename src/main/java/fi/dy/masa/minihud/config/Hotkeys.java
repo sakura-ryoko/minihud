@@ -13,7 +13,7 @@ public class Hotkeys
 	private static final String HOTKEY_KEY = Reference.MOD_ID+".config.hotkey";
 
 	public static final ConfigHotkey        INVENTORY_PREVIEW                   = new ConfigHotkey("inventoryPreview",              "LEFT_ALT", KeybindSettings.PRESS_ALLOWEXTRA).apply(HOTKEY_KEY);
-	public static final ConfigHotkey        INVENTORY_PREVIEW_TOGGLE_SCREEN     = new ConfigHotkey("inventoryPreviewToggleScreen",  "BUTTON_2", KeybindSettings.create(KeybindSettings.Context.ANY, KeyAction.PRESS, true, true, false, true)).apply(HOTKEY_KEY);
+	public static final ConfigHotkey        INVENTORY_PREVIEW_TOGGLE_SCREEN     = new ConfigHotkey("inventoryPreviewToggleScreen",  "MOUSE_MIDDLE", KeybindSettings.create(KeybindSettings.Context.ANY, KeyAction.PRESS, true, true, false, true)).apply(HOTKEY_KEY);
 	public static final ConfigHotkey        MOVE_SHAPE_TO_PLAYER                = new ConfigHotkey("moveShapeToPlayer",             "").apply(HOTKEY_KEY);
 	public static final ConfigHotkey        OPEN_CONFIG_GUI                     = new ConfigHotkey("openConfigGui",                 "H,C").apply(HOTKEY_KEY);
 	public static final ConfigHotkey        REQUIRED_KEY                        = new ConfigHotkey("requiredKey",                   "", KeybindSettings.MODIFIER_INGAME_EMPTY).apply(HOTKEY_KEY);
