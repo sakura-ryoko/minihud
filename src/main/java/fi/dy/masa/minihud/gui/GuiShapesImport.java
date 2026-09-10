@@ -2,23 +2,25 @@ package fi.dy.masa.minihud.gui;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import javax.annotation.Nullable;
 
-import fi.dy.masa.malilib.gui.GuiBase;
-import fi.dy.masa.malilib.gui.GuiConfirmAction;
-import fi.dy.masa.malilib.gui.GuiTextInputFeedback;
-import fi.dy.masa.malilib.gui.Message;
+import org.jspecify.annotations.NonNull;
+
+import fi.dy.masa.malilib.gui.*;
 import fi.dy.masa.malilib.gui.button.ButtonBase;
 import fi.dy.masa.malilib.gui.button.ButtonGeneric;
 import fi.dy.masa.malilib.gui.button.IButtonActionListener;
 import fi.dy.masa.malilib.gui.interfaces.ISelectionListener;
 import fi.dy.masa.malilib.gui.widgets.WidgetFileBrowserBase;
 import fi.dy.masa.malilib.interfaces.IStringConsumerFeedback;
-import fi.dy.masa.malilib.util.FileCopier;
-import fi.dy.masa.malilib.util.FileDeleter;
-import fi.dy.masa.malilib.util.FileRenamer;
 import fi.dy.masa.malilib.util.StringUtils;
+import fi.dy.masa.malilib.util.file_ops.FileCopier;
+import fi.dy.masa.malilib.util.file_ops.FileCopierMulti;
+import fi.dy.masa.malilib.util.file_ops.FileDeleter;
+import fi.dy.masa.malilib.util.file_ops.FileRenamer;
 import fi.dy.masa.minihud.config.Configs;
+import fi.dy.masa.minihud.gui.widgets.WidgetShapesBrowser;
 import fi.dy.masa.minihud.renderer.shapes.ShapeBase;
 import fi.dy.masa.minihud.renderer.shapes.ShapeManager;
 
@@ -98,6 +100,38 @@ public class GuiShapesImport extends GuiShapesBrowserBase implements ISelectionL
 	protected ISelectionListener<WidgetFileBrowserBase.DirectoryEntry> getSelectionListener()
 	{
 		return this;
+	}
+
+	@Override
+	public boolean onMouseDropFiles(@NonNull List<Path> files)
+	{
+		if (this.getListWidget() != null)
+		{
+			Path dest;
+
+			if (this.getListWidget().getLastSelectedEntry() != null && Files.isDirectory(this.getListWidget().getLastSelectedEntry().getFullPath()))
+			{
+				dest = this.getListWidget().getLastSelectedEntry().getFullPath();
+			}
+			else if (this.getListWidget().getCurrentDirectory() != null && Files.isDirectory(this.getListWidget().getCurrentDirectory()))
+			{
+				dest = this.getListWidget().getCurrentDirectory();
+			}
+			else
+			{
+				return false;
+			}
+
+			if (Files.isDirectory(dest) && Files.isWritable(dest))
+			{
+				FileCopierMulti copier = new FileCopierMulti(dest, this.getListWidget(), true);
+				GuiBase.openGui(new GuiConfirmFileDrop<>(256, "malilib.gui.title.file_drop_confirm", files, copier, WidgetShapesBrowser.FILE_FILTER_SHAPE, this,
+				                                         "malilib.message.file_drop_confirm", files.size(), dest.toAbsolutePath().toString()));
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	private record ShapeRenamer(Path file, GuiShapesImport gui)

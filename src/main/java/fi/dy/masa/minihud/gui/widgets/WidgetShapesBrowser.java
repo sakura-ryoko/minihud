@@ -22,7 +22,7 @@ import fi.dy.masa.minihud.renderer.shapes.ShapeManager;
 
 public class WidgetShapesBrowser extends WidgetFileBrowserBase
 {
-	protected static final FileFilter FILE_FILTER_SHAPE = new FileFilterShape();
+	public static final FileFilter FILE_FILTER_SHAPE = new FileFilterShape();
 
 	protected final Map<Path, ShapeBase> cachedShapes = new HashMap<>();
 	protected final GuiShapesBrowserBase parent;
@@ -62,6 +62,18 @@ public class WidgetShapesBrowser extends WidgetFileBrowserBase
 	protected FileFilter getFileFilter()
 	{
 		return FILE_FILTER_SHAPE;
+	}
+
+	@Override
+	protected boolean displayHoverInfo()
+	{
+		return false;
+	}
+
+	@Override
+	protected String getEntryHoverInfoOverride(DirectoryEntry entry)
+	{
+		return "";
 	}
 
 	@Override
