@@ -3,9 +3,12 @@ package fi.dy.masa.minihud.renderer;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nullable;
+import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import org.apache.commons.lang3.tuple.Pair;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.Dynamic;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
@@ -16,6 +19,8 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.Brain;
+import net.minecraft.world.entity.ai.memory.ExpirableValue;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.monster.zombie.ZombieVillager;
 import net.minecraft.world.entity.npc.villager.Villager;
@@ -34,6 +39,7 @@ import fi.dy.masa.malilib.interfaces.IClientTickHandler;
 import fi.dy.masa.malilib.mixin.entity.IMixinMerchantEntity;
 import fi.dy.masa.malilib.render.RenderUtils;
 import fi.dy.masa.malilib.util.WorldUtils;
+import fi.dy.masa.malilib.util.data.Constants;
 import fi.dy.masa.malilib.util.data.DataEntityUtils;
 import fi.dy.masa.malilib.util.data.tag.CompoundData;
 import fi.dy.masa.malilib.util.nbt.NbtKeys;
@@ -52,6 +58,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
     // Mini Secondary Cache so villagers' data doesn't ... `Flash`
     private final ConcurrentHashMap<Integer, Pair<Long, Pair<Entity, CompoundData>>> recentEntityData;
     private final ConcurrentHashMap<Entity, List<String>> villagerData;
+    private final ConcurrentHashMap<UUID, GlobalPos> jobSiteData;
     private final ConcurrentHashMap<UUID, LastTextPlate> lastPos;
     private long lastTick;
     private final int xViewRange;
@@ -62,6 +69,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
     {
         this.recentEntityData = new ConcurrentHashMap<>(16, 0.9f, 1);
         this.villagerData = new ConcurrentHashMap<>(16, 0.9f, 1);
+        this.jobSiteData = new ConcurrentHashMap<>(16, 0.9f, 1);
         this.lastPos = new ConcurrentHashMap<>(16, 0.9f, 1);
         this.lastTick = System.currentTimeMillis();
         this.xViewRange = 30;
@@ -202,7 +210,59 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
         return list;
     }
 
-	private int getConversionTime(Level world, ZombieVillager villager)
+    private Optional<GlobalPos> getJobSite(Level world, Villager villager)
+    {
+        if (world == null || villager == null)
+        {
+            return Optional.empty();
+        }
+
+        Pair<Entity, CompoundData> pair = this.getVillagerData(world, villager.getId());
+
+        if (pair != null)
+        {
+            Brain<Villager> brain = null;
+
+            if (pair.getRight() != null && !pair.getRight().isEmpty())
+            {
+                Dynamic<?> dynamic = this.readBrain(pair.getRight());
+
+                if (dynamic != null)
+                {
+                    Brain.Provider<Villager> provider = Brain.provider(ImmutableList.of(MemoryModuleType.JOB_SITE), ImmutableList.of());
+                    brain = provider.makeBrain(dynamic);
+                }
+            }
+            else if (pair.getLeft() != null && pair.getLeft() instanceof Villager entity)
+            {
+                brain = entity.getBrain();
+            }
+
+            if (brain != null)
+            {
+                Optional<GlobalPos> tempPos = brain.getMemoryInternal(MemoryModuleType.JOB_SITE);
+
+                if (tempPos != null && tempPos.isPresent())
+                {
+                    return tempPos;
+                }
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    private Dynamic<?> readBrain(CompoundData data)
+    {
+        if (data.contains(NbtKeys.BRAIN, Constants.NBT.TAG_COMPOUND))
+        {
+            return data.getCodec(NbtKeys.BRAIN, Codec.PASSTHROUGH).orElse(null);
+        }
+
+        return null;
+    }
+
+    private int getConversionTime(Level world, ZombieVillager villager)
     {
         if (world == null || villager == null)
         {
@@ -383,7 +443,8 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
                     }
                 }
 
-                this.extractTarget(overlay, librarian);
+                Optional<GlobalPos> jobSite = this.getJobSite(world, librarian);
+                this.extractTarget(overlay, librarian, jobSite.orElse(null));
             }
         }
 
@@ -397,7 +458,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
 
                 if (conversionTimer > 0)
                 {
-                    this.extractTarget(List.of(String.format("%ds", Math.round((float) conversionTimer / 20))), villager);
+                    this.extractTarget(List.of(String.format("%ds", Math.round((float) conversionTimer / 20))), villager, null);
                 }
             }
         }
@@ -424,10 +485,12 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
 
             this.villagerData.forEach(
                     (target, text) ->
-                            this.renderAtEntity(text, target, cameraPos, mc)
+		                    this.renderAtEntity(text, this.jobSiteData.getOrDefault(target.getUUID(), null),
+		                                        target, cameraPos, mc)
             );
 
             this.villagerData.clear();
+            this.jobSiteData.clear();
         }
     }
 
@@ -436,15 +499,21 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
     {
         super.reset();
         this.villagerData.clear();
+        this.jobSiteData.clear();
         this.lastPos.clear();
     }
 
-    private void extractTarget(List<String> texts, Entity target)
+    private void extractTarget(List<String> texts, Entity target, @Nullable GlobalPos jobSite)
     {
         this.villagerData.put(target, texts);
+
+        if (jobSite != null)
+        {
+            this.jobSiteData.put(target.getUUID(), jobSite);
+        }
     }
 
-    private void renderAtEntity(List<String> texts, Entity targetEntity, Vec3 cameraPos, Minecraft mc)
+    private void renderAtEntity(List<String> texts, GlobalPos jobSite, Entity targetEntity, Vec3 cameraPos, Minecraft mc)
     {
 //        if (cam == null) return;
         float delta = mc.getDeltaTracker().getGameTimeDeltaPartialTick(true);
@@ -459,21 +528,16 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
         boolean atJobSite = false;
 
         // Render the overlay at its job site, this is useful in trading halls
-        if (targetEntity instanceof LivingEntity living)
+        if (jobSite != null)
         {
-            Optional<GlobalPos> jobSite = living.getBrain().getMemoryInternal(MemoryModuleType.JOB_SITE);
+            BlockPos pos = jobSite.pos();
+            Vec3 center = Vec3.atCenterOf(pos);
 
-            if (jobSite != null && jobSite.isPresent())
+            if (targetPos.distanceTo(center) < 1.7)
             {
-                BlockPos pos = jobSite.get().pos();
-                Vec3 center = Vec3.atCenterOf(pos);
-
-                if (targetPos.distanceTo(center) < 1.7)
-                {
-                    x = pos.getX() + 0.5;
-                    z = pos.getZ() + 0.5;
-                    atJobSite = true;
-                }
+                x = pos.getX() + 0.5;
+                z = pos.getZ() + 0.5;
+                atJobSite = true;
             }
         }
 
