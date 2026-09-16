@@ -89,6 +89,8 @@ public class Configs implements IConfigHandler
         public static final ConfigDouble        FONT_SCALE                          = new ConfigDouble("fontScale", 0.5, 0.01, 100.0).apply(GENERIC_KEY);
         public static final ConfigOptionList    HUD_ALIGNMENT                       = new ConfigOptionList("hudAlignment", HudAlignment.TOP_LEFT).apply(GENERIC_KEY);
         public static final ConfigBooleanHotkeyed HUD_DATA_SYNC                     = new ConfigBooleanHotkeyed("hudDataSync", false, "").apply(GENERIC_KEY);
+        public static final ConfigBooleanHotkeyed HUD_DISPLAY_CHAT                  = new ConfigBooleanHotkeyed("hudDisplayChat", true, "").apply(GENERIC_KEY);
+        public static final ConfigBooleanHotkeyed HUD_DISPLAY_INVENTORY             = new ConfigBooleanHotkeyed("hudDisplayInventory", false, "").apply(GENERIC_KEY);
         public static final ConfigBooleanHotkeyed HUD_STATUS_EFFECTS_SHIFT          = new ConfigBooleanHotkeyed("hudStatusEffectsShift",true, "").apply(GENERIC_KEY);
 //        public static final ConfigBoolean       INFO_LINES_USES_NBT                 = new ConfigBoolean("infoLinesUsesNbt", true).apply(GENERIC_KEY);
         public static final ConfigHotkey        INVENTORY_PREVIEW                   = new ConfigHotkey("inventoryPreview", "LEFT_ALT", KeybindSettings.PRESS_ALLOWEXTRA).apply(GENERIC_KEY);
@@ -248,6 +250,8 @@ public class Configs implements IConfigHandler
                 LIGHT_LEVEL_NUMBER_CONDITION,
                 LIGHT_LEVEL_NUMBER_MODE,
                 HUD_ALIGNMENT,
+                HUD_DISPLAY_CHAT,
+                HUD_DISPLAY_INVENTORY,
 
                 BIOME_OVERLAY_RANGE,
                 BIOME_OVERLAY_RANGE_VERTICAL,

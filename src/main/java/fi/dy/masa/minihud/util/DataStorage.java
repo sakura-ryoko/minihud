@@ -298,7 +298,7 @@ public class DataStorage
 
     public void onPacketFailure()
     {
-        RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.setBooleanValue(false);
+//        RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.setBooleanValue(false);
         this.shouldRegisterStructureChannel = false;
         this.servuxServer = false;
         this.hasInValidServux = true;
@@ -848,7 +848,7 @@ public class DataStorage
             final String servux = data.getStringOrDefault("servux", "?");
             MiniHUD.debugLog("DataStorage#receiveServuxStrucutresMetadata(): received METADATA from Servux");
 
-            if (version != ServuxStructuresPacket.PROTOCOL_VERSION || !servux.startsWith("servux-"+Reference.MOD_TYPE+"-"+MaLiLibReference.MC_VERSION))
+            if (version != ServuxStructuresPacket.PROTOCOL_VERSION || !servux.startsWith("servux-"+Reference.MOD_TYPE))
             {
                 MiniHUD.LOGGER.warn("structureChannel: Mis-matched protocol version! (Expected: {} but got {} running on: {})", ServuxStructuresPacket.PROTOCOL_VERSION, version, servux);
 
@@ -859,7 +859,8 @@ public class DataStorage
 
                 HANDLER.unregisterPlayReceiver();
                 HANDLER.reset(this.getNetworkChannel());
-                RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.setBooleanValue(false);
+//                RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.setBooleanValue(false);
+                this.onPacketFailure();
 
                 return false;
             }
