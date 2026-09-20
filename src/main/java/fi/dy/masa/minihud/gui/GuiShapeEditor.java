@@ -18,6 +18,7 @@ import fi.dy.masa.malilib.gui.widgets.WidgetColorIndicator;
 import fi.dy.masa.malilib.gui.wrappers.TextFieldType;
 import fi.dy.masa.malilib.interfaces.ICoordinateValueModifier;
 import fi.dy.masa.malilib.util.*;
+import fi.dy.masa.malilib.util.input.ScanCodes;
 import fi.dy.masa.malilib.util.position.LayerRange;
 import fi.dy.masa.malilib.util.position.PositionUtils;
 import fi.dy.masa.malilib.util.position.PositionUtils.CoordinateType;
@@ -603,7 +604,7 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         y += 10;
 
         ButtonGeneric button = new ButtonGeneric(x, y, 50, 20, org.apache.commons.lang3.StringUtils.capitalize(supplier.get().toString().toLowerCase()));
-        this.addButton(button, (btn, mouseBtn) -> { consumer.accept(cycleDirection(supplier.get(), mouseBtn == 1)); this.initGui(); } );
+        this.addButton(button, (btn, mouseBtn) -> { consumer.accept(cycleDirection(supplier.get(), mouseBtn == ScanCodes.OFFSET_MOUSE_RIGHT)); this.initGui(); } );
     }
 
     private void createRenderTypeButton(int x, int y, Supplier<ShapeRenderType> supplier, Consumer<ShapeRenderType> consumer, String translationKey)
@@ -612,7 +613,7 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         y += 10;
 
         ButtonGeneric button = new ButtonGeneric(x, y, -1, 20, supplier.get().getDisplayName());
-        this.addButton(button, (btn, mouseBtn) -> { consumer.accept((ShapeRenderType) supplier.get().cycle(mouseBtn == 0)); this.initGui(); } );
+        this.addButton(button, (btn, mouseBtn) -> { consumer.accept((ShapeRenderType) supplier.get().cycle(mouseBtn == ScanCodes.OFFSET_MOUSE_LEFT)); this.initGui(); } );
     }
 
     public static Direction cycleDirection(Direction direction, boolean reverse)
@@ -808,7 +809,7 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         @Override
         public void actionPerformedWithButton(ButtonBase button, int mouseButton)
         {
-            int amount = mouseButton == 1 ? -1 : 1;
+            int amount = mouseButton == ScanCodes.OFFSET_MOUSE_RIGHT ? -1 : 1;
 
             if (GuiBase.isShiftDown()) { amount *= this.modifierShift; }
             if (GuiBase.isCtrlDown())  { amount *= this.modifierControl; }
@@ -843,7 +844,7 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         @Override
         public void actionPerformedWithButton(ButtonBase button, int mouseButton)
         {
-            int amount = mouseButton == 1 ? -1 : 1;
+            int amount = mouseButton == ScanCodes.OFFSET_MOUSE_RIGHT ? -1 : 1;
 
             if (GuiBase.isShiftDown()) { amount *= this.modifierShift; }
             if (GuiBase.isCtrlDown())  { amount *= this.modifierControl; }
@@ -853,3 +854,4 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         }
     }
 }
+//Fix reversed left/right click on Shape Editor +/- buttons
