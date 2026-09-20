@@ -854,4 +854,3 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         }
     }
 }
-//Fix reversed left/right click on Shape Editor +/- buttons
