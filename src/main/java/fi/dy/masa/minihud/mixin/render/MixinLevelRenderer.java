@@ -12,6 +12,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import fi.dy.masa.malilib.compat.iris.IrisCompat;
+import fi.dy.masa.malilib.compat.sodium.SodiumCompat;
 import fi.dy.masa.minihud.info.InfoLineRenderStats;
 
 @Mixin(LevelRenderer.class)
@@ -22,7 +23,7 @@ public abstract class MixinLevelRenderer
 	@Inject(method = "submitBlockEntities", at = @At("HEAD"))
 	private void minihud_countVisibleTileEntities_withSodium(PoseStack poseStack, LevelRenderState levelRenderState, SubmitNodeCollector submitNodeCollector, CallbackInfo ci)
 	{
-		if (IrisCompat.hasSodium())
+		if (SodiumCompat.hasSodium())
 		{
 			InfoLineRenderStats.INSTANCE.updateTileEntityCount(this.levelRenderState.blockEntityRenderStates.size());
 		}

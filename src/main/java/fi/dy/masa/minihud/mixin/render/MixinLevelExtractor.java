@@ -13,6 +13,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import fi.dy.masa.malilib.compat.iris.IrisCompat;
+import fi.dy.masa.malilib.compat.sodium.SodiumCompat;
 import fi.dy.masa.minihud.info.InfoLineRenderStats;
 
 @Mixin(LevelExtractor.class)
@@ -30,7 +31,7 @@ public abstract class MixinLevelExtractor
 	private void minihud_countVisibleTileEntities_withoutSodium(Camera camera, float deltaPartialTick, LevelRenderState levelRenderState, CallbackInfo ci)
 	{
 		// Sodium blocks calling this method.  Why?
-		if (!IrisCompat.hasSodium())
+		if (!SodiumCompat.hasSodium())
 		{
 			InfoLineRenderStats.INSTANCE.updateTileEntityCount(this.levelRenderState.blockEntityRenderStates.size());
 		}
