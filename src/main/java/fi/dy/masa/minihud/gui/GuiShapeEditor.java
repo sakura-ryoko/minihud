@@ -18,6 +18,7 @@ import fi.dy.masa.malilib.gui.widgets.WidgetColorIndicator;
 import fi.dy.masa.malilib.gui.wrappers.TextFieldType;
 import fi.dy.masa.malilib.interfaces.ICoordinateValueModifier;
 import fi.dy.masa.malilib.util.*;
+import fi.dy.masa.malilib.util.input.ScanCodes;
 import fi.dy.masa.malilib.util.position.LayerRange;
 import fi.dy.masa.malilib.util.position.PositionUtils;
 import fi.dy.masa.malilib.util.position.PositionUtils.CoordinateType;
@@ -808,7 +809,7 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         @Override
         public void actionPerformedWithButton(ButtonBase button, int mouseButton)
         {
-            int amount = mouseButton == 1 ? -1 : 1;
+            int amount = mouseButton == ScanCodes.OFFSET_MOUSE_RIGHT ? -1 : 1;
 
             if (GuiBase.isShiftDown()) { amount *= this.modifierShift; }
             if (GuiBase.isCtrlDown())  { amount *= this.modifierControl; }
@@ -843,7 +844,7 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         @Override
         public void actionPerformedWithButton(ButtonBase button, int mouseButton)
         {
-            int amount = mouseButton == 1 ? -1 : 1;
+            int amount = mouseButton == ScanCodes.OFFSET_MOUSE_RIGHT ? -1 : 1;
 
             if (GuiBase.isShiftDown()) { amount *= this.modifierShift; }
             if (GuiBase.isCtrlDown())  { amount *= this.modifierControl; }
