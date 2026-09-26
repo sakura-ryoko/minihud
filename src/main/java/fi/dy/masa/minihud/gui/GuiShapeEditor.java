@@ -604,7 +604,7 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         y += 10;
 
         ButtonGeneric button = new ButtonGeneric(x, y, 50, 20, org.apache.commons.lang3.StringUtils.capitalize(supplier.get().toString().toLowerCase()));
-        this.addButton(button, (btn, mouseBtn) -> { consumer.accept(cycleDirection(supplier.get(), mouseBtn == 1)); this.initGui(); } );
+        this.addButton(button, (btn, mouseBtn) -> { consumer.accept(cycleDirection(supplier.get(), mouseBtn == ScanCodes.OFFSET_MOUSE_RIGHT)); this.initGui(); } );
     }
 
     private void createRenderTypeButton(int x, int y, Supplier<ShapeRenderType> supplier, Consumer<ShapeRenderType> consumer, String translationKey)
@@ -613,7 +613,7 @@ public class GuiShapeEditor extends GuiRenderLayerEditBase
         y += 10;
 
         ButtonGeneric button = new ButtonGeneric(x, y, -1, 20, supplier.get().getDisplayName());
-        this.addButton(button, (btn, mouseBtn) -> { consumer.accept((ShapeRenderType) supplier.get().cycle(mouseBtn == 0)); this.initGui(); } );
+        this.addButton(button, (btn, mouseBtn) -> { consumer.accept((ShapeRenderType) supplier.get().cycle(mouseBtn == ScanCodes.OFFSET_MOUSE_LEFT)); this.initGui(); } );
     }
 
     public static Direction cycleDirection(Direction direction, boolean reverse)
