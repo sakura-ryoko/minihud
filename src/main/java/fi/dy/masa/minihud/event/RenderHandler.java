@@ -17,6 +17,7 @@ import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.options.OptionsScreen;
 import net.minecraft.client.renderer.RenderBuffers;
 import net.minecraft.client.renderer.culling.Frustum;
@@ -189,6 +190,7 @@ public class RenderHandler implements IRenderer
         {
             if (screen instanceof ChatScreen) { return false; }
             else if (screen instanceof InventoryOverlayScreen) { return false; }
+            else if (screen instanceof AbstractContainerScreen) { return false; }
             return true;
         }
 
