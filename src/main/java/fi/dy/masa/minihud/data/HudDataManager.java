@@ -21,7 +21,6 @@ import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gamerules.GameRules;
 
-import fi.dy.masa.malilib.MaLiLibReference;
 import fi.dy.masa.malilib.config.options.ConfigBoolean;
 import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.network.ClientPlayHandler;
@@ -192,7 +191,7 @@ public class HudDataManager
 
     public void onPacketFailure()
     {
-        Configs.Generic.HUD_DATA_SYNC.setBooleanValue(false);
+//        Configs.Generic.HUD_DATA_SYNC.setBooleanValue(false);
         this.shouldRegister = false;
         this.servuxServer = false;
         this.hasInValidServux = true;
@@ -591,7 +590,7 @@ public class HudDataManager
             final String servux = data.getStringOrDefault("servux", "?");
             MiniHUD.debugLog("HudDataStorage#receiveMetadata(): received METADATA from Servux");
 
-            if (version != ServuxHudPacket.PROTOCOL_VERSION || !servux.startsWith("servux-"+Reference.MOD_TYPE+"-"+MaLiLibReference.MC_VERSION))
+            if (version != ServuxHudPacket.PROTOCOL_VERSION || !servux.startsWith("servux-"+Reference.MOD_TYPE))
             {
                 MiniHUD.LOGGER.warn("hudDataChannel: Mis-matched protocol version! (Expected: {} but got {} running on: {})", ServuxHudPacket.PROTOCOL_VERSION, version, servux);
 
@@ -602,7 +601,8 @@ public class HudDataManager
 
                 HANDLER.unregisterPlayReceiver();
                 HANDLER.reset(this.getNetworkChannel());
-                Configs.Generic.HUD_DATA_SYNC.setBooleanValue(false);
+//                Configs.Generic.HUD_DATA_SYNC.setBooleanValue(false);
+                this.onPacketFailure();
 
                 return false;
             }
