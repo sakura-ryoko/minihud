@@ -15,7 +15,6 @@ import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.memory.ExpirableValue;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -57,7 +56,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
     // Mini Secondary Cache so villagers' data doesn't ... `Flash`
     private final ConcurrentHashMap<Integer, Pair<Long, Pair<Entity, CompoundData>>> recentEntityData;
     private final ConcurrentHashMap<Entity, List<String>> villagerData;
-    private final ConcurrentHashMap<Object, GlobalPos> jobSiteData;
+    private final ConcurrentHashMap<UUID, GlobalPos> jobSiteData;
     private final ConcurrentHashMap<UUID, LastTextPlate> lastPos;
     private long lastTick;
     private final int xViewRange;
@@ -68,7 +67,7 @@ public class OverlayRendererVillagerInfo extends OverlayRendererBase implements 
     {
         this.recentEntityData = new ConcurrentHashMap<>(16, 0.9f, 1);
         this.villagerData = new ConcurrentHashMap<>(16, 0.9f, 1);
-        this.jobSiteData = new ConcurrentHashMap<Object, GlobalPos>(16, 0.9f, 1);
+        this.jobSiteData = new ConcurrentHashMap<>(16, 0.9f, 1);
         this.lastPos = new ConcurrentHashMap<>(16, 0.9f, 1);
         this.lastTick = System.currentTimeMillis();
         this.xViewRange = 30;
