@@ -59,6 +59,6 @@ public class InfoLineBiome extends InfoLine
 	        }
         }
 
-		return null;
+		return List.of(this.translate(BIOME_KEY, "..."));
     }
 }

@@ -21,7 +21,6 @@ public class InfoLineChunkCache
 {
     public static final InfoLineChunkCache INSTANCE = new InfoLineChunkCache();
     private final Map<ChunkPos, CompletableFuture<ChunkResult<ChunkAccess>>> chunkFutures = new HashMap<>();
-    @Nullable private LevelChunk cachedClientChunk;
     private Minecraft mc;
 
     private InfoLineChunkCache()
@@ -122,17 +121,12 @@ public class InfoLineChunkCache
 
     public LevelChunk getClientChunk(ChunkPos chunkPos)
     {
-        if (this.cachedClientChunk == null || !this.cachedClientChunk.getPos().equals(chunkPos))
-        {
-            this.cachedClientChunk = Objects.requireNonNull(this.getClientWorld()).getChunk(chunkPos.x(), chunkPos.z());
-        }
-
-        return this.cachedClientChunk;
+        // Client chunks can arrive, unload, or be replaced without the position changing.
+        return Objects.requireNonNull(this.getClientWorld()).getChunk(chunkPos.x(), chunkPos.z());
     }
 
     public void resetCachedChunks()
     {
         this.chunkFutures.clear();
-        this.cachedClientChunk = null;
     }
 }
