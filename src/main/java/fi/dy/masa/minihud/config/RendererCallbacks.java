@@ -56,7 +56,7 @@ public class RendererCallbacks
         if (config.getBooleanValue())
         {
             OverlayRendererLightLevel.INSTANCE.reset();
-            OverlayRendererLightLevel.INSTANCE.setNeedsUpdate();
+            OverlayRendererLightLevel.INSTANCE.markNeedsUpdate(true);
         }
     }
 

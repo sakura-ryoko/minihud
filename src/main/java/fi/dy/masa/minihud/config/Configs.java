@@ -94,6 +94,8 @@ public class Configs implements IConfigHandler
 //        public static final ConfigBoolean       INFO_LINES_USES_NBT                 = new ConfigBoolean("infoLinesUsesNbt", true).apply(GENERIC_KEY);
         public static final ConfigBoolean       INVENTORY_PREVIEW_ENABLED           = new ConfigBoolean("inventoryPreviewEnabled", false).apply(GENERIC_KEY);
         public static final ConfigBoolean       INVENTORY_PREVIEW_VILLAGER_BG_COLOR = new ConfigBoolean("inventoryPreviewVillagerBGColor", false).apply(GENERIC_KEY);
+        public static final ConfigBoolean       LIGHT_LEVEL_AGGRESSIVE_OPTIMIZATION = new ConfigBoolean("lightLevelAggressiveOptimization", false).apply(GENERIC_KEY);
+        public static final ConfigOptionList    LIGHT_LEVEL_ANIMATION               = new ConfigOptionList("lightLevelAnimation", LightLevelAnimation.NONE).apply(GENERIC_KEY);
         public static final ConfigBoolean       LIGHT_LEVEL_AUTO_HEIGHT             = new ConfigBoolean("lightLevelAutoHeight", false).apply(GENERIC_KEY);
         public static final ConfigBoolean       LIGHT_LEVEL_COLORED_NUMBERS         = new ConfigBoolean("lightLevelColoredNumbers", true).apply(GENERIC_KEY);
         public static final ConfigBoolean       LIGHT_LEVEL_COLLISION_CHECK         = new ConfigBoolean("lightLevelCollisionCheck", false).apply(GENERIC_KEY);
@@ -107,10 +109,14 @@ public class Configs implements IConfigHandler
         public static final ConfigDouble        LIGHT_LEVEL_NUMBER_OFFSET_SKY_X     = new ConfigDouble("lightLevelNumberOffsetSkyX", 0.42, 0.0, 1.0).apply(GENERIC_KEY);
         public static final ConfigDouble        LIGHT_LEVEL_NUMBER_OFFSET_SKY_Y     = new ConfigDouble("lightLevelNumberOffsetSkyY", 0.56, 0.0, 1.0).apply(GENERIC_KEY);
         public static final ConfigBoolean       LIGHT_LEVEL_NUMBER_ROTATION         = new ConfigBoolean("lightLevelNumberRotation", true).apply(GENERIC_KEY);
+        public static final ConfigInteger       LIGHT_LEVEL_NUMBER_RANGE            = new ConfigInteger("lightLevelNumberRange", 24, 1, 64).apply(GENERIC_KEY);
         public static final ConfigInteger       LIGHT_LEVEL_RANGE                   = new ConfigInteger("lightLevelRange", 24, 1, 64).apply(GENERIC_KEY);
         public static final ConfigDouble        LIGHT_LEVEL_RENDER_OFFSET           = new ConfigDouble("lightLevelRenderOffset", 0.005, 0.0, 1.0).apply(GENERIC_KEY);
         public static final ConfigBoolean       LIGHT_LEVEL_RENDER_THROUGH          = new ConfigBoolean("lightLevelRenderThrough", false).apply(GENERIC_KEY);
         public static final ConfigBoolean       LIGHT_LEVEL_SKIP_BLOCK_CHECK        = new ConfigBoolean("lightLevelSkipBlockCheck", false).apply(GENERIC_KEY);
+        public static final ConfigBoolean       LIGHT_LEVEL_SLIME_MODE              = new ConfigBoolean("lightLevelSlimeMode", false).apply(GENERIC_KEY);
+        public static final ConfigBoolean       LIGHT_LEVEL_SPAWN_SPHERE_FULL       = new ConfigBoolean("lightLevelSpawnSphereFull", false).apply(GENERIC_KEY);
+        public static final ConfigBoolean       LIGHT_LEVEL_SPAWN_SPHERE_LIMIT      = new ConfigBoolean("lightLevelSpawnSphereLimit", false).apply(GENERIC_KEY);
         public static final ConfigInteger       LIGHT_LEVEL_THRESHOLD_DIM           = new ConfigInteger("lightLevelThresholdDim", 0, 0, 15).apply(GENERIC_KEY);
         public static final ConfigInteger       LIGHT_LEVEL_THRESHOLD_SAFE          = new ConfigInteger("lightLevelThresholdSafe", 1, 0, 15).apply(GENERIC_KEY);
         public static final ConfigBoolean       LIGHT_LEVEL_UNDER_WATER             = new ConfigBoolean("lightLevelUnderWater", false).apply(GENERIC_KEY);
@@ -193,12 +199,16 @@ public class Configs implements IConfigHandler
 //                INFO_LINES_USES_NBT,
                 //FIX_VANILLA_DEBUG_RENDERERS,
 //                FIX_VANILLA_DEBUG_RENDERER_THROUGH,
+                LIGHT_LEVEL_AGGRESSIVE_OPTIMIZATION,
                 LIGHT_LEVEL_AUTO_HEIGHT,
                 LIGHT_LEVEL_COLLISION_CHECK,
                 LIGHT_LEVEL_COLORED_NUMBERS,
                 LIGHT_LEVEL_NUMBER_ROTATION,
                 LIGHT_LEVEL_RENDER_THROUGH,
                 LIGHT_LEVEL_SKIP_BLOCK_CHECK,
+                LIGHT_LEVEL_SLIME_MODE,
+                LIGHT_LEVEL_SPAWN_SPHERE_FULL,
+                LIGHT_LEVEL_SPAWN_SPHERE_LIMIT,
                 LIGHT_LEVEL_UNDER_WATER,
                 MAP_PREVIEW,
                 MAP_PREVIEW_REQUIRE_SHIFT,
@@ -232,6 +242,7 @@ public class Configs implements IConfigHandler
                 SERVER_NBT_REQUEST_RATE,
 
                 BLOCK_GRID_OVERLAY_MODE,
+                LIGHT_LEVEL_ANIMATION,
                 LIGHT_LEVEL_MARKER_CONDITION,
                 LIGHT_LEVEL_MARKER_MODE,
                 LIGHT_LEVEL_NUMBER_CONDITION,
@@ -260,6 +271,7 @@ public class Configs implements IConfigHandler
                 LIGHT_LEVEL_NUMBER_OFFSET_BLOCK_Y,
                 LIGHT_LEVEL_NUMBER_OFFSET_SKY_X,
                 LIGHT_LEVEL_NUMBER_OFFSET_SKY_Y,
+                LIGHT_LEVEL_NUMBER_RANGE,
                 LIGHT_LEVEL_RANGE,
                 LIGHT_LEVEL_THRESHOLD_DIM,
                 LIGHT_LEVEL_THRESHOLD_SAFE,

@@ -153,6 +153,7 @@ public class ShapeManager
     {
         this.shapes.remove(shape);
 
+        shape.onRemove();
         RenderContainer.INSTANCE.removeRenderer(shape);
     }
 
@@ -160,6 +161,7 @@ public class ShapeManager
     {
         for (ShapeBase shape : this.shapes)
         {
+            shape.onRemove();
             RenderContainer.INSTANCE.removeRenderer(shape);
         }
 

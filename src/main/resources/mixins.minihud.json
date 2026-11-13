@@ -41,10 +41,13 @@
         "hud.MixinSubtitleOverlay",
         "network.MixinClientPacketListener",
         "network.MixinMultiPlayerGameMode",
+        "render.IMixinByteBufferBuilder",
         "render.IMixinLevelExtractor",
         "render.IMixinLevelRenderer",
+        "render.IMixinRenderObjectVbo",
         "render.MixinLevelExtractor",
-        "render.MixinLevelRenderer"
+        "render.MixinLevelRenderer",
+        "world.IMixinPalettedContainer"
     ],
     "server": [],
     "injectors": {

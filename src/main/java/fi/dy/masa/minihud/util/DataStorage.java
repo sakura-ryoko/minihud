@@ -429,8 +429,9 @@ public class DataStorage
             if (Math.abs(pos.x - (chunkX << 4) - 8) <= 48D || Math.abs(pos.z - (chunkZ << 4) - 8) <= 48D)
             {
                 OverlayRendererSpawnableColumnHeights.INSTANCE.markChunkChanged(chunkX, chunkZ);
-                OverlayRendererLightLevel.INSTANCE.setNeedsUpdate();
             }
+            // optimized scanner, ignore distance
+            OverlayRendererLightLevel.INSTANCE.markChunkChanged(chunkX, chunkZ);
         }
     }
 
