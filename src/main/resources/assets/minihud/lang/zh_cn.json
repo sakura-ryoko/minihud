@@ -1185,7 +1185,7 @@
     "minihud.label.custom_model_data_tooltip.float": "§7自定义模型 %.1f§r",
     "minihud.label.custom_model_data_tooltip.string": "§7自定义模型 %s§r",
     "minihud.label.food_tooltip": "§7恢复§b%.1f§7，饱和度§b%.1f§r",
-    "minihud.label.honey_info.level": "§7蜂蜜等级§f%s§7/§f5§r",
+    "minihud.label.honey_info.level": "§7蜂蜜等级：§f%s§7/§f5§r",
     "minihud.label.item_model_tooltip": "§7模型 [%s]§r",
     "minihud.label.light_level_marker_mode.cross": "十字标记",
     "minihud.label.light_level_marker_mode.none": "无标记",
