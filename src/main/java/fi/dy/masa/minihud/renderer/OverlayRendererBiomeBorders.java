@@ -485,8 +485,7 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
                 //if (stripX == 100 && stripY == 65 && stripZ < -80 && side == Direction.EAST)
                 //System.out.printf("adding strip @ [%d, %d, %d]: side: %s, len: %d, pos: %d, ss: %d\n", stripX, stripY, stripZ, side, pos - stripStart, pos, stripStart);
 
-                long packedPos = getPackedCoordinate(stripX, stripY, stripZ);
-                EdgeStrip strip = new EdgeStrip(packedPos, side, pos - stripStart, biomeId);
+                EdgeStrip strip = new EdgeStrip(new Vec3i(stripX, stripY, stripZ), side, pos - stripStart, biomeId);
 
                 strips[stripX & 0xF][stripY & 0xF][stripZ & 0xF][sideIndex] = strip;
                 stripList.add(strip);
@@ -543,8 +542,8 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
 
                 //if (stripX == 100 && stripY == 65 && stripZ < -80 && side == Direction.EAST)
                 //System.out.printf("endStrips adding strip @ [%d, %d, %d]: side: %s, len: %d\n", stripX, stripY, stripZ, side, 16 - stripStart + 1);
-                long packedPos = getPackedCoordinate(stripX, stripY, stripZ);
-                EdgeStrip strip = new EdgeStrip(packedPos, side, 16 - stripStart + 1, biomeId);
+                Vec3i pos = new Vec3i(stripX, stripY, stripZ);
+                EdgeStrip strip = new EdgeStrip(pos, side, 16 - stripStart + 1, biomeId);
 
                 strips[stripX & 0xF][stripY & 0xF][stripZ & 0xF][sideIndex] = strip;
                 stripList.add(strip);
@@ -564,10 +563,10 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
         {
             Direction side = strip.side;
             int sideIndex = side.get3DDataValue();
-            final long startPos = strip.startPosLong;
-            int x = unpackX(startPos) & 0xF;
-            int y = unpackY(startPos) & 0xF;
-            int z = unpackZ(startPos) & 0xF;
+            final Vec3i startPos = strip.startPos;
+            int x = startPos.getX() & 0xF;
+            int y = startPos.getY() & 0xF;
+            int z = startPos.getZ() & 0xF;
 
             if ((handled[x][y][z] & (1 << sideIndex)) != 0)
             {
@@ -599,46 +598,11 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
                 ++count;
             }
 
-            quadsOut.add(makeColoredQuad(startPos, length, count, side, strip.biomeId));
+            quadsOut.add(new ColoredQuad(startPos, length, count, side, strip.biomeId));
         }
         //long post = System.nanoTime(); System.out.printf("buildStripsToQuads: %.6fs, quads: %d\n", ((double) post - (double) pre) / 1000000000D, quadsOut.size());
 
         return  quadsOut.size();
-    }
-
-    protected static ColoredQuad makeColoredQuad(long startPos, int stripLength, int stripCount,
-                                                 Direction side, int biomeId)
-    {
-        int x1 = unpackX(startPos);
-        int y1 = unpackY(startPos);
-        int z1 = unpackZ(startPos);
-
-        return new ColoredQuad(new Vec3i(x1, y1, z1), stripLength, stripCount, side, biomeId);
-    }
-
-    protected static int unpackX(long packedCoordinate)
-    {
-        return (int) ((packedCoordinate << 40L) >> 40L);
-    }
-
-    protected static int unpackY(long packedCoordinate)
-    {
-        return (int) (packedCoordinate >> 48L);
-    }
-
-    protected static int unpackZ(long packedCoordinate)
-    {
-        return (int) ((packedCoordinate << 16L) >> 40L);
-    }
-
-    protected static long getPackedCoordinate(int x, int y, int z)
-    {
-        return (((long) y & 0xFFFF) << 48L) | (((long) z & 0xFFFFFF) << 24L) | ((long) x & 0xFFFFFF);
-    }
-
-    protected static long getPackedCoordinate(BlockPos.MutableBlockPos pos)
-    {
-        return getPackedCoordinate(pos.getX(), pos.getY(), pos.getZ());
     }
 
     private void createBiomeMapping(Level world)
@@ -886,14 +850,14 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
 
     protected static class EdgeStrip
     {
-        public final long startPosLong;
+        public final Vec3i startPos;
         public final Direction side;
         public final int length;
         public final int biomeId;
 
-        public EdgeStrip(long startPosLong, Direction side, int length, int biomeId)
+        public EdgeStrip(Vec3i startPos, Direction side, int length, int biomeId)
         {
-            this.startPosLong = startPosLong;
+            this.startPos = startPos;
             this.side = side;
             this.length = length;
             this.biomeId = biomeId;
@@ -907,14 +871,14 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
 
             EdgeStrip edgeStrip = (EdgeStrip) o;
 
-            if (this.startPosLong != edgeStrip.startPosLong) {return false;}
+            if (this.startPos.equals(edgeStrip.startPos) == false) {return false;}
             return this.side == edgeStrip.side;
         }
 
         @Override
         public int hashCode()
         {
-            int result = (int) (this.startPosLong ^ (this.startPosLong >>> 32));
+            int result = this.startPos.hashCode();
             result = 31 * result + this.side.hashCode();
             return result;
         }
@@ -922,8 +886,8 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
         @Override
         public String toString()
         {
-            return String.format("EdgeStrip{startPosLong=%08X, side=%s, length=%d, biomeId=%d}",
-                                 this.startPosLong, this.side, this.length, this.biomeId);
+            return String.format("EdgeStrip{startPos=%s, side=%s, length=%d, biomeId=%d}",
+                                 this.startPos, this.side, this.length, this.biomeId);
         }
     }
 }
