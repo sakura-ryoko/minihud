@@ -27,7 +27,6 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 
 import fi.dy.masa.malilib.render.MaLiLibPipelines;
-import fi.dy.masa.malilib.util.MathUtils;
 import fi.dy.masa.malilib.util.data.Color4f;
 import fi.dy.masa.malilib.util.position.SubChunkPos;
 import fi.dy.masa.malilib.util.position.Vec3d;
@@ -52,6 +51,7 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
     //private long lastUpdateTime = System.nanoTime();
     private boolean needsUpdate;
     private boolean needsRenderUpdate;
+    @Nullable private SubChunkPos fixedPos;
     private List<ColoredQuad> renderQuads;
     private boolean hasData;
 
@@ -120,7 +120,20 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
     @Override
     public void update(Vec3d cameraPos, Entity entity, Minecraft mc, ProfilerFiller profiler)
     {
-        List<SubChunkPos> chunks = this.getSubChunksWithinRange(mc.getCameraEntity(), mc);
+        SubChunkPos center = new SubChunkPos(entity.blockPosition());
+        if (Configs.Generic.BIOME_OVERLAY_FIXED.getBooleanValue())
+        {
+            if (this.fixedPos == null)
+            {
+                this.fixedPos = center;
+            }
+            center = this.fixedPos;
+        }
+        else
+        {
+            this.fixedPos = null;
+        }
+        List<SubChunkPos> chunks = this.getSubChunksWithinRange(center, mc);
         BlockPos cameraBlockPos = BlockPos.containing(cameraPos.toVanilla());
         this.scheduleTasksForMissingChunks(chunks, cameraBlockPos, mc.level);
 
@@ -233,9 +246,10 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
         this.scheduledChunks.clear();
         this.biomeMapping.clear();
         this.hasData = false;
+        this.fixedPos = null;
     }
 
-    protected List<SubChunkPos> getSubChunksWithinRange(Entity cameraEntity, Minecraft mc)
+    protected List<SubChunkPos> getSubChunksWithinRange(SubChunkPos center, Minecraft mc)
     {
         if (mc.level == null) return new ArrayList<>();
 
@@ -243,9 +257,9 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
         Level world = mc.level;
         int viewDistance = Math.min(Configs.Generic.BIOME_OVERLAY_RANGE.getIntegerValue(), mc.options.renderDistance().get());
         int viewDistanceVertical = Math.min(Configs.Generic.BIOME_OVERLAY_RANGE_VERTICAL.getIntegerValue(), mc.options.renderDistance().get());
-        int chunkX = MathUtils.floor(cameraEntity.getX()) >> 4;
-        int chunkY = MathUtils.floor(cameraEntity.getY()) >> 4;
-        int chunkZ = MathUtils.floor(cameraEntity.getZ()) >> 4;
+        int chunkX = center.getX();
+        int chunkY = center.getY();
+        int chunkZ = center.getZ();
         int minCY = Math.max(world.getMinY() >> 4, chunkY - viewDistanceVertical);
         int maxCY = Math.min((world.getMaxY()) >> 4, chunkY + viewDistanceVertical);
         List<SubChunkPos> chunks = new ArrayList<>();

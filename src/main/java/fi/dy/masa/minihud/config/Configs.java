@@ -50,6 +50,7 @@ public class Configs implements IConfigHandler
         public static final ConfigBoolean       ITEM_MODEL_TOOLTIPS_SHOW_VANILLA    = new ConfigBoolean("itemModelTooltipsShowVanilla", false).apply(GENERIC_KEY);
         public static final ConfigBoolean       LODESTONE_TOOLTIPS                  = new ConfigBoolean("lodestoneTooltips", false).apply(GENERIC_KEY);
         public static final ConfigBoolean       BEACON_RANGE_OVERLAY_CHECK_PRIMARY_EFFECT= new ConfigBoolean("beaconRangeOverlayCheckPrimaryEffect", false).apply(GENERIC_KEY);
+        public static final ConfigBoolean       BIOME_OVERLAY_FIXED                 = new ConfigBoolean("biomeOverlayFixed", false).apply(GENERIC_KEY);
         public static final ConfigInteger       BIOME_OVERLAY_RANGE                 = new ConfigInteger("biomeOverlayRange", 4, 0, 32).apply(GENERIC_KEY);
         public static final ConfigInteger       BIOME_OVERLAY_RANGE_VERTICAL        = new ConfigInteger("biomeOverlayRangeVertical", 0, 0, 32).apply(GENERIC_KEY);
         public static final ConfigBoolean       BIOME_OVERLAY_SINGLE_COLOR          = new ConfigBoolean("biomeOverlaySingleColor", true).apply(GENERIC_KEY);
@@ -240,6 +241,7 @@ public class Configs implements IConfigHandler
                 HUD_DISPLAY_CHAT,
                 HUD_DISPLAY_INVENTORY,
 
+                BIOME_OVERLAY_FIXED,
                 BIOME_OVERLAY_RANGE,
                 BIOME_OVERLAY_RANGE_VERTICAL,
                 BLOCK_POS_FORMAT_STRING,

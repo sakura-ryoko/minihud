@@ -70,6 +70,7 @@ public class KeyCallbacks
         Configs.Colors.SPAWN_REAL_OUTER_OVERLAY_COLOR.setValueChangeCallback((config) -> OverlayRendererSpawnChunks.INSTANCE_REAL.setNeedsUpdate());
         Configs.Colors.SPAWNABLE_COLUMNS_OVERLAY_COLOR.setValueChangeCallback((config) -> OverlayRendererSpawnableColumnHeights.INSTANCE.setNeedsUpdate());
 
+        Configs.Generic.BIOME_OVERLAY_FIXED.setValueChangeCallback((config) -> OverlayRendererBiomeBorders.INSTANCE.setNeedsUpdate());
         Configs.Generic.CONDUIT_RANGE_OVERLAY_COMBINE_QUADS.setValueChangeCallback((config) -> OverlayRendererConduitRange.INSTANCE.setNeedsUpdate());
         Configs.Generic.CONDUIT_RANGE_OVERLAY_RENDER_OUTLINES.setValueChangeCallback((config) -> OverlayRendererConduitRange.INSTANCE.setNeedsUpdate());
         Configs.Generic.LIGHT_LEVEL_RANGE.setValueChangeCallback((config) -> OverlayRendererLightLevel.INSTANCE.setNeedsUpdate());
