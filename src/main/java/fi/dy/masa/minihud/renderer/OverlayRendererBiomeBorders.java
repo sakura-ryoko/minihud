@@ -61,7 +61,7 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
     {
         this.renderQuads = new ArrayList<>();
         this.hasData = false;
-        this.useCulling = false;
+        this.useCulling = true;
         this.renderThrough = false;
     }
 
@@ -183,7 +183,7 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
 
         profiler.push("biome_quads");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "minihud:biome/quads", MaLiLibPipelines.POSITION_COLOR_MASA_LEQUAL_DEPTH_OFFSET_1, 0);
+        BufferBuilder builder = ctx.start(() -> "minihud:biome/quads", MaLiLibPipelines.MINIHUD_SHAPE_OFFSET, 0);
 
         for (ColoredQuad quad : this.renderQuads)
         {
