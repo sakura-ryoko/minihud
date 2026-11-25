@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -37,7 +38,9 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
 {
     public static final OverlayRendererBiomeBorders INSTANCE = new OverlayRendererBiomeBorders();
 
+    // Shared with worker threads, quads is lock for itself and scheduledChunks.
     private final Object2ObjectOpenHashMap<SubChunkPos, List<ColoredQuad>> quads = new Object2ObjectOpenHashMap<>();
+    // Added on main thread, removed on worker tasks. Guarded by quads.
     private final ObjectOpenHashSet<SubChunkPos> scheduledChunks = new ObjectOpenHashSet<>();
 
     // A read-only biome registry that worker threads can read without locking. Replaced on server change.
@@ -49,9 +52,9 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
     private Vec3d cameraPosition = Vec3d.ZERO;
     //private long lastUpdateTime = System.nanoTime();
     private boolean needsUpdate;
-    private boolean needsRenderUpdate;
-    @Nullable private SubChunkPos fixedPos;
+    private final AtomicBoolean needsRenderUpdate = new AtomicBoolean();
     private List<ColoredQuad> renderQuads;
+    @Nullable private SubChunkPos center;
     private boolean hasData;
 
     private OverlayRendererBiomeBorders()
@@ -83,16 +86,31 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
 
     public void clear()
     {
+        MiniHUD.debugLog("Clearing Biome Border Overlay data...");
+
         synchronized (this.quads)
         {
-            MiniHUD.debugLog("Clearing Biome Border Overlay data...");
-
             this.quads.clear();
             this.scheduledChunks.clear();
+        }
 
-            // All the quads need to have the same relative camera offset, so
-            // we use an internal position that is only updated when all the quads are cleared
-            this.cameraPosition = Vec3d.of(Minecraft.getInstance().gameRenderer.mainCamera().position());
+        this.center = null;
+
+        // All the quads need to have the same relative camera offset, so
+        // we use an internal position that is only updated when all the quads are cleared
+        this.cameraPosition = Vec3d.of(Minecraft.getInstance().gameRenderer.mainCamera().position());
+    }
+
+    public void onChunkLoaded(int chunkX, int chunkZ)
+    {
+        // Trigger an update when a chunk within the range plus 1 border chunk loads
+        final int range = Configs.Generic.BIOME_OVERLAY_RANGE.getIntegerValue() + 1;
+
+        if (this.center != null
+            && Math.abs(chunkX - this.center.getX()) <= range
+            && Math.abs(chunkZ - this.center.getZ()) <= range)
+        {
+            this.needsUpdate = true;
         }
     }
 
@@ -108,7 +126,7 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
         int updateDistance = 16;
 
         return this.needsUpdate ||
-               this.needsRenderUpdate ||
+               this.needsRenderUpdate.get() ||
                this.lastUpdatePos == null ||
                 Math.abs(cameraEntity.getX() - this.lastUpdatePos.getX()) > updateDistance ||
                 Math.abs(cameraEntity.getY() - this.lastUpdatePos.getY()) > updateDistance ||
@@ -118,20 +136,14 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
     @Override
     public void update(Vec3d cameraPos, Entity entity, Minecraft mc, ProfilerFiller profiler)
     {
-        SubChunkPos center = new SubChunkPos(entity.blockPosition());
-        if (Configs.Generic.BIOME_OVERLAY_FIXED.getBooleanValue())
+        this.needsRenderUpdate.set(false);
+
+        if (this.center == null || Configs.Generic.BIOME_OVERLAY_FIXED.getBooleanValue() == false)
         {
-            if (this.fixedPos == null)
-            {
-                this.fixedPos = center;
-            }
-            center = this.fixedPos;
+            this.center = new SubChunkPos(entity.blockPosition());
         }
-        else
-        {
-            this.fixedPos = null;
-        }
-        List<SubChunkPos> chunks = this.getSubChunksWithinRange(center, mc);
+
+        List<SubChunkPos> chunks = this.getSubChunksWithinRange(this.center, mc);
         BlockPos cameraBlockPos = BlockPos.containing(cameraPos.toVanilla());
         this.scheduleTasksForMissingChunks(chunks, cameraBlockPos, mc.level);
 
@@ -147,7 +159,6 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
         // we use an internal position that is only updated when all the quads are cleared
         this.setUpdatePosition(this.cameraPosition);
         this.needsUpdate = false;
-        this.needsRenderUpdate = false;
     }
 
     @Override
@@ -241,9 +252,7 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
     {
         super.reset();
         this.renderQuads.clear();
-        this.scheduledChunks.clear();
         this.hasData = false;
-        this.fixedPos = null;
     }
 
     protected List<SubChunkPos> getSubChunksWithinRange(SubChunkPos center, Minecraft mc)
@@ -322,19 +331,27 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
 
         for (SubChunkPos pos : chunks)
         {
-            LevelChunk chunk = (LevelChunk) world.getChunk(pos.getX(), pos.getZ(), ChunkStatus.FULL, false);
+            // check that the 3x3 chunks surrounding it are loaded, otherwise it reads plains border
+            final LevelChunk[][] loaded = getLoadedChunksAround(world, pos);
+            LevelChunk chunk = loaded != null ? loaded[1][1] : null;
 
             if (chunk != null)
             {
                 Runnable task = () -> {
                     List<ColoredQuad> quadsOut = new ArrayList<>();
                     readBiomesAndFindEdges(chunk, pos, quadsOut, registry);
+                    // Drop the result if chunks got unloaded before the task finished. (reloaded chunks are new objects)
+                    boolean valid = Arrays.deepEquals(loaded, getLoadedChunksAround(world, pos));
 
                     synchronized (this.quads)
                     {
-                        this.quads.put(pos, quadsOut);
+                        if (valid)
+                        {
+                            this.quads.put(pos, quadsOut);
+                        }
+
                         this.scheduledChunks.remove(pos);
-                        this.needsRenderUpdate = true;
+                        this.needsRenderUpdate.set(true);
                     }
                 };
 
@@ -351,6 +368,27 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
 
         this.needsUpdate = false;
         //this.lastUpdateTime = System.nanoTime();
+    }
+
+    @Nullable
+    private static LevelChunk[][] getLoadedChunksAround(Level world, SubChunkPos pos)
+    {
+        LevelChunk[][] chunks = new LevelChunk[3][3];
+
+        for (int dx = 0; dx < 3; dx += 1)
+        {
+            for (int dz = 0; dz < 3; dz += 1)
+            {
+                LevelChunk chunk = (LevelChunk) world.getChunk(pos.getX() + dx - 1, pos.getZ() + dz - 1, ChunkStatus.FULL, false);
+                if (chunk == null)
+                {
+                    return null;
+                }
+                chunks[dx][dz] = chunk;
+            }
+        }
+
+        return chunks;
     }
 
     private static int readBiomesAndFindEdges(LevelChunk chunk,
