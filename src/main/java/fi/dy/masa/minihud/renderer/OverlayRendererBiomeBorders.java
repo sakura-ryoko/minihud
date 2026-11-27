@@ -4,11 +4,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.IntFunction;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 
@@ -27,7 +25,6 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 
 import fi.dy.masa.malilib.render.MaLiLibPipelines;
-import fi.dy.masa.malilib.util.MathUtils;
 import fi.dy.masa.malilib.util.data.Color4f;
 import fi.dy.masa.malilib.util.position.SubChunkPos;
 import fi.dy.masa.malilib.util.position.Vec3d;
@@ -41,25 +38,30 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
 {
     public static final OverlayRendererBiomeBorders INSTANCE = new OverlayRendererBiomeBorders();
 
+    // Shared with worker threads, quads is lock for itself and scheduledChunks.
     private final Object2ObjectOpenHashMap<SubChunkPos, List<ColoredQuad>> quads = new Object2ObjectOpenHashMap<>();
-    private final Object2IntOpenHashMap<Biome> biomeMapping = new Object2IntOpenHashMap<>();
-    private final Int2ObjectOpenHashMap<Color4f> biomeColorsMap = new Int2ObjectOpenHashMap<>();
+    // Added on main thread, removed on worker tasks. Guarded by quads.
     private final ObjectOpenHashSet<SubChunkPos> scheduledChunks = new ObjectOpenHashSet<>();
-    private final Color4f fixedColor = Color4f.fromColor(0x30F030, 0.25f);
+
+    // A read-only biome registry that worker threads can read without locking. Replaced on server change.
+    @Nullable private Registry<Biome> biomeRegistry;
+    // Mapping for biomeRegistry's biome ids. Should only be read or modified on main thread!
     private Color4f[] biomeColorsArray = new Color4f[0];
-    private IntFunction<Color4f> colorRetriever = (id) -> this.biomeColorsArray[id];
+    private final Color4f fixedColor = Color4f.fromColor(0x30F030, 0.25f);
+
     private Vec3d cameraPosition = Vec3d.ZERO;
     //private long lastUpdateTime = System.nanoTime();
     private boolean needsUpdate;
-    private boolean needsRenderUpdate;
+    private final AtomicBoolean needsRenderUpdate = new AtomicBoolean();
     private List<ColoredQuad> renderQuads;
+    @Nullable private SubChunkPos center;
     private boolean hasData;
 
     private OverlayRendererBiomeBorders()
     {
         this.renderQuads = new ArrayList<>();
         this.hasData = false;
-        this.useCulling = false;
+        this.useCulling = true;
         this.renderThrough = false;
     }
 
@@ -84,17 +86,31 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
 
     public void clear()
     {
+        MiniHUD.debugLog("Clearing Biome Border Overlay data...");
+
         synchronized (this.quads)
         {
-            MiniHUD.debugLog("Clearing Biome Border Overlay data...");
-
             this.quads.clear();
             this.scheduledChunks.clear();
-            this.biomeMapping.clear();
+        }
 
-            // All the quads need to have the same relative camera offset, so
-            // we use an internal position that is only updated when all the quads are cleared
-            this.cameraPosition = Vec3d.of(Minecraft.getInstance().gameRenderer.mainCamera().position());
+        this.center = null;
+
+        // All the quads need to have the same relative camera offset, so
+        // we use an internal position that is only updated when all the quads are cleared
+        this.cameraPosition = Vec3d.of(Minecraft.getInstance().gameRenderer.mainCamera().position());
+    }
+
+    public void onChunkLoaded(int chunkX, int chunkZ)
+    {
+        // Trigger an update when a chunk within the range plus 1 border chunk loads
+        final int range = Configs.Generic.BIOME_OVERLAY_RANGE.getIntegerValue() + 1;
+
+        if (this.center != null
+            && Math.abs(chunkX - this.center.getX()) <= range
+            && Math.abs(chunkZ - this.center.getZ()) <= range)
+        {
+            this.needsUpdate = true;
         }
     }
 
@@ -110,7 +126,7 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
         int updateDistance = 16;
 
         return this.needsUpdate ||
-               this.needsRenderUpdate ||
+               this.needsRenderUpdate.get() ||
                this.lastUpdatePos == null ||
                 Math.abs(cameraEntity.getX() - this.lastUpdatePos.getX()) > updateDistance ||
                 Math.abs(cameraEntity.getY() - this.lastUpdatePos.getY()) > updateDistance ||
@@ -120,7 +136,14 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
     @Override
     public void update(Vec3d cameraPos, Entity entity, Minecraft mc, ProfilerFiller profiler)
     {
-        List<SubChunkPos> chunks = this.getSubChunksWithinRange(mc.getCameraEntity(), mc);
+        this.needsRenderUpdate.set(false);
+
+        if (this.center == null || Configs.Generic.BIOME_OVERLAY_FIXED.getBooleanValue() == false)
+        {
+            this.center = new SubChunkPos(entity.blockPosition());
+        }
+
+        List<SubChunkPos> chunks = this.getSubChunksWithinRange(this.center, mc);
         BlockPos cameraBlockPos = BlockPos.containing(cameraPos.toVanilla());
         this.scheduleTasksForMissingChunks(chunks, cameraBlockPos, mc.level);
 
@@ -136,7 +159,6 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
         // we use an internal position that is only updated when all the quads are cleared
         this.setUpdatePosition(this.cameraPosition);
         this.needsUpdate = false;
-        this.needsRenderUpdate = false;
     }
 
     @Override
@@ -161,7 +183,7 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
 
         profiler.push("biome_quads");
         RenderObjectVbo ctx = this.renderObjects.getFirst();
-        BufferBuilder builder = ctx.start(() -> "minihud:biome/quads", MaLiLibPipelines.POSITION_COLOR_MASA_LEQUAL_DEPTH_OFFSET_1, 0);
+        BufferBuilder builder = ctx.start(() -> "minihud:biome/quads", MaLiLibPipelines.MINIHUD_SHAPE_OFFSET, 0);
 
         for (ColoredQuad quad : this.renderQuads)
         {
@@ -230,12 +252,10 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
     {
         super.reset();
         this.renderQuads.clear();
-        this.scheduledChunks.clear();
-        this.biomeMapping.clear();
         this.hasData = false;
     }
 
-    protected List<SubChunkPos> getSubChunksWithinRange(Entity cameraEntity, Minecraft mc)
+    protected List<SubChunkPos> getSubChunksWithinRange(SubChunkPos center, Minecraft mc)
     {
         if (mc.level == null) return new ArrayList<>();
 
@@ -243,9 +263,9 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
         Level world = mc.level;
         int viewDistance = Math.min(Configs.Generic.BIOME_OVERLAY_RANGE.getIntegerValue(), mc.options.renderDistance().get());
         int viewDistanceVertical = Math.min(Configs.Generic.BIOME_OVERLAY_RANGE_VERTICAL.getIntegerValue(), mc.options.renderDistance().get());
-        int chunkX = MathUtils.floor(cameraEntity.getX()) >> 4;
-        int chunkY = MathUtils.floor(cameraEntity.getY()) >> 4;
-        int chunkZ = MathUtils.floor(cameraEntity.getZ()) >> 4;
+        int chunkX = center.getX();
+        int chunkY = center.getY();
+        int chunkZ = center.getZ();
         int minCY = Math.max(world.getMinY() >> 4, chunkY - viewDistanceVertical);
         int maxCY = Math.min((world.getMaxY()) >> 4, chunkY + viewDistanceVertical);
         List<SubChunkPos> chunks = new ArrayList<>();
@@ -290,13 +310,15 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
     protected void scheduleTasksForMissingChunks(List<SubChunkPos> chunks, BlockPos cameraBlockPos, Level world)
     {
         //long pre = System.nanoTime(); int count = 0;
+        final Registry<Biome> registry = world.registryAccess().lookupOrThrow(Registries.BIOME);
+
+        if (registry != this.biomeRegistry) // changing servers
+        {
+            this.createBiomeColors(registry);
+        }
+
         synchronized (this.quads)
         {
-            if (this.biomeMapping.isEmpty())
-            {
-                this.createBiomeMapping(world);
-            }
-
             if (this.quads.size() > 32000)
             {
                 this.quads.clear();
@@ -309,19 +331,27 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
 
         for (SubChunkPos pos : chunks)
         {
-            LevelChunk chunk = (LevelChunk) world.getChunk(pos.getX(), pos.getZ(), ChunkStatus.FULL, false);
+            // check that the 3x3 chunks surrounding it are loaded, otherwise it reads plains border
+            final LevelChunk[][] loaded = getLoadedChunksAround(world, pos);
+            LevelChunk chunk = loaded != null ? loaded[1][1] : null;
 
             if (chunk != null)
             {
                 Runnable task = () -> {
                     List<ColoredQuad> quadsOut = new ArrayList<>();
-                    readBiomesAndFindEdges(chunk, pos, quadsOut, this.biomeMapping);
+                    readBiomesAndFindEdges(chunk, pos, quadsOut, registry);
+                    // Drop the result if chunks got unloaded before the task finished. (reloaded chunks are new objects)
+                    boolean valid = Arrays.deepEquals(loaded, getLoadedChunksAround(world, pos));
 
                     synchronized (this.quads)
                     {
-                        this.quads.put(pos, quadsOut);
+                        if (valid)
+                        {
+                            this.quads.put(pos, quadsOut);
+                        }
+
                         this.scheduledChunks.remove(pos);
-                        this.needsRenderUpdate = true;
+                        this.needsRenderUpdate.set(true);
                     }
                 };
 
@@ -340,10 +370,31 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
         //this.lastUpdateTime = System.nanoTime();
     }
 
+    @Nullable
+    private static LevelChunk[][] getLoadedChunksAround(Level world, SubChunkPos pos)
+    {
+        LevelChunk[][] chunks = new LevelChunk[3][3];
+
+        for (int dx = 0; dx < 3; dx += 1)
+        {
+            for (int dz = 0; dz < 3; dz += 1)
+            {
+                LevelChunk chunk = (LevelChunk) world.getChunk(pos.getX() + dx - 1, pos.getZ() + dz - 1, ChunkStatus.FULL, false);
+                if (chunk == null)
+                {
+                    return null;
+                }
+                chunks[dx][dz] = chunk;
+            }
+        }
+
+        return chunks;
+    }
+
     private static int readBiomesAndFindEdges(LevelChunk chunk,
                                               SubChunkPos subChunkPos,
                                               List<ColoredQuad> quadsOut,
-                                              Object2IntOpenHashMap<Biome> biomeMapping)
+                                              Registry<Biome> registry)
     {
         //long pre = System.nanoTime();
         final int startX = (subChunkPos.getX() << 4) - 1;
@@ -365,13 +416,13 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
         }
         //long post = System.nanoTime(); System.out.printf("readBiomesAndFindEdges, reading biome data: %.6fs\n", ((double) post - (double) pre) / 1000000000D);
 
-        return buildQuadsFromBiomeData(startX, startY, startZ, biomes, quadsOut, biomeMapping);
+        return buildQuadsFromBiomeData(startX, startY, startZ, biomes, quadsOut, registry);
     }
 
     private static int buildQuadsFromBiomeData(int minX, int minY, int minZ,
                                                Biome[][][] biomes,
                                                List<ColoredQuad> quadsOut,
-                                               Object2IntOpenHashMap<Biome> biomeMapping)
+                                               Registry<Biome> registry)
     {
         //long pre = System.nanoTime();
         ArrayList<EdgeStrip> stripList = new ArrayList<>();
@@ -392,11 +443,11 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
                 for (int x = 1; x < 17; ++x)
                 {
                     Biome biome = biomes[x][y][z];
-                    buildStrips(x, y, z, axis, minCorner, biome, lastBiome, startPos, biomes, sides, strips, stripList, biomeMapping);
+                    buildStrips(x, y, z, axis, minCorner, biome, lastBiome, startPos, biomes, sides, strips, stripList, registry);
                     lastBiome = biome;
                 }
 
-                endStrips(17, y, z, axis, minCorner, lastBiome, startPos, sides, strips, stripList, biomeMapping);
+                endStrips(17, y, z, axis, minCorner, lastBiome, startPos, sides, strips, stripList, registry);
             }
         }
 
@@ -413,11 +464,11 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
                 for (int z = 1; z < 17; ++z)
                 {
                     Biome biome = biomes[x][y][z];
-                    buildStrips(x, y, z, axis, minCorner, biome, lastBiome, startPos, biomes, sides, strips, stripList, biomeMapping);
+                    buildStrips(x, y, z, axis, minCorner, biome, lastBiome, startPos, biomes, sides, strips, stripList, registry);
                     lastBiome = biome;
                 }
 
-                endStrips(x, y, 17, axis, minCorner, lastBiome, startPos, sides, strips, stripList, biomeMapping);
+                endStrips(x, y, 17, axis, minCorner, lastBiome, startPos, sides, strips, stripList, registry);
             }
         }
         //long post = System.nanoTime(); System.out.printf("buildQuadsFromBiomeData, strips: %.6fs - count: %d\n", ((double) post - (double) pre) / 1000000000D, stripList.size());
@@ -428,7 +479,7 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
     private static void buildStrips(int x, int y, int z, Direction.Axis axis, BlockPos minCorner,
                                     Biome biome, @Nullable Biome lastBiome, int[] startPos,
                                     Biome[][][] biomes, Direction[] sides, EdgeStrip[][][][] strips,
-                                    ArrayList<EdgeStrip> stripList, Object2IntOpenHashMap<Biome> biomeMapping)
+                                    ArrayList<EdgeStrip> stripList, Registry<Biome> registry)
     {
         int biomeId = -1;
         int pos = axis == Direction.Axis.X ? x : z;
@@ -453,7 +504,7 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
             {
                 if (biomeId == -1)
                 {
-                    biomeId = biomeMapping.getInt(lastBiome);
+                    biomeId = registry.getId(lastBiome);
                 }
 
                 if (axis == Direction.Axis.X)
@@ -471,8 +522,7 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
                 //if (stripX == 100 && stripY == 65 && stripZ < -80 && side == Direction.EAST)
                 //System.out.printf("adding strip @ [%d, %d, %d]: side: %s, len: %d, pos: %d, ss: %d\n", stripX, stripY, stripZ, side, pos - stripStart, pos, stripStart);
 
-                long packedPos = getPackedCoordinate(stripX, stripY, stripZ);
-                EdgeStrip strip = new EdgeStrip(packedPos, side, pos - stripStart, biomeId);
+                EdgeStrip strip = new EdgeStrip(new Vec3i(stripX, stripY, stripZ), side, pos - stripStart, biomeId);
 
                 strips[stripX & 0xF][stripY & 0xF][stripZ & 0xF][sideIndex] = strip;
                 stripList.add(strip);
@@ -493,7 +543,7 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
     private static void endStrips(int x, int y, int z, Direction.Axis axis, BlockPos minCorner,
                                   Biome lastBiome, int[] startPos,
                                   Direction[] sides, EdgeStrip[][][][] strips, ArrayList<EdgeStrip> stripList,
-                                  Object2IntOpenHashMap<Biome> biomeMapping)
+                                  Registry<Biome> registry)
     {
         int biomeId = -1;
         // Note: The min coordinates are adjusted by -1 already
@@ -511,7 +561,7 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
             {
                 if (biomeId == -1)
                 {
-                    biomeId = biomeMapping.getInt(lastBiome);
+                    biomeId = registry.getId(lastBiome);
                 }
 
                 if (axis == Direction.Axis.X)
@@ -529,8 +579,8 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
 
                 //if (stripX == 100 && stripY == 65 && stripZ < -80 && side == Direction.EAST)
                 //System.out.printf("endStrips adding strip @ [%d, %d, %d]: side: %s, len: %d\n", stripX, stripY, stripZ, side, 16 - stripStart + 1);
-                long packedPos = getPackedCoordinate(stripX, stripY, stripZ);
-                EdgeStrip strip = new EdgeStrip(packedPos, side, 16 - stripStart + 1, biomeId);
+                Vec3i pos = new Vec3i(stripX, stripY, stripZ);
+                EdgeStrip strip = new EdgeStrip(pos, side, 16 - stripStart + 1, biomeId);
 
                 strips[stripX & 0xF][stripY & 0xF][stripZ & 0xF][sideIndex] = strip;
                 stripList.add(strip);
@@ -550,10 +600,10 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
         {
             Direction side = strip.side;
             int sideIndex = side.get3DDataValue();
-            final long startPos = strip.startPosLong;
-            int x = unpackX(startPos) & 0xF;
-            int y = unpackY(startPos) & 0xF;
-            int z = unpackZ(startPos) & 0xF;
+            final Vec3i startPos = strip.startPos;
+            int x = startPos.getX() & 0xF;
+            int y = startPos.getY() & 0xF;
+            int z = startPos.getZ() & 0xF;
 
             if ((handled[x][y][z] & (1 << sideIndex)) != 0)
             {
@@ -585,117 +635,38 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
                 ++count;
             }
 
-            quadsOut.add(makeColoredQuad(startPos, length, count, side, strip.biomeId));
+            quadsOut.add(new ColoredQuad(startPos, length, count, side, strip.biomeId));
         }
         //long post = System.nanoTime(); System.out.printf("buildStripsToQuads: %.6fs, quads: %d\n", ((double) post - (double) pre) / 1000000000D, quadsOut.size());
 
         return  quadsOut.size();
     }
 
-    protected static ColoredQuad makeColoredQuad(long startPos, int stripLength, int stripCount,
-                                                 Direction side, int biomeId)
+    private void createBiomeColors(Registry<Biome> registry)
     {
-        int x1 = unpackX(startPos);
-        int y1 = unpackY(startPos);
-        int z1 = unpackZ(startPos);
+        int count = registry.size();
+        int maxId = 0;
 
-        return new ColoredQuad(new Vec3i(x1, y1, z1), stripLength, stripCount, side, biomeId);
-    }
-
-    protected static int unpackX(long packedCoordinate)
-    {
-        return (int) ((packedCoordinate << 40L) >> 40L);
-    }
-
-    protected static int unpackY(long packedCoordinate)
-    {
-        return (int) (packedCoordinate >> 48L);
-    }
-
-    protected static int unpackZ(long packedCoordinate)
-    {
-        return (int) ((packedCoordinate << 16L) >> 40L);
-    }
-
-    protected static long getPackedCoordinate(int x, int y, int z)
-    {
-        return (((long) y & 0xFFFF) << 48L) | (((long) z & 0xFFFFFF) << 24L) | ((long) x & 0xFFFFFF);
-    }
-
-    protected static long getPackedCoordinate(BlockPos.MutableBlockPos pos)
-    {
-        return getPackedCoordinate(pos.getX(), pos.getY(), pos.getZ());
-    }
-
-    private void createBiomeMapping(Level world)
-    {
-        this.biomeMapping.clear();
-        this.biomeColorsMap.clear();
-        this.biomeColorsArray = new Color4f[0];
-
-        if (Configs.Generic.BIOME_OVERLAY_SINGLE_COLOR.getBooleanValue())
+        for (Biome biome : registry)
         {
-            this.colorRetriever = (id) -> this.fixedColor;
+            maxId = Math.max(maxId, registry.getId(biome));
         }
-        else
+
+        this.biomeColorsArray = new Color4f[maxId + 1];
+
+        for (Biome biome : registry)
         {
-            final Registry<Biome> registry = world.registryAccess().lookupOrThrow(Registries.BIOME);
-            int count = 0;
-            int maxId = 0;
-
-            for (Biome biome : registry)
-            {
-                int id = registry.getId(biome);
-                this.biomeMapping.put(biome, id);
-                ++count;
-
-                if (id > maxId)
-                {
-                    maxId = id;
-                }
-            }
-
-            int hueInc = 360 / count;
-            int hue = 0;
-
-            if (maxId <= 65535)
-            {
-                this.biomeColorsArray = new Color4f[maxId + 1];
-                this.colorRetriever = (id) -> this.biomeColorsArray[id];
-
-                for (int id : this.biomeMapping.values())
-                {
-                    this.biomeColorsArray[id] = Color4f.fromColor(getColorFromHue(hue), 0.25f);
-                    hue += hueInc;
-                }
-            }
-            else
-            {
-                this.colorRetriever = this.biomeColorsMap::get;
-
-                for (int id : this.biomeMapping.values())
-                {
-                    this.biomeColorsMap.put(id, Color4f.fromColor(getColorFromHue(hue), 0.25f));
-                    hue += hueInc;
-                }
-            }
-
-            this.addCustomColorMappings(registry);
+            int id = registry.getId(biome);
+            this.biomeColorsArray[id] = Color4f.fromColor(getColorFromHue(id * 360 / count), 0.25f);
         }
+
+        this.addCustomColorMappings(registry);
+        this.biomeRegistry = registry;
     }
 
     private void addCustomColorMappings(Registry<Biome> registry)
     {
-        ColorRegistry reg;
-
-        if (this.biomeColorsArray.length > 0)
-        {
-            reg = (biomeId, color) -> this.assignColor(biomeId, color, (id, c) -> this.biomeColorsArray[id] = c, registry);
-        }
-        else
-        {
-            reg = (biomeId, color) -> this.assignColor(biomeId, color, this.biomeColorsMap::put, registry);
-        }
+        ColorRegistry reg = (biomeId, color) -> this.assignColor(biomeId, color, registry);
 
         reg.set("minecraft:badlands",                         0xFFC040);
         reg.set("minecraft:badlands_plateau",                 0xFFC040);
@@ -705,11 +676,14 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
         reg.set("minecraft:beach",                            0xF2EFC2);
         reg.set("minecraft:birch_forest",                     0x45D69B);
         reg.set("minecraft:birch_forest_hills",               0x45D69B);
+        reg.set("minecraft:cherry_grove",                     0xEFBAF1);
         reg.set("minecraft:cold_ocean",                       0x0709EB);
         reg.set("minecraft:crimson_forest",                   0xFF0713);
+        reg.set("minecraft:dappled_forest",                   0xF23E17);
         reg.set("minecraft:dark_forest",                      0x009301);
         reg.set("minecraft:dark_forest_hills",                0x6DA77C);
         reg.set("minecraft:deep_cold_ocean",                  0x261FB4);
+        reg.set("minecraft:deep_dark",                        0x1F2E35);
         reg.set("minecraft:deep_frozen_ocean",                0x1F69B4);
         reg.set("minecraft:deep_lukewarm_ocean",              0x1FB3B4);
         reg.set("minecraft:deep_ocean",                       0x1D41E4);
@@ -718,25 +692,31 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
         reg.set("minecraft:desert_hills",                     0xF2B801);
         reg.set("minecraft:desert_lakes",                     0xC0F201);
         reg.set("minecraft:dripstone_caves",                  0xB29268);
-        reg.set("minecraft:end_barrens",                      0xD2CFB4);
+        reg.set("minecraft:end_barrens",                      0x8C77B2);
         reg.set("minecraft:end_highlands",                    0xF0C136);
         reg.set("minecraft:end_midlands",                     0xE7F036);
         reg.set("minecraft:eroded_badlands",                  0xE278A9);
         reg.set("minecraft:flower_forest",                    0x71E78B);
         reg.set("minecraft:forest",                           0x21A13D);
         reg.set("minecraft:frozen_ocean",                     0x79C7EC);
+        reg.set("minecraft:frozen_peaks",                     0x5F9BA9);
         reg.set("minecraft:frozen_river",                     0xBDDEED);
         reg.set("minecraft:giant_spruce_taiga",               0xCB710B);
         reg.set("minecraft:giant_spruce_taiga_hills",         0xB74615);
         reg.set("minecraft:giant_tree_taiga",                 0xC29E45);
         reg.set("minecraft:giant_tree_taiga_hills",           0xBBAA7F);
         reg.set("minecraft:gravelly_mountains",               0x939088);
+        reg.set("minecraft:grove",                            0x88B8AA);
+        reg.set("minecraft:ice_caves",                        0x92B9FE);
         reg.set("minecraft:ice_spikes",                       0x24FBFF);
+        reg.set("minecraft:jagged_peaks",                     0x6E8286);
         reg.set("minecraft:jungle",                           0x72EF5D);
         reg.set("minecraft:jungle_edge",                      0x3DE296);
         reg.set("minecraft:jungle_hills",                     0x26AD6F);
         reg.set("minecraft:lukewarm_ocean",                   0x22D9E6);
         reg.set("minecraft:lush_caves",                       0x4ACE47);
+        reg.set("minecraft:mangrove_swamp",                   0x313D1F);
+        reg.set("minecraft:meadow",                           0x4F7B48);
         reg.set("minecraft:modified_badlands_plateau",        0x7F7B21);
         reg.set("minecraft:modified_gravelly_mountains",      0x678FA4);
         reg.set("minecraft:modified_jungle",                  0x9FE961);
@@ -745,24 +725,34 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
         reg.set("minecraft:mountain_edge",                    0x818181);
         reg.set("minecraft:mountains",                        0xC5C5C5);
         reg.set("minecraft:mushroom_field_shore",             0xEC7F5E);
-        reg.set("minecraft:mushroom_fields",                  0xED7109);
-        reg.set("minecraft:nether_wastes",                    0x88AABC);
+        reg.set("minecraft:mushroom_fields",                  0xE625EA);
+        reg.set("minecraft:nether_wastes",                    0xA95355);
         reg.set("minecraft:ocean",                            0x0926ED);
+        reg.set("minecraft:old_growth_birch_forest",          0x56A45D);
+        reg.set("minecraft:old_growth_pine_taiga",            0xC29E45);
+        reg.set("minecraft:old_growth_spruce_taiga",          0xCB710B);
+        reg.set("minecraft:pale_garden",                      0x747668);
         reg.set("minecraft:plains",                           0x1EA128);
         reg.set("minecraft:river",                            0x2D6EDA);
         reg.set("minecraft:savanna",                          0xBEBB61);
         reg.set("minecraft:savanna_plateau",                  0xEBE433);
         reg.set("minecraft:shattered_savanna",                0xEBB433);
         reg.set("minecraft:shattered_savanna_plateau",        0xB19D6F);
-        reg.set("minecraft:small_end_islands",                0xC0CD03);
+        reg.set("minecraft:small_end_islands",                0xA083E0);
         reg.set("minecraft:snowy_beach",                      0xE0DD95);
         reg.set("minecraft:snowy_mountains",                  0xDDDDDD);
+        reg.set("minecraft:snowy_plains",                     0xE6F4F7);
+        reg.set("minecraft:snowy_slopes",                     0xB0C3CD);
         reg.set("minecraft:snowy_taiga",                      0xC9EFC5);
         reg.set("minecraft:snowy_taiga_hills",                0x4FB043);
         reg.set("minecraft:snowy_taiga_mountains",            0xA1BBE9);
         reg.set("minecraft:snowy_tundra",                     0x62A15A);
-        reg.set("minecraft:soul_sand_valley",                 0x8F510B);
+        reg.set("minecraft:soul_sand_valley",                 0x694935);
+        reg.set("minecraft:sparse_jungle",                    0x3DE296);
         reg.set("minecraft:stone_shore",                      0xABABAB);
+        reg.set("minecraft:stony_peaks",                      0x7C7C7C);
+        reg.set("minecraft:stony_shore",                      0xABABAB);
+        reg.set("minecraft:sulfur_caves",                     0xC9B967);
         reg.set("minecraft:sunflower_plains",                 0x93DF19);
         reg.set("minecraft:swamp",                            0x27960B);
         reg.set("minecraft:swamp_hills",                      0x89D267);
@@ -774,13 +764,18 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
         reg.set("minecraft:the_end",                          0xC7E030);
         reg.set("minecraft:the_void",                         0xF218F3);
         reg.set("minecraft:warm_ocean",                       0x189EF4);
-        reg.set("minecraft:warped_forest",                    0x7BB6DA);
+        reg.set("minecraft:warped_forest",                    0x2797A0);
+        reg.set("minecraft:windswept_forest",                 0x97B994);
+        reg.set("minecraft:windswept_gravelly_hills",         0x939088);
+        reg.set("minecraft:windswept_hills",                  0xC5C5C5);
+        reg.set("minecraft:windswept_savanna",                0xEBB433);
+        reg.set("minecraft:wooded_badlands",                  0xCBAA3D);
         reg.set("minecraft:wooded_badlands_plateau",          0xCBAA3D);
         reg.set("minecraft:wooded_hills",                     0x3BAC30);
         reg.set("minecraft:wooded_mountains",                 0x97B994);
     }
 
-    private void assignColor(String biomeId, int color, ColorSetter setter, Registry<Biome> registry)
+    private void assignColor(String biomeId, int color, Registry<Biome> registry)
     {
         try
         {
@@ -792,11 +787,11 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
 
 				if (optional.isPresent())
 				{
-					int id = this.biomeMapping.getInt(optional.get().value());
+					int id = registry.getId(optional.get().value());
 
 					if (id >= 0)
 					{
-						setter.set(id, Color4f.fromColor(color, 0.25f));
+						this.biomeColorsArray[id] = Color4f.fromColor(color, 0.25f);
 					}
 				}
 			}
@@ -809,14 +804,15 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
         void set(String biomeId, int color);
     }
 
-    private interface ColorSetter
-    {
-        void set(int biomeId, Color4f color);
-    }
-
     private Color4f getColor(int biomeId)
     {
-        return this.colorRetriever.apply(biomeId);
+        if (Configs.Generic.BIOME_OVERLAY_SINGLE_COLOR.getBooleanValue() ||
+            biomeId < 0 || biomeId >= this.biomeColorsArray.length)
+        {
+            return this.fixedColor;
+        }
+
+        return this.biomeColorsArray[biomeId];
     }
 
     public static int getColorFromHue(int hue)
@@ -848,14 +844,14 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
 
     protected static class EdgeStrip
     {
-        public final long startPosLong;
+        public final Vec3i startPos;
         public final Direction side;
         public final int length;
         public final int biomeId;
 
-        public EdgeStrip(long startPosLong, Direction side, int length, int biomeId)
+        public EdgeStrip(Vec3i startPos, Direction side, int length, int biomeId)
         {
-            this.startPosLong = startPosLong;
+            this.startPos = startPos;
             this.side = side;
             this.length = length;
             this.biomeId = biomeId;
@@ -869,14 +865,14 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
 
             EdgeStrip edgeStrip = (EdgeStrip) o;
 
-            if (this.startPosLong != edgeStrip.startPosLong) {return false;}
+            if (this.startPos.equals(edgeStrip.startPos) == false) {return false;}
             return this.side == edgeStrip.side;
         }
 
         @Override
         public int hashCode()
         {
-            int result = (int) (this.startPosLong ^ (this.startPosLong >>> 32));
+            int result = this.startPos.hashCode();
             result = 31 * result + this.side.hashCode();
             return result;
         }
@@ -884,8 +880,8 @@ public class OverlayRendererBiomeBorders extends OverlayRendererBase
         @Override
         public String toString()
         {
-            return String.format("EdgeStrip{startPosLong=%08X, side=%s, length=%d, biomeId=%d}",
-                                 this.startPosLong, this.side, this.length, this.biomeId);
+            return String.format("EdgeStrip{startPos=%s, side=%s, length=%d, biomeId=%d}",
+                                 this.startPos, this.side, this.length, this.biomeId);
         }
     }
 }

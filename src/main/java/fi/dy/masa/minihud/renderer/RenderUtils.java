@@ -743,10 +743,10 @@ public class RenderUtils
             buffer.addVertex(minX, minY, minZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
             buffer.addVertex(minX, maxY, maxZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
 
-            for (float z = minZ; z < maxZ + 0.5; z += 1.0F)
+            for (int dz = 0; dz <= height; dz += 1)
             {
-                buffer.addVertex(minX, minY, z).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
-                buffer.addVertex(maxX, maxY, z).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
+                buffer.addVertex(minX, minY, minZ + dz).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
+                buffer.addVertex(maxX, maxY, minZ + dz).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
             }
         }
         else
@@ -755,10 +755,10 @@ public class RenderUtils
             buffer.addVertex(minX, minY, minZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
             buffer.addVertex(minX, maxY, minZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
 
-            for (float y = minY; y < maxY + 0.5; y += 1.0F)
+            for (int dy = 0; dy <= height; dy += 1)
             {
-                buffer.addVertex(minX, y, minZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
-                buffer.addVertex(maxX, y, maxZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
+                buffer.addVertex(minX, minY + dy, minZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
+                buffer.addVertex(maxX, minY + dy, maxZ).setColor(color.r, color.g, color.b, color.a).setLineWidth(lineWidth);
             }
         }
     }

@@ -270,6 +270,7 @@ public class DataStorage
     {
         MiniHUD.debugLog("DataStorage#onWorldJoin()");
         OverlayRendererBeaconRange.INSTANCE.setNeedsUpdate();
+        OverlayRendererBiomeBorders.INSTANCE.setNeedsUpdate();
         OverlayRendererConduitRange.INSTANCE.setNeedsUpdate();
         OverlayRendererSpawnChunks.INSTANCE_REAL.setNeedsUpdate();
         OverlayRendererSpawnChunks.INSTANCE_PLAYER.setNeedsUpdate();

@@ -7,6 +7,7 @@ import net.minecraft.network.protocol.game.ClientboundLevelChunkPacketData;
 import net.minecraft.network.protocol.game.ClientboundSectionBlocksUpdatePacket;
 import net.minecraft.world.level.block.state.BlockState;
 
+import fi.dy.masa.minihud.renderer.OverlayRendererBiomeBorders;
 import fi.dy.masa.minihud.renderer.OverlayRendererLightningRodRange;
 
 public class NotificationUtils
@@ -39,6 +40,7 @@ public class NotificationUtils
         if (mc.level != null)
         {
             OverlayRendererLightningRodRange.INSTANCE.onChunkLoad(chunkX, chunkZ, mc.level);
+            OverlayRendererBiomeBorders.INSTANCE.onChunkLoaded(chunkX, chunkZ);
         }
     }
 }
