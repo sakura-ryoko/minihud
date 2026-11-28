@@ -1,8 +1,8 @@
 package fi.dy.masa.minihud.event;
 
-import fi.dy.masa.malilib.interfaces.IClientTickHandler;
-import fi.dy.masa.minihud.data.HudDataManager;
 import net.minecraft.client.Minecraft;
+
+import fi.dy.masa.malilib.interfaces.IClientTickHandler;
 
 public class ClientTickHandler implements IClientTickHandler
 {
@@ -12,7 +12,6 @@ public class ClientTickHandler implements IClientTickHandler
         if (mc.level != null && mc.player != null)
         {
             RenderHandler.getInstance().updateData(mc);
-            HudDataManager.getInstance().onClientTickPost(mc);
         }
     }
 }

@@ -83,6 +83,10 @@ public class WorldLoadListener implements IWorldLoadListener
                 WorkerDaemonHandler.INSTANCE.start();
                 CachedTagManager.startCache();
             }
+            else
+            {
+                DataStorage.getInstance().onDimensionChange();
+            }
 
             Configs.checkBaseLanguage();
             this.readStoredDataPerDimension();

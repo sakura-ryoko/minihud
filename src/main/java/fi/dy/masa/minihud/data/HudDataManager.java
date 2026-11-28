@@ -23,8 +23,10 @@ import net.minecraft.world.level.gamerules.GameRules;
 
 import fi.dy.masa.malilib.config.options.ConfigBoolean;
 import fi.dy.masa.malilib.gui.GuiBase;
+import fi.dy.masa.malilib.interfaces.IClientTickHandler;
 import fi.dy.masa.malilib.network.ClientPlayHandler;
 import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
+import fi.dy.masa.malilib.network.status.NetworkState;
 import fi.dy.masa.malilib.util.InfoUtils;
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.malilib.util.data.Constants;
@@ -44,16 +46,14 @@ import fi.dy.masa.minihud.network.ServuxHudPacket;
 import fi.dy.masa.minihud.renderer.OverlayRendererSpawnChunks;
 import fi.dy.masa.minihud.util.DataStorage;
 
-public class HudDataManager
+public class HudDataManager implements IClientTickHandler
 {
     private static final HudDataManager INSTANCE = new HudDataManager();
-
+    public static HudDataManager getInstance() { return INSTANCE; }
     private final static ServuxHudHandler<ServuxHudPacket.Payload> HANDLER = ServuxHudHandler.getInstance();
-    private final Minecraft mc = Minecraft.getInstance();
 
-    private boolean shouldRegister;
+    private final Minecraft mc;
     private boolean servuxServer;
-    private boolean hasInValidServux;
     private String servuxVersion;
     private int servuxProtocolVersion;
 
@@ -73,11 +73,13 @@ public class HudDataManager
 
     private RecipeMap preparedRecipes;
     private int recipeCount;
+    private long lastTickTime;
+    private long lastMetaRequestTime;
 
     public HudDataManager()
     {
+        this.mc = Minecraft.getInstance();
         this.servuxServer = false;
-        this.hasInValidServux = false;
         this.servuxVersion = "";
         this.worldSeed = -1;
         this.spawnChunkRadius = -1;
@@ -92,9 +94,9 @@ public class HudDataManager
         this.thunderWeatherTimer = -1;
         this.preparedRecipes = RecipeMap.EMPTY;
         this.recipeCount = 0;
+        this.lastTickTime = System.currentTimeMillis();
+        this.lastMetaRequestTime = 0L;
     }
-
-    public static HudDataManager getInstance() { return INSTANCE; }
 
     public void onGameInit()
     {
@@ -111,16 +113,86 @@ public class HudDataManager
 
     public IPluginClientPlayHandler<ServuxHudPacket.Payload> getNetworkHandler() { return HANDLER; }
 
+
+    @Override
+    public void onClientTick(Minecraft mc)
+    {
+        final long now = System.currentTimeMillis();
+
+        if (!DataStorage.getInstance().hasIntegratedServer())
+        {
+            if (this.clearWeatherTimer > 0)
+            {
+                this.clearWeatherTimer--;
+            }
+            if (this.rainWeatherTimer > 0)
+            {
+                this.rainWeatherTimer--;
+            }
+            if (this.thunderWeatherTimer > 0)
+            {
+                this.thunderWeatherTimer--;
+            }
+        }
+
+        if ((now - this.lastTickTime) > 50L)
+        {
+            if (this.mc.level == null || this.mc.player == null)
+            {
+                this.lastTickTime = now;
+                return;
+            }
+
+            if (!Configs.Generic.HUD_DATA_SYNC.getBooleanValue())
+            {
+                if (!DataStorage.getInstance().hasIntegratedServer())
+                {
+                    if (this.hasServuxServer())
+                    {
+//                        MiniHUD.debugLog("HudDataManager#unregisterChannel(): for {}", this.servuxVersion != null ? this.servuxVersion : "<unknown>");
+                        this.servuxServer = false;
+                        HANDLER.encodeClientData(ServuxHudPacket.UnregisterReply(new CompoundData()));
+                        // Broken for some reason?
+//                        HANDLER.unregisterPlayReceiver();
+                        HANDLER.tracker().displayGenericDisconnectedMessage();
+                    }
+
+                    if (!HANDLER.tracker().isLocked())
+                    {
+                        HANDLER.tracker().lock();
+                    }
+                }
+            }
+            else if (Configs.Generic.HUD_DATA_SYNC.getBooleanValue() &&
+                    !DataStorage.getInstance().hasIntegratedServer() &&
+                    !this.hasServuxServer() &&
+                    !HANDLER.tracker().isLocked())
+            {
+                if (this.lastMetaRequestTime > 0L && (now - this.lastMetaRequestTime) > 4000L)
+                {
+                    // Give up after 4 seconds, and don't continuously request metadata.
+                    HANDLER.tracker().tickState(NetworkState.GENERAL_ERROR);
+                    HANDLER.tracker().lock();
+                    HANDLER.tracker().displayTopStatusMessage();
+                }
+                else
+                {
+                    HANDLER.registerPlayReceiver(ServuxHudPacket.Payload.ID, HANDLER::receivePlayPayload);
+                    this.requestMetadata();
+                }
+            }
+
+            this.lastTickTime = now;
+        }
+    }
+
     public void reset(boolean isLogout)
     {
         if (isLogout)
         {
             MiniHUD.debugLog("HudDataStorage#reset() - log-out");
             HANDLER.reset(this.getNetworkChannel());
-            HANDLER.resetFailures(this.getNetworkChannel());
-
             this.servuxServer = false;
-            this.hasInValidServux = false;
             this.servuxVersion = "";
             this.spawnChunkRadius = -1;
             this.worldSpawn = new GlobalPos(Level.OVERWORLD, BlockPos.ZERO);
@@ -128,10 +200,14 @@ public class HudDataManager
             this.spawnChunkRadiusValid = false;
             this.preparedRecipes = RecipeMap.EMPTY;
             this.recipeCount = 0;
+            this.lastMetaRequestTime = 0L;
         }
         else
         {
             MiniHUD.debugLog("HudDataStorage#reset() - dimension change or log-in");
+
+            // Re-Register connection [OPTIONAL]
+//            this.reRegisterServux();
         }
 
         if (this.hasServuxServer())
@@ -168,42 +244,38 @@ public class HudDataManager
 
     public void onWorldJoin()
     {
-        MiniHUD.debugLog("HudDataStorage#onWorldJoin()");
+        // NO-OP
+    }
 
-        if (!DataStorage.getInstance().hasIntegratedServer())
+    // [OPTIONAL]
+    private void reRegisterServux()
+    {
+        if (Configs.Generic.HUD_DATA_SYNC.getBooleanValue() &&
+            !DataStorage.getInstance().hasIntegratedServer() &&
+            this.hasServuxServer())
         {
-            if (Configs.Generic.HUD_DATA_SYNC.getBooleanValue())
-            {
-                if (this.hasServuxServer())
-                {
-                    this.unregisterChannel();
-                }
+            HANDLER.encodeClientData(ServuxHudPacket.UnregisterReply(new CompoundData()));
+            HANDLER.tracker().displayGenericDisconnectedMessage();
+            this.servuxServer = false;
+            this.lastMetaRequestTime = 0L;
 
-                this.shouldRegister = true;
-                this.registerChannel();
-            }
-            else
-            {
-                this.unregisterChannel();
-            }
+            // Request
+            this.requestMetadata();
         }
     }
 
     public void onPacketFailure()
     {
 //        Configs.Generic.HUD_DATA_SYNC.setBooleanValue(false);
-        this.shouldRegister = false;
+//        this.shouldRegister = false;
         this.servuxServer = false;
-        this.hasInValidServux = true;
+        HANDLER.tracker().displayStatusAllMessages();
     }
 
     public void setIsServuxServer()
     {
         this.servuxServer = true;
-        if (this.hasInValidServux)
-        {
-            this.hasInValidServux = false;
-        }
+        HANDLER.tracker().reset();
     }
 
     public void setServuxVersion(String ver, int protocol)
@@ -496,25 +568,6 @@ public class HudDataManager
         return null;
     }
 
-    public void onClientTickPost(Minecraft mc)
-    {
-        if (!DataStorage.getInstance().hasIntegratedServer())
-        {
-            if (this.clearWeatherTimer > 0)
-            {
-                this.clearWeatherTimer--;
-            }
-            if (this.rainWeatherTimer > 0)
-            {
-                this.rainWeatherTimer--;
-            }
-            if (this.thunderWeatherTimer > 0)
-            {
-                this.thunderWeatherTimer--;
-            }
-        }
-    }
-
     public void onServerWeatherTick(int clearTime, int rainTime, int thunderTime, boolean isRaining, boolean isThunder)
     {
         this.clearWeatherTimer = clearTime;
@@ -526,34 +579,9 @@ public class HudDataManager
 
     public void onHudDataSyncToggled(ConfigBoolean config)
     {
-        if (this.hasInValidServux)
+        if (config.getBooleanValue())
         {
             this.reset(true);
-        }
-
-        if (this.hasServuxServer() && !config.getBooleanValue())
-        {
-            this.unregisterChannel();
-        }
-        else
-        {
-            this.shouldRegister = true;
-            this.registerChannel();
-        }
-    }
-
-    public void registerChannel()
-    {
-        this.shouldRegister = true;
-
-        if (!this.hasServuxServer() && !DataStorage.getInstance().hasIntegratedServer() && !this.hasInValidServux)
-        {
-            this.onWorldPre();
-            this.requestMetadata();
-        }
-        else
-        {
-            this.shouldRegister = false;
         }
     }
 
@@ -564,9 +592,15 @@ public class HudDataManager
             if (Configs.Generic.HUD_DATA_SYNC.getBooleanValue() &&
                 HANDLER.isPlayRegistered(HANDLER.getPayloadChannel()))
             {
+                MiniHUD.LOGGER.warn("REQUEST METADATA");
                 CompoundData nbt = new CompoundData();
                 nbt.putInt("version", ServuxHudPacket.PROTOCOL_VERSION);
                 HANDLER.encodeClientData(ServuxHudPacket.MetadataRequest(nbt));
+
+                if (this.lastMetaRequestTime < 50L)
+                {
+                    this.lastMetaRequestTime = System.currentTimeMillis();
+                }
             }
         }
     }
@@ -583,49 +617,49 @@ public class HudDataManager
 
     public boolean receiveMetadata(CompoundData data)
     {
-        if (!this.servuxServer && !DataStorage.getInstance().hasIntegratedServer() &&
-            this.shouldRegister)
+        if (!DataStorage.getInstance().hasIntegratedServer())
         {
-            final int version = data.getIntOrDefault("version", -1);
-            final String servux = data.getStringOrDefault("servux", "?");
             MiniHUD.debugLog("HudDataStorage#receiveMetadata(): received METADATA from Servux");
-
-            if (version != ServuxHudPacket.PROTOCOL_VERSION || !servux.startsWith("servux-"+Reference.MOD_TYPE))
-            {
-                MiniHUD.LOGGER.warn("hudDataChannel: Mis-matched protocol version! (Expected: {} but got {} running on: {})", ServuxHudPacket.PROTOCOL_VERSION, version, servux);
-
-                if (version >= ServuxHudPacket.PROTOCOL_VERSION)
-                {
-                    HANDLER.encodeClientData(ServuxHudPacket.UnregisterReply(new CompoundData()));
-                }
-
-                HANDLER.unregisterPlayReceiver();
-                HANDLER.reset(this.getNetworkChannel());
-//                Configs.Generic.HUD_DATA_SYNC.setBooleanValue(false);
-                this.onPacketFailure();
-
-                return false;
-            }
-
-            MiniHUD.debugLog("hudDataChannel: Connected to: {}", servux);
-            this.setServuxVersion(servux, version);
-            this.setWorldSpawn(
-                    new GlobalPos(
-                            this.getWorldType(data.getStringOrDefault("spawnDimension", Level.OVERWORLD.identifier().toString())),
-                            new BlockPos(data.getIntOrDefault("spawnPosX", 0), data.getIntOrDefault("spawnPosY", 0), data.getIntOrDefault("spawnPosZ", 0)))
-            );
-//            this.setSpawnChunkRadius(data.getInt("spawnChunkRadius", 2), true);
-
-            if (data.contains("worldSeed", Constants.NBT.TAG_LONG))
-            {
-                this.setWorldSeed(data.getLongOrDefault("worldSeed", -1L));
-            }
-
-            this.setIsServuxServer();
 
             if (Configs.Generic.HUD_DATA_SYNC.getBooleanValue())
             {
-                //this.registerChannel();
+                final int version = data.getIntOrDefault("version", -1);
+                final String servux = data.getStringOrDefault("servux", "?");
+
+                if (version != ServuxHudPacket.PROTOCOL_VERSION || !servux.startsWith("servux-" + Reference.MOD_TYPE))
+                {
+                    MiniHUD.LOGGER.warn("hudDataChannel: Mis-matched protocol version! (Expected: {} but got {} running on: {})", ServuxHudPacket.PROTOCOL_VERSION, version, servux);
+
+                    if (version >= ServuxHudPacket.PROTOCOL_VERSION)
+                    {
+                        HANDLER.encodeClientData(ServuxHudPacket.UnregisterReply(new CompoundData()));
+                    }
+
+                    HANDLER.tracker().tickState(NetworkState.VERSION_MISMATCH);
+                    HANDLER.tracker().lock();
+                    HANDLER.unregisterPlayReceiver();
+//                    HANDLER.reset(this.getNetworkChannel());
+//                    Configs.Generic.HUD_DATA_SYNC.setBooleanValue(false);
+                    this.onPacketFailure();
+                    return false;
+                }
+
+                MiniHUD.debugLog("hudDataChannel: Connected to: {}", servux);
+                this.setServuxVersion(servux, version);
+                this.setWorldSpawn(
+                        new GlobalPos(
+                                this.getWorldType(data.getStringOrDefault("spawnDimension", Level.OVERWORLD.identifier().toString())),
+                                new BlockPos(data.getIntOrDefault("spawnPosX", 0), data.getIntOrDefault("spawnPosY", 0), data.getIntOrDefault("spawnPosZ", 0)))
+                );
+//            this.setSpawnChunkRadius(data.getInt("spawnChunkRadius", 2), true);
+
+                if (data.contains("worldSeed", Constants.NBT.TAG_LONG))
+                {
+                    this.setWorldSeed(data.getLongOrDefault("worldSeed", -1L));
+                }
+
+                this.setIsServuxServer();
+                HANDLER.tracker().displayGenericConnectedMessage();
 
                 if (!this.hasRecipes())
                 {
@@ -637,31 +671,9 @@ public class HudDataManager
 
                 return true;
             }
-            else
-            {
-                this.unregisterChannel();
-            }
         }
 
         return false;
-    }
-
-    public void unregisterChannel()
-    {
-        if (this.hasServuxServer() || !Configs.Generic.HUD_DATA_SYNC.getBooleanValue())
-        {
-            this.servuxServer = false;
-
-            if (!this.hasInValidServux)
-            {
-                MiniHUD.debugLog("HudDataManager#unregisterChannel(): for {}", this.servuxVersion != null ? this.servuxVersion : "<unknown>");
-                HANDLER.encodeClientData(ServuxHudPacket.UnregisterReply(new CompoundData()));
-                HANDLER.unregisterPlayReceiver();
-                HANDLER.reset(HANDLER.getPayloadChannel());
-            }
-        }
-
-        this.shouldRegister = false;
     }
 
     public void requestSpawnMetadata()
@@ -894,19 +906,6 @@ public class HudDataManager
             else
             {
                 MiniHUD.LOGGER.warn("receiveRecipeManager: failed to read Recipe Manager from Servux (Collection was empty!)");
-            }
-
-            if (Configs.Generic.HUD_DATA_SYNC.getBooleanValue())
-            {
-                if (!this.hasServuxServer())
-                {
-                    this.registerChannel();
-                }
-            }
-            else
-            {
-                this.unregisterChannel();
-                this.shouldRegister = false;
             }
         }
     }

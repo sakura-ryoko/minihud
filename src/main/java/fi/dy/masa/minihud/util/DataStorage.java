@@ -38,9 +38,11 @@ import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraft.world.phys.Vec3;
 
 import fi.dy.masa.malilib.MaLiLibReference;
+import fi.dy.masa.malilib.config.IConfigBoolean;
 import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.network.ClientPlayHandler;
 import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
+import fi.dy.masa.malilib.network.status.NetworkState;
 import fi.dy.masa.malilib.util.InfoUtils;
 import fi.dy.masa.malilib.util.StringUtils;
 import fi.dy.masa.malilib.util.data.Constants;
@@ -69,6 +71,10 @@ public class DataStorage
 {
     private static final Pattern PATTERN_CARPET_TPS = Pattern.compile("TPS: (?<tps>[0-9]+[\\.,][0-9]) MSPT: (?<mspt>[0-9]+[\\.,][0-9])");
     private static final DataStorage INSTANCE = new DataStorage();
+    public static DataStorage getInstance()
+    {
+        return INSTANCE;
+    }
     private final static ServuxStructuresHandler<ServuxStructuresPacket.Payload> HANDLER = ServuxStructuresHandler.getInstance();
 
     private final Minecraft mc;
@@ -88,7 +94,6 @@ public class DataStorage
     // Strucutres
     private boolean carpetServer;
     private boolean servuxServer;
-    private boolean hasInValidServux;
     private String servuxVersion;
     private int servuxTimeout;
     private int structureDataTimeout;
@@ -98,6 +103,7 @@ public class DataStorage
     private boolean shouldRegisterStructureChannel;
     private BlockPos lastStructureUpdatePos;
     private final ArrayListMultimap<StructureType, StructureData> structures;
+    private long lastMetaRequestTime;
 
     // Other
     private final MobCapDataHandler mobCapData;
@@ -123,7 +129,6 @@ public class DataStorage
         // Structures
         this.carpetServer = false;
         this.servuxServer = false;
-        this.hasInValidServux = false;
         this.servuxVersion = "";
         this.servuxTimeout = 0;
         this.structureDataTimeout = 30 * 20;
@@ -133,16 +138,12 @@ public class DataStorage
         this.shouldRegisterStructureChannel = false;
         this.lastStructureUpdatePos = null;
         this.structures = ArrayListMultimap.create();
+        this.lastMetaRequestTime = 0L;
 
         // Other
         this.mobCapData = new MobCapDataHandler();
         this.distanceReferencePoint = Vec3d.ZERO;
         this.blockBreakCounter = new int[100];
-    }
-
-    public static DataStorage getInstance()
-    {
-        return INSTANCE;
     }
 
     public void onGameInit()
@@ -171,14 +172,12 @@ public class DataStorage
         {
             MiniHUD.debugLog("DataStorage#reset() - log-out");
             HANDLER.reset(this.getNetworkChannel());
-            HANDLER.resetFailures(this.getNetworkChannel());
-
             this.servuxServer = false;
-            this.hasInValidServux = false;
             this.structureDataTimeout = 30 * 20;
             this.registryManager = RegistryAccess.EMPTY;
             this.carpetServer = false;
             this.setHasIntegratedServer(false, null);
+            this.lastMetaRequestTime = 0L;
         }
         else
         {
@@ -206,11 +205,7 @@ public class DataStorage
     public void setIsServuxServer()
     {
         this.servuxServer = true;
-
-        if (this.hasInValidServux)
-        {
-            this.hasInValidServux = false;
-        }
+        HANDLER.tracker().reset();
     }
 
     public void setServuxVersion(String ver)
@@ -302,7 +297,7 @@ public class DataStorage
 //        RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.setBooleanValue(false);
         this.shouldRegisterStructureChannel = false;
         this.servuxServer = false;
-        this.hasInValidServux = true;
+        HANDLER.tracker().displayStatusAllMessages();
     }
 
     /**
@@ -379,8 +374,6 @@ public class DataStorage
 
     public boolean hasServuxServer() { return this.servuxServer; }
 
-    public boolean hasInvalidServux() { return this.hasInValidServux; }
-
     public double getServerTPS()
     {
         return this.serverTPS;
@@ -441,6 +434,88 @@ public class DataStorage
         {
             int tick = (int) (mc.level.getGameTime() % this.blockBreakCounter.length);
             this.blockBreakCounter[tick] = 0;
+        }
+    }
+
+    public void onClientTickPost(Minecraft mc)
+    {
+        if (!this.hasIntegratedServer())
+        {
+            if (RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue())
+            {
+                this.registerStructureChannel();
+            }
+            else
+            {
+                if (this.hasServuxServer())
+                {
+                    this.unregisterStructureChannel();
+                }
+
+                if (!HANDLER.tracker().isLocked())
+                {
+                    HANDLER.tracker().lock();
+                }
+            }
+        }
+    }
+
+    public void onStructureDataToggled(IConfigBoolean config)
+    {
+        final boolean hasServux = this.hasServuxServer();
+
+        if (config.getBooleanValue())
+        {
+            HANDLER.reset(this.getNetworkChannel());
+            this.servuxServer = false;
+            this.structureDataTimeout = 30 * 20;
+            this.lastMetaRequestTime = 0L;
+
+            // Preserves other values; such as Integrated Server state
+            this.reset(false);
+        }
+
+        if (hasServux && !config.getBooleanValue())
+        {
+            this.unregisterStructureChannel();
+        }
+        else
+        {
+            this.shouldRegisterStructureChannel = true;
+            this.registerStructureChannel();
+        }
+    }
+
+    public void onDimensionChange()
+    {
+        final boolean hasServux = this.hasServuxServer();
+
+        if (RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue())
+        {
+            if (hasServux && HANDLER.tracker().isLocked())
+            {
+                HANDLER.reset(this.getNetworkChannel());
+                this.servuxServer = false;
+                this.structureDataTimeout = 30 * 20;
+                this.lastMetaRequestTime = 0L;
+            }
+
+            if (!this.hasIntegratedServer())
+            {
+                if (hasServux)
+                {
+                    this.unregisterStructureChannel();
+                    this.lastMetaRequestTime = 0L;
+                }
+
+                this.registerStructureChannel();
+            }
+
+            this.setStructuresNeedUpdating();
+        }
+        else
+        {
+            this.unregisterStructureChannel();
         }
     }
 
@@ -801,8 +876,10 @@ public class DataStorage
                         this.registerStructureChannel();
                         this.structuresNeedUpdating = true;
                     }
-
-                    this.shouldRegisterStructureChannel = false;
+                    else
+                    {
+                        this.unregisterStructureChannel();
+                    }
                 }
             }
         }
@@ -812,10 +889,23 @@ public class DataStorage
     {
         this.shouldRegisterStructureChannel = true;
 
-        if (this.servuxServer == false && this.hasIntegratedServer == false && this.hasInValidServux == false)
+        if (this.servuxServer == false && this.hasIntegratedServer == false &&
+            !HANDLER.tracker().isLocked())
         {
-            this.onWorldPre();
-            this.requestMetadata();
+            final long now = System.currentTimeMillis();
+
+            if (this.lastMetaRequestTime > 0L && (now - this.lastMetaRequestTime) > 4000L)
+            {
+                // Give up after 4 seconds, and don't continuously request metadata.
+                HANDLER.tracker().tickState(NetworkState.GENERAL_ERROR);
+                HANDLER.tracker().lock();
+                HANDLER.tracker().displayTopStatusMessage();
+            }
+            else
+            {
+                this.onWorldPre();
+                this.requestMetadata();
+            }
         }
         else
         {
@@ -836,6 +926,11 @@ public class DataStorage
                 CompoundData nbt = new CompoundData();
                 nbt.putInt("version", ServuxStructuresPacket.PROTOCOL_VERSION);
                 HANDLER.encodeClientData(ServuxStructuresPacket.StructuresRegister(nbt));
+
+                if (this.lastMetaRequestTime < 50L)
+                {
+                    this.lastMetaRequestTime = System.currentTimeMillis();
+                }
             }
         }
     }
@@ -858,8 +953,10 @@ public class DataStorage
                     HANDLER.encodeClientData(ServuxStructuresPacket.StructuresUnregister(new CompoundData()));
                 }
 
+                HANDLER.tracker().tickState(NetworkState.VERSION_MISMATCH);
+                HANDLER.tracker().lock();
                 HANDLER.unregisterPlayReceiver();
-                HANDLER.reset(this.getNetworkChannel());
+//                HANDLER.reset(this.getNetworkChannel());
 //                RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.setBooleanValue(false);
                 this.onPacketFailure();
 
@@ -873,6 +970,8 @@ public class DataStorage
             if (RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue())
             {
 //                this.registerStructureChannel();
+                HANDLER.tracker().displayGenericConnectedMessage();
+
                 return true;
             }
             else
@@ -886,15 +985,22 @@ public class DataStorage
 
     public void unregisterStructureChannel()
     {
-        if (this.servuxServer || RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue() == false)
+        final boolean wasConnected = this.hasServuxServer();
+
+        if (wasConnected || RendererToggle.OVERLAY_STRUCTURE_MAIN_TOGGLE.getBooleanValue() == false)
         {
             this.servuxServer = false;
 
-            if (this.hasInValidServux == false)
+            if (!HANDLER.tracker().isLocked())
             {
-                MiniHUD.debugLog("DataStorage#unregisterStructureChannel(): for {}", this.servuxVersion != null ? this.servuxVersion : "<unknown>");
-                HANDLER.encodeClientData(ServuxStructuresPacket.StructuresUnregister(new CompoundData()));
-//                HANDLER.unregisterPlayReceiver();
+                if (wasConnected)
+                {
+                    MiniHUD.debugLog("DataStorage#unregisterStructureChannel(): for {}", this.servuxVersion != null ? this.servuxVersion : "<unknown>");
+                    HANDLER.encodeClientData(ServuxStructuresPacket.StructuresUnregister(new CompoundData()));
+                    HANDLER.unregisterPlayReceiver();
+                    HANDLER.tracker().displayGenericDisconnectedMessage();
+                }
+
                 HANDLER.reset(HANDLER.getPayloadChannel());
             }
         }
@@ -904,7 +1010,7 @@ public class DataStorage
 
     private boolean structuresNeedUpdating(BlockPos playerPos, final int hysteresis)
     {
-        return this.structuresNeedUpdating || this.lastStructureUpdatePos == null ||
+        return  this.structuresNeedUpdating || this.lastStructureUpdatePos == null ||
                 Math.abs(playerPos.getX() - this.lastStructureUpdatePos.getX()) >= hysteresis ||
                 Math.abs(playerPos.getY() - this.lastStructureUpdatePos.getY()) >= hysteresis ||
                 Math.abs(playerPos.getZ() - this.lastStructureUpdatePos.getZ()) >= hysteresis;

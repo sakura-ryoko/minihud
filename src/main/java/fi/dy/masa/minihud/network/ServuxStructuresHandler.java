@@ -16,6 +16,8 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import fi.dy.masa.malilib.network.IClientPayloadData;
 import fi.dy.masa.malilib.network.IPluginClientPlayHandler;
 import fi.dy.masa.malilib.network.PacketSplitter;
+import fi.dy.masa.malilib.network.status.NetworkState;
+import fi.dy.masa.malilib.network.status.NetworkStateTracker;
 import fi.dy.masa.malilib.util.data.Constants;
 import fi.dy.masa.malilib.util.data.tag.BaseData;
 import fi.dy.masa.malilib.util.data.tag.CompoundData;
@@ -39,10 +41,10 @@ public abstract class ServuxStructuresHandler<T extends CustomPacketPayload> imp
 	public static ServuxStructuresHandler<ServuxStructuresPacket.Payload> getInstance() {return INSTANCE;}
 
 	public static final Identifier CHANNEL_ID = Identifier.fromNamespaceAndPath("servux", "structures");
+	private final NetworkStateTracker tracker = new NetworkStateTracker("structure_bounding_boxes");
 
 	private boolean servuxRegistered;
 	private boolean payloadRegistered = false;
-	private int failures = 0;
 	private long readingSessionKey = -1;
 
 	@Override
@@ -139,19 +141,11 @@ public abstract class ServuxStructuresHandler<T extends CustomPacketPayload> imp
 	@Override
 	public void reset(Identifier channel)
 	{
-		if (channel.equals(CHANNEL_ID) && this.servuxRegistered)
+		if (channel.equals(CHANNEL_ID))
 		{
 			this.servuxRegistered = false;
-			this.failures = 0;
+			this.tracker().reset();
 			this.readingSessionKey = -1;
-		}
-	}
-
-	public void resetFailures(Identifier channel)
-	{
-		if (channel.equals(CHANNEL_ID) && this.failures > 0)
-		{
-			this.failures = 0;
 		}
 	}
 
@@ -191,22 +185,31 @@ public abstract class ServuxStructuresHandler<T extends CustomPacketPayload> imp
 	@Override
 	public boolean checkFailures()
 	{
-		return !(this.failures > this.maxFailures());
+		return !(this.tracker().failureCount() > this.maxFailures());
+	}
+
+	@Override
+	public NetworkStateTracker tracker()
+	{
+		return this.tracker;
 	}
 
 	@Override
 	public void tickFailures()
 	{
-		if (this.failures > this.maxFailures())
+		int count = this.tracker().failureCount();
+
+		if (count > this.maxFailures())
 		{
 			MiniHUD.debugLog("encodeStructuresPacket(): encountered [{}] sendPayload failures, cancelling any Servux join attempt(s)", this.maxFailures());
 			this.servuxRegistered = false;
+			this.tracker().lock();
 			ServuxStructuresHandler.INSTANCE.unregisterPlayReceiver();
 			DataStorage.getInstance().onPacketFailure();
 		}
 		else
 		{
-			this.failures++;
+			this.tracker().tickState(NetworkState.GENERAL_ERROR);
 		}
 	}
 }

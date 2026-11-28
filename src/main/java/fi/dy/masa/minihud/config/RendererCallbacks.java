@@ -177,29 +177,31 @@ public class RendererCallbacks
     {
         if (Minecraft.getInstance().player != null)
         {
-            if (DataStorage.getInstance().hasInvalidServux())
-            {
-                DataStorage.getInstance().reset(false);
-            }
+//            if (DataStorage.getInstance().hasInvalidServux())
+//            {
+//                DataStorage.getInstance().reset(false);
+//            }
+//
+//            if (config.getBooleanValue())
+//            {
+//                if (!DataStorage.getInstance().hasIntegratedServer())
+//                {
+//                    if (DataStorage.getInstance().hasServuxServer())
+//                    {
+//                        DataStorage.getInstance().unregisterStructureChannel();
+//                    }
+//
+//                    DataStorage.getInstance().registerStructureChannel();
+//                }
+//
+//                DataStorage.getInstance().setStructuresNeedUpdating();
+//            }
+//            else
+//            {
+//                DataStorage.getInstance().unregisterStructureChannel();
+//            }
 
-            if (config.getBooleanValue())
-            {
-                if (!DataStorage.getInstance().hasIntegratedServer())
-                {
-                    if (DataStorage.getInstance().hasServuxServer())
-                    {
-                        DataStorage.getInstance().unregisterStructureChannel();
-                    }
-
-                    DataStorage.getInstance().registerStructureChannel();
-                }
-
-                DataStorage.getInstance().setStructuresNeedUpdating();
-            }
-            else
-            {
-                DataStorage.getInstance().unregisterStructureChannel();
-            }
+            DataStorage.getInstance().onStructureDataToggled(config);
         }
     }
 
