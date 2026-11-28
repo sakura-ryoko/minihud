@@ -902,6 +902,7 @@
     "minihud.gui.hover.shape.direction_value": "§7Direction: §6%s",
     "minihud.gui.hover.shape.effective_center_value": "§7有效中心點：x: §9%s§7, y: §9%s§7, z: §9%s",
     "minihud.gui.hover.shape.height_value": "§7高度：§6%s",
+    "minihud.gui.hover.shape.legacy_ext": "§cLegacy File Extension§r",
     "minihud.gui.hover.shape.margin_value": "§7邊距：§6%s",
     "minihud.gui.hover.shape.origin_value": "§7Origin: x: §9%s§7, y: §9%s§7, z: §9%s",
     "minihud.gui.hover.shape.radius_value": "§7半徑：§6%s",

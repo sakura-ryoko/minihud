@@ -902,6 +902,7 @@
     "minihud.gui.hover.shape.direction_value": "§7방향: §6%s",
     "minihud.gui.hover.shape.effective_center_value": "§7유효 중심: x: §9%s§7, y: §9%s§7, z: §9%s",
     "minihud.gui.hover.shape.height_value": "§7높이: §6%s",
+    "minihud.gui.hover.shape.legacy_ext": "§cLegacy File Extension§r",
     "minihud.gui.hover.shape.margin_value": "§7여백: §6%s",
     "minihud.gui.hover.shape.origin_value": "§7기준: x: §9%s§7, y: §9%s§7, z: §9%s",
     "minihud.gui.hover.shape.radius_value": "§7반경: §6%s",
