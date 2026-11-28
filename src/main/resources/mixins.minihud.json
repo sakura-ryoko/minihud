@@ -44,7 +44,6 @@
         "render.IMixinByteBufferBuilder",
         "render.IMixinLevelExtractor",
         "render.IMixinLevelRenderer",
-        "render.IMixinRenderObjectVbo",
         "render.MixinLevelExtractor",
         "render.MixinLevelRenderer",
         "world.IMixinPalettedContainer"

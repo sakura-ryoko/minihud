@@ -61,7 +61,7 @@ public class LightLevelChunkInfo
                 (int) Math.clamp(Math.ceil((h % 1.0f) * HEIGHT_RESOLUTION), 0, HEIGHT_MASK);
     }
 
-    private static void unpackInfo(int y, int info, LightLevelInfo to)
+    private static void unpackInfo(int y, int info, MutableLightLevelInfo to)
     {
         to.block = (byte) (info >>> (LIGHT_LEVEL_BITS + HEIGHT_BITS));
         to.sky = (byte) ((info >>> HEIGHT_BITS) & LIGHT_LEVEL_MASK);
@@ -237,7 +237,7 @@ public class LightLevelChunkInfo
         return this.infos.isEmpty();
     }
 
-    public Iterable<LightLevelInfo> iterable(int minY, int xzMask, Predicate<Integer> condition)
+    public Iterable<MutableLightLevelInfo> iterable(int minY, int xzMask, Predicate<Integer> condition)
     {
         if (this.sealed == false)
         {
@@ -247,14 +247,14 @@ public class LightLevelChunkInfo
         return new Iterable<>()
         {
             @Override
-            public @NonNull Iterator<LightLevelInfo> iterator()
+            public @NonNull Iterator<MutableLightLevelInfo> iterator()
             {
                 return new InfoIterator(minY, xzMask, condition);
             }
         };
     }
 
-    class InfoIterator implements Iterator<LightLevelInfo>
+    class InfoIterator implements Iterator<MutableLightLevelInfo>
     {
         // decides coordinates.
         private int mainIndex;
@@ -271,7 +271,7 @@ public class LightLevelChunkInfo
         // filters block light level
         private final int blockLightMask;
         private final int xzMask;
-        private final LightLevelInfo mutable = new LightLevelInfo();
+        private final MutableLightLevelInfo mutable = new MutableLightLevelInfo();
 
         private InfoIterator(int minY, int xzMask, Predicate<Integer> condition)
         {
@@ -368,7 +368,7 @@ public class LightLevelChunkInfo
         }
 
         @Override
-        public LightLevelInfo next()
+        public MutableLightLevelInfo next()
         {
             if (this.hasNext() == false)
             {
@@ -476,5 +476,14 @@ public class LightLevelChunkInfo
 
             return range <= 64 ? Math.min(total, range * range * range) : total;
         }
+    }
+
+    public static class MutableLightLevelInfo
+    {
+        public int x;
+        public float y;
+        public int z;
+        public byte block;
+        public byte sky;
     }
 }

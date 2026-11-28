@@ -39,7 +39,6 @@ import fi.dy.masa.minihud.Reference;
 import fi.dy.masa.minihud.config.Configs;
 import fi.dy.masa.minihud.config.RendererToggle;
 import fi.dy.masa.minihud.mixin.render.IMixinByteBufferBuilder;
-import fi.dy.masa.minihud.mixin.render.IMixinRenderObjectVbo;
 import fi.dy.masa.minihud.renderer.shapes.ShapeManager;
 import fi.dy.masa.minihud.renderer.shapes.ShapeSpawnSphere;
 import fi.dy.masa.minihud.util.*;
@@ -317,8 +316,7 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
         // These shouldn't be critical if any of these value changed in the future. Except some wasted memory.
         int vertexCount = Math.min(marks * vertexPerMark, 16777215);
         int bufferSize = vertexCount * ctx.getSelectedVertexFormat().getVertexSize();
-        //noinspection resource
-        ((IMixinByteBufferBuilder) ((IMixinRenderObjectVbo) ctx).minihud_getAlloc()).minihud_ensureCapacity(bufferSize);
+        ((IMixinByteBufferBuilder) ctx.getAlloc()).minihud_ensureCapacity(bufferSize);
 
 
         if (markerMode == LightLevelMarkerMode.SQUARE)
@@ -449,7 +447,7 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
             int xzMask = this.ignoreRange ? 0 :
                     LightLevelPosLimiter.createXZMask(chunk.x >> 4, chunk.z >> 4, minX, minZ, maxX, maxZ);
 
-            for (LightLevelInfo info : chunk.iterable(minY, xzMask, blockLightPredicate))
+            for (LightLevelChunkInfo.MutableLightLevelInfo info : chunk.iterable(minY, xzMask, blockLightPredicate))
             {
                 double x = info.x - offsetX;
                 double y = info.y - offsetY;
@@ -519,7 +517,7 @@ public class OverlayRendererLightLevel extends OverlayRendererBase
 
             int xzMask = LightLevelPosLimiter.createXZMask(chunk.x >> 4, chunk.z >> 4, minX, minZ, maxX, maxZ);
 
-            for (LightLevelInfo info : chunk.iterable(minY, xzMask, blockLightPredicate))
+            for (LightLevelChunkInfo.MutableLightLevelInfo info : chunk.iterable(minY, xzMask, blockLightPredicate))
             {
                 double x = info.x - dx;
                 double y = info.y - dy;
