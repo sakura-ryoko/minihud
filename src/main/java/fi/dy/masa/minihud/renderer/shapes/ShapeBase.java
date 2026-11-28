@@ -225,6 +225,8 @@ public abstract class ShapeBase extends OverlayRendererBase implements IRangeCha
         this.setNeedsUpdate();
     }
 
+    public void onRemove() {}
+
     public List<String> getWidgetHoverLines()
     {
         List<String> lines = new ArrayList<>();

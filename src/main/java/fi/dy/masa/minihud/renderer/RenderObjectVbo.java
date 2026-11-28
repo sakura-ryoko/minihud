@@ -154,6 +154,11 @@ public class RenderObjectVbo
 		return this.pipeline.getPrimitiveTopology();
 	}
 
+    public ByteBufferBuilder getAlloc()
+    {
+        return this.alloc;
+    }
+
     /**
      * BUILDER PHASE --
      * -

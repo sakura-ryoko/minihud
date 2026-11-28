@@ -17,3 +17,4 @@ accessible field net/minecraft/world/level/NaturalSpawner MAGIC_NUMBER I
 accessible field net/minecraft/world/item/crafting/RecipeMap byType Lcom/google/common/collect/Multimap;
 accessible field net/minecraft/world/item/crafting/RecipeMap byKey Ljava/util/Map;
 accessible method net/minecraft/world/item/crafting/RecipeMap <init> (Lcom/google/common/collect/Multimap;Ljava/util/Map;)V
+accessible class net/minecraft/world/level/chunk/PalettedContainer$Data
