@@ -187,7 +187,8 @@ public class GuiShapesImport extends GuiShapesBrowserBase implements ISelectionL
 					return;
 				}
 
-				if (!fileName.endsWith(ShapeManager.SHAPE_FILE_EXT))
+				if (!fileName.endsWith(ShapeManager.SHAPE_FILE_EXT) &&
+                    !fileName.endsWith(".shape"))   // Deprecated
 				{
 					this.gui.addMessage(Message.MessageType.ERROR, "minihud.error.shape_import.unsupported_type", file.getFileName());
 					return;

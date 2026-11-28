@@ -95,7 +95,8 @@ public class WidgetShapesBrowser extends WidgetFileBrowserBase
 			return;
 		}
 
-		ShapeBase shape = this.getOrLoadCachedShape(entry.getFullPath());
+		Path file = entry.getFullPath();
+		ShapeBase shape = this.getOrLoadCachedShape(file);
 
 		if (shape != null)
 		{
@@ -103,8 +104,14 @@ public class WidgetShapesBrowser extends WidgetFileBrowserBase
 			y += 3;
 			int textColor = 0xC0C0C0C0;
 			int valueColor = 0xFFFFFFFF;
+			boolean legacyFileExt = file.getFileName().toString().endsWith(".shape");
 
 			List<String> lines = shape.getWidgetHoverLines();
+
+			if (legacyFileExt)
+			{
+				lines.add(StringUtils.translate("minihud.gui.hover.shape.legacy_ext"));
+			}
 
 			for (String line : lines)
 			{
@@ -138,7 +145,8 @@ public class WidgetShapesBrowser extends WidgetFileBrowserBase
 		@Override
 		public boolean accept(Path entry)
 		{
-			return entry.getFileName().toString().endsWith(ShapeManager.SHAPE_FILE_EXT);
+			return  entry.getFileName().toString().endsWith(ShapeManager.SHAPE_FILE_EXT) ||
+					entry.getFileName().toString().endsWith(".shape");      // Deprecated
 		}
 	}
 }

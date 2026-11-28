@@ -14,7 +14,7 @@ import fi.dy.masa.minihud.renderer.RenderContainer;
 
 public class ShapeManager
 {
-    public static final String SHAPE_FILE_EXT = ".shape";
+    public static final String SHAPE_FILE_EXT = ".json";
     public static final String SHAPE_FILE_DIR = "shapes";
     public static final ShapeManager INSTANCE = new ShapeManager();
 

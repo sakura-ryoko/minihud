@@ -10,6 +10,7 @@ import fi.dy.masa.malilib.gui.interfaces.IGuiIcon;
 import fi.dy.masa.malilib.render.GuiContext;
 import fi.dy.masa.malilib.render.RenderUtils;
 import fi.dy.masa.minihud.Reference;
+import fi.dy.masa.minihud.renderer.shapes.ShapeManager;
 
 public enum Icons implements IGuiIcon, IFileBrowserIconProvider
 {
@@ -112,7 +113,8 @@ public enum Icons implements IGuiIcon, IFileBrowserIconProvider
 			return null;
 		}
 
-		if (file.getFileName().toString().endsWith(".shape"))
+		if (file.getFileName().toString().endsWith(ShapeManager.SHAPE_FILE_EXT) ||
+			file.getFileName().toString().endsWith(".shape"))   // Deprecated
 		{
 			return FILE_ICON_SHAPE;
 		}
